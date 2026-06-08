@@ -1,6 +1,6 @@
 [Workshop Site](https://neo4j-partners.github.io/databricks-neo4j-workshop)
 
-# Hands-On Lab: Neo4j and Databricks
+# Hands-On Workshop: Neo4j and Databricks
 
 Build AI Agents and Knowledge Graphs with Neo4j and Databricks.
 
@@ -14,11 +14,11 @@ Together, the two platforms provide a complete Aircraft Digital Twin: Databricks
 
 ![Dual Database Architecture](images/dual-database-architecture.png)
 
-## Lab Architecture
+## Workshop Architecture
 
-The end-to-end lab architecture centers on a **Supervisor Agent** built with Databricks Agent Bricks. When a user asks a question, the supervisor routes it to the right agent: a **Genie Agent** for sensor telemetry analytics over Unity Catalog tables, or a **Neo4j MCP Agent** for graph-powered queries over the knowledge graph. The Neo4j MCP Server exposes the graph database through the Model Context Protocol so agents can query it with natural language. Neo4j Aura provides the graph database, while Databricks handles notebooks, model serving, and vector search.
+The end-to-end workshop architecture centers on a **Supervisor Agent** built with Databricks Agent Bricks. When a user asks a question, the supervisor routes it to the right agent: a **Genie Agent** for sensor telemetry analytics over Unity Catalog tables, or a **Neo4j MCP Agent** for graph-powered queries over the knowledge graph. The Neo4j MCP Server exposes the graph database through the Model Context Protocol so agents can query it with natural language. Neo4j Aura provides the graph database, while Databricks handles notebooks, model serving, and vector search.
 
-![Lab Architecture Overview](images/lab-architecture-overview.png)
+![Workshop Architecture Overview](images/lab-architecture-overview.png)
 
 ## Overview
 
@@ -56,7 +56,7 @@ Together the dataset includes:
 
 ---
 
-## Lab Structure
+## Workshop Structure
 
 ### Phase 1: Setup
 

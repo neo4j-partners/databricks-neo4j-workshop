@@ -2,7 +2,7 @@
 
 ## Workshop Overview
 
-Welcome to the **Neo4j and Databricks** hands-on lab!
+Welcome to the **Neo4j and Databricks** hands-on workshop!
 
 In this workshop, you'll learn to build AI-powered applications that combine:
 - **Knowledge Graphs** - Structured data with relationships

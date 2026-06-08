@@ -1,5 +1,5 @@
 # Lab 0 - Sign In
-At the start of this lab, you should have received an information sheet. To begin, visit https://events.oneblink.ai and input the email you used to register for the lab, along with the event code (a 7-digit number) from the information sheet. Check the box to agree to the Terms and Conditions, and then click on Register.
+At the start of this lab, you should have received an information sheet. To begin, visit https://events.oneblink.ai and input the email you used to register for the workshop, along with the event code (a 7-digit number) from the information sheet. Check the box to agree to the Terms and Conditions, and then click on Register.
 
 ![](images/05.png)
 
@@ -11,7 +11,7 @@ Enter your email, the event code from the information sheet, and the validation 
 
 ![](images/07.png)
 
-Once the entered information is validated, you will receive your own Databricks and Neo4j accounts. Please refrain from sharing this account information with fellow attendees, as it is specifically assigned to you. Remember to save this information, as you will need it until the end of the lab. These accounts will be terminated by the end of the day.
+Once the entered information is validated, you will receive your own Databricks and Neo4j accounts. Please refrain from sharing this account information with fellow attendees, as it is specifically assigned to you. Remember to save this information, as you will need it until the end of the workshop. These accounts will be terminated by the end of the day.
 
 ## Improving the Labs
 As you work through these labs, we'd appreciate your feedback. Please open an issue on the [GitHub repository](https://github.com/neo4j-partners/databricks-neo4j-workshop/issues) for bugs, usability suggestions, or general comments. Pull requests are welcome too!
