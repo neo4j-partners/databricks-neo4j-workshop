@@ -57,7 +57,7 @@ The following resources must exist before running `databricks-setup`. See detail
 
 | Resource | Name | Created In |
 |----------|------|------------|
-| Unity Catalog | `databricks-neo4j-lab` | [Step 1.1](#11-create-a-catalog) |
+| Unity Catalog | `databricks-neo4j-workshop` | [Step 1.1](#11-create-a-catalog) |
 | Schema | `lab-schema` | [Step 1.2](#12-create-a-schema) |
 | Volume | `lab-volume` | [Step 1.3](#13-create-the-volume) |
 | Account-level group | `aircraft_workshop_group` | [Step 1.5](#step-15-create-account-level-group) |
@@ -79,7 +79,7 @@ Create the catalog, schema, and volume through the Databricks UI.
 
 1. Navigate to **Data** > **Catalogs** in the Databricks workspace
 2. Click **Create Catalog**
-3. Name it `databricks-neo4j-lab` (or similar)
+3. Name it `databricks-neo4j-workshop` (or similar)
 4. Select the appropriate metastore
 5. Click **Create**
 
@@ -98,14 +98,14 @@ Create the catalog, schema, and volume through the Databricks UI.
    - **Volume type:** Managed
 4. Click **Create**
 
-**Resulting path:** `/Volumes/databricks-neo4j-lab/lab-schema/lab-volume/`
+**Resulting path:** `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/`
 
 ### 1.4 Verify Creation (CLI)
 
 Confirm the catalog, schema, and volume exist with one command:
 
 ```bash
-databricks volumes read databricks-neo4j-lab.lab-schema.lab-volume
+databricks volumes read databricks-neo4j-workshop.lab-schema.lab-volume
 ```
 
 This returns volume metadata if successful, or an error if any component is missing.
@@ -281,14 +281,14 @@ Create a handout or slide with:
 | Resource | Value |
 |----------|-------|
 | Databricks Workspace URL | `https://your-workspace.cloud.databricks.com` |
-| Data Volume Path | `/Volumes/databricks-neo4j-lab/lab-schema/lab-volume/` |
-| Shared Notebook Folder | `/Shared/databricks-neo4j-lab/` |
+| Data Volume Path | `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/` |
+| Shared Notebook Folder | `/Shared/databricks-neo4j-workshop/` |
 
 ### Quick Start Instructions
 
 1. Sign in to Databricks with your workshop credentials
 2. Navigate to Compute — your dedicated cluster (`lab-<your-name>`) should be running
-3. Open **Workspace** > **Shared** > **databricks-neo4j-lab** to find the lab notebooks
+3. Open **Workspace** > **Shared** > **databricks-neo4j-workshop** to find the lab notebooks
 4. Enter your Neo4j credentials from Lab 1
 5. Run all cells (Shift+Enter or Run All)
 6. Verify the counts in the output cells

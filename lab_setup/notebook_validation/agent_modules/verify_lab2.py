@@ -180,7 +180,7 @@ def main():
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
     parser.add_argument(
         "--data-path",
-        default="/Volumes/databricks-neo4j-lab/lab-schema/lab-volume",
+        default="/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume",
         help="(unused, accepted for submit.sh compatibility)",
     )
     parser.add_argument("--mcp-endpoint", default="", help="(unused)")

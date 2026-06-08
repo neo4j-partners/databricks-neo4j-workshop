@@ -1,7 +1,7 @@
 site:
   title: Databricks + Neo4j Workshop
-  url: https://neo4j-partners.github.io/databricks-neo4j-lab
-  start_page: databricks-neo4j-lab::index.adoc
+  url: https://neo4j-partners.github.io/databricks-neo4j-workshop
+  start_page: databricks-neo4j-workshop::index.adoc
 
 content:
   sources:

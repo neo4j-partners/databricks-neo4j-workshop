@@ -46,7 +46,7 @@ Newer Databricks workspaces use **Default Storage**, which blocks programmatic c
 
 1. Navigate to **Data** > **Catalogs** in the Databricks workspace
 2. Click **Create Catalog**
-3. Name it `databricks-neo4j-lab` (or similar)
+3. Name it `databricks-neo4j-workshop` (or similar)
 4. Select the appropriate metastore
 5. Click **Create**
 
@@ -65,7 +65,7 @@ Newer Databricks workspaces use **Default Storage**, which blocks programmatic c
    - **Volume type:** Managed
 4. Click **Create**
 
-**Resulting path:** `/Volumes/databricks-neo4j-lab/lab-schema/lab-volume/`
+**Resulting path:** `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/`
 
 ---
 
@@ -139,7 +139,7 @@ Install each library one at a time (or use the bulk install option if available)
 Upload the CSV and Markdown files from the `aircraft_digital_twin_data/` directory to the volume using the Databricks CLI:
 
 ```bash
-VOLUME_PATH="dbfs:/Volumes/databricks-neo4j-lab/lab-schema/lab-volume"
+VOLUME_PATH="dbfs:/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume"
 
 # Lab 2 - Aircraft digital twin (core: notebook 01)
 databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_aircraft.csv    "${VOLUME_PATH}/nodes_aircraft.csv" --overwrite
@@ -177,7 +177,7 @@ databricks fs cp lab_setup/aircraft_digital_twin_data/rels_system_sensor.csv "${
 
 Alternatively, upload via the **Databricks UI**:
 
-1. Navigate to **Data** > **Catalogs** > `databricks-neo4j-lab` > `lab-schema` > `lab-volume`
+1. Navigate to **Data** > **Catalogs** > `databricks-neo4j-workshop` > `lab-schema` > `lab-volume`
 2. Click **Upload to this volume**
 3. Drag and drop (or browse) to upload each file listed above
 
@@ -192,7 +192,7 @@ databricks fs ls "${VOLUME_PATH}"
 The volume should contain 25 files (22 CSV + 3 Markdown):
 
 ```
-/Volumes/databricks-neo4j-lab/lab-schema/lab-volume/
+/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/
 │
 │  Nodes (Lab 2 core)
 ├── nodes_aircraft.csv

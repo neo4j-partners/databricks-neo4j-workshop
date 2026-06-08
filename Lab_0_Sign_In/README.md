@@ -14,7 +14,7 @@ Enter your email, the event code from the information sheet, and the validation 
 Once the entered information is validated, you will receive your own Databricks and Neo4j accounts. Please refrain from sharing this account information with fellow attendees, as it is specifically assigned to you. Remember to save this information, as you will need it until the end of the lab. These accounts will be terminated by the end of the day.
 
 ## Improving the Labs
-As you work through these labs, we'd appreciate your feedback. Please open an issue on the [GitHub repository](https://github.com/neo4j-partners/databricks-neo4j-lab/issues) for bugs, usability suggestions, or general comments. Pull requests are welcome too!
+As you work through these labs, we'd appreciate your feedback. Please open an issue on the [GitHub repository](https://github.com/neo4j-partners/databricks-neo4j-workshop/issues) for bugs, usability suggestions, or general comments. Pull requests are welcome too!
 
 ## Sign into Databricks
 We're going to sign into a Databricks workspace. You may already have other Databricks accounts. If you use Chrome, you might consider using incognito mode for these exercises. That's not mandatory though and other browsers work fine too.

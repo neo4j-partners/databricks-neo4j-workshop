@@ -76,7 +76,7 @@ class LibraryConfig:
 class VolumeConfig:
     """Unity Catalog volume configuration."""
 
-    catalog: str = "databricks-neo4j-lab"
+    catalog: str = "databricks-neo4j-workshop"
     schema: str = "lab-schema"
     volume: str = "lab-volume"
     lakehouse_schema: str = "lakehouse"
@@ -132,7 +132,7 @@ class DataConfig:
 class NotebookConfig:
     """Configuration for uploading workshop notebooks to the workspace."""
 
-    workspace_folder: str = "/Shared/databricks-neo4j-lab"
+    workspace_folder: str = "/Shared/databricks-neo4j-workshop"
     upload_folder: str = "labs"
     repo_root: Path = field(
         default_factory=lambda: Path(__file__).resolve().parent.parent.parent.parent.parent,

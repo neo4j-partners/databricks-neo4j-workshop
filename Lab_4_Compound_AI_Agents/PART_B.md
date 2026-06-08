@@ -14,7 +14,7 @@ For background on why this lab uses two data sources and how they complement eac
 
 Before starting, ensure you have:
 - Completed **Part A** (Genie space for sensor analytics)
-- Access to the Unity Catalog: `databricks-neo4j-lab.lakehouse` (tables) and `databricks-neo4j-lab.lab-schema` (volume)
+- Access to the Unity Catalog: `databricks-neo4j-workshop.lakehouse` (tables) and `databricks-neo4j-workshop.lab-schema` (volume)
 
 > **Note on the Neo4j MCP connection:** This lab uses a **pre-configured Neo4j MCP connection** that has already been set up by the workshop administrators. The MCP server points to the **administrator's Neo4j Aura instance** (not your individual Aura instance from Lab 1), because it contains the **complete dataset** — all 20 aircraft, 80 systems, 320 components, 160 sensors, 300 maintenance events, 800 flights, and 300 delays. This ensures every participant has access to the full graph regardless of which Lab 2 notebooks they completed.
 
@@ -96,7 +96,7 @@ BEST FOR:
 - Relationship patterns: "Which airports does ExampleAir fly to?"
 - Graph traversals: "Show the path from aircraft to sensor"
 
-DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-lab/lab-schema/lab-volume/):
+DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/):
 - Aircraft (20): Fleet inventory with tail numbers, models, operators
 - Systems (~80): Engines, Avionics, Hydraulics per aircraft
 - Components (320): Turbines, Compressors, Pumps, etc.
@@ -141,7 +141,7 @@ DO NOT USE FOR:
 Analyzes aircraft sensor telemetry data using SQL queries over Unity Catalog tables.
 
 DATA LOCATION:
-- Catalog: databricks-neo4j-lab
+- Catalog: databricks-neo4j-workshop
 - Schema: lakehouse
 - Tables: sensor_readings, sensors, systems, aircraft
 
@@ -413,7 +413,7 @@ For the full architecture diagram and data sources reference, see [CONTENT.md](C
 - Test queries directly in Neo4j Aura console first
 
 ### "SQL query failed"
-- Verify table names in Unity Catalog: `databricks-neo4j-lab.lakehouse`
+- Verify table names in Unity Catalog: `databricks-neo4j-workshop.lakehouse`
 - Check column names match documentation
 - Ensure Genie space has access to all required tables
 - Test queries directly in SQL Editor first

@@ -22,7 +22,7 @@ Create an AI/BI Genie space that enables natural language queries over sensor te
 === Explore the Lakehouse Data
 
 1. Click **Catalog** in the left sidebar.
-2. Expand **databricks-neo4j-lab > lakehouse**.
+2. Expand **databricks-neo4j-workshop > lakehouse**.
 3. Browse the available tables:
 
 [cols="1,1,3"]
@@ -40,7 +40,7 @@ image::lab4-lakehouse-sensor-readings.png[Lakehouse sensor_readings table in Uni
 === Create the Genie Space
 
 1. Click **New** > **Genie space**
-2. In the **Connect your data** dialog, select `databricks-neo4j-lab` > `lakehouse` > then select `sensor_readings`, `aircraft`, `sensors`, `systems`
+2. In the **Connect your data** dialog, select `databricks-neo4j-workshop` > `lakehouse` > then select `sensor_readings`, `aircraft`, `sensors`, `systems`
 
 image::lab4-genie-connect-data.png[Connect your data dialog]
 
@@ -243,7 +243,7 @@ BEST FOR:
 - Relationship patterns: "Which airports does ExampleAir fly to?"
 - Graph traversals: "Show the path from aircraft to sensor"
 
-DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-lab/lab-schema/lab-volume/):
+DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/):
 - Aircraft (20): Fleet inventory with tail numbers, models, operators
 - Systems (~80): Engines, Avionics, Hydraulics per aircraft
 - Components (320): Turbines, Compressors, Pumps, etc.
@@ -280,7 +280,7 @@ DO NOT USE FOR:
 Analyzes aircraft sensor telemetry data using SQL queries over Unity Catalog tables.
 
 DATA LOCATION:
-- Catalog: databricks-neo4j-lab
+- Catalog: databricks-neo4j-workshop
 - Schema: lakehouse
 - Tables: sensor_readings, sensors, systems, aircraft
 
@@ -509,7 +509,7 @@ For the full routing table showing which question types route to Genie, Neo4j, o
 
 **"Cypher query failed"** -- Check that Neo4j data was loaded correctly (Lab 2). Verify node labels and relationship types match documentation. Review Cypher syntax for errors. Test queries directly in Neo4j Aura console first.
 
-**"SQL query failed"** -- Verify table names in Unity Catalog: `databricks-neo4j-lab.lakehouse`. Check column names match documentation. Ensure Genie space has access to all required tables. Test queries directly in SQL Editor first.
+**"SQL query failed"** -- Verify table names in Unity Catalog: `databricks-neo4j-workshop.lakehouse`. Check column names match documentation. Ensure Genie space has access to all required tables. Test queries directly in SQL Editor first.
 
 **"Permission denied"** -- For Genie space: User needs access to the space AND underlying data tables. For MCP server: User needs `USE CONNECTION` permission on the Unity Catalog connection. For supervisor: User needs `CAN QUERY` permission on the agent endpoint.
 

@@ -25,7 +25,7 @@ Edit `.env` with your values:
 | `NEO4J_URI` | Neo4j Aura connection URI |
 | `NEO4J_USERNAME` | Neo4j username (default: `neo4j`) |
 | `NEO4J_PASSWORD` | Neo4j password |
-| `DATA_PATH` | Unity Catalog Volume path (default: `/Volumes/databricks-neo4j-lab/lab-schema/lab-volume`) |
+| `DATA_PATH` | Unity Catalog Volume path (default: `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume`) |
 
 ## Full Validation Flow
 

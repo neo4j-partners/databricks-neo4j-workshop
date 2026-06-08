@@ -1,6 +1,6 @@
 """Upload workshop notebooks to a shared workspace folder.
 
-Imports Jupyter notebooks and Python files into /Shared/databricks-neo4j-lab/
+Imports Jupyter notebooks and Python files into /Shared/databricks-neo4j-workshop/
 so that workshop participants can browse and clone them into their own workspace.
 """
 

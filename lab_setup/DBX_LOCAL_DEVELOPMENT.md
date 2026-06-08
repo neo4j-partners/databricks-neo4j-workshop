@@ -27,7 +27,7 @@ NEO4J_PASSWORD="your-password"
 DATA_PATH="/Volumes/your-catalog/lab-schema/lab-volume"
 ```
 
-The `DATABRICKS_PROFILE` must match a profile configured via `databricks auth login`. The cluster must already exist and be startable. The `DATA_PATH` must reference the actual Unity Catalog name, which may differ from the default in notebook code (the project uses `aws-databricks-neo4j-lab` on AWS and `azure-databricks-neo4j-lab` on Azure, not the generic `databricks-neo4j-lab` that appears in some templates).
+The `DATABRICKS_PROFILE` must match a profile configured via `databricks auth login`. The cluster must already exist and be startable. The `DATA_PATH` must reference the actual Unity Catalog name, which may differ from the default in notebook code (the project uses `aws-databricks-neo4j-workshop` on AWS and `azure-databricks-neo4j-workshop` on Azure, not the generic `databricks-neo4j-workshop` that appears in some templates).
 
 ### 2. Upload
 

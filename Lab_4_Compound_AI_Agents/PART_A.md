@@ -10,7 +10,7 @@ In this part, you'll create a Databricks AI/BI Genie space that enables natural 
 Your workshop admin has pre-loaded a set of tables into Unity Catalog that represent the Aircraft Digital Twin sensor telemetry. This is the data you will use to create your Genie space — a natural language interface that lets agents query sensor readings, compare fleet metrics, and detect anomalies using SQL under the hood.
 
 1. Click **Catalog** in the left sidebar.
-2. Expand **databricks-neo4j-lab > lakehouse**.
+2. Expand **databricks-neo4j-workshop > lakehouse**.
 3. Browse the available tables:
 
 | Table | Rows | Description |
@@ -37,14 +37,14 @@ These four tables form a join chain — `sensor_readings` → `sensors` → `sys
 
 ### 2.2 Connect Your Data
 
-After clicking **New Genie space**, the **Connect your data** dialog appears. Select All Catalogs ->  `databricks-neo4j-lab`  -> `lakehouse` -> then select `sensor_readings`, `aircraft`, `sensors`, `systems`.
+After clicking **New Genie space**, the **Connect your data** dialog appears. Select All Catalogs ->  `databricks-neo4j-workshop`  -> `lakehouse` -> then select `sensor_readings`, `aircraft`, `sensors`, `systems`.
 
 > **Tip:** These tables form a join chain: `sensor_readings` -> `sensors` -> `systems` -> `aircraft`
 
 
 ![Connect your data dialog](images/genie_connect_data.png)
 
-> **Tip:** If you don't see the table under **Recent**, click **All** or use the search bar to find `databricks-neo4j-lab`.
+> **Tip:** If you don't see the table under **Recent**, click **All** or use the search bar to find `databricks-neo4j-workshop`.
 
 ### 2.3 Configure Basic Settings
 

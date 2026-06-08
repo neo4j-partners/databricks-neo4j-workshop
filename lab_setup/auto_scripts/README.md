@@ -120,7 +120,7 @@ DATABRICKS_PROFILE=""
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CATALOG_NAME` | Unity Catalog name | `databricks-neo4j-lab` |
+| `CATALOG_NAME` | Unity Catalog name | `databricks-neo4j-workshop` |
 | `VOLUME_SCHEMA` | Schema for the data volume | `lab-schema` |
 | `VOLUME_NAME` | Volume name for CSV data upload | `lab-volume` |
 | `LAKEHOUSE_SCHEMA` | Schema for lakehouse Delta tables | `lakehouse` |

@@ -1,4 +1,4 @@
-name: databricks-neo4j-lab
+name: databricks-neo4j-workshop
 title: Databricks + Neo4j Workshop
 version: '1.0'
 start_page: ROOT:index.adoc

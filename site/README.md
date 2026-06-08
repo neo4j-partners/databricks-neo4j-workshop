@@ -1,6 +1,6 @@
 # Databricks + Neo4j Workshop Site
 
-**Live site:** https://neo4j-partners.github.io/databricks-neo4j-lab
+**Live site:** https://neo4j-partners.github.io/databricks-neo4j-workshop
 
 ## Publishing slides
 

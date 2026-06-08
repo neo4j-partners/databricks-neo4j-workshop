@@ -1,5 +1,5 @@
 {
-  "name": "databricks-neo4j-lab",
+  "name": "databricks-neo4j-workshop",
   "version": "1.0.0",
   "description": "Databricks + Neo4j: Production AI Agents with Graph and Lakehouse - Workshop",
   "scripts": {

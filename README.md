@@ -1,4 +1,4 @@
-https://neo4j-partners.github.io/databricks-neo4j-lab
+https://neo4j-partners.github.io/databricks-neo4j-workshop
 
 # Hands-On Lab: Neo4j and Databricks
 
@@ -185,4 +185,4 @@ Databricks notebooks use Foundation Model APIs (MLflow deployments client) which
 
 ## Feedback
 
-We appreciate your feedback! Please open an issue on the [GitHub repository](https://github.com/neo4j-partners/databricks-neo4j-lab/issues) for bugs, suggestions, or comments.
+We appreciate your feedback! Please open an issue on the [GitHub repository](https://github.com/neo4j-partners/databricks-neo4j-workshop/issues) for bugs, suggestions, or comments.
