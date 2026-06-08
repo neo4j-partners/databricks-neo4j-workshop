@@ -1,4 +1,4 @@
-https://neo4j-partners.github.io/databricks-neo4j-workshop
+[Workshop Site](https://neo4j-partners.github.io/databricks-neo4j-workshop)
 
 # Hands-On Lab: Neo4j and Databricks
 
