@@ -4,6 +4,30 @@
 
 ---
 
+## Quick Start: Load CSVs and Lakehouse Tables Only
+
+To upload the CSV data and create the lakehouse Delta tables without running the full provisioning (cluster, permissions, user management), use the `load_lakehouse_data.py` script. This runs only the data portion of `databricks-setup setup`.
+
+**Prerequisites:** The catalog, schema, and volume must already exist (see [Step 1](#step-1-create-unity-catalog-and-volume-ui)). The script does not create them. Authenticate the Databricks CLI and configure `lab_setup/.env` (see [Prerequisites](#prerequisites)).
+
+```bash
+cd lab_setup/auto_scripts
+uv sync
+uv run python load_lakehouse_data.py
+```
+
+The script:
+
+1. Uploads the CSVs from `aircraft_digital_twin_data_v2/` to the Unity Catalog volume.
+2. Creates the `aircraft`, `systems`, `sensors`, and `sensor_readings` Delta tables via the Statement Execution API.
+3. Prints the per-table row counts so you can confirm the load.
+
+The script does not upload the GraphRAG maintenance manuals (the `MAINTENANCE_*.md` files live in `aircraft_digital_twin_data/`, not the v2 folder). Upload them separately if you are running Lab 3.
+
+For the full administrator setup, continue with the checklist below.
+
+---
+
 ## Pre-Workshop Checklist
 
 Complete these steps before the workshop begins:
