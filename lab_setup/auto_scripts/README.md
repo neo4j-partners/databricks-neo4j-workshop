@@ -21,7 +21,7 @@ uv run databricks-setup cleanup
 
 ### `setup`
 
-Runs three tracks sequentially:
+Runs two tracks sequentially:
 
 ```
 databricks-setup setup
@@ -37,13 +37,6 @@ databricks-setup setup
 │   ├── Verify upload
 │   └── Create Delta Lake tables via Statement Execution API
 │
-├── Track C: Permissions Lockdown
-│   ├── Remove compute-creation entitlements from `users` group
-│   ├── Remove non-admin access from Personal Compute policy
-│   ├── Verify `aircraft_workshop_group` exists in workspace
-│   ├── Grant read-only Unity Catalog privileges to the group
-│   └── Grant CAN_READ on shared notebook folder to the group
-│
 └── Report results
 ```
 
@@ -53,45 +46,9 @@ uv run databricks-setup setup
 
 All configuration is loaded from `lab_setup/.env` — see [Configuration](#configuration) below.
 
-### `add-users`
-
-Creates workspace accounts, adds users to the workshop group, and creates per-user clusters.
-
-```bash
-uv run databricks-setup add-users
-```
-
-To add users to the group **without creating clusters** (e.g., if you'll create clusters later or want users to share an existing cluster):
-
-```bash
-uv run databricks-setup add-users --skip-clusters
-```
-
-### `remove-users`
-
-Removes users from the group and deletes their per-user clusters.
-
-```bash
-uv run databricks-setup remove-users
-```
-
-To remove users from the group **while keeping their clusters**:
-
-```bash
-uv run databricks-setup remove-users --keep-clusters
-```
-
-### `list-users`
-
-Shows all group members with their email, display name, cluster name, and cluster state.
-
-```bash
-uv run databricks-setup list-users
-```
-
 ### `cleanup`
 
-Deletes permissions, notebooks, lakehouse tables, volume, schemas, and catalog. Per-user clusters are **not** affected — use `remove-users` for that.
+Deletes notebooks, lakehouse tables, volume, schemas, and catalog.
 
 ```bash
 # Interactive confirmation prompt

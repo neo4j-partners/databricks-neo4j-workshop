@@ -208,10 +208,8 @@ class Config:
     data: DataConfig = field(default_factory=DataConfig)
     warehouse: WarehouseConfig = field(default_factory=WarehouseConfig)
     notebook: NotebookConfig = field(default_factory=NotebookConfig)
-    users_csv: Path | None = None
     user_email: str | None = None
     databricks_profile: str | None = None
-    parallel_workers: int = 4
 
     @classmethod
     def load(cls) -> Config:
@@ -227,10 +225,6 @@ class Config:
         config.warehouse = WarehouseConfig.from_env()
         config.notebook = NotebookConfig.from_env()
 
-        # Users CSV path
-        if val := os.getenv("USERS_CSV"):
-            config.users_csv = Path(val)
-
         # User settings
         if val := os.getenv("USER_EMAIL"):
             config.user_email = val
@@ -238,10 +232,6 @@ class Config:
         # Databricks profile
         if val := os.getenv("DATABRICKS_PROFILE"):
             config.databricks_profile = val
-
-        # Parallelism
-        if val := os.getenv("PARALLEL_WORKERS"):
-            config.parallel_workers = max(1, int(val))
 
         return config
 
@@ -275,9 +265,8 @@ class SetupResult:
     cluster_ok: bool = True
     tables_ok: bool = True
     notebooks_ok: bool = True
-    lockdown_ok: bool = True
 
     @property
     def success(self) -> bool:
         """True unless any track failed."""
-        return self.cluster_ok and self.tables_ok and self.notebooks_ok and self.lockdown_ok
+        return self.cluster_ok and self.tables_ok and self.notebooks_ok

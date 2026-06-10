@@ -26,11 +26,9 @@ uv run populate-aircraft-db samples        # Run showcase Cypher queries
 ```bash
 cd lab_setup/auto_scripts
 uv sync
-uv run databricks-setup setup             # Full setup (cluster, data, tables, permissions)
+uv run databricks-setup setup             # Full setup (cluster, data, tables)
 uv run databricks-setup cleanup            # Tear down
-uv run databricks-setup add-users          # Create accounts, per-user clusters
-uv run databricks-setup remove-users       # Remove users and clusters
-uv run databricks-setup list-users         # Show group members
+uv run databricks-setup sync               # Upload/sync workshop notebooks
 ```
 
 ### verify_labs (Neo4j verification CLI)
@@ -55,7 +53,7 @@ uv run mypy src/                           # Type checking (strict mode)
 Each under `lab_setup/` is a standalone Python package with its own `pyproject.toml`, `.env`, and Typer CLI:
 
 - **`populate_aircraft_db/`** — Loads aircraft CSV data into Neo4j Aura, runs GraphRAG enrichment (doc chunking, embeddings via BGE-large, entity extraction via SimpleKGPipeline)
-- **`auto_scripts/`** (databricks_setup) — Automates Databricks workspace provisioning: cluster creation, Spark Connector install, Delta table creation, UC permissions, user management via SCIM
+- **`auto_scripts/`** (databricks_setup) — Automates Databricks workspace provisioning: cluster creation, Spark Connector install, Delta table creation
 - **`verify_labs/`** — Verifies Neo4j data loaded correctly in Lab 2
 
 ### Dual-Database Strategy

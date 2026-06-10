@@ -1,69 +1,29 @@
-"""Main entry point for Databricks environment setup, cleanup, and user management.
+"""Main entry point for Databricks environment setup and cleanup.
 
-Provides CLI interface for setting up data/permissions, managing per-user
-clusters, and tearing down workshop resources.
+Provides CLI interface for setting up data and tearing down workshop resources.
 """
 
 from __future__ import annotations
 
-import threading
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 import typer
-from rich.table import Table
-
-from databricks.sdk.service.compute import State
 
 if TYPE_CHECKING:
     from databricks.sdk import WorkspaceClient
 
 from .cleanup import run_cleanup
-from .cluster import (
-    create_user_cluster,
-    delete_cluster,
-    find_user_clusters,
-    get_or_create_cluster,
-    wait_for_cluster_running,
-)
-from .config import ClusterConfig, Config, LibraryConfig, SetupResult
+from .cluster import get_or_create_cluster, wait_for_cluster_running
+from .config import Config, SetupResult
 from .data_upload import upload_data_files, verify_upload
-from .groups import (
-    WORKSHOP_GROUP,
-    add_members_to_group,
-    get_account_client,
-    get_group_member_ids,
-    remove_members_from_group,
-    require_group,
-)
 from .lakehouse_tables import create_lakehouse_tables
 from .libraries import ensure_libraries_installed
-from .log import Level, close_log_file, init_log_file, log, log_context, log_to_file
+from .log import Level, close_log_file, init_log_file, log, log_to_file
 from .notebooks import upload_notebooks, verify_notebook_upload
-from .permissions import run_permissions_lockdown
-from .users import (
-    cluster_name_for_user,
-    create_workspace_user,
-    email_prefix,
-    find_workspace_user,
-    parse_csv,
-    preview_csv,
-)
 from .utils import print_header
 from .warehouse import get_or_start_warehouse
-
-# Resolve default CSV path relative to lab_setup/
-_LAB_SETUP_DIR = Path(__file__).resolve().parent.parent.parent.parent
-_DEFAULT_CSV = _LAB_SETUP_DIR / "users.csv"
-
-
-def _resolve_csv(config: Config) -> Path:
-    """Return the users CSV path from config or the default."""
-    return config.users_csv if config.users_csv else _DEFAULT_CSV
 
 app = typer.Typer(
     name="databricks-setup",
@@ -80,15 +40,12 @@ app = typer.Typer(
 def setup() -> None:
     """Set up Databricks environment for the Neo4j workshop.
 
-    Runs three tracks sequentially:
+    Runs two tracks sequentially:
 
       Track A: Create/start admin cluster and install libraries.
 
       Track B: Upload data files and create lakehouse tables via SQL Warehouse.
 
-      Track C: Lock down permissions (entitlements, group, UC grants, folder ACL).
-
-    Per-user clusters are created separately via ``add-users``.
     All configuration is loaded from lab_setup/.env.
     """
     log_path = init_log_file()
@@ -121,10 +78,9 @@ def cleanup(
         help="Skip confirmation prompt",
     ),
 ) -> None:
-    """Delete permissions, notebooks, lakehouse tables, volume, schemas, and catalog.
+    """Delete notebooks, lakehouse tables, volume, schemas, and catalog.
 
-    Removes everything created by the setup command.  Per-user clusters
-    are removed via ``remove-users``.  Each step is idempotent.
+    Removes everything created by the setup command.  Each step is idempotent.
 
     All configuration is loaded from lab_setup/.env.
     """
@@ -146,69 +102,7 @@ def cleanup(
 
 
 # ---------------------------------------------------------------------------
-# add-users
-# ---------------------------------------------------------------------------
-
-@app.command("add-users")
-def add_users(
-    skip_clusters: bool = typer.Option(
-        False,
-        "--skip-clusters",
-        help="Only add users to group, skip cluster creation.",
-    ),
-) -> None:
-    """Add users from lab_setup/users.csv → create workspace accounts → add to group → create per-user clusters."""
-    log_path = init_log_file()
-    log(f"[dim]Log file: {log_path}[/dim]")
-
-    start = time.monotonic()
-    try:
-        _run_add_users(skip_clusters=skip_clusters)
-        elapsed = time.monotonic() - start
-        log(f"[green]Total elapsed time: {_fmt_elapsed(elapsed)}[/green]")
-    except Exception as e:
-        elapsed = time.monotonic() - start
-        log(f"[red]Error: {e}[/red]", level=Level.ERROR)
-        log_to_file(traceback.format_exc(), level=Level.ERROR)
-        log(f"[dim]Failed after {_fmt_elapsed(elapsed)}[/dim]")
-        raise typer.Exit(code=1) from None
-    finally:
-        close_log_file()
-
-
-# ---------------------------------------------------------------------------
-# remove-users
-# ---------------------------------------------------------------------------
-
-@app.command("remove-users")
-def remove_users(
-    keep_clusters: bool = typer.Option(
-        False,
-        "--keep-clusters",
-        help="Skip cluster deletion.",
-    ),
-) -> None:
-    """Remove users (from lab_setup/users.csv) from the workshop group and delete their per-user clusters."""
-    log_path = init_log_file()
-    log(f"[dim]Log file: {log_path}[/dim]")
-
-    start = time.monotonic()
-    try:
-        _run_remove_users(keep_clusters=keep_clusters)
-        elapsed = time.monotonic() - start
-        log(f"[green]Total elapsed time: {_fmt_elapsed(elapsed)}[/green]")
-    except Exception as e:
-        elapsed = time.monotonic() - start
-        log(f"[red]Error: {e}[/red]", level=Level.ERROR)
-        log_to_file(traceback.format_exc(), level=Level.ERROR)
-        log(f"[dim]Failed after {_fmt_elapsed(elapsed)}[/dim]")
-        raise typer.Exit(code=1) from None
-    finally:
-        close_log_file()
-
-
-# ---------------------------------------------------------------------------
-# list-users
+# sync
 # ---------------------------------------------------------------------------
 
 @app.command()
@@ -231,22 +125,6 @@ def sync() -> None:
         log(f"[red]Error: {e}[/red]", level=Level.ERROR)
         log_to_file(traceback.format_exc(), level=Level.ERROR)
         log(f"[dim]Failed after {_fmt_elapsed(elapsed)}[/dim]")
-        raise typer.Exit(code=1) from None
-    finally:
-        close_log_file()
-
-
-@app.command("list-users")
-def list_users() -> None:
-    """List members of the workshop group and their cluster status."""
-    log_path = init_log_file()
-    log(f"[dim]Log file: {log_path}[/dim]")
-
-    try:
-        _run_list_users()
-    except Exception as e:
-        log(f"[red]Error: {e}[/red]", level=Level.ERROR)
-        log_to_file(traceback.format_exc(), level=Level.ERROR)
         raise typer.Exit(code=1) from None
     finally:
         close_log_file()
@@ -284,7 +162,7 @@ def _run_sync() -> None:
 
 
 def _run_setup() -> None:
-    """Load config, run Tracks A, B, and C, and print results."""
+    """Load config, run Tracks A and B, and print results."""
     config = Config.load()
     client = config.prepare()
 
@@ -313,14 +191,6 @@ def _run_setup() -> None:
         warehouse_id,
         config.volume,
         config.warehouse.timeout_seconds,
-    )
-
-    # Track C: Permissions Lockdown
-    result.lockdown_ok = run_permissions_lockdown(
-        client,
-        volume_config=config.volume,
-        warehouse_config=config.warehouse,
-        notebook_config=config.notebook,
     )
 
     _print_summary(result, config)
@@ -371,376 +241,7 @@ def _run_cleanup(*, yes: bool) -> None:
     run_cleanup(
         client, warehouse_id, config.volume, config.warehouse.timeout_seconds,
         notebook_config=config.notebook,
-        warehouse_config=config.warehouse,
     )
-
-
-# ---------------------------------------------------------------------------
-# add-users orchestration
-# ---------------------------------------------------------------------------
-
-@dataclass
-class _AddUsersStats:
-    """Thread-safe counters collected across the add-users phases.
-
-    User/group counters are only mutated from the main thread (Phase 1),
-    so they use plain ``+=``.  Cluster counters are mutated from worker
-    threads (Phase 2) and must use :meth:`increment`.
-    """
-
-    users_created: int = 0
-    users_existed: int = 0
-    users_failed: int = 0
-    group_added: int = 0
-    group_already: int = 0
-    clusters_created: int = 0
-    clusters_skipped: int = 0
-    clusters_failed: int = 0
-    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False, compare=False)
-
-    _COUNTER_FIELDS: ClassVar[frozenset[str]] = frozenset({
-        "users_created", "users_existed", "users_failed",
-        "group_added", "group_already",
-        "clusters_created", "clusters_skipped", "clusters_failed",
-    })
-
-    def increment(self, field_name: str, amount: int = 1) -> None:
-        """Atomically increment a counter field (safe from worker threads).
-
-        Raises ``KeyError`` immediately if *field_name* is not a declared
-        counter, so typos are caught on the first call instead of silently
-        creating a new attribute.
-        """
-        if field_name not in self._COUNTER_FIELDS:
-            raise KeyError(f"Unknown counter: {field_name!r}")
-        with self._lock:
-            setattr(self, field_name, getattr(self, field_name) + amount)
-
-
-def _confirm_csv(csv_path: Path) -> list[str]:
-    """Preview the CSV, ask for confirmation, and return parsed emails."""
-    preview_rows = preview_csv(csv_path)
-    emails = parse_csv(csv_path)
-
-    log(f"Users CSV: {csv_path}")
-    log(f"  Total unique emails: {len(emails)}")
-    log(f"  Preview:")
-    for row in preview_rows:
-        log(f"    {row}")
-    if len(emails) > len(preview_rows):
-        log(f"    ... and {len(emails) - len(preview_rows)} more")
-
-    typer.confirm("Proceed with this file?", abort=True)
-    return emails
-
-
-def _ensure_workspace_users(
-    client: WorkspaceClient,
-    acct: object,
-    emails: list[str],
-    stats: _AddUsersStats,
-) -> list[str]:
-    """Find or create workspace users and add them to the workshop group.
-
-    Returns the list of emails that were successfully resolved.
-    """
-    print_header("Checking Users")
-
-    grp = require_group(client, WORKSHOP_GROUP)
-    group_id: str = grp.id  # type: ignore[assignment]
-    existing_members = get_group_member_ids(acct, group_id)  # type: ignore[arg-type]
-
-    to_add_to_group: list[str] = []
-    user_emails_ok: list[str] = []
-
-    for email in emails:
-        user = find_workspace_user(client, email)
-        if user is not None and user.id is not None:
-            log(f"  {email} — exists")
-            stats.users_existed += 1
-        else:
-            try:
-                user = create_workspace_user(client, email)
-                stats.users_created += 1
-            except Exception as exc:
-                log(f"  [red]Failed to create user {email}: {exc}[/red]")
-                stats.users_failed += 1
-                continue
-
-        if user.id in existing_members:
-            stats.group_already += 1
-        else:
-            to_add_to_group.append(user.id)
-
-        user_emails_ok.append(email)
-
-    if to_add_to_group:
-        add_members_to_group(acct, group_id, to_add_to_group)  # type: ignore[arg-type]
-    stats.group_added = len(to_add_to_group)
-
-    return user_emails_ok
-
-
-def _provision_single_user(
-    client: WorkspaceClient,
-    cluster_config: ClusterConfig,
-    library_config: LibraryConfig,
-    email: str,
-    stats: _AddUsersStats,
-) -> None:
-    """Full pipeline for one user: create cluster -> wait -> install libs.
-
-    Runs in a worker thread.  All exceptions are caught and logged;
-    failures increment ``stats.clusters_failed``.
-
-    A :func:`log_context` prefix (e.g. ``[retroryan]``) is set for the
-    duration so every log line from downstream code (cluster polling,
-    library installation) is identifiable.
-    """
-    prefix = f"[{email_prefix(email)}]"
-    with log_context(prefix):
-        try:
-            cid = create_user_cluster(client, cluster_config, email)
-        except Exception as exc:
-            log(f"[red]Failed to create cluster: {exc}[/red]")
-            stats.increment("clusters_failed")
-            return
-
-        try:
-            wait_for_cluster_running(client, cid)
-        except Exception as exc:
-            log(f"[red]Cluster did not reach RUNNING: {exc}[/red]")
-            stats.increment("clusters_failed")
-            return
-
-        try:
-            log(f"Installing libraries on {cid}...")
-            ensure_libraries_installed(client, cid, library_config)
-            stats.increment("clusters_created")
-        except Exception as exc:
-            log(f"[red]Library install failed: {exc}[/red]")
-            stats.increment("clusters_failed")
-
-
-def _provision_clusters(
-    client: WorkspaceClient,
-    cluster_config: ClusterConfig,
-    library_config: LibraryConfig,
-    user_emails: list[str],
-    stats: _AddUsersStats,
-    *,
-    max_workers: int = 4,
-) -> None:
-    """Create per-user clusters, wait for them, and install libraries.
-
-    Each user's full pipeline (create -> wait -> install) runs as an
-    independent unit of work inside a thread pool, controlled by
-    *max_workers*.
-    """
-    print_header("Checking Clusters")
-
-    existing_clusters = {uc.cluster_name: uc for uc in find_user_clusters(client)}
-    needs_work: list[str] = []
-
-    for email in user_emails:
-        cname = cluster_name_for_user(email)
-        existing = existing_clusters.get(cname)
-
-        if existing and existing.state == State.RUNNING:
-            log(f"  {cname} — already running ({existing.cluster_id})")
-            stats.clusters_skipped += 1
-            continue
-
-        needs_work.append(email)
-
-    if stats.clusters_skipped:
-        log(f"  ({stats.clusters_skipped} cluster(s) already running — skipped)")
-
-    if not needs_work:
-        return
-
-    log()
-    log(f"Provisioning {len(needs_work)} cluster(s) with {max_workers} worker(s)...")
-
-    with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futures = {
-            pool.submit(
-                _provision_single_user,
-                client, cluster_config, library_config, email, stats,
-            ): email
-            for email in needs_work
-        }
-        for future in as_completed(futures):
-            email = futures[future]
-            exc = future.exception()
-            if exc is not None:
-                log(f"  [red]Unexpected error for {email}: {exc}[/red]")
-                stats.increment("clusters_failed")
-
-
-def _print_add_users_summary(stats: _AddUsersStats, *, skip_clusters: bool) -> None:
-    """Print the final add-users summary."""
-    print_header("Summary")
-    log(f"  Users:    {stats.users_created} created, {stats.users_existed} already existed"
-        + (f", {stats.users_failed} failed" if stats.users_failed else ""))
-    log(f"  Group:    {stats.group_added} added, {stats.group_already} already members")
-    if not skip_clusters:
-        log(f"  Clusters: {stats.clusters_created} created, {stats.clusters_skipped} already running"
-            + (f", {stats.clusters_failed} failed" if stats.clusters_failed else ""))
-    log()
-    log("[green]add-users complete.[/green]")
-
-
-def _run_add_users(*, skip_clusters: bool) -> None:
-    """Parse CSV, find/create users, add to group, create per-user clusters."""
-    config = Config.load()
-    client = config.prepare()
-    acct = get_account_client()
-    stats = _AddUsersStats()
-
-    csv_path = _resolve_csv(config)
-    emails = _confirm_csv(csv_path)
-
-    user_emails_ok = _ensure_workspace_users(client, acct, emails, stats)
-
-    if skip_clusters:
-        log()
-        log("[dim]Skipping cluster creation (--skip-clusters).[/dim]")
-    elif user_emails_ok:
-        _provision_clusters(
-            client, config.cluster, config.library, user_emails_ok, stats,
-            max_workers=config.parallel_workers,
-        )
-
-    _print_add_users_summary(stats, skip_clusters=skip_clusters)
-
-
-# ---------------------------------------------------------------------------
-# remove-users orchestration
-# ---------------------------------------------------------------------------
-
-def _run_remove_users(*, keep_clusters: bool) -> None:
-    """Parse CSV, remove from group, delete per-user clusters."""
-    config = Config.load()
-    client = config.prepare()
-    acct = get_account_client()
-
-    csv_path = _resolve_csv(config)
-    emails = parse_csv(csv_path)
-    log(f"Read {len(emails)} unique email(s) from {csv_path}")
-
-    print_header("Removing Users")
-
-    grp = require_group(client, WORKSHOP_GROUP)
-    group_id: str = grp.id  # type: ignore[assignment]
-    existing_members = get_group_member_ids(acct, group_id)
-
-    removed = 0
-    not_found = 0
-    not_member = 0
-    to_remove: list[str] = []
-
-    for email in emails:
-        user = find_workspace_user(client, email)
-        if user is None or user.id is None:
-            log(f"  [yellow]Not found in workspace: {email}[/yellow]")
-            not_found += 1
-            continue
-
-        if user.id not in existing_members:
-            not_member += 1
-            log(f"  {email} — not a member")
-        else:
-            to_remove.append(user.id)
-
-    if to_remove:
-        remove_members_from_group(acct, group_id, to_remove)
-        removed = len(to_remove)
-
-    log()
-    log(f"  Removed from group: {removed}")
-    log(f"  Not a member: {not_member}")
-    if not_found:
-        log(f"  [yellow]Not found in workspace: {not_found}[/yellow]")
-
-    # --- Delete per-user clusters -----------------------------------------
-    if keep_clusters:
-        log()
-        log("[dim]Skipping cluster deletion (--keep-clusters).[/dim]")
-        return
-
-    print_header("Deleting Per-User Clusters")
-
-    # Build a set of expected cluster names from the CSV
-    expected_names = {cluster_name_for_user(e) for e in emails}
-
-    user_clusters = find_user_clusters(client)
-    deleted = 0
-    for uc in user_clusters:
-        if uc.cluster_name in expected_names:
-            try:
-                delete_cluster(client, uc.cluster_id)
-                deleted += 1
-            except Exception as exc:
-                log(f"  [red]Failed to delete {uc.cluster_name}: {exc}[/red]")
-
-    log()
-    log(f"  Deleted {deleted} cluster(s).")
-    log()
-    log("[green]remove-users complete.[/green]")
-
-
-# ---------------------------------------------------------------------------
-# list-users orchestration
-# ---------------------------------------------------------------------------
-
-def _run_list_users() -> None:
-    """List group members with email, display name, cluster name, cluster state."""
-    config = Config.load()
-    client = config.prepare()
-    acct = get_account_client()
-
-    grp = require_group(client, WORKSHOP_GROUP)
-    group_id: str = grp.id  # type: ignore[assignment]
-
-    member_ids = get_group_member_ids(acct, group_id)
-
-    if not member_ids:
-        log(f"Group '{WORKSHOP_GROUP}' has no members.")
-        return
-
-    # Build cluster lookup: cluster_name -> UserClusterInfo
-    user_clusters = find_user_clusters(client)
-    cluster_map = {uc.cluster_name: uc for uc in user_clusters}
-
-    rows: list[tuple[str, str, str, str]] = []
-    for uid in member_ids:
-        try:
-            user = client.users.get(id=uid)
-            email = user.user_name or "(no email)"
-            display = user.display_name or ""
-        except Exception:
-            email = f"(id={uid})"
-            display = "(could not fetch)"
-
-        cname = cluster_name_for_user(email) if "@" in email else ""
-        uc = cluster_map.get(cname)
-        cstate = str(uc.state.value) if uc else "(none)"
-
-        rows.append((email, display, cname, cstate))
-
-    rows.sort(key=lambda r: r[0].lower())
-
-    table = Table(title=f"Members of '{WORKSHOP_GROUP}' ({len(rows)})")
-    table.add_column("Email", style="bold")
-    table.add_column("Display Name")
-    table.add_column("Cluster")
-    table.add_column("State")
-    for email, name, cname, cstate in rows:
-        table.add_row(email, name, cname, cstate)
-
-    log()
-    log(table)
 
 
 # ---------------------------------------------------------------------------
@@ -777,13 +278,6 @@ def _print_summary(result: SetupResult, config: Config) -> None:
         log("[red]Lakehouse table creation had errors.[/red]")
     if not result.notebooks_ok:
         log("[red]Notebook upload had errors.[/red]")
-    if result.lockdown_ok:
-        log("Lockdown:     [green]Permissions locked down[/green]")
-    else:
-        log("Lockdown:     [red]Permissions lockdown had errors[/red]")
-
-    log()
-    log("Next: run 'databricks-setup add-users' to create per-user clusters.")
 
 
 def _print_cleanup_target(config: Config) -> None:
@@ -796,7 +290,6 @@ def _print_cleanup_target(config: Config) -> None:
     log(f"Notebooks:  {config.notebook.workspace_folder}")
     log()
     log("[yellow]This will permanently delete the catalog and all its contents.[/yellow]")
-    log("[yellow]Per-user clusters are NOT affected — use 'remove-users' for that.[/yellow]")
 
 
 if __name__ == "__main__":
