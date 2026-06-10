@@ -1,12 +1,12 @@
 """Verify Lab 2 Cypher queries against the Aircraft Digital Twin graph.
 
-Reads Neo4j credentials from lab_setup/.env and runs read-only verification
+Reads Neo4j credentials from workshop-setup/.env and runs read-only verification
 queries from Lab_2_Databricks_ETL_Neo4j/SAMPLE_QUERIES.md. Covers Schema,
 Aircraft Topology, Components and Systems, Sensors, Maintenance, Flights and
 Delays, Airports and Routes, Component Removals, and Cross-Domain Analysis.
 
 Usage:
-    cd lab_setup/verify
+    cd workshop-setup/verify
     uv sync
     uv run verify-lab2
 """
@@ -21,7 +21,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.table import Table
 
-# lab_setup/.env is three levels up from this file (src/verify_lab2/main.py)
+# workshop-setup/.env is three levels up from this file (src/verify_lab2/main.py)
 _ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
 app = typer.Typer(add_completion=False)

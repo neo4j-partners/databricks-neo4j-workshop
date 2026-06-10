@@ -1,12 +1,12 @@
 """Verify data-exploring.md Cypher queries against the Aircraft Digital Twin graph.
 
-Reads Neo4j credentials from lab_setup/.env and runs read-only verification
+Reads Neo4j credentials from workshop-setup/.env and runs read-only verification
 queries from Lab_2_Databricks_ETL_Neo4j/data-exploring.md. Covers Graph Schema,
 Aircraft Topology, Flight Operations, Maintenance Events, Component Removals,
 and Multi-Hop Patterns.
 
 Usage:
-    cd lab_setup/verify
+    cd workshop-setup/verify
     uv sync
     uv run verify-data-exploring
 """
@@ -20,7 +20,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.table import Table
 
-# lab_setup/.env is three levels up from this file (src/verify_data_exploring/main.py)
+# workshop-setup/.env is three levels up from this file (src/verify_data_exploring/main.py)
 _ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
 app = typer.Typer(add_completion=False)

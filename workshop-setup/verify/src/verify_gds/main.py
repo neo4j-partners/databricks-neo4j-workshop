@@ -1,12 +1,12 @@
 """Verify GDS Cypher queries against the Aircraft Digital Twin graph.
 
-Loads Neo4j credentials from lab_setup/.env and runs every query from
+Loads Neo4j credentials from workshop-setup/.env and runs every query from
 gds-exploring.md in order: GDS version check, kNN (Notebook 04),
 PageRank/Betweenness (Notebook 05), Node Similarity (Notebook 06),
 and cross-algorithm queries.
 
 Usage:
-    cd lab_setup/verify
+    cd workshop-setup/verify
     uv sync
     uv run verify-gds
 """
@@ -23,7 +23,7 @@ from rich.table import Table
 
 from verify_gds.nb04_features import compute_and_write_features
 
-# lab_setup/.env — four levels up from src/verify_gds/main.py
+# workshop-setup/.env — four levels up from src/verify_gds/main.py
 _ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
 app = typer.Typer(add_completion=False)

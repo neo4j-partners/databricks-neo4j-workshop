@@ -2,7 +2,7 @@
 
 **Purpose:** Step-by-step instructions for setting up the entire Databricks workshop environment through the UI, without using the `databricks-setup` CLI.
 
-> **Prefer the automated approach?** Run `uv run databricks-setup` from `lab_setup/auto_scripts/` instead — it handles Steps 2–5 below in one command. See the main [README.md](README.md) for details.
+> **Prefer the automated approach?** Run `uv run databricks-setup` from `workshop-setup/auto_scripts/` instead — it handles Steps 2–5 below in one command. See the main [README.md](README.md) for details.
 
 ---
 
@@ -142,37 +142,37 @@ Upload the CSV and Markdown files from the `aircraft_digital_twin_data/` directo
 VOLUME_PATH="dbfs:/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume"
 
 # Lab 2 - Aircraft digital twin (core: notebook 01)
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_aircraft.csv    "${VOLUME_PATH}/nodes_aircraft.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_systems.csv     "${VOLUME_PATH}/nodes_systems.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_components.csv  "${VOLUME_PATH}/nodes_components.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_aircraft_system.csv  "${VOLUME_PATH}/rels_aircraft_system.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_system_component.csv "${VOLUME_PATH}/rels_system_component.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_aircraft.csv    "${VOLUME_PATH}/nodes_aircraft.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_systems.csv     "${VOLUME_PATH}/nodes_systems.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_components.csv  "${VOLUME_PATH}/nodes_components.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_aircraft_system.csv  "${VOLUME_PATH}/rels_aircraft_system.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_system_component.csv "${VOLUME_PATH}/rels_system_component.csv" --overwrite
 
 # Lab 2 - Full dataset (notebook 02: airports, flights, delays, maintenance, removals)
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_airports.csv    "${VOLUME_PATH}/nodes_airports.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_flights.csv     "${VOLUME_PATH}/nodes_flights.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_delays.csv      "${VOLUME_PATH}/nodes_delays.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_maintenance.csv "${VOLUME_PATH}/nodes_maintenance.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_removals.csv    "${VOLUME_PATH}/nodes_removals.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_aircraft_flight.csv    "${VOLUME_PATH}/rels_aircraft_flight.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_aircraft_removal.csv   "${VOLUME_PATH}/rels_aircraft_removal.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_component_event.csv    "${VOLUME_PATH}/rels_component_event.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_component_removal.csv  "${VOLUME_PATH}/rels_component_removal.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_event_aircraft.csv     "${VOLUME_PATH}/rels_event_aircraft.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_event_system.csv       "${VOLUME_PATH}/rels_event_system.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_flight_arrival.csv     "${VOLUME_PATH}/rels_flight_arrival.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_flight_delay.csv       "${VOLUME_PATH}/rels_flight_delay.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_flight_departure.csv   "${VOLUME_PATH}/rels_flight_departure.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_airports.csv    "${VOLUME_PATH}/nodes_airports.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_flights.csv     "${VOLUME_PATH}/nodes_flights.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_delays.csv      "${VOLUME_PATH}/nodes_delays.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_maintenance.csv "${VOLUME_PATH}/nodes_maintenance.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_removals.csv    "${VOLUME_PATH}/nodes_removals.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_aircraft_flight.csv    "${VOLUME_PATH}/rels_aircraft_flight.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_aircraft_removal.csv   "${VOLUME_PATH}/rels_aircraft_removal.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_component_event.csv    "${VOLUME_PATH}/rels_component_event.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_component_removal.csv  "${VOLUME_PATH}/rels_component_removal.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_event_aircraft.csv     "${VOLUME_PATH}/rels_event_aircraft.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_event_system.csv       "${VOLUME_PATH}/rels_event_system.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_flight_arrival.csv     "${VOLUME_PATH}/rels_flight_arrival.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_flight_delay.csv       "${VOLUME_PATH}/rels_flight_delay.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_flight_departure.csv   "${VOLUME_PATH}/rels_flight_departure.csv" --overwrite
 
 # Lab 3 - Maintenance manuals
-databricks fs cp lab_setup/aircraft_digital_twin_data/MAINTENANCE_A320.md    "${VOLUME_PATH}/MAINTENANCE_A320.md" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/MAINTENANCE_A321neo.md "${VOLUME_PATH}/MAINTENANCE_A321neo.md" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/MAINTENANCE_B737.md    "${VOLUME_PATH}/MAINTENANCE_B737.md" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/MAINTENANCE_A320.md    "${VOLUME_PATH}/MAINTENANCE_A320.md" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/MAINTENANCE_A321neo.md "${VOLUME_PATH}/MAINTENANCE_A321neo.md" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/MAINTENANCE_B737.md    "${VOLUME_PATH}/MAINTENANCE_B737.md" --overwrite
 
 # Lab 4 - Sensor data
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_sensors.csv     "${VOLUME_PATH}/nodes_sensors.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/nodes_readings.csv    "${VOLUME_PATH}/nodes_readings.csv" --overwrite
-databricks fs cp lab_setup/aircraft_digital_twin_data/rels_system_sensor.csv "${VOLUME_PATH}/rels_system_sensor.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_sensors.csv     "${VOLUME_PATH}/nodes_sensors.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_readings.csv    "${VOLUME_PATH}/nodes_readings.csv" --overwrite
+databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_system_sensor.csv "${VOLUME_PATH}/rels_system_sensor.csv" --overwrite
 ```
 
 Alternatively, upload via the **Databricks UI**:
@@ -241,7 +241,7 @@ The volume should contain 25 files (22 CSV + 3 Markdown):
 Create the Delta Lake tables needed for Databricks Genie (Lab 4) using the Python CLI:
 
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 uv run databricks-setup setup
 ```
 

@@ -14,7 +14,7 @@ All Python tools use `uv` for package management and `hatchling` as build backen
 
 ### populate_aircraft_db (Neo4j data loading CLI)
 ```bash
-cd lab_setup/populate_aircraft_db
+cd workshop-setup/populate_aircraft_db
 uv sync                                    # Install dependencies
 uv run populate-aircraft-db setup           # Load CSV data + enrich (chunking, embeddings, entity extraction)
 uv run populate-aircraft-db verify         # Print node/relationship counts
@@ -24,7 +24,7 @@ uv run populate-aircraft-db samples        # Run showcase Cypher queries
 
 ### databricks_setup (Admin workspace provisioning CLI)
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 uv sync
 uv run databricks-setup setup             # Full setup (cluster, data, tables)
 uv run databricks-setup cleanup            # Tear down
@@ -33,7 +33,7 @@ uv run databricks-setup sync               # Upload/sync workshop notebooks
 
 ### verify_labs (Neo4j verification CLI)
 ```bash
-cd lab_setup/verify_labs
+cd workshop-setup/verify_labs
 uv sync
 uv run verify-labs check                   # Connectivity test
 uv run verify-labs lab2                    # All Lab 2 verification queries
@@ -42,7 +42,7 @@ uv run verify-labs lab2 --notebook 01      # Notebook 1 only
 
 ### Linting (auto_scripts only)
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 uv run ruff check .                        # Lint (rules: E, W, F, I, B, C4, UP, SIM)
 uv run mypy src/                           # Type checking (strict mode)
 ```
@@ -50,7 +50,7 @@ uv run mypy src/                           # Type checking (strict mode)
 ## Architecture
 
 ### Three Independent CLI Tools
-Each under `lab_setup/` is a standalone Python package with its own `pyproject.toml`, `.env`, and Typer CLI:
+Each under `workshop-setup/` is a standalone Python package with its own `pyproject.toml`, `.env`, and Typer CLI:
 
 - **`populate_aircraft_db/`** — Loads aircraft CSV data into Neo4j Aura, runs GraphRAG enrichment (doc chunking, embeddings via BGE-large, entity extraction via SimpleKGPipeline)
 - **`auto_scripts/`** (databricks_setup) — Automates Databricks workspace provisioning: cluster creation, Spark Connector install, Delta table creation
@@ -68,7 +68,7 @@ User Question → Supervisor Agent (Agent Bricks)
   └→ Neo4j MCP Agent → Neo4j Aura (LangGraph + MCP tools: get-schema, read-cypher)
 ```
 
-The MCP agent (`lab_setup/neo4j_mcp_connection/neo4j_mcp_agent.py`) uses OAuth2 M2M auth via Unity Catalog HTTP connection to an external MCP server.
+The MCP agent (`workshop-setup/neo4j_mcp_connection/neo4j_mcp_agent.py`) uses OAuth2 M2M auth via Unity Catalog HTTP connection to an external MCP server.
 
 ### Lab Progression
 Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 (compound AI agents: Genie space + Supervisor Agent) → Lab 5 (Aura Agents: Create with AI)
@@ -92,6 +92,6 @@ All config uses Pydantic `BaseSettings` with `SecretStr` for passwords.
 
 ## Key Reference Files
 
-- `lab_setup/README.md` — Main admin setup guide with troubleshooting
-- `lab_setup/aircraft_digital_twin_data/ARCHITECTURE.md` — Complete data schema reference (all 19 CSVs, dual-DB strategy, query patterns)
-- `lab_setup/auto_scripts/README.md` — Databricks CLI reference with all config options
+- `workshop-setup/README.md` — Main admin setup guide with troubleshooting
+- `workshop-setup/aircraft_digital_twin_data/ARCHITECTURE.md` — Complete data schema reference (all 19 CSVs, dual-DB strategy, query patterns)
+- `workshop-setup/auto_scripts/README.md` — Databricks CLI reference with all config options

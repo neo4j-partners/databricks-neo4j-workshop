@@ -7,7 +7,7 @@ For full usage instructions, configuration options, and examples, see the main [
 ## Quick Start
 
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 uv sync
 
 # Set up environment
@@ -44,7 +44,7 @@ databricks-setup setup
 uv run databricks-setup setup
 ```
 
-All configuration is loaded from `lab_setup/.env` — see [Configuration](#configuration) below.
+All configuration is loaded from `workshop-setup/.env` — see [Configuration](#configuration) below.
 
 ### `cleanup`
 
@@ -63,7 +63,7 @@ uv run databricks-setup cleanup --yes
 Copy the example environment file and customize:
 
 ```bash
-cp lab_setup/.env.example lab_setup/.env
+cp workshop-setup/.env.example workshop-setup/.env
 ```
 
 Edit `.env` and set at minimum:

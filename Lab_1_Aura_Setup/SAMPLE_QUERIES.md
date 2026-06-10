@@ -135,7 +135,7 @@ The following queries run against data structures built in later labs — docume
 
 All of these queries can also be run programmatically via:
 ```bash
-cd lab_setup/populate_aircraft_db
+cd workshop-setup/populate_aircraft_db
 uv run populate-aircraft-db samples
 ```
 

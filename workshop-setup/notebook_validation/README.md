@@ -11,7 +11,7 @@ Automated test suite for verifying the Aircraft Digital Twin workshop labs on a 
 ## Setup
 
 ```bash
-cd lab_setup/notebook_validation
+cd workshop-setup/notebook_validation
 cp .env.example .env
 ```
 

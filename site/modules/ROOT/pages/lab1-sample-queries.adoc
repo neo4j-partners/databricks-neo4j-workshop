@@ -2,7 +2,7 @@
 
 Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore the Aircraft Digital Twin knowledge graph.
 
-TIP: All of these queries can also be run programmatically via `uv run populate-aircraft-db samples` from `lab_setup/populate_aircraft_db/`.
+TIP: All of these queries can also be run programmatically via `uv run populate-aircraft-db samples` from `workshop-setup/populate_aircraft_db/`.
 
 == Cypher Concepts Used
 

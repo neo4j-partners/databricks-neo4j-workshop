@@ -46,7 +46,7 @@ def setup() -> None:
 
       Track B: Upload data files and create lakehouse tables via SQL Warehouse.
 
-    All configuration is loaded from lab_setup/.env.
+    All configuration is loaded from workshop-setup/.env.
     """
     log_path = init_log_file()
     log(f"[dim]Log file: {log_path}[/dim]")
@@ -82,7 +82,7 @@ def cleanup(
 
     Removes everything created by the setup command.  Each step is idempotent.
 
-    All configuration is loaded from lab_setup/.env.
+    All configuration is loaded from workshop-setup/.env.
     """
     log_path = init_log_file()
     log(f"[dim]Log file: {log_path}[/dim]")

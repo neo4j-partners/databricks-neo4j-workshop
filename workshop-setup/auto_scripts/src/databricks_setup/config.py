@@ -149,7 +149,7 @@ class NotebookConfig:
             "06_hybrid_retrievers.ipynb",
             "data_utils.py",
         ), "Lab_3_Semantic_Search"),
-        ("lab_setup/neo4j_mcp_connection", (
+        ("workshop-setup/neo4j_mcp_connection", (
             "neo4j_mcp_agent.py",
             "neo4j-mcp-agent-deploy.ipynb",
             "neo4j-mcp-http-connection.ipynb",

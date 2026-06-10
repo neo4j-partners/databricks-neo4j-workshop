@@ -6,7 +6,7 @@ aircraft_digital_twin_data/ to the Unity Catalog volume, then creates the
 `aircraft`, `systems`, `sensors`, and `sensor_readings` Delta tables via the
 Statement Execution API.
 
-Config is read from lab_setup/.env, the same as the full setup command.
+Config is read from workshop-setup/.env, the same as the full setup command.
 
 Run from the auto_scripts directory:
 

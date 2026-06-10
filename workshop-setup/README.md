@@ -8,10 +8,10 @@
 
 To upload the CSV data and create the lakehouse Delta tables without running the full provisioning (cluster creation, library installs), use the `load_lakehouse_data.py` script. This runs only the data portion of `databricks-setup setup`.
 
-**Prerequisites:** The catalog, schema, and volume must already exist (see [Step 1](#step-1-create-unity-catalog-and-volume-ui)). The script does not create them. Authenticate the Databricks CLI and configure `lab_setup/.env` (see [Prerequisites](#prerequisites)).
+**Prerequisites:** The catalog, schema, and volume must already exist (see [Step 1](#step-1-create-unity-catalog-and-volume-ui)). The script does not create them. Authenticate the Databricks CLI and configure `workshop-setup/.env` (see [Prerequisites](#prerequisites)).
 
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 uv sync
 uv run python load_lakehouse_data.py
 ```
@@ -70,7 +70,7 @@ export DATABRICKS_CONFIG_PROFILE=<your-profile-name>
 The CLI requires Python 3.11+ and [uv](https://docs.astral.sh/uv/):
 
 ```bash
-cd lab_setup/auto_scripts && uv sync
+cd workshop-setup/auto_scripts && uv sync
 ```
 
 ### Databricks Resources
@@ -145,7 +145,7 @@ The `databricks-setup` CLI (in `auto_scripts/`) handles everything after catalog
 Copy the example environment file and customize:
 
 ```bash
-cp lab_setup/.env.example lab_setup/.env
+cp workshop-setup/.env.example workshop-setup/.env
 ```
 
 Edit `.env` and set at minimum:
@@ -160,11 +160,11 @@ For the full list of configuration options, see the [auto_scripts README](auto_s
 ### 2.2 Run Setup
 
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 uv run databricks-setup setup
 ```
 
-All configuration is loaded from `lab_setup/.env` — there are no CLI arguments.
+All configuration is loaded from `workshop-setup/.env` — there are no CLI arguments.
 
 ### What it does
 
@@ -307,7 +307,7 @@ The setup CLI uploads **25 files** to the Volume:
 To tear down the data (lakehouse tables, volume, schemas, catalog, and notebook folder):
 
 ```bash
-cd lab_setup/auto_scripts
+cd workshop-setup/auto_scripts
 
 # Interactive confirmation
 uv run databricks-setup cleanup

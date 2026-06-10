@@ -116,7 +116,7 @@ Use a single pre-provisioned Aura instance that the instructor loads with data b
 
 **Step B1: Deploy the MCP server to AWS AgentCore**
 ```bash
-cd lab_setup/neo4j_mcp_connection/
+cd workshop-setup/neo4j_mcp_connection/
 
 # Deploy using aws-starter (see https://github.com/neo4j-partners/aws-starter)
 aws-starter neo4j-agentcore-mcp-server
@@ -132,7 +132,7 @@ After workspace init completes and you have workspace access:
 export DATABRICKS_HOST="https://dbc-xxxxx.cloud.databricks.com"
 export DATABRICKS_TOKEN="dapi..."
 
-cd lab_setup/neo4j_mcp_connection/
+cd workshop-setup/neo4j_mcp_connection/
 ./setup_databricks_secrets.sh mcp-neo4j-secrets
 ```
 
