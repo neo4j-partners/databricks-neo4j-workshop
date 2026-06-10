@@ -1,81 +1,401 @@
 :ID(System),aircraft_id,type,name
-AC1001-S01,AC1001,Engine,CFM56-7B #1
-AC1001-S02,AC1001,Engine,CFM56-7B #2
-AC1001-S03,AC1001,Avionics,Generic Avionics Suite
-AC1001-S04,AC1001,Hydraulics,Main Hydraulic System
-AC1002-S01,AC1002,Engine,V2500 #1
-AC1002-S02,AC1002,Engine,V2500 #2
-AC1002-S03,AC1002,Avionics,Generic Avionics Suite
-AC1002-S04,AC1002,Hydraulics,Main Hydraulic System
-AC1003-S01,AC1003,Engine,LEAP-1A #1
-AC1003-S02,AC1003,Engine,LEAP-1A #2
-AC1003-S03,AC1003,Avionics,Generic Avionics Suite
-AC1003-S04,AC1003,Hydraulics,Main Hydraulic System
-AC1004-S01,AC1004,Engine,GE CF34-10E #1
-AC1004-S02,AC1004,Engine,GE CF34-10E #2
-AC1004-S03,AC1004,Avionics,Generic Avionics Suite
-AC1004-S04,AC1004,Hydraulics,Main Hydraulic System
-AC1005-S01,AC1005,Engine,CFM56-7B #1
-AC1005-S02,AC1005,Engine,CFM56-7B #2
-AC1005-S03,AC1005,Avionics,Generic Avionics Suite
-AC1005-S04,AC1005,Hydraulics,Main Hydraulic System
-AC1006-S01,AC1006,Engine,V2500 #1
-AC1006-S02,AC1006,Engine,V2500 #2
-AC1006-S03,AC1006,Avionics,Generic Avionics Suite
-AC1006-S04,AC1006,Hydraulics,Main Hydraulic System
-AC1007-S01,AC1007,Engine,LEAP-1A #1
-AC1007-S02,AC1007,Engine,LEAP-1A #2
-AC1007-S03,AC1007,Avionics,Generic Avionics Suite
-AC1007-S04,AC1007,Hydraulics,Main Hydraulic System
-AC1008-S01,AC1008,Engine,GE CF34-10E #1
-AC1008-S02,AC1008,Engine,GE CF34-10E #2
-AC1008-S03,AC1008,Avionics,Generic Avionics Suite
-AC1008-S04,AC1008,Hydraulics,Main Hydraulic System
+AC1001-S01,AC1001,Engine,CFM56-5B #1
+AC1001-S02,AC1001,Engine,CFM56-5B #2
+AC1001-S03,AC1001,Avionics,Avionics Suite
+AC1001-S04,AC1001,Hydraulics,Hydraulics System
+AC1002-S01,AC1002,Engine,CFM56-5B #1
+AC1002-S02,AC1002,Engine,CFM56-5B #2
+AC1002-S03,AC1002,Avionics,Avionics Suite
+AC1002-S04,AC1002,Hydraulics,Hydraulics System
+AC1003-S01,AC1003,Engine,PW1500G #1
+AC1003-S02,AC1003,Engine,PW1500G #2
+AC1003-S03,AC1003,Avionics,Avionics Suite
+AC1003-S04,AC1003,Hydraulics,Hydraulics System
+AC1004-S01,AC1004,Engine,CFM56-7B #1
+AC1004-S02,AC1004,Engine,CFM56-7B #2
+AC1004-S03,AC1004,Avionics,Avionics Suite
+AC1004-S04,AC1004,Hydraulics,Hydraulics System
+AC1005-S01,AC1005,Engine,LEAP-1A #1
+AC1005-S02,AC1005,Engine,LEAP-1A #2
+AC1005-S03,AC1005,Avionics,Avionics Suite
+AC1005-S04,AC1005,Hydraulics,Hydraulics System
+AC1006-S01,AC1006,Engine,CFM56-5B #1
+AC1006-S02,AC1006,Engine,CFM56-5B #2
+AC1006-S03,AC1006,Avionics,Avionics Suite
+AC1006-S04,AC1006,Hydraulics,Hydraulics System
+AC1007-S01,AC1007,Engine,CFM56-7B #1
+AC1007-S02,AC1007,Engine,CFM56-7B #2
+AC1007-S03,AC1007,Avionics,Avionics Suite
+AC1007-S04,AC1007,Hydraulics,Hydraulics System
+AC1008-S01,AC1008,Engine,LEAP-1A #1
+AC1008-S02,AC1008,Engine,LEAP-1A #2
+AC1008-S03,AC1008,Avionics,Avionics Suite
+AC1008-S04,AC1008,Hydraulics,Hydraulics System
 AC1009-S01,AC1009,Engine,CFM56-7B #1
 AC1009-S02,AC1009,Engine,CFM56-7B #2
-AC1009-S03,AC1009,Avionics,Generic Avionics Suite
-AC1009-S04,AC1009,Hydraulics,Main Hydraulic System
-AC1010-S01,AC1010,Engine,V2500 #1
-AC1010-S02,AC1010,Engine,V2500 #2
-AC1010-S03,AC1010,Avionics,Generic Avionics Suite
-AC1010-S04,AC1010,Hydraulics,Main Hydraulic System
+AC1009-S03,AC1009,Avionics,Avionics Suite
+AC1009-S04,AC1009,Hydraulics,Hydraulics System
+AC1010-S01,AC1010,Engine,LEAP-1A #1
+AC1010-S02,AC1010,Engine,LEAP-1A #2
+AC1010-S03,AC1010,Avionics,Avionics Suite
+AC1010-S04,AC1010,Hydraulics,Hydraulics System
 AC1011-S01,AC1011,Engine,LEAP-1A #1
 AC1011-S02,AC1011,Engine,LEAP-1A #2
-AC1011-S03,AC1011,Avionics,Generic Avionics Suite
-AC1011-S04,AC1011,Hydraulics,Main Hydraulic System
-AC1012-S01,AC1012,Engine,GE CF34-10E #1
-AC1012-S02,AC1012,Engine,GE CF34-10E #2
-AC1012-S03,AC1012,Avionics,Generic Avionics Suite
-AC1012-S04,AC1012,Hydraulics,Main Hydraulic System
-AC1013-S01,AC1013,Engine,CFM56-7B #1
-AC1013-S02,AC1013,Engine,CFM56-7B #2
-AC1013-S03,AC1013,Avionics,Generic Avionics Suite
-AC1013-S04,AC1013,Hydraulics,Main Hydraulic System
-AC1014-S01,AC1014,Engine,V2500 #1
-AC1014-S02,AC1014,Engine,V2500 #2
-AC1014-S03,AC1014,Avionics,Generic Avionics Suite
-AC1014-S04,AC1014,Hydraulics,Main Hydraulic System
+AC1011-S03,AC1011,Avionics,Avionics Suite
+AC1011-S04,AC1011,Hydraulics,Hydraulics System
+AC1012-S01,AC1012,Engine,CFM56-7B #1
+AC1012-S02,AC1012,Engine,CFM56-7B #2
+AC1012-S03,AC1012,Avionics,Avionics Suite
+AC1012-S04,AC1012,Hydraulics,Hydraulics System
+AC1013-S01,AC1013,Engine,CFM56-5B #1
+AC1013-S02,AC1013,Engine,CFM56-5B #2
+AC1013-S03,AC1013,Avionics,Avionics Suite
+AC1013-S04,AC1013,Hydraulics,Hydraulics System
+AC1014-S01,AC1014,Engine,CFM56-5B #1
+AC1014-S02,AC1014,Engine,CFM56-5B #2
+AC1014-S03,AC1014,Avionics,Avionics Suite
+AC1014-S04,AC1014,Hydraulics,Hydraulics System
 AC1015-S01,AC1015,Engine,LEAP-1A #1
 AC1015-S02,AC1015,Engine,LEAP-1A #2
-AC1015-S03,AC1015,Avionics,Generic Avionics Suite
-AC1015-S04,AC1015,Hydraulics,Main Hydraulic System
-AC1016-S01,AC1016,Engine,GE CF34-10E #1
-AC1016-S02,AC1016,Engine,GE CF34-10E #2
-AC1016-S03,AC1016,Avionics,Generic Avionics Suite
-AC1016-S04,AC1016,Hydraulics,Main Hydraulic System
-AC1017-S01,AC1017,Engine,CFM56-7B #1
-AC1017-S02,AC1017,Engine,CFM56-7B #2
-AC1017-S03,AC1017,Avionics,Generic Avionics Suite
-AC1017-S04,AC1017,Hydraulics,Main Hydraulic System
-AC1018-S01,AC1018,Engine,V2500 #1
-AC1018-S02,AC1018,Engine,V2500 #2
-AC1018-S03,AC1018,Avionics,Generic Avionics Suite
-AC1018-S04,AC1018,Hydraulics,Main Hydraulic System
+AC1015-S03,AC1015,Avionics,Avionics Suite
+AC1015-S04,AC1015,Hydraulics,Hydraulics System
+AC1016-S01,AC1016,Engine,CFM56-5B #1
+AC1016-S02,AC1016,Engine,CFM56-5B #2
+AC1016-S03,AC1016,Avionics,Avionics Suite
+AC1016-S04,AC1016,Hydraulics,Hydraulics System
+AC1017-S01,AC1017,Engine,CFM56-5B #1
+AC1017-S02,AC1017,Engine,CFM56-5B #2
+AC1017-S03,AC1017,Avionics,Avionics Suite
+AC1017-S04,AC1017,Hydraulics,Hydraulics System
+AC1018-S01,AC1018,Engine,PW1500G #1
+AC1018-S02,AC1018,Engine,PW1500G #2
+AC1018-S03,AC1018,Avionics,Avionics Suite
+AC1018-S04,AC1018,Hydraulics,Hydraulics System
 AC1019-S01,AC1019,Engine,LEAP-1A #1
 AC1019-S02,AC1019,Engine,LEAP-1A #2
-AC1019-S03,AC1019,Avionics,Generic Avionics Suite
-AC1019-S04,AC1019,Hydraulics,Main Hydraulic System
-AC1020-S01,AC1020,Engine,GE CF34-10E #1
-AC1020-S02,AC1020,Engine,GE CF34-10E #2
-AC1020-S03,AC1020,Avionics,Generic Avionics Suite
-AC1020-S04,AC1020,Hydraulics,Main Hydraulic System
+AC1019-S03,AC1019,Avionics,Avionics Suite
+AC1019-S04,AC1019,Hydraulics,Hydraulics System
+AC1020-S01,AC1020,Engine,CFM56-5B #1
+AC1020-S02,AC1020,Engine,CFM56-5B #2
+AC1020-S03,AC1020,Avionics,Avionics Suite
+AC1020-S04,AC1020,Hydraulics,Hydraulics System
+AC1021-S01,AC1021,Engine,CFM56-7B #1
+AC1021-S02,AC1021,Engine,CFM56-7B #2
+AC1021-S03,AC1021,Avionics,Avionics Suite
+AC1021-S04,AC1021,Hydraulics,Hydraulics System
+AC1022-S01,AC1022,Engine,CFM56-7B #1
+AC1022-S02,AC1022,Engine,CFM56-7B #2
+AC1022-S03,AC1022,Avionics,Avionics Suite
+AC1022-S04,AC1022,Hydraulics,Hydraulics System
+AC1023-S01,AC1023,Engine,CFM56-7B #1
+AC1023-S02,AC1023,Engine,CFM56-7B #2
+AC1023-S03,AC1023,Avionics,Avionics Suite
+AC1023-S04,AC1023,Hydraulics,Hydraulics System
+AC1024-S01,AC1024,Engine,PW1500G #1
+AC1024-S02,AC1024,Engine,PW1500G #2
+AC1024-S03,AC1024,Avionics,Avionics Suite
+AC1024-S04,AC1024,Hydraulics,Hydraulics System
+AC1025-S01,AC1025,Engine,CF34-10E #1
+AC1025-S02,AC1025,Engine,CF34-10E #2
+AC1025-S03,AC1025,Avionics,Avionics Suite
+AC1025-S04,AC1025,Hydraulics,Hydraulics System
+AC1026-S01,AC1026,Engine,CFM56-5B #1
+AC1026-S02,AC1026,Engine,CFM56-5B #2
+AC1026-S03,AC1026,Avionics,Avionics Suite
+AC1026-S04,AC1026,Hydraulics,Hydraulics System
+AC1027-S01,AC1027,Engine,CF34-10E #1
+AC1027-S02,AC1027,Engine,CF34-10E #2
+AC1027-S03,AC1027,Avionics,Avionics Suite
+AC1027-S04,AC1027,Hydraulics,Hydraulics System
+AC1028-S01,AC1028,Engine,CFM56-7B #1
+AC1028-S02,AC1028,Engine,CFM56-7B #2
+AC1028-S03,AC1028,Avionics,Avionics Suite
+AC1028-S04,AC1028,Hydraulics,Hydraulics System
+AC1029-S01,AC1029,Engine,CF34-10E #1
+AC1029-S02,AC1029,Engine,CF34-10E #2
+AC1029-S03,AC1029,Avionics,Avionics Suite
+AC1029-S04,AC1029,Hydraulics,Hydraulics System
+AC1030-S01,AC1030,Engine,CFM56-7B #1
+AC1030-S02,AC1030,Engine,CFM56-7B #2
+AC1030-S03,AC1030,Avionics,Avionics Suite
+AC1030-S04,AC1030,Hydraulics,Hydraulics System
+AC1031-S01,AC1031,Engine,CFM56-7B #1
+AC1031-S02,AC1031,Engine,CFM56-7B #2
+AC1031-S03,AC1031,Avionics,Avionics Suite
+AC1031-S04,AC1031,Hydraulics,Hydraulics System
+AC1032-S01,AC1032,Engine,CFM56-5B #1
+AC1032-S02,AC1032,Engine,CFM56-5B #2
+AC1032-S03,AC1032,Avionics,Avionics Suite
+AC1032-S04,AC1032,Hydraulics,Hydraulics System
+AC1033-S01,AC1033,Engine,CFM56-5B #1
+AC1033-S02,AC1033,Engine,CFM56-5B #2
+AC1033-S03,AC1033,Avionics,Avionics Suite
+AC1033-S04,AC1033,Hydraulics,Hydraulics System
+AC1034-S01,AC1034,Engine,LEAP-1A #1
+AC1034-S02,AC1034,Engine,LEAP-1A #2
+AC1034-S03,AC1034,Avionics,Avionics Suite
+AC1034-S04,AC1034,Hydraulics,Hydraulics System
+AC1035-S01,AC1035,Engine,LEAP-1A #1
+AC1035-S02,AC1035,Engine,LEAP-1A #2
+AC1035-S03,AC1035,Avionics,Avionics Suite
+AC1035-S04,AC1035,Hydraulics,Hydraulics System
+AC1036-S01,AC1036,Engine,CFM56-5B #1
+AC1036-S02,AC1036,Engine,CFM56-5B #2
+AC1036-S03,AC1036,Avionics,Avionics Suite
+AC1036-S04,AC1036,Hydraulics,Hydraulics System
+AC1037-S01,AC1037,Engine,PW1500G #1
+AC1037-S02,AC1037,Engine,PW1500G #2
+AC1037-S03,AC1037,Avionics,Avionics Suite
+AC1037-S04,AC1037,Hydraulics,Hydraulics System
+AC1038-S01,AC1038,Engine,CFM56-5B #1
+AC1038-S02,AC1038,Engine,CFM56-5B #2
+AC1038-S03,AC1038,Avionics,Avionics Suite
+AC1038-S04,AC1038,Hydraulics,Hydraulics System
+AC1039-S01,AC1039,Engine,CF34-10E #1
+AC1039-S02,AC1039,Engine,CF34-10E #2
+AC1039-S03,AC1039,Avionics,Avionics Suite
+AC1039-S04,AC1039,Hydraulics,Hydraulics System
+AC1040-S01,AC1040,Engine,CFM56-7B #1
+AC1040-S02,AC1040,Engine,CFM56-7B #2
+AC1040-S03,AC1040,Avionics,Avionics Suite
+AC1040-S04,AC1040,Hydraulics,Hydraulics System
+AC1041-S01,AC1041,Engine,CFM56-5B #1
+AC1041-S02,AC1041,Engine,CFM56-5B #2
+AC1041-S03,AC1041,Avionics,Avionics Suite
+AC1041-S04,AC1041,Hydraulics,Hydraulics System
+AC1042-S01,AC1042,Engine,CFM56-7B #1
+AC1042-S02,AC1042,Engine,CFM56-7B #2
+AC1042-S03,AC1042,Avionics,Avionics Suite
+AC1042-S04,AC1042,Hydraulics,Hydraulics System
+AC1043-S01,AC1043,Engine,CFM56-5B #1
+AC1043-S02,AC1043,Engine,CFM56-5B #2
+AC1043-S03,AC1043,Avionics,Avionics Suite
+AC1043-S04,AC1043,Hydraulics,Hydraulics System
+AC1044-S01,AC1044,Engine,CFM56-5B #1
+AC1044-S02,AC1044,Engine,CFM56-5B #2
+AC1044-S03,AC1044,Avionics,Avionics Suite
+AC1044-S04,AC1044,Hydraulics,Hydraulics System
+AC1045-S01,AC1045,Engine,CFM56-7B #1
+AC1045-S02,AC1045,Engine,CFM56-7B #2
+AC1045-S03,AC1045,Avionics,Avionics Suite
+AC1045-S04,AC1045,Hydraulics,Hydraulics System
+AC1046-S01,AC1046,Engine,LEAP-1A #1
+AC1046-S02,AC1046,Engine,LEAP-1A #2
+AC1046-S03,AC1046,Avionics,Avionics Suite
+AC1046-S04,AC1046,Hydraulics,Hydraulics System
+AC1047-S01,AC1047,Engine,LEAP-1A #1
+AC1047-S02,AC1047,Engine,LEAP-1A #2
+AC1047-S03,AC1047,Avionics,Avionics Suite
+AC1047-S04,AC1047,Hydraulics,Hydraulics System
+AC1048-S01,AC1048,Engine,LEAP-1A #1
+AC1048-S02,AC1048,Engine,LEAP-1A #2
+AC1048-S03,AC1048,Avionics,Avionics Suite
+AC1048-S04,AC1048,Hydraulics,Hydraulics System
+AC1049-S01,AC1049,Engine,CFM56-7B #1
+AC1049-S02,AC1049,Engine,CFM56-7B #2
+AC1049-S03,AC1049,Avionics,Avionics Suite
+AC1049-S04,AC1049,Hydraulics,Hydraulics System
+AC1050-S01,AC1050,Engine,CFM56-7B #1
+AC1050-S02,AC1050,Engine,CFM56-7B #2
+AC1050-S03,AC1050,Avionics,Avionics Suite
+AC1050-S04,AC1050,Hydraulics,Hydraulics System
+AC1051-S01,AC1051,Engine,PW1500G #1
+AC1051-S02,AC1051,Engine,PW1500G #2
+AC1051-S03,AC1051,Avionics,Avionics Suite
+AC1051-S04,AC1051,Hydraulics,Hydraulics System
+AC1052-S01,AC1052,Engine,CFM56-5B #1
+AC1052-S02,AC1052,Engine,CFM56-5B #2
+AC1052-S03,AC1052,Avionics,Avionics Suite
+AC1052-S04,AC1052,Hydraulics,Hydraulics System
+AC1053-S01,AC1053,Engine,CFM56-7B #1
+AC1053-S02,AC1053,Engine,CFM56-7B #2
+AC1053-S03,AC1053,Avionics,Avionics Suite
+AC1053-S04,AC1053,Hydraulics,Hydraulics System
+AC1054-S01,AC1054,Engine,CFM56-5B #1
+AC1054-S02,AC1054,Engine,CFM56-5B #2
+AC1054-S03,AC1054,Avionics,Avionics Suite
+AC1054-S04,AC1054,Hydraulics,Hydraulics System
+AC1055-S01,AC1055,Engine,CFM56-7B #1
+AC1055-S02,AC1055,Engine,CFM56-7B #2
+AC1055-S03,AC1055,Avionics,Avionics Suite
+AC1055-S04,AC1055,Hydraulics,Hydraulics System
+AC1056-S01,AC1056,Engine,CFM56-5B #1
+AC1056-S02,AC1056,Engine,CFM56-5B #2
+AC1056-S03,AC1056,Avionics,Avionics Suite
+AC1056-S04,AC1056,Hydraulics,Hydraulics System
+AC1057-S01,AC1057,Engine,CFM56-5B #1
+AC1057-S02,AC1057,Engine,CFM56-5B #2
+AC1057-S03,AC1057,Avionics,Avionics Suite
+AC1057-S04,AC1057,Hydraulics,Hydraulics System
+AC1058-S01,AC1058,Engine,LEAP-1A #1
+AC1058-S02,AC1058,Engine,LEAP-1A #2
+AC1058-S03,AC1058,Avionics,Avionics Suite
+AC1058-S04,AC1058,Hydraulics,Hydraulics System
+AC1059-S01,AC1059,Engine,CFM56-7B #1
+AC1059-S02,AC1059,Engine,CFM56-7B #2
+AC1059-S03,AC1059,Avionics,Avionics Suite
+AC1059-S04,AC1059,Hydraulics,Hydraulics System
+AC1060-S01,AC1060,Engine,LEAP-1A #1
+AC1060-S02,AC1060,Engine,LEAP-1A #2
+AC1060-S03,AC1060,Avionics,Avionics Suite
+AC1060-S04,AC1060,Hydraulics,Hydraulics System
+AC1061-S01,AC1061,Engine,CFM56-7B #1
+AC1061-S02,AC1061,Engine,CFM56-7B #2
+AC1061-S03,AC1061,Avionics,Avionics Suite
+AC1061-S04,AC1061,Hydraulics,Hydraulics System
+AC1062-S01,AC1062,Engine,CFM56-7B #1
+AC1062-S02,AC1062,Engine,CFM56-7B #2
+AC1062-S03,AC1062,Avionics,Avionics Suite
+AC1062-S04,AC1062,Hydraulics,Hydraulics System
+AC1063-S01,AC1063,Engine,CFM56-7B #1
+AC1063-S02,AC1063,Engine,CFM56-7B #2
+AC1063-S03,AC1063,Avionics,Avionics Suite
+AC1063-S04,AC1063,Hydraulics,Hydraulics System
+AC1064-S01,AC1064,Engine,LEAP-1A #1
+AC1064-S02,AC1064,Engine,LEAP-1A #2
+AC1064-S03,AC1064,Avionics,Avionics Suite
+AC1064-S04,AC1064,Hydraulics,Hydraulics System
+AC1065-S01,AC1065,Engine,CF34-10E #1
+AC1065-S02,AC1065,Engine,CF34-10E #2
+AC1065-S03,AC1065,Avionics,Avionics Suite
+AC1065-S04,AC1065,Hydraulics,Hydraulics System
+AC1066-S01,AC1066,Engine,CFM56-7B #1
+AC1066-S02,AC1066,Engine,CFM56-7B #2
+AC1066-S03,AC1066,Avionics,Avionics Suite
+AC1066-S04,AC1066,Hydraulics,Hydraulics System
+AC1067-S01,AC1067,Engine,LEAP-1A #1
+AC1067-S02,AC1067,Engine,LEAP-1A #2
+AC1067-S03,AC1067,Avionics,Avionics Suite
+AC1067-S04,AC1067,Hydraulics,Hydraulics System
+AC1068-S01,AC1068,Engine,CFM56-5B #1
+AC1068-S02,AC1068,Engine,CFM56-5B #2
+AC1068-S03,AC1068,Avionics,Avionics Suite
+AC1068-S04,AC1068,Hydraulics,Hydraulics System
+AC1069-S01,AC1069,Engine,PW1500G #1
+AC1069-S02,AC1069,Engine,PW1500G #2
+AC1069-S03,AC1069,Avionics,Avionics Suite
+AC1069-S04,AC1069,Hydraulics,Hydraulics System
+AC1070-S01,AC1070,Engine,CFM56-7B #1
+AC1070-S02,AC1070,Engine,CFM56-7B #2
+AC1070-S03,AC1070,Avionics,Avionics Suite
+AC1070-S04,AC1070,Hydraulics,Hydraulics System
+AC1071-S01,AC1071,Engine,CFM56-7B #1
+AC1071-S02,AC1071,Engine,CFM56-7B #2
+AC1071-S03,AC1071,Avionics,Avionics Suite
+AC1071-S04,AC1071,Hydraulics,Hydraulics System
+AC1072-S01,AC1072,Engine,PW1500G #1
+AC1072-S02,AC1072,Engine,PW1500G #2
+AC1072-S03,AC1072,Avionics,Avionics Suite
+AC1072-S04,AC1072,Hydraulics,Hydraulics System
+AC1073-S01,AC1073,Engine,CFM56-5B #1
+AC1073-S02,AC1073,Engine,CFM56-5B #2
+AC1073-S03,AC1073,Avionics,Avionics Suite
+AC1073-S04,AC1073,Hydraulics,Hydraulics System
+AC1074-S01,AC1074,Engine,PW1500G #1
+AC1074-S02,AC1074,Engine,PW1500G #2
+AC1074-S03,AC1074,Avionics,Avionics Suite
+AC1074-S04,AC1074,Hydraulics,Hydraulics System
+AC1075-S01,AC1075,Engine,CFM56-5B #1
+AC1075-S02,AC1075,Engine,CFM56-5B #2
+AC1075-S03,AC1075,Avionics,Avionics Suite
+AC1075-S04,AC1075,Hydraulics,Hydraulics System
+AC1076-S01,AC1076,Engine,CF34-10E #1
+AC1076-S02,AC1076,Engine,CF34-10E #2
+AC1076-S03,AC1076,Avionics,Avionics Suite
+AC1076-S04,AC1076,Hydraulics,Hydraulics System
+AC1077-S01,AC1077,Engine,CFM56-7B #1
+AC1077-S02,AC1077,Engine,CFM56-7B #2
+AC1077-S03,AC1077,Avionics,Avionics Suite
+AC1077-S04,AC1077,Hydraulics,Hydraulics System
+AC1078-S01,AC1078,Engine,LEAP-1A #1
+AC1078-S02,AC1078,Engine,LEAP-1A #2
+AC1078-S03,AC1078,Avionics,Avionics Suite
+AC1078-S04,AC1078,Hydraulics,Hydraulics System
+AC1079-S01,AC1079,Engine,CF34-10E #1
+AC1079-S02,AC1079,Engine,CF34-10E #2
+AC1079-S03,AC1079,Avionics,Avionics Suite
+AC1079-S04,AC1079,Hydraulics,Hydraulics System
+AC1080-S01,AC1080,Engine,LEAP-1A #1
+AC1080-S02,AC1080,Engine,LEAP-1A #2
+AC1080-S03,AC1080,Avionics,Avionics Suite
+AC1080-S04,AC1080,Hydraulics,Hydraulics System
+AC1081-S01,AC1081,Engine,LEAP-1A #1
+AC1081-S02,AC1081,Engine,LEAP-1A #2
+AC1081-S03,AC1081,Avionics,Avionics Suite
+AC1081-S04,AC1081,Hydraulics,Hydraulics System
+AC1082-S01,AC1082,Engine,CFM56-7B #1
+AC1082-S02,AC1082,Engine,CFM56-7B #2
+AC1082-S03,AC1082,Avionics,Avionics Suite
+AC1082-S04,AC1082,Hydraulics,Hydraulics System
+AC1083-S01,AC1083,Engine,CFM56-7B #1
+AC1083-S02,AC1083,Engine,CFM56-7B #2
+AC1083-S03,AC1083,Avionics,Avionics Suite
+AC1083-S04,AC1083,Hydraulics,Hydraulics System
+AC1084-S01,AC1084,Engine,CF34-10E #1
+AC1084-S02,AC1084,Engine,CF34-10E #2
+AC1084-S03,AC1084,Avionics,Avionics Suite
+AC1084-S04,AC1084,Hydraulics,Hydraulics System
+AC1085-S01,AC1085,Engine,PW1500G #1
+AC1085-S02,AC1085,Engine,PW1500G #2
+AC1085-S03,AC1085,Avionics,Avionics Suite
+AC1085-S04,AC1085,Hydraulics,Hydraulics System
+AC1086-S01,AC1086,Engine,CFM56-7B #1
+AC1086-S02,AC1086,Engine,CFM56-7B #2
+AC1086-S03,AC1086,Avionics,Avionics Suite
+AC1086-S04,AC1086,Hydraulics,Hydraulics System
+AC1087-S01,AC1087,Engine,CFM56-5B #1
+AC1087-S02,AC1087,Engine,CFM56-5B #2
+AC1087-S03,AC1087,Avionics,Avionics Suite
+AC1087-S04,AC1087,Hydraulics,Hydraulics System
+AC1088-S01,AC1088,Engine,LEAP-1A #1
+AC1088-S02,AC1088,Engine,LEAP-1A #2
+AC1088-S03,AC1088,Avionics,Avionics Suite
+AC1088-S04,AC1088,Hydraulics,Hydraulics System
+AC1089-S01,AC1089,Engine,CFM56-7B #1
+AC1089-S02,AC1089,Engine,CFM56-7B #2
+AC1089-S03,AC1089,Avionics,Avionics Suite
+AC1089-S04,AC1089,Hydraulics,Hydraulics System
+AC1090-S01,AC1090,Engine,LEAP-1A #1
+AC1090-S02,AC1090,Engine,LEAP-1A #2
+AC1090-S03,AC1090,Avionics,Avionics Suite
+AC1090-S04,AC1090,Hydraulics,Hydraulics System
+AC1091-S01,AC1091,Engine,CF34-10E #1
+AC1091-S02,AC1091,Engine,CF34-10E #2
+AC1091-S03,AC1091,Avionics,Avionics Suite
+AC1091-S04,AC1091,Hydraulics,Hydraulics System
+AC1092-S01,AC1092,Engine,CFM56-7B #1
+AC1092-S02,AC1092,Engine,CFM56-7B #2
+AC1092-S03,AC1092,Avionics,Avionics Suite
+AC1092-S04,AC1092,Hydraulics,Hydraulics System
+AC1093-S01,AC1093,Engine,CFM56-7B #1
+AC1093-S02,AC1093,Engine,CFM56-7B #2
+AC1093-S03,AC1093,Avionics,Avionics Suite
+AC1093-S04,AC1093,Hydraulics,Hydraulics System
+AC1094-S01,AC1094,Engine,CFM56-7B #1
+AC1094-S02,AC1094,Engine,CFM56-7B #2
+AC1094-S03,AC1094,Avionics,Avionics Suite
+AC1094-S04,AC1094,Hydraulics,Hydraulics System
+AC1095-S01,AC1095,Engine,CFM56-7B #1
+AC1095-S02,AC1095,Engine,CFM56-7B #2
+AC1095-S03,AC1095,Avionics,Avionics Suite
+AC1095-S04,AC1095,Hydraulics,Hydraulics System
+AC1096-S01,AC1096,Engine,CFM56-5B #1
+AC1096-S02,AC1096,Engine,CFM56-5B #2
+AC1096-S03,AC1096,Avionics,Avionics Suite
+AC1096-S04,AC1096,Hydraulics,Hydraulics System
+AC1097-S01,AC1097,Engine,PW1500G #1
+AC1097-S02,AC1097,Engine,PW1500G #2
+AC1097-S03,AC1097,Avionics,Avionics Suite
+AC1097-S04,AC1097,Hydraulics,Hydraulics System
+AC1098-S01,AC1098,Engine,CFM56-7B #1
+AC1098-S02,AC1098,Engine,CFM56-7B #2
+AC1098-S03,AC1098,Avionics,Avionics Suite
+AC1098-S04,AC1098,Hydraulics,Hydraulics System
+AC1099-S01,AC1099,Engine,CFM56-7B #1
+AC1099-S02,AC1099,Engine,CFM56-7B #2
+AC1099-S03,AC1099,Avionics,Avionics Suite
+AC1099-S04,AC1099,Hydraulics,Hydraulics System
+AC1100-S01,AC1100,Engine,CF34-10E #1
+AC1100-S02,AC1100,Engine,CF34-10E #2
+AC1100-S03,AC1100,Avionics,Avionics Suite
+AC1100-S04,AC1100,Hydraulics,Hydraulics System

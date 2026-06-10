@@ -27,8 +27,7 @@ from databricks_setup.log import log
 from databricks_setup.utils import print_header
 from databricks_setup.warehouse import get_or_start_warehouse
 
-# Use the v2 dataset instead of the DataConfig default (aircraft_digital_twin_data).
-DATA_DIR = Path(__file__).resolve().parent.parent / "aircraft_digital_twin_data_v2"
+DATA_DIR = Path(__file__).resolve().parent.parent / "aircraft_digital_twin_data"
 
 
 def print_table_counts(

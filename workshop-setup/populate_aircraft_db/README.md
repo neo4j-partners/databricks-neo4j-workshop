@@ -36,25 +36,13 @@ All loading configuration is via `.env` — no command-line flags needed. The `g
 
 ### Regenerating the dataset
 
-The committed dataset in `workshop-setup/aircraft_digital_twin_data_v2/` was produced with:
+The committed dataset in `workshop-setup/aircraft_digital_twin_data/` was produced with:
 
 ```bash
 uv run populate-aircraft-db generate --seed 42 --reading-interval 4
 ```
 
-`--reading-interval 4` writes one reading every 4 hours (432,000 rows, ~29MB), keeping `nodes_readings.csv` small enough to commit. Sensor series are always generated hourly internally, so the degradation/maintenance correlation and every other CSV are identical regardless of interval, and a 4-hour file's reading IDs are a subset of the hourly file's IDs.
-
-To produce the full hourly readings file (1,728,000 rows, ~114MB, useful for a larger `sensor_readings` Delta table in Databricks) without touching the committed CSVs:
-
-```bash
-uv run populate-aircraft-db generate --readings-only --reading-interval 1 -o /tmp/readings_hourly
-```
-
-With the same seed and fleet parameters, `--readings-only` output is exactly consistent with the committed dataset. Changing `--seed`, `--aircraft`, or `--days` invalidates the committed CSVs — regenerate everything in that case. Run `validate-csv` after regeneration:
-
-```bash
-uv run populate-aircraft-db validate-csv
-```
+`--reading-interval 4` writes one reading every 4 hours (432,000 rows, ~29MB), keeping `nodes_readings.csv` small enough to commit. See **[DATA_GENERATOR.md](DATA_GENERATOR.md)** for the full guide: all options, controlling dataset size, regenerating only the readings file with `--readings-only`, and what gets generated.
 
 ### Typical full-load sequence
 
@@ -102,8 +90,8 @@ Settings are loaded from a `.env` file in the project root or from environment v
 | `NEO4J_URI` | yes | - | Connection URI (e.g. `neo4j+s://...`) |
 | `NEO4J_USERNAME` | no | `neo4j` | Neo4j username |
 | `NEO4J_PASSWORD` | yes | - | Neo4j password |
-| `DATA_DIR` | no | `../aircraft_digital_twin_data_v2` | CSV directory for operational graph loading |
-| `DOCUMENT_DIR` | no | `../aircraft_digital_twin_data` | Maintenance manual directory for enrichment |
+| `DATA_DIR` | no | `../aircraft_digital_twin_data` | CSV directory for operational graph loading |
+| `DOCUMENT_DIR` | no | `../aircraft_digital_twin_data` | Maintenance manual directory for enrichment (same directory; CSVs and manuals live together) |
 | `LLM_PROVIDER` | no | `openai` | LLM provider for entity extraction: `openai` or `anthropic` |
 | `OPENAI_API_KEY` | for setup | - | OpenAI API key. Always required for Chunk embeddings, and also used for extraction when `LLM_PROVIDER=openai` |
 | `OPENAI_EMBEDDING_MODEL` | no | `text-embedding-3-small` | Embedding model |
@@ -166,12 +154,12 @@ uv run populate-aircraft-db load-operational
 
 **13 relationship types:** HAS_SYSTEM, HAS_COMPONENT, HAS_SENSOR, HAS_READING, HAS_EVENT, OPERATES_FLIGHT, DEPARTS_FROM, ARRIVES_AT, HAS_DELAY, AFFECTS_SYSTEM, AFFECTS_AIRCRAFT, HAS_REMOVAL, REMOVED_COMPONENT
 
-CSV files are read from `workshop-setup/aircraft_digital_twin_data_v2/`.
+CSV files are read from `workshop-setup/aircraft_digital_twin_data/`.
 
-The v2 sensor readings file is loaded into Neo4j as `Reading` nodes and linked
+The sensor readings file is loaded into Neo4j as `Reading` nodes and linked
 from `Sensor` nodes with `HAS_READING`.
 
-The v2 removal data includes tracking, work order, technician, part/serial,
+The removal data includes tracking, work order, technician, part/serial,
 warranty, priority, cost, installation, and shop-visit fields on `Removal`
 nodes in addition to the existing component, aircraft, date, reason, TSN, and
 cycle properties.

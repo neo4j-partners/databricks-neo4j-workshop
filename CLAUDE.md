@@ -58,7 +58,7 @@ Each under `workshop-setup/` is a standalone Python package with its own `pyproj
 
 ### Dual-Database Strategy
 - **Neo4j**: `(Aircraft)-[:HAS_SYSTEM]->(System)-[:HAS_COMPONENT]->(Component)`, plus Sensors, Flights, Delays, MaintenanceEvents
-- **Databricks**: Delta tables for `sensor_readings` (345K+ rows), `sensors`, `systems`, `aircraft`
+- **Databricks**: Delta tables for `sensor_readings` (432K rows), `sensors`, `systems`, `aircraft`
 - Aircraft/Systems/Sensors exist in **both** databases as join points
 
 ### Multi-Agent Architecture (Lab 4)
@@ -93,5 +93,5 @@ All config uses Pydantic `BaseSettings` with `SecretStr` for passwords.
 ## Key Reference Files
 
 - `workshop-setup/README.md` — Main admin setup guide with troubleshooting
-- `workshop-setup/aircraft_digital_twin_data/ARCHITECTURE.md` — Complete data schema reference (all 19 CSVs, dual-DB strategy, query patterns)
+- `workshop-setup/populate_aircraft_db/DATA_GENERATOR.md` — Data generator guide and complete schema reference (all 22 CSVs, dual-DB strategy, query patterns)
 - `workshop-setup/auto_scripts/README.md` — Databricks CLI reference with all config options

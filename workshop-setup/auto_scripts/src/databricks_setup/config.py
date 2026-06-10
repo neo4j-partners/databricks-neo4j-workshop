@@ -116,7 +116,7 @@ class DataConfig:
     """Data file configuration."""
 
     data_dir: Path = field(default_factory=lambda: Path(__file__).parent.parent.parent.parent / "aircraft_digital_twin_data")
-    excluded_files: tuple[str, ...] = ("README_LARGE_DATASET.md", "ARCHITECTURE.md")
+    excluded_files: tuple[str, ...] = ()
 
     def get_upload_files(self) -> list[Path]:
         """Get list of files to upload (CSVs and MDs, excluding specified files)."""

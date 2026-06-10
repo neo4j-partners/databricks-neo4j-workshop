@@ -44,13 +44,12 @@ The notebook will be created in `workshop-setup/`, as `workshop-setup/notebooks/
 
 > **Status**: the approach for getting the data into the volume is still to be decided. This cell will be designed and added in a later revision. The notes below capture the current thinking.
 
-- Data is published as a GitHub release asset because `nodes_readings.csv` in `workshop-setup/aircraft_digital_twin_data_v2` is about 114 MB, over GitHub's 100 MB limit for regular repo files. A release asset allows up to 2 GB.
-- The release zip contains the 22 v2 CSVs (10 node files, 12 relationship files) plus the 3 maintenance manuals (`MAINTENANCE_A320.md`, `MAINTENANCE_A321neo.md`, `MAINTENANCE_B737.md`) that Lab 3 needs. The manuals currently live in `workshop-setup/aircraft_digital_twin_data`, not in v2, so the release packaging must pull them in.
+- The dataset is now committed directly in the repo: `workshop-setup/aircraft_digital_twin_data/` holds the 22 CSVs (generated at a 4-hour reading interval, so `nodes_readings.csv` is ~29 MB, under GitHub's 100 MB limit) plus the 5 maintenance manuals Lab 3 needs. A GitHub release asset is only needed if the workshop switches to the full hourly readings file (~114 MB), which can be produced with `populate-aircraft-db generate --readings-only --reading-interval 1`.
 - The cell mirrors the `data_loader.py` pattern from the `graph-on-databricks/aircraft-graphrag` project:
   - A `DATA_SOURCE` switch: `"github"` downloads the release zip with `urllib.request.urlopen`, `"volume"` assumes the files are already in the volume and skips the download. Re-runs are cheap.
-  - Placeholder URL until the release exists: `https://github.com/<org>/databricks-neo4j-workshop/releases/download/<tag>/aircraft_digital_twin_data_v2.zip`
+  - Placeholder URL until the release exists: `https://github.com/<org>/databricks-neo4j-workshop/releases/download/<tag>/aircraft_digital_twin_data.zip`
   - Download to local disk, extract, and copy every CSV and MD file into `/Volumes/<catalog>/<volume_schema>/<volume_name>/`.
-- Finish with a file listing of the volume so participants confirm all 25 files landed.
+- Finish with a file listing of the volume so participants confirm all 27 files landed.
 
 ### Cell 5: Lakehouse setup (SQL)
 

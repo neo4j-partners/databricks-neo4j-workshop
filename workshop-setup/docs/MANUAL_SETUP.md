@@ -208,7 +208,7 @@ The volume should contain 25 files (22 CSV + 3 Markdown):
 │
 │  Nodes (Lab 4 sensors)
 ├── nodes_sensors.csv
-├── nodes_readings.csv          (23 MB, 345,600 rows)
+├── nodes_readings.csv          (29 MB, 432,000 rows)
 │
 │  Relationships (Lab 2 core)
 ├── rels_aircraft_system.csv
@@ -229,9 +229,11 @@ The volume should contain 25 files (22 CSV + 3 Markdown):
 ├── rels_system_sensor.csv
 │
 │  Maintenance Manuals (Lab 3)
+├── MAINTENANCE_A220.md
 ├── MAINTENANCE_A320.md
 ├── MAINTENANCE_A321neo.md
-└── MAINTENANCE_B737.md
+├── MAINTENANCE_B737.md
+└── MAINTENANCE_E190.md
 ```
 
 ---
@@ -251,10 +253,10 @@ This uploads data files and creates the lakehouse tables via the SQL Warehouse's
 
 | Table | Rows |
 |-------|------|
-| aircraft | 20 |
-| systems | 80 |
-| sensors | 160 |
-| sensor_readings | 345,600 |
+| aircraft | 100 |
+| systems | 400 |
+| sensors | 800 |
+| sensor_readings | 432,000 |
 
 ---
 
@@ -268,52 +270,54 @@ The `aircraft_digital_twin_data/` directory contains:
 
 | File | Size | Records | Description |
 |------|------|---------|-------------|
-| `nodes_aircraft.csv` | 1 KB | 20 | Fleet inventory |
-| `nodes_systems.csv` | 3 KB | 80 | Aircraft systems |
-| `nodes_components.csv` | 16 KB | 320 | System components |
-| `rels_aircraft_system.csv` | 2 KB | 80 | Aircraft-System links |
-| `rels_system_component.csv` | 13 KB | 320 | System-Component links |
+| `nodes_aircraft.csv` | 5 KB | 100 | Fleet inventory |
+| `nodes_systems.csv` | 17 KB | 400 | Aircraft systems |
+| `nodes_components.csv` | 80 KB | 1,700 | System components |
+| `rels_aircraft_system.csv` | 8 KB | 400 | Aircraft-System links |
+| `rels_system_component.csv` | 45 KB | 1,700 | System-Component links |
 
 **Full dataset (Lab 2 notebook 02):**
 
 | File | Size | Records | Description |
 |------|------|---------|-------------|
-| `nodes_airports.csv` | 1 KB | 12 | Route network airports |
-| `nodes_flights.csv` | 64 KB | ~800 | Flight operations |
-| `nodes_delays.csv` | 15 KB | ~300 | Delay causes/durations |
-| `nodes_maintenance.csv` | 31 KB | ~300 | Maintenance events |
-| `nodes_removals.csv` | 14 KB | ~100 | Component removals |
-| `rels_aircraft_flight.csv` | 25 KB | ~800 | Aircraft-Flight links |
-| `rels_aircraft_removal.csv` | 2 KB | ~100 | Aircraft-Removal links |
-| `rels_component_event.csv` | 10 KB | ~300 | Component-Event links |
-| `rels_component_removal.csv` | 2 KB | ~100 | Removal-Component links |
-| `rels_event_aircraft.csv` | 9 KB | ~300 | Event-Aircraft links |
-| `rels_event_system.csv` | 10 KB | ~300 | Event-System links |
-| `rels_flight_arrival.csv` | 18 KB | ~800 | Flight-Airport arrivals |
-| `rels_flight_delay.csv` | 14 KB | ~300 | Flight-Delay links |
-| `rels_flight_departure.csv` | 20 KB | ~800 | Flight-Airport departures |
+| `nodes_airports.csv` | 3 KB | 40 | Route network airports |
+| `nodes_flights.csv` | 3.1 MB | ~40,400 | Flight operations |
+| `nodes_delays.csv` | 315 KB | ~15,100 | Delay causes/durations |
+| `nodes_maintenance.csv` | 135 KB | ~900 | Maintenance events |
+| `nodes_removals.csv` | 38 KB | ~165 | Component removals |
+| `rels_aircraft_flight.csv` | 631 KB | ~40,400 | Aircraft-Flight links |
+| `rels_aircraft_removal.csv` | 3 KB | ~165 | Aircraft-Removal links |
+| `rels_component_event.csv` | 20 KB | ~900 | Component-Event links |
+| `rels_component_removal.csv` | 4 KB | ~165 | Removal-Component links |
+| `rels_event_aircraft.csv` | 13 KB | ~900 | Event-Aircraft links |
+| `rels_event_system.csv` | 17 KB | ~900 | Event-System links |
+| `rels_flight_arrival.csv` | 592 KB | ~40,400 | Flight-Airport arrivals |
+| `rels_flight_delay.csv` | 266 KB | ~15,100 | Flight-Delay links |
+| `rels_flight_departure.csv` | 592 KB | ~40,400 | Flight-Airport departures |
 
 **Sensor data (Lab 4):**
 
 | File | Size | Records | Description |
 |------|------|---------|-------------|
-| `nodes_sensors.csv` | 9 KB | 160 | Sensor metadata |
-| `nodes_readings.csv` | 23 MB | 345,600 | Hourly sensor readings (90 days) |
-| `rels_system_sensor.csv` | 6 KB | 160 | System-Sensor links |
+| `nodes_sensors.csv` | 43 KB | 800 | Sensor metadata |
+| `nodes_readings.csv` | 29 MB | 432,000 | Sensor readings every 4 hours (90 days) |
+| `rels_system_sensor.csv` | 22 KB | 800 | System-Sensor links |
 
 ### Lab 3 - Maintenance Manuals
 
 | File | Size | Description | Required for Lab 3 |
 |------|------|-------------|-------------------|
-| `MAINTENANCE_A320.md` | ~30 KB | A320-200 Maintenance and Troubleshooting Manual | Yes (used in notebooks) |
+| `MAINTENANCE_A220.md` | ~55 KB | A220-300 Maintenance and Troubleshooting Manual | Optional |
+| `MAINTENANCE_A320.md` | ~31 KB | A320-200 Maintenance and Troubleshooting Manual | Yes (used in notebooks) |
 | `MAINTENANCE_A321neo.md` | ~41 KB | A321neo Maintenance and Troubleshooting Manual | Optional |
 | `MAINTENANCE_B737.md` | ~37 KB | B737-800 Maintenance and Troubleshooting Manual | Optional |
+| `MAINTENANCE_E190.md` | ~38 KB | E190 Maintenance and Troubleshooting Manual | Optional |
 
-**Note:** The Lab 3 notebooks use the A320-200 manual by default. The additional manuals (A321neo, B737) cover other aircraft models in the fleet and can be used for extended exercises or additional semantic search content.
+**Note:** The Lab 3 notebooks use the A320-200 manual by default. The additional manuals cover the other aircraft models in the fleet and can be used for extended exercises or additional semantic search content.
 
 ### Lab 4 - Sensor Data Details
 
-The sensor data covers **90 days** of hourly readings (July 1 - September 29, 2024):
+The sensor data covers **90 days** of readings at 4-hour intervals (July 1 - September 28, 2024):
 
 | Sensor Type | Unit | Description | Typical Range |
 |-------------|------|-------------|---------------|
@@ -323,8 +327,8 @@ The sensor data covers **90 days** of hourly readings (July 1 - September 29, 20
 | FuelFlow | kg/s | Fuel consumption rate | 0.5-2.0 |
 
 **Data characteristics:**
-- 160 sensors across 20 aircraft (4 sensors per engine, 2 engines per aircraft)
-- 2,160 readings per sensor (90 days × 24 hours)
+- 800 sensors across 100 aircraft (4 sensors per engine, 2 engines per aircraft)
+- 540 readings per sensor (90 days, every 4 hours)
 - Includes realistic degradation trends and anomalies
 
 ---

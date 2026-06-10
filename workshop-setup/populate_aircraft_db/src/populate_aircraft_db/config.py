@@ -12,7 +12,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _PKG_DIR = Path(__file__).resolve().parent
 _ENV_FILE = _PKG_DIR.parent.parent / ".env"
 _LAB_SETUP_DIR = _PKG_DIR.parent.parent.parent
-_DATA_DIR = _LAB_SETUP_DIR / "aircraft_digital_twin_data_v2"
+# CSVs and maintenance manuals live in the same directory.
+_DATA_DIR = _LAB_SETUP_DIR / "aircraft_digital_twin_data"
 _DOCUMENT_DIR = _LAB_SETUP_DIR / "aircraft_digital_twin_data"
 
 

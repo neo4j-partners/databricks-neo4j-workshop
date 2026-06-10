@@ -2,7 +2,7 @@
 Notebook 04 feature computation using pandas instead of Spark.
 
 Reads nodes_readings.csv, nodes_sensors.csv, nodes_systems.csv, and
-nodes_maintenance.csv from aircraft_digital_twin_data_v2/, computes
+nodes_maintenance.csv from aircraft_digital_twin_data/, computes
 per-aircraft feature vectors, min-max normalizes, and writes *_norm
 properties to Aircraft nodes in Neo4j.
 """
@@ -15,7 +15,7 @@ from rich.console import Console
 
 console = Console()
 
-_DATA_DIR = Path(__file__).parent.parent.parent.parent / "aircraft_digital_twin_data_v2"
+_DATA_DIR = Path(__file__).parent.parent.parent.parent / "aircraft_digital_twin_data"
 
 FEATURE_COLS = [
     "avg_egt",

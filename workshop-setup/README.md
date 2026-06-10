@@ -18,11 +18,9 @@ uv run python load_lakehouse_data.py
 
 The script:
 
-1. Uploads the CSVs from `aircraft_digital_twin_data_v2/` to the Unity Catalog volume.
+1. Uploads the CSVs and the `MAINTENANCE_*.md` manuals from `aircraft_digital_twin_data/` to the Unity Catalog volume.
 2. Creates the `aircraft`, `systems`, `sensors`, and `sensor_readings` Delta tables via the Statement Execution API.
 3. Prints the per-table row counts so you can confirm the load.
-
-The script does not upload the GraphRAG maintenance manuals (the `MAINTENANCE_*.md` files live in `aircraft_digital_twin_data/`, not the v2 folder). Upload them separately if you are running Lab 3.
 
 For the full administrator setup, continue with the checklist below.
 
@@ -286,9 +284,9 @@ databricks-setup sync                          # Upload/sync workshop notebooks 
 
 For the full file inventory with sizes, record counts, and sensor data details, see **[MANUAL_SETUP.md](docs/MANUAL_SETUP.md#file-inventory)**.
 
-The setup CLI uploads **25 files** to the Volume:
+The setup CLI uploads **27 files** to the Volume:
 - **22 CSV files** from `aircraft_digital_twin_data/` (nodes and relationships for Labs 2 and 3)
-- **3 Markdown files** (maintenance manuals for Lab 3: A320, A321neo, B737)
+- **5 Markdown files** (maintenance manuals for Lab 3: A220, A320, A321neo, B737, E190)
 
 ---
 

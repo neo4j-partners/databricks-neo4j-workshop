@@ -22,8 +22,8 @@ from .writers import write_csv
 
 console = Console()
 
-# workshop-setup/aircraft_digital_twin_data_v2, relative to this file
-_DEFAULT_OUTPUT = Path(__file__).resolve().parents[4] / "aircraft_digital_twin_data_v2"
+# workshop-setup/aircraft_digital_twin_data, relative to this file
+_DEFAULT_OUTPUT = Path(__file__).resolve().parents[4] / "aircraft_digital_twin_data"
 
 
 def _fleet_rows(fleet: list[AircraftNode]) -> tuple[
