@@ -1,0 +1,894 @@
+:ID(MaintenanceEvent),component_id,system_id,aircraft_id,fault,severity,reported_at,corrective_action
+ME0001,AC1002-S01-C04,AC1002-S01,AC1002,Bearing wear,MINOR,2024-08-10T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0002,AC1002-S01-C05,AC1002-S01,AC1002,Bearing wear,MINOR,2024-08-17T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0003,AC1002-S01-C03,AC1002-S01,AC1002,Bearing wear,MINOR,2024-08-20T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0004,AC1002-S01-C01,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-08-25T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0005,AC1002-S01-C05,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-08-29T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0006,AC1002-S01-C04,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-02T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0007,AC1002-S01-C04,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-05T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0008,AC1002-S01-C05,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-08T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0009,AC1002-S01-C05,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-11T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0010,AC1002-S01-C05,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-16T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0011,AC1002-S01-C02,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-20T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0012,AC1002-S01-C01,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-23T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0013,AC1002-S01-C03,AC1002-S01,AC1002,Vibration exceedance,CRITICAL,2024-09-26T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0014,AC1002-S02-C05,AC1002-S02,AC1002,Bearing wear,MINOR,2024-09-23T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0015,AC1005-S02-C04,AC1005-S02,AC1005,Bearing wear,MAJOR,2024-09-28T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0016,AC1006-S01-C01,AC1006-S01,AC1006,Bearing wear,MINOR,2024-09-02T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0017,AC1006-S01-C04,AC1006-S01,AC1006,Bearing wear,MAJOR,2024-09-07T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0018,AC1006-S01-C05,AC1006-S01,AC1006,Bearing wear,MAJOR,2024-09-12T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0019,AC1006-S01-C04,AC1006-S01,AC1006,Bearing wear,MINOR,2024-09-18T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0020,AC1006-S01-C04,AC1006-S01,AC1006,Vibration exceedance,CRITICAL,2024-09-26T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0021,AC1006-S02-C04,AC1006-S02,AC1006,Bearing wear,MAJOR,2024-08-27T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0022,AC1006-S02-C04,AC1006-S02,AC1006,Vibration exceedance,CRITICAL,2024-09-15T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0023,AC1006-S02-C01,AC1006-S02,AC1006,Vibration exceedance,CRITICAL,2024-09-19T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0024,AC1006-S02-C04,AC1006-S02,AC1006,Vibration exceedance,CRITICAL,2024-09-23T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0025,AC1006-S02-C01,AC1006-S02,AC1006,Vibration exceedance,CRITICAL,2024-09-26T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0026,AC1007-S01-C05,AC1007-S01,AC1007,Bearing wear,MAJOR,2024-08-04T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0027,AC1007-S01-C05,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-08-15T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0028,AC1007-S01-C05,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-08-18T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0029,AC1007-S01-C04,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-08-21T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0030,AC1007-S01-C04,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-08-25T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0031,AC1007-S01-C03,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-08-29T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0032,AC1007-S01-C02,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-02T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0033,AC1007-S01-C03,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-06T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0034,AC1007-S01-C04,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-09T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0035,AC1007-S01-C04,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-12T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0036,AC1007-S01-C01,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-16T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0037,AC1007-S01-C01,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-20T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0038,AC1007-S01-C04,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-24T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0039,AC1007-S01-C01,AC1007-S01,AC1007,Vibration exceedance,CRITICAL,2024-09-28T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0040,AC1007-S02-C03,AC1007-S02,AC1007,Bearing wear,MAJOR,2024-08-08T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0041,AC1007-S02-C02,AC1007-S02,AC1007,Bearing wear,MAJOR,2024-08-12T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0042,AC1007-S02-C03,AC1007-S02,AC1007,Bearing wear,MAJOR,2024-08-18T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0043,AC1007-S02-C04,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-08-22T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0044,AC1007-S02-C02,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-08-27T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0045,AC1007-S02-C01,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-08-30T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0046,AC1007-S02-C02,AC1007-S02,AC1007,Overheat,MAJOR,2024-08-31T10:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0047,AC1007-S02-C05,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-09-03T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0048,AC1007-S02-C03,AC1007-S02,AC1007,Overheat,MAJOR,2024-09-03T11:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0049,AC1007-S02-C04,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-09-06T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0050,AC1007-S02-C04,AC1007-S02,AC1007,Overheat,MAJOR,2024-09-07T02:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0051,AC1007-S02-C01,AC1007-S02,AC1007,Overheat,MAJOR,2024-09-11T18:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0052,AC1007-S02-C04,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-09-12T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0053,AC1007-S02-C03,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-09-16T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0054,AC1007-S02-C03,AC1007-S02,AC1007,Overheat,CRITICAL,2024-09-17T21:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0055,AC1007-S02-C05,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-09-20T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0056,AC1007-S02-C02,AC1007-S02,AC1007,Overheat,CRITICAL,2024-09-21T00:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0057,AC1007-S02-C03,AC1007-S02,AC1007,Overheat,CRITICAL,2024-09-24T12:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0058,AC1007-S02-C02,AC1007-S02,AC1007,Vibration exceedance,CRITICAL,2024-09-25T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0059,AC1007-S02-C04,AC1007-S02,AC1007,Overheat,CRITICAL,2024-09-28T00:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0060,AC1008-S01-C01,AC1008-S01,AC1008,Bearing wear,MINOR,2024-08-15T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0061,AC1008-S01-C02,AC1008-S01,AC1008,Bearing wear,MINOR,2024-08-19T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0062,AC1008-S01-C01,AC1008-S01,AC1008,Bearing wear,MAJOR,2024-08-23T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0063,AC1008-S01-C04,AC1008-S01,AC1008,Bearing wear,MAJOR,2024-08-26T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0064,AC1008-S01-C03,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-08-30T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0065,AC1008-S01-C03,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-03T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0066,AC1008-S01-C01,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-06T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0067,AC1008-S01-C01,AC1008-S01,AC1008,Overheat,MAJOR,2024-09-08T01:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0068,AC1008-S01-C02,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-10T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0069,AC1008-S01-C04,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-14T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0070,AC1008-S01-C01,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-17T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0071,AC1008-S01-C05,AC1008-S01,AC1008,Overheat,MAJOR,2024-09-21T02:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0072,AC1008-S01-C05,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-21T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0073,AC1008-S01-C03,AC1008-S01,AC1008,Overheat,MAJOR,2024-09-24T09:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0074,AC1008-S01-C02,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-24T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0075,AC1008-S01-C04,AC1008-S01,AC1008,Vibration exceedance,CRITICAL,2024-09-28T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0076,AC1008-S02-C05,AC1008-S02,AC1008,Bearing wear,MINOR,2024-09-15T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0077,AC1008-S02-C04,AC1008-S02,AC1008,Bearing wear,MAJOR,2024-09-19T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0078,AC1009-S02-C02,AC1009-S02,AC1009,Bearing wear,MINOR,2024-09-19T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0079,AC1009-S02-C03,AC1009-S02,AC1009,Bearing wear,MAJOR,2024-09-22T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0080,AC1009-S02-C03,AC1009-S02,AC1009,Bearing wear,MINOR,2024-09-26T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0081,AC1010-S02-C03,AC1010-S02,AC1010,Bearing wear,MAJOR,2024-09-05T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0082,AC1010-S02-C02,AC1010-S02,AC1010,Bearing wear,MINOR,2024-09-08T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0083,AC1010-S02-C01,AC1010-S02,AC1010,Bearing wear,MINOR,2024-09-14T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0084,AC1010-S02-C01,AC1010-S02,AC1010,Vibration exceedance,CRITICAL,2024-09-22T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0085,AC1010-S02-C03,AC1010-S02,AC1010,Vibration exceedance,CRITICAL,2024-09-25T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0086,AC1012-S02-C05,AC1012-S02,AC1012,Bearing wear,MAJOR,2024-08-30T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0087,AC1012-S02-C02,AC1012-S02,AC1012,Bearing wear,MAJOR,2024-09-03T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0088,AC1012-S02-C01,AC1012-S02,AC1012,Bearing wear,MINOR,2024-09-10T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0089,AC1012-S02-C05,AC1012-S02,AC1012,Bearing wear,MAJOR,2024-09-14T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0090,AC1012-S02-C03,AC1012-S02,AC1012,Vibration exceedance,CRITICAL,2024-09-20T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0091,AC1012-S02-C02,AC1012-S02,AC1012,Vibration exceedance,CRITICAL,2024-09-24T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0092,AC1012-S02-C03,AC1012-S02,AC1012,Vibration exceedance,CRITICAL,2024-09-28T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0093,AC1013-S02-C04,AC1013-S02,AC1013,Bearing wear,MINOR,2024-09-20T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0094,AC1013-S02-C03,AC1013-S02,AC1013,Bearing wear,MAJOR,2024-09-27T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0095,AC1014-S01-C05,AC1014-S01,AC1014,Bearing wear,MINOR,2024-09-05T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0096,AC1014-S01-C03,AC1014-S01,AC1014,Bearing wear,MAJOR,2024-09-09T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0097,AC1014-S01-C02,AC1014-S01,AC1014,Bearing wear,MINOR,2024-09-14T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0098,AC1014-S01-C01,AC1014-S01,AC1014,Bearing wear,MINOR,2024-09-18T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0099,AC1014-S01-C04,AC1014-S01,AC1014,Bearing wear,MINOR,2024-09-22T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0100,AC1014-S02-C02,AC1014-S02,AC1014,Bearing wear,MINOR,2024-08-23T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0101,AC1014-S02-C04,AC1014-S02,AC1014,Bearing wear,MINOR,2024-08-26T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0102,AC1014-S02-C01,AC1014-S02,AC1014,Bearing wear,MAJOR,2024-08-31T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0103,AC1014-S02-C04,AC1014-S02,AC1014,Bearing wear,MAJOR,2024-09-05T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0104,AC1014-S02-C01,AC1014-S02,AC1014,Vibration exceedance,CRITICAL,2024-09-11T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0105,AC1014-S02-C01,AC1014-S02,AC1014,Vibration exceedance,CRITICAL,2024-09-15T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0106,AC1014-S02-C01,AC1014-S02,AC1014,Vibration exceedance,CRITICAL,2024-09-20T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0107,AC1014-S02-C03,AC1014-S02,AC1014,Vibration exceedance,CRITICAL,2024-09-23T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0108,AC1014-S02-C05,AC1014-S02,AC1014,Vibration exceedance,CRITICAL,2024-09-27T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0109,AC1015-S01-C01,AC1015-S01,AC1015,Bearing wear,MINOR,2024-09-25T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0110,AC1015-S01-C02,AC1015-S01,AC1015,Sensor drift,MINOR,2024-09-26T00:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0111,AC1015-S01-C03,AC1015-S01,AC1015,Bearing wear,MINOR,2024-09-28T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0112,AC1015-S02-C01,AC1015-S02,AC1015,Bearing wear,MAJOR,2024-08-20T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0113,AC1015-S02-C03,AC1015-S02,AC1015,Bearing wear,MAJOR,2024-09-02T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0114,AC1015-S02-C04,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-05T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0115,AC1015-S02-C04,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-09T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0116,AC1015-S02-C04,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-13T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0117,AC1015-S02-C03,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-17T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0118,AC1015-S02-C04,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-20T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0119,AC1015-S02-C05,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-23T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0120,AC1015-S02-C03,AC1015-S02,AC1015,Vibration exceedance,CRITICAL,2024-09-26T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0121,AC1016-S02-C02,AC1016-S02,AC1016,Bearing wear,MAJOR,2024-09-12T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0122,AC1016-S02-C01,AC1016-S02,AC1016,Bearing wear,MAJOR,2024-09-19T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0123,AC1016-S02-C01,AC1016-S02,AC1016,Bearing wear,MAJOR,2024-09-22T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0124,AC1016-S02-C04,AC1016-S02,AC1016,Bearing wear,MAJOR,2024-09-28T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0125,AC1017-S02-C04,AC1017-S02,AC1017,Bearing wear,MINOR,2024-09-04T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0126,AC1017-S02-C03,AC1017-S02,AC1017,Bearing wear,MAJOR,2024-09-10T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0127,AC1017-S02-C05,AC1017-S02,AC1017,Bearing wear,MINOR,2024-09-14T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0128,AC1017-S02-C01,AC1017-S02,AC1017,Bearing wear,MAJOR,2024-09-18T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0129,AC1017-S02-C02,AC1017-S02,AC1017,Bearing wear,MAJOR,2024-09-24T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0130,AC1019-S01-C04,AC1019-S01,AC1019,Bearing wear,MAJOR,2024-08-14T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0131,AC1019-S01-C05,AC1019-S01,AC1019,Bearing wear,MINOR,2024-08-22T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0132,AC1019-S01-C05,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-08-26T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0133,AC1019-S01-C03,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-08-30T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0134,AC1019-S01-C03,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-02T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0135,AC1019-S01-C03,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-06T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0136,AC1019-S01-C01,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-09T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0137,AC1019-S01-C03,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-12T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0138,AC1019-S01-C03,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-16T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0139,AC1019-S01-C05,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-19T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0140,AC1019-S01-C03,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-22T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0141,AC1019-S01-C02,AC1019-S01,AC1019,Overheat,MAJOR,2024-09-24T00:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0142,AC1019-S01-C01,AC1019-S01,AC1019,Vibration exceedance,CRITICAL,2024-09-26T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0143,AC1020-S01-C01,AC1020-S01,AC1020,Bearing wear,MINOR,2024-08-05T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0144,AC1020-S01-C03,AC1020-S01,AC1020,Bearing wear,MINOR,2024-08-20T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0145,AC1020-S01-C02,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-08-25T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0146,AC1020-S01-C02,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-08-30T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0147,AC1020-S01-C02,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-03T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0148,AC1020-S01-C05,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-06T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0149,AC1020-S01-C02,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-10T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0150,AC1020-S01-C02,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-14T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0151,AC1020-S01-C03,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-17T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0152,AC1020-S01-C05,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-20T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0153,AC1020-S01-C04,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-24T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0154,AC1020-S01-C01,AC1020-S01,AC1020,Vibration exceedance,CRITICAL,2024-09-27T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0155,AC1020-S02-C02,AC1020-S02,AC1020,Bearing wear,MAJOR,2024-09-17T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0156,AC1020-S02-C04,AC1020-S02,AC1020,Bearing wear,MINOR,2024-09-27T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0157,AC1021-S02-C01,AC1021-S02,AC1021,Bearing wear,MINOR,2024-08-23T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0158,AC1021-S02-C05,AC1021-S02,AC1021,Bearing wear,MAJOR,2024-08-27T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0159,AC1021-S02-C02,AC1021-S02,AC1021,Bearing wear,MAJOR,2024-09-01T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0160,AC1021-S02-C02,AC1021-S02,AC1021,Vibration exceedance,CRITICAL,2024-09-09T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0161,AC1021-S02-C04,AC1021-S02,AC1021,Vibration exceedance,CRITICAL,2024-09-12T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0162,AC1021-S02-C05,AC1021-S02,AC1021,Vibration exceedance,CRITICAL,2024-09-15T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0163,AC1021-S02-C01,AC1021-S02,AC1021,Vibration exceedance,CRITICAL,2024-09-19T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0164,AC1021-S02-C02,AC1021-S02,AC1021,Vibration exceedance,CRITICAL,2024-09-22T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0165,AC1021-S02-C04,AC1021-S02,AC1021,Vibration exceedance,CRITICAL,2024-09-26T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0166,AC1022-S01-C02,AC1022-S01,AC1022,Bearing wear,MAJOR,2024-08-13T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0167,AC1022-S01-C02,AC1022-S01,AC1022,Bearing wear,MAJOR,2024-08-17T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0168,AC1022-S01-C01,AC1022-S01,AC1022,Bearing wear,MAJOR,2024-08-22T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0169,AC1022-S01-C04,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-08-25T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0170,AC1022-S01-C03,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-08-29T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0171,AC1022-S01-C01,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-01T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0172,AC1022-S01-C01,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-05T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0173,AC1022-S01-C02,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-09T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0174,AC1022-S01-C02,AC1022-S01,AC1022,Overheat,MAJOR,2024-09-10T22:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0175,AC1022-S01-C02,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-13T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0176,AC1022-S01-C03,AC1022-S01,AC1022,Sensor drift,MINOR,2024-09-14T01:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0177,AC1022-S01-C01,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-16T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0178,AC1022-S01-C05,AC1022-S01,AC1022,Overheat,CRITICAL,2024-09-17T21:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0179,AC1022-S01-C05,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-20T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0180,AC1022-S01-C03,AC1022-S01,AC1022,Overheat,CRITICAL,2024-09-20T21:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0181,AC1022-S01-C02,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-23T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0182,AC1022-S01-C01,AC1022-S01,AC1022,Overheat,CRITICAL,2024-09-25T22:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0183,AC1022-S01-C01,AC1022-S01,AC1022,Vibration exceedance,CRITICAL,2024-09-27T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0184,AC1022-S02-C04,AC1022-S02,AC1022,Bearing wear,MAJOR,2024-09-10T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0185,AC1022-S02-C02,AC1022-S02,AC1022,Bearing wear,MINOR,2024-09-14T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0186,AC1022-S02-C01,AC1022-S02,AC1022,Bearing wear,MINOR,2024-09-22T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0187,AC1022-S02-C03,AC1022-S02,AC1022,Bearing wear,MINOR,2024-09-27T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0188,AC1025-S02-C04,AC1025-S02,AC1025,Bearing wear,MINOR,2024-09-21T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0189,AC1025-S02-C04,AC1025-S02,AC1025,Bearing wear,MAJOR,2024-09-25T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0190,AC1026-S02-C01,AC1026-S02,AC1026,Bearing wear,MAJOR,2024-08-21T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0191,AC1026-S02-C03,AC1026-S02,AC1026,Bearing wear,MAJOR,2024-08-25T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0192,AC1026-S02-C05,AC1026-S02,AC1026,Bearing wear,MAJOR,2024-09-01T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0193,AC1026-S02-C03,AC1026-S02,AC1026,Bearing wear,MINOR,2024-09-05T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0194,AC1026-S02-C05,AC1026-S02,AC1026,Vibration exceedance,CRITICAL,2024-09-10T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0195,AC1026-S02-C03,AC1026-S02,AC1026,Vibration exceedance,CRITICAL,2024-09-14T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0196,AC1026-S02-C05,AC1026-S02,AC1026,Vibration exceedance,CRITICAL,2024-09-17T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0197,AC1026-S02-C02,AC1026-S02,AC1026,Vibration exceedance,CRITICAL,2024-09-20T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0198,AC1026-S02-C01,AC1026-S02,AC1026,Vibration exceedance,CRITICAL,2024-09-23T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0199,AC1026-S02-C05,AC1026-S02,AC1026,Vibration exceedance,CRITICAL,2024-09-27T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0200,AC1027-S01-C03,AC1027-S01,AC1027,Bearing wear,MAJOR,2024-08-19T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0201,AC1027-S01-C05,AC1027-S01,AC1027,Bearing wear,MAJOR,2024-08-22T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0202,AC1027-S01-C05,AC1027-S01,AC1027,Bearing wear,MINOR,2024-08-30T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0203,AC1027-S01-C02,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-03T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0204,AC1027-S01-C04,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-07T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0205,AC1027-S01-C01,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-10T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0206,AC1027-S01-C02,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-13T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0207,AC1027-S01-C04,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-17T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0208,AC1027-S01-C04,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-21T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0209,AC1027-S01-C02,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-24T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0210,AC1027-S01-C02,AC1027-S01,AC1027,Vibration exceedance,CRITICAL,2024-09-27T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0211,AC1027-S02-C03,AC1027-S02,AC1027,Bearing wear,MAJOR,2024-09-03T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0212,AC1027-S02-C02,AC1027-S02,AC1027,Bearing wear,MAJOR,2024-09-10T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0213,AC1027-S02-C05,AC1027-S02,AC1027,Bearing wear,MAJOR,2024-09-17T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0214,AC1027-S02-C03,AC1027-S02,AC1027,Bearing wear,MAJOR,2024-09-20T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0215,AC1027-S02-C01,AC1027-S02,AC1027,Bearing wear,MINOR,2024-09-25T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0216,AC1028-S01-C02,AC1028-S01,AC1028,Bearing wear,MAJOR,2024-08-11T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0217,AC1028-S01-C02,AC1028-S01,AC1028,Bearing wear,MINOR,2024-08-16T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0218,AC1028-S01-C04,AC1028-S01,AC1028,Bearing wear,MINOR,2024-08-22T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0219,AC1028-S01-C02,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-08-25T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0220,AC1028-S01-C04,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-08-28T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0221,AC1028-S01-C03,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-02T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0222,AC1028-S01-C03,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-05T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0223,AC1028-S01-C04,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-08T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0224,AC1028-S01-C03,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-11T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0225,AC1028-S01-C04,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-15T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0226,AC1028-S01-C02,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-18T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0227,AC1028-S01-C03,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-23T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0228,AC1028-S01-C01,AC1028-S01,AC1028,Vibration exceedance,CRITICAL,2024-09-26T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0229,AC1029-S01-C05,AC1029-S01,AC1029,Bearing wear,MINOR,2024-08-26T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0230,AC1029-S01-C02,AC1029-S01,AC1029,Bearing wear,MINOR,2024-08-30T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0231,AC1029-S01-C01,AC1029-S01,AC1029,Bearing wear,MINOR,2024-09-05T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0232,AC1029-S01-C01,AC1029-S01,AC1029,Vibration exceedance,CRITICAL,2024-09-11T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0233,AC1029-S01-C05,AC1029-S01,AC1029,Vibration exceedance,CRITICAL,2024-09-15T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0234,AC1029-S01-C05,AC1029-S01,AC1029,Vibration exceedance,CRITICAL,2024-09-18T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0235,AC1029-S01-C02,AC1029-S01,AC1029,Vibration exceedance,CRITICAL,2024-09-21T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0236,AC1029-S01-C05,AC1029-S01,AC1029,Vibration exceedance,CRITICAL,2024-09-25T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0237,AC1029-S01-C03,AC1029-S01,AC1029,Sensor drift,MINOR,2024-09-27T17:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0238,AC1029-S02-C02,AC1029-S02,AC1029,Bearing wear,MAJOR,2024-08-22T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0239,AC1029-S02-C03,AC1029-S02,AC1029,Bearing wear,MAJOR,2024-08-26T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0240,AC1029-S02-C01,AC1029-S02,AC1029,Bearing wear,MINOR,2024-08-29T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0241,AC1029-S02-C04,AC1029-S02,AC1029,Bearing wear,MAJOR,2024-09-03T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0242,AC1029-S02-C05,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-07T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0243,AC1029-S02-C03,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-11T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0244,AC1029-S02-C04,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-14T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0245,AC1029-S02-C01,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-17T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0246,AC1029-S02-C02,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-21T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0247,AC1029-S02-C04,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-24T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0248,AC1029-S02-C03,AC1029-S02,AC1029,Vibration exceedance,CRITICAL,2024-09-27T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0249,AC1030-S02-C04,AC1030-S02,AC1030,Overheat,MAJOR,2024-09-22T04:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0250,AC1031-S01-C03,AC1031-S01,AC1031,Bearing wear,MAJOR,2024-09-05T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0251,AC1031-S01-C03,AC1031-S01,AC1031,Bearing wear,MAJOR,2024-09-11T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0252,AC1031-S01-C05,AC1031-S01,AC1031,Bearing wear,MAJOR,2024-09-20T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0253,AC1031-S01-C01,AC1031-S01,AC1031,Vibration exceedance,CRITICAL,2024-09-28T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0254,AC1031-S02-C05,AC1031-S02,AC1031,Bearing wear,MAJOR,2024-09-15T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0255,AC1031-S02-C01,AC1031-S02,AC1031,Bearing wear,MINOR,2024-09-18T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0256,AC1033-S02-C01,AC1033-S02,AC1033,Bearing wear,MINOR,2024-09-13T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0257,AC1033-S02-C05,AC1033-S02,AC1033,Bearing wear,MINOR,2024-09-22T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0258,AC1033-S02-C05,AC1033-S02,AC1033,Bearing wear,MINOR,2024-09-26T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0259,AC1034-S01-C01,AC1034-S01,AC1034,Bearing wear,MAJOR,2024-09-25T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0260,AC1034-S02-C02,AC1034-S02,AC1034,Bearing wear,MAJOR,2024-08-28T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0261,AC1034-S02-C02,AC1034-S02,AC1034,Bearing wear,MINOR,2024-08-31T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0262,AC1034-S02-C05,AC1034-S02,AC1034,Bearing wear,MAJOR,2024-09-06T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0263,AC1034-S02-C03,AC1034-S02,AC1034,Bearing wear,MAJOR,2024-09-10T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0264,AC1034-S02-C04,AC1034-S02,AC1034,Bearing wear,MAJOR,2024-09-14T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0265,AC1034-S02-C03,AC1034-S02,AC1034,Vibration exceedance,CRITICAL,2024-09-18T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0266,AC1034-S02-C02,AC1034-S02,AC1034,Vibration exceedance,CRITICAL,2024-09-22T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0267,AC1034-S02-C03,AC1034-S02,AC1034,Vibration exceedance,CRITICAL,2024-09-25T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0268,AC1036-S02-C03,AC1036-S02,AC1036,Bearing wear,MAJOR,2024-09-01T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0269,AC1036-S02-C01,AC1036-S02,AC1036,Bearing wear,MAJOR,2024-09-06T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0270,AC1036-S02-C05,AC1036-S02,AC1036,Bearing wear,MAJOR,2024-09-11T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0271,AC1036-S02-C04,AC1036-S02,AC1036,Bearing wear,MAJOR,2024-09-14T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0272,AC1036-S02-C05,AC1036-S02,AC1036,Bearing wear,MINOR,2024-09-18T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0273,AC1036-S02-C03,AC1036-S02,AC1036,Vibration exceedance,CRITICAL,2024-09-23T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0274,AC1036-S02-C04,AC1036-S02,AC1036,Vibration exceedance,CRITICAL,2024-09-27T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0275,AC1037-S02-C04,AC1037-S02,AC1037,Bearing wear,MINOR,2024-09-25T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0276,AC1038-S01-C05,AC1038-S01,AC1038,Bearing wear,MAJOR,2024-09-13T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0277,AC1038-S01-C03,AC1038-S01,AC1038,Sensor drift,MINOR,2024-09-15T20:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0278,AC1038-S01-C05,AC1038-S01,AC1038,Bearing wear,MINOR,2024-09-17T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0279,AC1038-S01-C01,AC1038-S01,AC1038,Overheat,MAJOR,2024-09-20T23:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0280,AC1038-S01-C05,AC1038-S01,AC1038,Bearing wear,MINOR,2024-09-21T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0281,AC1038-S01-C01,AC1038-S01,AC1038,Bearing wear,MINOR,2024-09-28T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0282,AC1038-S01-C02,AC1038-S01,AC1038,Overheat,MAJOR,2024-09-28T08:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0283,AC1038-S02-C04,AC1038-S02,AC1038,Bearing wear,MINOR,2024-09-09T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0284,AC1038-S02-C02,AC1038-S02,AC1038,Bearing wear,MAJOR,2024-09-13T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0285,AC1038-S02-C01,AC1038-S02,AC1038,Bearing wear,MINOR,2024-09-18T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0286,AC1038-S02-C03,AC1038-S02,AC1038,Bearing wear,MAJOR,2024-09-21T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0287,AC1039-S01-C05,AC1039-S01,AC1039,Bearing wear,MAJOR,2024-08-16T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0288,AC1039-S01-C04,AC1039-S01,AC1039,Bearing wear,MINOR,2024-08-22T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0289,AC1039-S01-C01,AC1039-S01,AC1039,Bearing wear,MAJOR,2024-08-30T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0290,AC1039-S01-C04,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-04T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0291,AC1039-S01-C03,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-07T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0292,AC1039-S01-C05,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-11T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0293,AC1039-S01-C05,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-14T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0294,AC1039-S01-C03,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-17T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0295,AC1039-S01-C04,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-21T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0296,AC1039-S01-C05,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-25T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0297,AC1039-S01-C03,AC1039-S01,AC1039,Vibration exceedance,CRITICAL,2024-09-28T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0298,AC1039-S02-C03,AC1039-S02,AC1039,Bearing wear,MAJOR,2024-09-18T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0299,AC1040-S01-C01,AC1040-S01,AC1040,Bearing wear,MINOR,2024-08-29T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0300,AC1040-S01-C03,AC1040-S01,AC1040,Bearing wear,MAJOR,2024-09-06T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0301,AC1040-S01-C03,AC1040-S01,AC1040,Bearing wear,MAJOR,2024-09-10T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0302,AC1040-S01-C02,AC1040-S01,AC1040,Bearing wear,MINOR,2024-09-14T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0303,AC1040-S01-C03,AC1040-S01,AC1040,Bearing wear,MINOR,2024-09-19T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0304,AC1040-S01-C03,AC1040-S01,AC1040,Vibration exceedance,CRITICAL,2024-09-26T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0305,AC1041-S02-C02,AC1041-S02,AC1041,Bearing wear,MAJOR,2024-09-26T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0306,AC1042-S01-C05,AC1042-S01,AC1042,Bearing wear,MAJOR,2024-09-07T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0307,AC1042-S01-C01,AC1042-S01,AC1042,Bearing wear,MAJOR,2024-09-12T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0308,AC1042-S01-C02,AC1042-S01,AC1042,Bearing wear,MAJOR,2024-09-16T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0309,AC1042-S01-C01,AC1042-S01,AC1042,Bearing wear,MINOR,2024-09-20T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0310,AC1042-S01-C05,AC1042-S01,AC1042,Sensor drift,MINOR,2024-09-26T16:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0311,AC1042-S01-C03,AC1042-S01,AC1042,Vibration exceedance,CRITICAL,2024-09-27T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0312,AC1042-S02-C01,AC1042-S02,AC1042,Overheat,MAJOR,2024-09-24T05:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0313,AC1042-S02-C02,AC1042-S02,AC1042,Sensor drift,MINOR,2024-09-28T23:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0314,AC1043-S01-C01,AC1043-S01,AC1043,Bearing wear,MAJOR,2024-09-02T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0315,AC1043-S01-C02,AC1043-S01,AC1043,Bearing wear,MINOR,2024-09-05T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0316,AC1043-S01-C04,AC1043-S01,AC1043,Bearing wear,MINOR,2024-09-16T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0317,AC1043-S01-C03,AC1043-S01,AC1043,Bearing wear,MINOR,2024-09-24T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0318,AC1043-S01-C05,AC1043-S01,AC1043,Vibration exceedance,CRITICAL,2024-09-27T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0319,AC1043-S02-C05,AC1043-S02,AC1043,Bearing wear,MAJOR,2024-08-26T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0320,AC1043-S02-C01,AC1043-S02,AC1043,Bearing wear,MAJOR,2024-08-31T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0321,AC1043-S02-C04,AC1043-S02,AC1043,Bearing wear,MAJOR,2024-09-07T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0322,AC1043-S02-C02,AC1043-S02,AC1043,Bearing wear,MINOR,2024-09-11T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0323,AC1043-S02-C01,AC1043-S02,AC1043,Vibration exceedance,CRITICAL,2024-09-15T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0324,AC1043-S02-C02,AC1043-S02,AC1043,Vibration exceedance,CRITICAL,2024-09-19T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0325,AC1043-S02-C03,AC1043-S02,AC1043,Vibration exceedance,CRITICAL,2024-09-22T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0326,AC1043-S02-C02,AC1043-S02,AC1043,Vibration exceedance,CRITICAL,2024-09-26T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0327,AC1044-S02-C05,AC1044-S02,AC1044,Bearing wear,MAJOR,2024-09-17T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0328,AC1044-S02-C02,AC1044-S02,AC1044,Bearing wear,MAJOR,2024-09-23T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0329,AC1044-S02-C03,AC1044-S02,AC1044,Bearing wear,MAJOR,2024-09-28T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0330,AC1045-S01-C03,AC1045-S01,AC1045,Bearing wear,MAJOR,2024-09-07T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0331,AC1045-S01-C03,AC1045-S01,AC1045,Bearing wear,MAJOR,2024-09-15T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0332,AC1045-S01-C05,AC1045-S01,AC1045,Bearing wear,MAJOR,2024-09-18T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0333,AC1045-S01-C02,AC1045-S01,AC1045,Bearing wear,MAJOR,2024-09-22T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0334,AC1045-S01-C01,AC1045-S01,AC1045,Vibration exceedance,CRITICAL,2024-09-26T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0335,AC1045-S02-C03,AC1045-S02,AC1045,Bearing wear,MINOR,2024-09-15T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0336,AC1045-S02-C01,AC1045-S02,AC1045,Bearing wear,MAJOR,2024-09-20T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0337,AC1045-S02-C03,AC1045-S02,AC1045,Bearing wear,MINOR,2024-09-24T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0338,AC1047-S02-C01,AC1047-S02,AC1047,Bearing wear,MAJOR,2024-09-05T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0339,AC1047-S02-C02,AC1047-S02,AC1047,Bearing wear,MINOR,2024-09-18T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0340,AC1047-S02-C02,AC1047-S02,AC1047,Bearing wear,MAJOR,2024-09-21T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0341,AC1047-S02-C03,AC1047-S02,AC1047,Vibration exceedance,CRITICAL,2024-09-26T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0342,AC1049-S02-C04,AC1049-S02,AC1049,Bearing wear,MAJOR,2024-09-06T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0343,AC1049-S02-C04,AC1049-S02,AC1049,Bearing wear,MAJOR,2024-09-13T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0344,AC1049-S02-C04,AC1049-S02,AC1049,Bearing wear,MAJOR,2024-09-17T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0345,AC1049-S02-C05,AC1049-S02,AC1049,Bearing wear,MINOR,2024-09-21T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0346,AC1049-S02-C02,AC1049-S02,AC1049,Bearing wear,MINOR,2024-09-27T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0347,AC1050-S01-C01,AC1050-S01,AC1050,Bearing wear,MAJOR,2024-09-28T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0348,AC1052-S01-C05,AC1052-S01,AC1052,Bearing wear,MAJOR,2024-08-15T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0349,AC1052-S01-C01,AC1052-S01,AC1052,Bearing wear,MAJOR,2024-08-22T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0350,AC1052-S01-C01,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-08-27T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0351,AC1052-S01-C02,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-08-31T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0352,AC1052-S01-C02,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-06T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0353,AC1052-S01-C02,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-09T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0354,AC1052-S01-C03,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-13T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0355,AC1052-S01-C03,AC1052-S01,AC1052,Overheat,MAJOR,2024-09-16T16:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0356,AC1052-S01-C03,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-17T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0357,AC1052-S01-C01,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-20T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0358,AC1052-S01-C03,AC1052-S01,AC1052,Sensor drift,MINOR,2024-09-22T12:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0359,AC1052-S01-C01,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-23T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0360,AC1052-S01-C04,AC1052-S01,AC1052,Vibration exceedance,CRITICAL,2024-09-26T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0361,AC1052-S01-C01,AC1052-S01,AC1052,Overheat,CRITICAL,2024-09-28T12:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0362,AC1052-S02-C02,AC1052-S02,AC1052,Bearing wear,MINOR,2024-08-26T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0363,AC1052-S02-C02,AC1052-S02,AC1052,Bearing wear,MAJOR,2024-08-30T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0364,AC1052-S02-C02,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-02T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0365,AC1052-S02-C05,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-06T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0366,AC1052-S02-C04,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-11T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0367,AC1052-S02-C01,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-14T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0368,AC1052-S02-C04,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-18T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0369,AC1052-S02-C01,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-21T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0370,AC1052-S02-C04,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-25T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0371,AC1052-S02-C03,AC1052-S02,AC1052,Vibration exceedance,CRITICAL,2024-09-28T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0372,AC1053-S01-C04,AC1053-S01,AC1053,Bearing wear,MINOR,2024-08-25T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0373,AC1053-S01-C04,AC1053-S01,AC1053,Bearing wear,MINOR,2024-08-30T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0374,AC1053-S01-C01,AC1053-S01,AC1053,Bearing wear,MAJOR,2024-09-05T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0375,AC1053-S01-C01,AC1053-S01,AC1053,Bearing wear,MINOR,2024-09-09T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0376,AC1053-S01-C05,AC1053-S01,AC1053,Vibration exceedance,CRITICAL,2024-09-15T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0377,AC1053-S01-C01,AC1053-S01,AC1053,Vibration exceedance,CRITICAL,2024-09-18T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0378,AC1053-S01-C02,AC1053-S01,AC1053,Vibration exceedance,CRITICAL,2024-09-21T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0379,AC1053-S01-C01,AC1053-S01,AC1053,Vibration exceedance,CRITICAL,2024-09-24T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0380,AC1053-S01-C01,AC1053-S01,AC1053,Vibration exceedance,CRITICAL,2024-09-28T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0381,AC1053-S02-C01,AC1053-S02,AC1053,Sensor drift,MINOR,2024-09-14T04:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0382,AC1053-S02-C03,AC1053-S02,AC1053,Bearing wear,MINOR,2024-09-14T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0383,AC1053-S02-C03,AC1053-S02,AC1053,Bearing wear,MAJOR,2024-09-18T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0384,AC1053-S02-C05,AC1053-S02,AC1053,Bearing wear,MINOR,2024-09-23T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0385,AC1053-S02-C02,AC1053-S02,AC1053,Bearing wear,MAJOR,2024-09-26T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0386,AC1055-S01-C05,AC1055-S01,AC1055,Bearing wear,MAJOR,2024-08-01T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0387,AC1055-S01-C03,AC1055-S01,AC1055,Bearing wear,MAJOR,2024-08-05T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0388,AC1055-S01-C04,AC1055-S01,AC1055,Bearing wear,MAJOR,2024-08-08T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0389,AC1055-S01-C03,AC1055-S01,AC1055,Bearing wear,MINOR,2024-08-12T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0390,AC1055-S01-C04,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-08-18T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0391,AC1055-S01-C01,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-08-22T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0392,AC1055-S01-C03,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-08-25T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0393,AC1055-S01-C04,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-08-29T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0394,AC1055-S01-C03,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-01T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0395,AC1055-S01-C03,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-05T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0396,AC1055-S01-C04,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-08T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0397,AC1055-S01-C03,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-11T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0398,AC1055-S01-C02,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-14T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0399,AC1055-S01-C04,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-17T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0400,AC1055-S01-C02,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-21T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0401,AC1055-S01-C04,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-25T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0402,AC1055-S01-C05,AC1055-S01,AC1055,Vibration exceedance,CRITICAL,2024-09-28T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0403,AC1055-S02-C03,AC1055-S02,AC1055,Bearing wear,MAJOR,2024-09-07T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0404,AC1055-S02-C05,AC1055-S02,AC1055,Bearing wear,MINOR,2024-09-11T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0405,AC1055-S02-C01,AC1055-S02,AC1055,Bearing wear,MINOR,2024-09-14T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0406,AC1055-S02-C01,AC1055-S02,AC1055,Bearing wear,MAJOR,2024-09-19T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0407,AC1055-S02-C02,AC1055-S02,AC1055,Bearing wear,MAJOR,2024-09-22T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0408,AC1055-S02-C02,AC1055-S02,AC1055,Vibration exceedance,CRITICAL,2024-09-28T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0409,AC1056-S01-C01,AC1056-S01,AC1056,Bearing wear,MINOR,2024-08-19T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0410,AC1056-S01-C04,AC1056-S01,AC1056,Bearing wear,MAJOR,2024-08-25T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0411,AC1056-S01-C05,AC1056-S01,AC1056,Bearing wear,MAJOR,2024-09-01T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0412,AC1056-S01-C05,AC1056-S01,AC1056,Vibration exceedance,CRITICAL,2024-09-06T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0413,AC1056-S01-C03,AC1056-S01,AC1056,Vibration exceedance,CRITICAL,2024-09-11T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0414,AC1056-S01-C03,AC1056-S01,AC1056,Vibration exceedance,CRITICAL,2024-09-14T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0415,AC1056-S01-C01,AC1056-S01,AC1056,Vibration exceedance,CRITICAL,2024-09-17T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0416,AC1056-S01-C01,AC1056-S01,AC1056,Vibration exceedance,CRITICAL,2024-09-21T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0417,AC1056-S01-C03,AC1056-S01,AC1056,Vibration exceedance,CRITICAL,2024-09-25T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0418,AC1056-S02-C04,AC1056-S02,AC1056,Bearing wear,MAJOR,2024-09-20T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0419,AC1056-S02-C02,AC1056-S02,AC1056,Bearing wear,MAJOR,2024-09-26T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0420,AC1058-S01-C02,AC1058-S01,AC1058,Bearing wear,MAJOR,2024-09-16T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0421,AC1058-S01-C05,AC1058-S01,AC1058,Bearing wear,MINOR,2024-09-24T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0422,AC1058-S01-C05,AC1058-S01,AC1058,Bearing wear,MAJOR,2024-09-28T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0423,AC1058-S02-C02,AC1058-S02,AC1058,Bearing wear,MINOR,2024-08-15T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0424,AC1058-S02-C04,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-08-22T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0425,AC1058-S02-C04,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-08-27T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0426,AC1058-S02-C02,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-08-30T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0427,AC1058-S02-C03,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-02T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0428,AC1058-S02-C04,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-07T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0429,AC1058-S02-C05,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-10T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0430,AC1058-S02-C05,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-14T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0431,AC1058-S02-C05,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-17T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0432,AC1058-S02-C03,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-21T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0433,AC1058-S02-C04,AC1058-S02,AC1058,Vibration exceedance,CRITICAL,2024-09-24T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0434,AC1059-S01-C02,AC1059-S01,AC1059,Overheat,MAJOR,2024-09-18T15:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0435,AC1059-S01-C03,AC1059-S01,AC1059,Overheat,MAJOR,2024-09-22T12:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0436,AC1059-S01-C02,AC1059-S01,AC1059,Overheat,MAJOR,2024-09-25T22:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0437,AC1060-S02-C02,AC1060-S02,AC1060,Bearing wear,MAJOR,2024-09-22T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0438,AC1060-S02-C05,AC1060-S02,AC1060,Bearing wear,MINOR,2024-09-26T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0439,AC1061-S01-C04,AC1061-S01,AC1061,Bearing wear,MINOR,2024-08-13T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0440,AC1061-S01-C05,AC1061-S01,AC1061,Bearing wear,MINOR,2024-08-19T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0441,AC1061-S01-C04,AC1061-S01,AC1061,Bearing wear,MINOR,2024-08-22T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0442,AC1061-S01-C02,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-08-25T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0443,AC1061-S01-C03,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-08-28T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0444,AC1061-S01-C03,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-01T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0445,AC1061-S01-C04,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-04T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0446,AC1061-S01-C02,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-07T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0447,AC1061-S01-C04,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-11T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0448,AC1061-S01-C02,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-14T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0449,AC1061-S01-C04,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-18T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0450,AC1061-S01-C02,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-22T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0451,AC1061-S01-C01,AC1061-S01,AC1061,Vibration exceedance,CRITICAL,2024-09-26T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0452,AC1061-S02-C05,AC1061-S02,AC1061,Overheat,CRITICAL,2024-09-22T06:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0453,AC1061-S02-C05,AC1061-S02,AC1061,Sensor drift,MINOR,2024-09-26T09:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0454,AC1061-S02-C03,AC1061-S02,AC1061,Bearing wear,MAJOR,2024-09-28T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0455,AC1062-S02-C03,AC1062-S02,AC1062,Bearing wear,MINOR,2024-08-29T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0456,AC1062-S02-C02,AC1062-S02,AC1062,Bearing wear,MAJOR,2024-09-02T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0457,AC1062-S02-C04,AC1062-S02,AC1062,Overheat,MAJOR,2024-09-03T08:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0458,AC1062-S02-C02,AC1062-S02,AC1062,Bearing wear,MAJOR,2024-09-08T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0459,AC1062-S02-C01,AC1062-S02,AC1062,Bearing wear,MINOR,2024-09-11T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0460,AC1062-S02-C02,AC1062-S02,AC1062,Bearing wear,MINOR,2024-09-15T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0461,AC1062-S02-C04,AC1062-S02,AC1062,Overheat,MAJOR,2024-09-16T15:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0462,AC1062-S02-C05,AC1062-S02,AC1062,Vibration exceedance,CRITICAL,2024-09-18T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0463,AC1062-S02-C02,AC1062-S02,AC1062,Sensor drift,MINOR,2024-09-21T02:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0464,AC1062-S02-C04,AC1062-S02,AC1062,Vibration exceedance,CRITICAL,2024-09-21T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0465,AC1062-S02-C03,AC1062-S02,AC1062,Vibration exceedance,CRITICAL,2024-09-25T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0466,AC1062-S02-C02,AC1062-S02,AC1062,Vibration exceedance,CRITICAL,2024-09-28T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0467,AC1063-S01-C02,AC1063-S01,AC1063,Bearing wear,MAJOR,2024-08-03T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0468,AC1063-S01-C05,AC1063-S01,AC1063,Bearing wear,MAJOR,2024-08-07T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0469,AC1063-S01-C05,AC1063-S01,AC1063,Bearing wear,MAJOR,2024-08-10T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0470,AC1063-S01-C01,AC1063-S01,AC1063,Bearing wear,MAJOR,2024-08-13T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0471,AC1063-S01-C05,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-08-17T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0472,AC1063-S01-C03,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-08-21T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0473,AC1063-S01-C02,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-08-25T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0474,AC1063-S01-C03,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-08-29T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0475,AC1063-S01-C02,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-02T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0476,AC1063-S01-C02,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-05T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0477,AC1063-S01-C03,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-08T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0478,AC1063-S01-C04,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-11T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0479,AC1063-S01-C03,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-15T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0480,AC1063-S01-C04,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-19T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0481,AC1063-S01-C01,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-23T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0482,AC1063-S01-C04,AC1063-S01,AC1063,Vibration exceedance,CRITICAL,2024-09-26T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0483,AC1063-S01-C02,AC1063-S01,AC1063,Sensor drift,MINOR,2024-09-28T22:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0484,AC1063-S02-C04,AC1063-S02,AC1063,Bearing wear,MAJOR,2024-08-14T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0485,AC1063-S02-C05,AC1063-S02,AC1063,Bearing wear,MINOR,2024-08-20T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0486,AC1063-S02-C03,AC1063-S02,AC1063,Bearing wear,MAJOR,2024-08-23T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0487,AC1063-S02-C02,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-08-28T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0488,AC1063-S02-C01,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-08-31T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0489,AC1063-S02-C02,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-09-06T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0490,AC1063-S02-C01,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-09-12T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0491,AC1063-S02-C03,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-09-15T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0492,AC1063-S02-C05,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-09-18T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0493,AC1063-S02-C04,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-09-22T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0494,AC1063-S02-C05,AC1063-S02,AC1063,Vibration exceedance,CRITICAL,2024-09-25T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0495,AC1064-S01-C02,AC1064-S01,AC1064,Bearing wear,MAJOR,2024-09-27T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0496,AC1064-S02-C03,AC1064-S02,AC1064,Bearing wear,MINOR,2024-09-21T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0497,AC1064-S02-C05,AC1064-S02,AC1064,Bearing wear,MAJOR,2024-09-25T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0498,AC1065-S01-C05,AC1065-S01,AC1065,Bearing wear,MAJOR,2024-08-20T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0499,AC1065-S01-C04,AC1065-S01,AC1065,Bearing wear,MINOR,2024-08-25T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0500,AC1065-S01-C03,AC1065-S01,AC1065,Bearing wear,MINOR,2024-08-28T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0501,AC1065-S01-C01,AC1065-S01,AC1065,Bearing wear,MINOR,2024-08-31T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0502,AC1065-S01-C03,AC1065-S01,AC1065,Bearing wear,MAJOR,2024-09-07T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0503,AC1065-S01-C05,AC1065-S01,AC1065,Vibration exceedance,CRITICAL,2024-09-11T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0504,AC1065-S01-C01,AC1065-S01,AC1065,Vibration exceedance,CRITICAL,2024-09-14T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0505,AC1065-S01-C03,AC1065-S01,AC1065,Vibration exceedance,CRITICAL,2024-09-19T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0506,AC1065-S01-C05,AC1065-S01,AC1065,Vibration exceedance,CRITICAL,2024-09-22T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0507,AC1065-S01-C05,AC1065-S01,AC1065,Vibration exceedance,CRITICAL,2024-09-26T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0508,AC1065-S02-C02,AC1065-S02,AC1065,Bearing wear,MAJOR,2024-09-09T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0509,AC1065-S02-C01,AC1065-S02,AC1065,Bearing wear,MAJOR,2024-09-15T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0510,AC1065-S02-C02,AC1065-S02,AC1065,Bearing wear,MAJOR,2024-09-19T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0511,AC1065-S02-C03,AC1065-S02,AC1065,Bearing wear,MAJOR,2024-09-25T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0512,AC1065-S02-C05,AC1065-S02,AC1065,Bearing wear,MAJOR,2024-09-28T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0513,AC1068-S01-C03,AC1068-S01,AC1068,Bearing wear,MAJOR,2024-09-04T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0514,AC1068-S01-C01,AC1068-S01,AC1068,Bearing wear,MINOR,2024-09-11T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0515,AC1068-S01-C02,AC1068-S01,AC1068,Bearing wear,MINOR,2024-09-16T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0516,AC1068-S01-C03,AC1068-S01,AC1068,Bearing wear,MINOR,2024-09-19T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0517,AC1068-S01-C02,AC1068-S01,AC1068,Vibration exceedance,CRITICAL,2024-09-23T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0518,AC1068-S01-C04,AC1068-S01,AC1068,Vibration exceedance,CRITICAL,2024-09-27T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0519,AC1068-S02-C03,AC1068-S02,AC1068,Bearing wear,MAJOR,2024-08-23T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0520,AC1068-S02-C03,AC1068-S02,AC1068,Bearing wear,MAJOR,2024-08-30T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0521,AC1068-S02-C04,AC1068-S02,AC1068,Bearing wear,MAJOR,2024-09-02T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0522,AC1068-S02-C04,AC1068-S02,AC1068,Bearing wear,MINOR,2024-09-07T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0523,AC1068-S02-C03,AC1068-S02,AC1068,Vibration exceedance,CRITICAL,2024-09-11T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0524,AC1068-S02-C03,AC1068-S02,AC1068,Vibration exceedance,CRITICAL,2024-09-14T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0525,AC1068-S02-C02,AC1068-S02,AC1068,Vibration exceedance,CRITICAL,2024-09-17T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0526,AC1068-S02-C04,AC1068-S02,AC1068,Vibration exceedance,CRITICAL,2024-09-22T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0527,AC1068-S02-C02,AC1068-S02,AC1068,Vibration exceedance,CRITICAL,2024-09-25T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0528,AC1068-S02-C05,AC1068-S02,AC1068,Vibration exceedance,CRITICAL,2024-09-28T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0529,AC1071-S02-C01,AC1071-S02,AC1071,Bearing wear,MAJOR,2024-09-01T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0530,AC1071-S02-C05,AC1071-S02,AC1071,Bearing wear,MAJOR,2024-09-05T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0531,AC1071-S02-C01,AC1071-S02,AC1071,Bearing wear,MAJOR,2024-09-08T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0532,AC1071-S02-C01,AC1071-S02,AC1071,Bearing wear,MAJOR,2024-09-11T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0533,AC1071-S02-C04,AC1071-S02,AC1071,Bearing wear,MINOR,2024-09-17T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0534,AC1071-S02-C02,AC1071-S02,AC1071,Bearing wear,MAJOR,2024-09-20T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0535,AC1071-S02-C04,AC1071-S02,AC1071,Vibration exceedance,CRITICAL,2024-09-28T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0536,AC1072-S01-C03,AC1072-S01,AC1072,Bearing wear,MINOR,2024-08-09T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0537,AC1072-S01-C02,AC1072-S01,AC1072,Bearing wear,MINOR,2024-08-15T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0538,AC1072-S01-C04,AC1072-S01,AC1072,Bearing wear,MAJOR,2024-08-18T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0539,AC1072-S01-C02,AC1072-S01,AC1072,Bearing wear,MAJOR,2024-08-22T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0540,AC1072-S01-C01,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-08-26T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0541,AC1072-S01-C05,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-08-30T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0542,AC1072-S01-C01,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-02T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0543,AC1072-S01-C03,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-06T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0544,AC1072-S01-C05,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-09T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0545,AC1072-S01-C05,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-12T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0546,AC1072-S01-C02,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-15T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0547,AC1072-S01-C01,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-19T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0548,AC1072-S01-C01,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-23T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0549,AC1072-S01-C02,AC1072-S01,AC1072,Vibration exceedance,CRITICAL,2024-09-26T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0550,AC1072-S02-C01,AC1072-S02,AC1072,Bearing wear,MINOR,2024-08-22T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0551,AC1072-S02-C01,AC1072-S02,AC1072,Bearing wear,MAJOR,2024-08-25T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0552,AC1072-S02-C02,AC1072-S02,AC1072,Bearing wear,MAJOR,2024-08-29T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0553,AC1072-S02-C03,AC1072-S02,AC1072,Bearing wear,MINOR,2024-09-01T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0554,AC1072-S02-C02,AC1072-S02,AC1072,Bearing wear,MAJOR,2024-09-05T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0555,AC1072-S02-C04,AC1072-S02,AC1072,Vibration exceedance,CRITICAL,2024-09-10T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0556,AC1072-S02-C02,AC1072-S02,AC1072,Vibration exceedance,CRITICAL,2024-09-14T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0557,AC1072-S02-C04,AC1072-S02,AC1072,Vibration exceedance,CRITICAL,2024-09-17T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0558,AC1072-S02-C05,AC1072-S02,AC1072,Vibration exceedance,CRITICAL,2024-09-20T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0559,AC1072-S02-C02,AC1072-S02,AC1072,Vibration exceedance,CRITICAL,2024-09-24T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0560,AC1073-S01-C04,AC1073-S01,AC1073,Bearing wear,MINOR,2024-08-17T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0561,AC1073-S01-C02,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-08-22T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0562,AC1073-S01-C02,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-08-25T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0563,AC1073-S01-C04,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-08-29T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0564,AC1073-S01-C05,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-02T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0565,AC1073-S01-C05,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-05T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0566,AC1073-S01-C02,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-10T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0567,AC1073-S01-C05,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-13T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0568,AC1073-S01-C03,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-16T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0569,AC1073-S01-C03,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-20T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0570,AC1073-S01-C04,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-23T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0571,AC1073-S01-C05,AC1073-S01,AC1073,Vibration exceedance,CRITICAL,2024-09-26T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0572,AC1073-S02-C02,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-08-21T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0573,AC1073-S02-C03,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-08-25T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0574,AC1073-S02-C03,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-08-29T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0575,AC1073-S02-C04,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-02T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0576,AC1073-S02-C05,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-05T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0577,AC1073-S02-C04,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-08T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0578,AC1073-S02-C03,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-12T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0579,AC1073-S02-C04,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-17T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0580,AC1073-S02-C05,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-20T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0581,AC1073-S02-C01,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-23T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0582,AC1073-S02-C03,AC1073-S02,AC1073,Vibration exceedance,CRITICAL,2024-09-26T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0583,AC1074-S01-C04,AC1074-S01,AC1074,Bearing wear,MAJOR,2024-08-22T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0584,AC1074-S01-C03,AC1074-S01,AC1074,Bearing wear,MAJOR,2024-08-28T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0585,AC1074-S01-C02,AC1074-S01,AC1074,Bearing wear,MAJOR,2024-09-02T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0586,AC1074-S01-C05,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-06T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0587,AC1074-S01-C04,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-09T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0588,AC1074-S01-C02,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-14T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0589,AC1074-S01-C05,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-17T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0590,AC1074-S01-C02,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-20T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0591,AC1074-S01-C02,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-24T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0592,AC1074-S01-C01,AC1074-S01,AC1074,Vibration exceedance,CRITICAL,2024-09-28T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0593,AC1074-S02-C02,AC1074-S02,AC1074,Bearing wear,MAJOR,2024-08-24T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0594,AC1074-S02-C04,AC1074-S02,AC1074,Bearing wear,MINOR,2024-08-27T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0595,AC1074-S02-C02,AC1074-S02,AC1074,Bearing wear,MAJOR,2024-09-01T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0596,AC1074-S02-C02,AC1074-S02,AC1074,Bearing wear,MAJOR,2024-09-04T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0597,AC1074-S02-C01,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-07T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0598,AC1074-S02-C05,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-10T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0599,AC1074-S02-C03,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-14T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0600,AC1074-S02-C02,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-17T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0601,AC1074-S02-C01,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-20T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0602,AC1074-S02-C05,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-24T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0603,AC1074-S02-C01,AC1074-S02,AC1074,Vibration exceedance,CRITICAL,2024-09-28T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0604,AC1075-S02-C05,AC1075-S02,AC1075,Bearing wear,MINOR,2024-09-15T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0605,AC1075-S02-C02,AC1075-S02,AC1075,Bearing wear,MINOR,2024-09-23T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0606,AC1075-S02-C03,AC1075-S02,AC1075,Bearing wear,MINOR,2024-09-26T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0607,AC1076-S01-C02,AC1076-S01,AC1076,Bearing wear,MAJOR,2024-09-12T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0608,AC1076-S01-C04,AC1076-S01,AC1076,Bearing wear,MINOR,2024-09-15T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0609,AC1076-S01-C02,AC1076-S01,AC1076,Bearing wear,MAJOR,2024-09-19T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0610,AC1076-S01-C01,AC1076-S01,AC1076,Bearing wear,MAJOR,2024-09-22T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0611,AC1076-S01-C03,AC1076-S01,AC1076,Bearing wear,MAJOR,2024-09-28T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0612,AC1076-S02-C02,AC1076-S02,AC1076,Bearing wear,MINOR,2024-09-22T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0613,AC1076-S02-C01,AC1076-S02,AC1076,Bearing wear,MINOR,2024-09-26T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0614,AC1077-S01-C04,AC1077-S01,AC1077,Bearing wear,MAJOR,2024-08-31T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0615,AC1077-S01-C02,AC1077-S01,AC1077,Bearing wear,MINOR,2024-09-05T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0616,AC1077-S01-C03,AC1077-S01,AC1077,Bearing wear,MAJOR,2024-09-10T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0617,AC1077-S01-C02,AC1077-S01,AC1077,Bearing wear,MINOR,2024-09-14T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0618,AC1077-S01-C04,AC1077-S01,AC1077,Vibration exceedance,CRITICAL,2024-09-19T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0619,AC1077-S01-C04,AC1077-S01,AC1077,Vibration exceedance,CRITICAL,2024-09-23T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0620,AC1077-S01-C05,AC1077-S01,AC1077,Vibration exceedance,CRITICAL,2024-09-26T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0621,AC1077-S02-C02,AC1077-S02,AC1077,Bearing wear,MINOR,2024-09-05T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0622,AC1077-S02-C05,AC1077-S02,AC1077,Bearing wear,MAJOR,2024-09-08T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0623,AC1077-S02-C01,AC1077-S02,AC1077,Overheat,MAJOR,2024-09-12T03:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0624,AC1077-S02-C03,AC1077-S02,AC1077,Vibration exceedance,CRITICAL,2024-09-12T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0625,AC1077-S02-C03,AC1077-S02,AC1077,Vibration exceedance,CRITICAL,2024-09-18T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0626,AC1077-S02-C02,AC1077-S02,AC1077,Overheat,MAJOR,2024-09-19T17:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0627,AC1077-S02-C03,AC1077-S02,AC1077,Vibration exceedance,CRITICAL,2024-09-22T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0628,AC1077-S02-C01,AC1077-S02,AC1077,Vibration exceedance,CRITICAL,2024-09-25T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0629,AC1077-S02-C01,AC1077-S02,AC1077,Vibration exceedance,CRITICAL,2024-09-28T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0630,AC1078-S02-C04,AC1078-S02,AC1078,Bearing wear,MINOR,2024-09-04T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0631,AC1078-S02-C01,AC1078-S02,AC1078,Bearing wear,MINOR,2024-09-09T18:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0632,AC1078-S02-C04,AC1078-S02,AC1078,Bearing wear,MAJOR,2024-09-13T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0633,AC1078-S02-C03,AC1078-S02,AC1078,Bearing wear,MINOR,2024-09-16T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0634,AC1078-S02-C02,AC1078-S02,AC1078,Bearing wear,MAJOR,2024-09-21T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0635,AC1078-S02-C05,AC1078-S02,AC1078,Bearing wear,MAJOR,2024-09-26T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0636,AC1079-S01-C05,AC1079-S01,AC1079,Bearing wear,MINOR,2024-09-12T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0637,AC1079-S01-C05,AC1079-S01,AC1079,Bearing wear,MAJOR,2024-09-21T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0638,AC1079-S01-C03,AC1079-S01,AC1079,Bearing wear,MINOR,2024-09-27T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0639,AC1079-S02-C05,AC1079-S02,AC1079,Bearing wear,MINOR,2024-09-10T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0640,AC1079-S02-C03,AC1079-S02,AC1079,Bearing wear,MAJOR,2024-09-17T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0641,AC1079-S02-C03,AC1079-S02,AC1079,Bearing wear,MAJOR,2024-09-21T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0642,AC1080-S01-C02,AC1080-S01,AC1080,Bearing wear,MAJOR,2024-09-20T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0643,AC1082-S01-C03,AC1082-S01,AC1082,Overheat,MAJOR,2024-09-03T23:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0644,AC1082-S01-C05,AC1082-S01,AC1082,Overheat,CRITICAL,2024-09-14T23:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0645,AC1082-S01-C01,AC1082-S01,AC1082,Bearing wear,MAJOR,2024-09-16T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0646,AC1082-S01-C05,AC1082-S01,AC1082,Overheat,CRITICAL,2024-09-21T23:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0647,AC1082-S01-C02,AC1082-S01,AC1082,Overheat,MAJOR,2024-09-25T03:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0648,AC1082-S01-C05,AC1082-S01,AC1082,Bearing wear,MAJOR,2024-09-26T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0649,AC1082-S01-C01,AC1082-S01,AC1082,Overheat,CRITICAL,2024-09-28T17:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0650,AC1082-S02-C03,AC1082-S02,AC1082,Bearing wear,MAJOR,2024-08-09T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0651,AC1082-S02-C03,AC1082-S02,AC1082,Bearing wear,MAJOR,2024-08-20T01:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0652,AC1082-S02-C04,AC1082-S02,AC1082,Bearing wear,MAJOR,2024-08-23T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0653,AC1082-S02-C05,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-08-26T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0654,AC1082-S02-C01,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-08-31T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0655,AC1082-S02-C03,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-04T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0656,AC1082-S02-C01,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-07T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0657,AC1082-S02-C05,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-10T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0658,AC1082-S02-C01,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-14T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0659,AC1082-S02-C01,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-17T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0660,AC1082-S02-C02,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-21T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0661,AC1082-S02-C05,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-24T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0662,AC1082-S02-C03,AC1082-S02,AC1082,Vibration exceedance,CRITICAL,2024-09-27T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0663,AC1083-S01-C01,AC1083-S01,AC1083,Bearing wear,MAJOR,2024-08-09T16:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0664,AC1083-S01-C02,AC1083-S01,AC1083,Bearing wear,MINOR,2024-08-14T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0665,AC1083-S01-C01,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-08-17T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0666,AC1083-S01-C03,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-08-20T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0667,AC1083-S01-C04,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-08-24T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0668,AC1083-S01-C05,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-08-27T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0669,AC1083-S01-C02,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-08-30T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0670,AC1083-S01-C05,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-02T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0671,AC1083-S01-C04,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-07T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0672,AC1083-S01-C03,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-10T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0673,AC1083-S01-C04,AC1083-S01,AC1083,Sensor drift,MINOR,2024-09-11T14:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0674,AC1083-S01-C05,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-13T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0675,AC1083-S01-C04,AC1083-S01,AC1083,Overheat,CRITICAL,2024-09-16T02:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0676,AC1083-S01-C05,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-17T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0677,AC1083-S01-C03,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-20T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0678,AC1083-S01-C03,AC1083-S01,AC1083,Sensor drift,MINOR,2024-09-21T05:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0679,AC1083-S01-C05,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-23T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0680,AC1083-S01-C04,AC1083-S01,AC1083,Overheat,MAJOR,2024-09-26T05:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0681,AC1083-S01-C05,AC1083-S01,AC1083,Vibration exceedance,CRITICAL,2024-09-27T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0682,AC1083-S02-C03,AC1083-S02,AC1083,Bearing wear,MAJOR,2024-08-02T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0683,AC1083-S02-C01,AC1083-S02,AC1083,Bearing wear,MINOR,2024-08-06T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0684,AC1083-S02-C04,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-10T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0685,AC1083-S02-C01,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-13T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0686,AC1083-S02-C03,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-17T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0687,AC1083-S02-C02,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-20T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0688,AC1083-S02-C02,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-23T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0689,AC1083-S02-C02,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-26T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0690,AC1083-S02-C03,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-08-30T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0691,AC1083-S02-C01,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-02T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0692,AC1083-S02-C05,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-06T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0693,AC1083-S02-C02,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-09T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0694,AC1083-S02-C05,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-14T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0695,AC1083-S02-C01,AC1083-S02,AC1083,Overheat,CRITICAL,2024-09-17T11:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0696,AC1083-S02-C03,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-17T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0697,AC1083-S02-C05,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-20T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0698,AC1083-S02-C02,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-23T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0699,AC1083-S02-C05,AC1083-S02,AC1083,Overheat,CRITICAL,2024-09-26T10:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0700,AC1083-S02-C02,AC1083-S02,AC1083,Vibration exceedance,CRITICAL,2024-09-28T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0701,AC1084-S02-C04,AC1084-S02,AC1084,Bearing wear,MINOR,2024-09-02T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0702,AC1084-S02-C01,AC1084-S02,AC1084,Bearing wear,MAJOR,2024-09-06T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0703,AC1084-S02-C04,AC1084-S02,AC1084,Bearing wear,MAJOR,2024-09-11T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0704,AC1084-S02-C03,AC1084-S02,AC1084,Bearing wear,MINOR,2024-09-14T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0705,AC1084-S02-C05,AC1084-S02,AC1084,Vibration exceedance,CRITICAL,2024-09-18T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0706,AC1084-S02-C05,AC1084-S02,AC1084,Bearing wear,MINOR,2024-09-22T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0707,AC1084-S02-C03,AC1084-S02,AC1084,Vibration exceedance,CRITICAL,2024-09-26T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0708,AC1085-S01-C03,AC1085-S01,AC1085,Bearing wear,MAJOR,2024-09-21T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0709,AC1085-S01-C03,AC1085-S01,AC1085,Bearing wear,MAJOR,2024-09-25T04:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0710,AC1085-S01-C04,AC1085-S01,AC1085,Bearing wear,MINOR,2024-09-28T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0711,AC1085-S02-C02,AC1085-S02,AC1085,Bearing wear,MAJOR,2024-09-01T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0712,AC1085-S02-C01,AC1085-S02,AC1085,Bearing wear,MAJOR,2024-09-10T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0713,AC1085-S02-C03,AC1085-S02,AC1085,Bearing wear,MAJOR,2024-09-14T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0714,AC1085-S02-C05,AC1085-S02,AC1085,Bearing wear,MAJOR,2024-09-17T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0715,AC1085-S02-C02,AC1085-S02,AC1085,Vibration exceedance,CRITICAL,2024-09-21T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0716,AC1085-S02-C01,AC1085-S02,AC1085,Vibration exceedance,CRITICAL,2024-09-24T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0717,AC1085-S02-C02,AC1085-S02,AC1085,Vibration exceedance,CRITICAL,2024-09-27T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0718,AC1086-S01-C04,AC1086-S01,AC1086,Bearing wear,MAJOR,2024-08-24T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0719,AC1086-S01-C04,AC1086-S01,AC1086,Bearing wear,MINOR,2024-08-28T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0720,AC1086-S01-C04,AC1086-S01,AC1086,Bearing wear,MAJOR,2024-08-31T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0721,AC1086-S01-C02,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-05T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0722,AC1086-S01-C01,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-09T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0723,AC1086-S01-C05,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-13T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0724,AC1086-S01-C01,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-17T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0725,AC1086-S01-C03,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-20T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0726,AC1086-S01-C05,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-23T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0727,AC1086-S01-C05,AC1086-S01,AC1086,Vibration exceedance,CRITICAL,2024-09-27T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0728,AC1086-S02-C02,AC1086-S02,AC1086,Bearing wear,MINOR,2024-08-15T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0729,AC1086-S02-C03,AC1086-S02,AC1086,Bearing wear,MINOR,2024-08-19T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0730,AC1086-S02-C02,AC1086-S02,AC1086,Bearing wear,MINOR,2024-08-24T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0731,AC1086-S02-C03,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-08-29T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0732,AC1086-S02-C02,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-01T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0733,AC1086-S02-C04,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-04T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0734,AC1086-S02-C05,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-08T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0735,AC1086-S02-C04,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-11T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0736,AC1086-S02-C05,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-14T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0737,AC1086-S02-C03,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-18T00:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0738,AC1086-S02-C01,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-21T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0739,AC1086-S02-C04,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-24T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0740,AC1086-S02-C02,AC1086-S02,AC1086,Vibration exceedance,CRITICAL,2024-09-28T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0741,AC1087-S02-C03,AC1087-S02,AC1087,Bearing wear,MINOR,2024-08-29T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0742,AC1087-S02-C02,AC1087-S02,AC1087,Bearing wear,MINOR,2024-09-01T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0743,AC1087-S02-C05,AC1087-S02,AC1087,Bearing wear,MINOR,2024-09-09T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0744,AC1087-S02-C05,AC1087-S02,AC1087,Bearing wear,MAJOR,2024-09-14T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0745,AC1087-S02-C01,AC1087-S02,AC1087,Vibration exceedance,CRITICAL,2024-09-20T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0746,AC1087-S02-C02,AC1087-S02,AC1087,Vibration exceedance,CRITICAL,2024-09-23T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0747,AC1087-S02-C04,AC1087-S02,AC1087,Vibration exceedance,CRITICAL,2024-09-26T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0748,AC1089-S01-C02,AC1089-S01,AC1089,Bearing wear,MAJOR,2024-09-04T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0749,AC1089-S01-C01,AC1089-S01,AC1089,Bearing wear,MINOR,2024-09-12T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0750,AC1089-S01-C05,AC1089-S01,AC1089,Vibration exceedance,CRITICAL,2024-09-16T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0751,AC1089-S01-C02,AC1089-S01,AC1089,Vibration exceedance,CRITICAL,2024-09-24T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0752,AC1089-S01-C05,AC1089-S01,AC1089,Vibration exceedance,CRITICAL,2024-09-28T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0753,AC1090-S01-C01,AC1090-S01,AC1090,Bearing wear,MINOR,2024-08-20T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0754,AC1090-S01-C02,AC1090-S01,AC1090,Bearing wear,MAJOR,2024-08-25T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0755,AC1090-S01-C04,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-08-29T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0756,AC1090-S01-C04,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-01T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0757,AC1090-S01-C05,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-05T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0758,AC1090-S01-C03,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-09T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0759,AC1090-S01-C04,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-12T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0760,AC1090-S01-C04,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-15T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0761,AC1090-S01-C05,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-20T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0762,AC1090-S01-C04,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-23T11:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0763,AC1090-S01-C01,AC1090-S01,AC1090,Vibration exceedance,CRITICAL,2024-09-26T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0764,AC1091-S01-C04,AC1091-S01,AC1091,Bearing wear,MAJOR,2024-09-01T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0765,AC1091-S01-C04,AC1091-S01,AC1091,Bearing wear,MAJOR,2024-09-05T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0766,AC1091-S01-C01,AC1091-S01,AC1091,Bearing wear,MAJOR,2024-09-11T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0767,AC1091-S01-C05,AC1091-S01,AC1091,Bearing wear,MINOR,2024-09-15T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0768,AC1091-S01-C05,AC1091-S01,AC1091,Vibration exceedance,CRITICAL,2024-09-19T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0769,AC1091-S01-C02,AC1091-S01,AC1091,Vibration exceedance,CRITICAL,2024-09-22T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0770,AC1091-S01-C01,AC1091-S01,AC1091,Vibration exceedance,CRITICAL,2024-09-27T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0771,AC1092-S01-C01,AC1092-S01,AC1092,Bearing wear,MAJOR,2024-08-26T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0772,AC1092-S01-C04,AC1092-S01,AC1092,Bearing wear,MAJOR,2024-09-01T09:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0773,AC1092-S01-C03,AC1092-S01,AC1092,Sensor drift,MINOR,2024-09-03T02:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0774,AC1092-S01-C02,AC1092-S01,AC1092,Bearing wear,MAJOR,2024-09-07T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0775,AC1092-S01-C03,AC1092-S01,AC1092,Overheat,CRITICAL,2024-09-12T00:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0776,AC1092-S01-C02,AC1092-S01,AC1092,Overheat,CRITICAL,2024-09-15T13:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0777,AC1092-S01-C04,AC1092-S01,AC1092,Bearing wear,MAJOR,2024-09-16T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0778,AC1092-S01-C04,AC1092-S01,AC1092,Sensor drift,MINOR,2024-09-18T17:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0779,AC1092-S01-C03,AC1092-S01,AC1092,Vibration exceedance,CRITICAL,2024-09-20T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0780,AC1092-S01-C01,AC1092-S01,AC1092,Vibration exceedance,CRITICAL,2024-09-24T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0781,AC1092-S01-C05,AC1092-S01,AC1092,Overheat,CRITICAL,2024-09-26T14:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0782,AC1092-S02-C02,AC1092-S02,AC1092,Bearing wear,MAJOR,2024-09-04T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0783,AC1092-S02-C02,AC1092-S02,AC1092,Bearing wear,MINOR,2024-09-08T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0784,AC1092-S02-C01,AC1092-S02,AC1092,Overheat,MAJOR,2024-09-14T13:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0785,AC1092-S02-C03,AC1092-S02,AC1092,Bearing wear,MAJOR,2024-09-15T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0786,AC1092-S02-C03,AC1092-S02,AC1092,Bearing wear,MINOR,2024-09-19T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0787,AC1092-S02-C02,AC1092-S02,AC1092,Overheat,MAJOR,2024-09-22T07:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0788,AC1092-S02-C01,AC1092-S02,AC1092,Vibration exceedance,CRITICAL,2024-09-24T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0789,AC1092-S02-C03,AC1092-S02,AC1092,Sensor drift,MINOR,2024-09-25T20:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0790,AC1093-S01-C05,AC1093-S01,AC1093,Bearing wear,MINOR,2024-08-14T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0791,AC1093-S01-C02,AC1093-S01,AC1093,Bearing wear,MINOR,2024-08-19T08:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0792,AC1093-S01-C05,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-08-25T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0793,AC1093-S01-C03,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-08-29T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0794,AC1093-S01-C03,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-02T12:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0795,AC1093-S01-C03,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-06T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0796,AC1093-S01-C02,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-11T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0797,AC1093-S01-C02,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-14T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0798,AC1093-S01-C01,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-18T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0799,AC1093-S01-C01,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-21T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0800,AC1093-S01-C02,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-24T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0801,AC1093-S01-C02,AC1093-S01,AC1093,Vibration exceedance,CRITICAL,2024-09-27T20:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0802,AC1093-S02-C03,AC1093-S02,AC1093,Bearing wear,MINOR,2024-08-09T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0803,AC1093-S02-C03,AC1093-S02,AC1093,Bearing wear,MAJOR,2024-08-14T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0804,AC1093-S02-C02,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-08-21T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0805,AC1093-S02-C05,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-08-25T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0806,AC1093-S02-C01,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-08-28T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0807,AC1093-S02-C05,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-08-31T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0808,AC1093-S02-C02,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-03T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0809,AC1093-S02-C05,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-06T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0810,AC1093-S02-C04,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-10T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0811,AC1093-S02-C01,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-13T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0812,AC1093-S02-C03,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-17T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0813,AC1093-S02-C01,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-22T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0814,AC1093-S02-C04,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-25T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0815,AC1093-S02-C05,AC1093-S02,AC1093,Vibration exceedance,CRITICAL,2024-09-28T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0816,AC1094-S01-C01,AC1094-S01,AC1094,Bearing wear,MINOR,2024-08-28T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0817,AC1094-S01-C01,AC1094-S01,AC1094,Bearing wear,MINOR,2024-09-02T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0818,AC1094-S01-C03,AC1094-S01,AC1094,Bearing wear,MAJOR,2024-09-06T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0819,AC1094-S01-C01,AC1094-S01,AC1094,Vibration exceedance,CRITICAL,2024-09-11T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0820,AC1094-S01-C01,AC1094-S01,AC1094,Vibration exceedance,CRITICAL,2024-09-14T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0821,AC1094-S01-C04,AC1094-S01,AC1094,Vibration exceedance,CRITICAL,2024-09-17T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0822,AC1094-S01-C01,AC1094-S01,AC1094,Vibration exceedance,CRITICAL,2024-09-20T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0823,AC1094-S01-C02,AC1094-S01,AC1094,Vibration exceedance,CRITICAL,2024-09-25T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0824,AC1094-S02-C01,AC1094-S02,AC1094,Bearing wear,MAJOR,2024-09-16T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0825,AC1094-S02-C05,AC1094-S02,AC1094,Overheat,MAJOR,2024-09-17T11:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0826,AC1094-S02-C01,AC1094-S02,AC1094,Overheat,MAJOR,2024-09-23T06:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0827,AC1094-S02-C04,AC1094-S02,AC1094,Bearing wear,MINOR,2024-09-27T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0828,AC1095-S01-C04,AC1095-S01,AC1095,Overheat,MAJOR,2024-09-13T10:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0829,AC1095-S01-C05,AC1095-S01,AC1095,Bearing wear,MAJOR,2024-09-17T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0830,AC1095-S01-C02,AC1095-S01,AC1095,Bearing wear,MAJOR,2024-09-23T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0831,AC1095-S01-C02,AC1095-S01,AC1095,Bearing wear,MAJOR,2024-09-26T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0832,AC1095-S02-C02,AC1095-S02,AC1095,Bearing wear,MAJOR,2024-08-18T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0833,AC1095-S02-C01,AC1095-S02,AC1095,Bearing wear,MAJOR,2024-08-24T05:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0834,AC1095-S02-C05,AC1095-S02,AC1095,Bearing wear,MAJOR,2024-08-30T19:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0835,AC1095-S02-C03,AC1095-S02,AC1095,Bearing wear,MAJOR,2024-09-03T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0836,AC1095-S02-C05,AC1095-S02,AC1095,Vibration exceedance,CRITICAL,2024-09-07T08:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0837,AC1095-S02-C03,AC1095-S02,AC1095,Vibration exceedance,CRITICAL,2024-09-11T16:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0838,AC1095-S02-C01,AC1095-S02,AC1095,Vibration exceedance,CRITICAL,2024-09-14T21:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0839,AC1095-S02-C03,AC1095-S02,AC1095,Vibration exceedance,CRITICAL,2024-09-18T19:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0840,AC1095-S02-C04,AC1095-S02,AC1095,Vibration exceedance,CRITICAL,2024-09-23T03:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0841,AC1095-S02-C03,AC1095-S02,AC1095,Vibration exceedance,CRITICAL,2024-09-26T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0842,AC1096-S01-C04,AC1096-S01,AC1096,Bearing wear,MAJOR,2024-09-25T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0843,AC1096-S02-C05,AC1096-S02,AC1096,Bearing wear,MINOR,2024-08-29T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0844,AC1096-S02-C05,AC1096-S02,AC1096,Bearing wear,MAJOR,2024-09-02T06:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0845,AC1096-S02-C02,AC1096-S02,AC1096,Bearing wear,MAJOR,2024-09-09T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0846,AC1096-S02-C02,AC1096-S02,AC1096,Bearing wear,MINOR,2024-09-15T11:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0847,AC1096-S02-C05,AC1096-S02,AC1096,Vibration exceedance,CRITICAL,2024-09-19T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0848,AC1096-S02-C01,AC1096-S02,AC1096,Vibration exceedance,CRITICAL,2024-09-22T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0849,AC1096-S02-C03,AC1096-S02,AC1096,Vibration exceedance,CRITICAL,2024-09-26T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0850,AC1098-S01-C03,AC1098-S01,AC1098,Bearing wear,MINOR,2024-08-18T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0851,AC1098-S01-C05,AC1098-S01,AC1098,Bearing wear,MAJOR,2024-08-25T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0852,AC1098-S01-C01,AC1098-S01,AC1098,Bearing wear,MINOR,2024-08-29T23:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0853,AC1098-S01-C05,AC1098-S01,AC1098,Bearing wear,MAJOR,2024-09-03T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0854,AC1098-S01-C05,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-06T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0855,AC1098-S01-C05,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-09T09:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0856,AC1098-S01-C05,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-12T18:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0857,AC1098-S01-C05,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-17T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0858,AC1098-S01-C03,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-21T05:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0859,AC1098-S01-C03,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-24T06:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0860,AC1098-S01-C04,AC1098-S01,AC1098,Vibration exceedance,CRITICAL,2024-09-28T04:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0861,AC1098-S02-C02,AC1098-S02,AC1098,Bearing wear,MAJOR,2024-08-23T13:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0862,AC1098-S02-C05,AC1098-S02,AC1098,Bearing wear,MAJOR,2024-09-05T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0863,AC1098-S02-C03,AC1098-S02,AC1098,Bearing wear,MAJOR,2024-09-08T17:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0864,AC1098-S02-C02,AC1098-S02,AC1098,Overheat,MAJOR,2024-09-09T01:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0865,AC1098-S02-C02,AC1098-S02,AC1098,Bearing wear,MAJOR,2024-09-14T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0866,AC1098-S02-C02,AC1098-S02,AC1098,Vibration exceedance,CRITICAL,2024-09-20T01:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0867,AC1098-S02-C05,AC1098-S02,AC1098,Vibration exceedance,CRITICAL,2024-09-23T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0868,AC1098-S02-C01,AC1098-S02,AC1098,Overheat,CRITICAL,2024-09-25T12:00:00,Inspected hot section; replaced affected turbine stage and seals
+ME0869,AC1098-S02-C01,AC1098-S02,AC1098,Vibration exceedance,CRITICAL,2024-09-26T17:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0870,AC1099-S01-C02,AC1099-S01,AC1099,Bearing wear,MAJOR,2024-09-06T03:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0871,AC1099-S01-C02,AC1099-S01,AC1099,Bearing wear,MINOR,2024-09-09T14:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0872,AC1099-S01-C05,AC1099-S01,AC1099,Bearing wear,MAJOR,2024-09-13T20:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0873,AC1099-S01-C05,AC1099-S01,AC1099,Sensor drift,MINOR,2024-09-14T00:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0874,AC1099-S01-C04,AC1099-S01,AC1099,Bearing wear,MAJOR,2024-09-18T02:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0875,AC1099-S01-C01,AC1099-S01,AC1099,Vibration exceedance,CRITICAL,2024-09-24T10:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0876,AC1099-S01-C05,AC1099-S01,AC1099,Sensor drift,MINOR,2024-09-27T10:00:00,Replaced sensor unit and recalibrated engine monitoring system
+ME0877,AC1099-S01-C04,AC1099-S01,AC1099,Vibration exceedance,CRITICAL,2024-09-27T15:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0878,AC1099-S02-C05,AC1099-S02,AC1099,Bearing wear,MAJOR,2024-08-18T07:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0879,AC1099-S02-C03,AC1099-S02,AC1099,Bearing wear,MAJOR,2024-08-21T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0880,AC1099-S02-C05,AC1099-S02,AC1099,Bearing wear,MAJOR,2024-08-27T22:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0881,AC1099-S02-C04,AC1099-S02,AC1099,Bearing wear,MAJOR,2024-09-02T10:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0882,AC1099-S02-C03,AC1099-S02,AC1099,Bearing wear,MAJOR,2024-09-05T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0883,AC1099-S02-C05,AC1099-S02,AC1099,Bearing wear,MAJOR,2024-09-09T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0884,AC1099-S02-C01,AC1099-S02,AC1099,Vibration exceedance,CRITICAL,2024-09-14T07:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0885,AC1099-S02-C03,AC1099-S02,AC1099,Vibration exceedance,CRITICAL,2024-09-17T22:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0886,AC1099-S02-C05,AC1099-S02,AC1099,Vibration exceedance,CRITICAL,2024-09-21T02:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0887,AC1099-S02-C03,AC1099-S02,AC1099,Vibration exceedance,CRITICAL,2024-09-24T13:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0888,AC1100-S02-C03,AC1100-S02,AC1100,Bearing wear,MINOR,2024-09-03T12:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0889,AC1100-S02-C04,AC1100-S02,AC1100,Bearing wear,MINOR,2024-09-09T00:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0890,AC1100-S02-C04,AC1100-S02,AC1100,Bearing wear,MAJOR,2024-09-13T15:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0891,AC1100-S02-C05,AC1100-S02,AC1100,Bearing wear,MINOR,2024-09-19T21:00:00,Replaced bearing assembly; flushed and refilled lubrication system
+ME0892,AC1100-S02-C02,AC1100-S02,AC1100,Vibration exceedance,CRITICAL,2024-09-24T14:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
+ME0893,AC1100-S02-C02,AC1100-S02,AC1100,Vibration exceedance,CRITICAL,2024-09-27T23:00:00,Balanced rotating assembly; replaced damper pads and inspected bearings
