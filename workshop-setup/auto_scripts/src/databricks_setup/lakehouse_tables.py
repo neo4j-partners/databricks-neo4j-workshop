@@ -13,10 +13,10 @@ from .utils import print_header
 from .warehouse import execute_sql
 
 EXPECTED_ROW_COUNTS: dict[str, int] = {
-    "aircraft": 20,
-    "systems": 80,
-    "sensors": 160,
-    "sensor_readings": 345600,
+    "aircraft": 100,
+    "systems": 400,
+    "sensors": 800,
+    "sensor_readings": 432000,
 }
 
 
@@ -122,10 +122,10 @@ def get_comment_sql(volume_config: VolumeConfig) -> list[str]:
         f"COMMENT ON COLUMN {target}.sensors.type IS 'Sensor type: EGT (Exhaust Gas Temperature in Celsius), Vibration (ips), N1Speed (RPM), FuelFlow (kg/s)'",
         f"COMMENT ON COLUMN {target}.sensors.unit IS 'Unit of measurement'",
         # Sensor readings table
-        f"COMMENT ON TABLE {target}.sensor_readings IS 'Hourly sensor readings over 90 days (July-September 2024)'",
+        f"COMMENT ON TABLE {target}.sensor_readings IS 'Sensor readings every 4 hours over 90 days (July-September 2024)'",
         f"COMMENT ON COLUMN {target}.sensor_readings.reading_id IS 'Unique reading identifier'",
         f"COMMENT ON COLUMN {target}.sensor_readings.sensor_id IS 'Foreign key to sensors table'",
-        f"COMMENT ON COLUMN {target}.sensor_readings.timestamp IS 'Reading timestamp (hourly intervals)'",
+        f"COMMENT ON COLUMN {target}.sensor_readings.timestamp IS 'Reading timestamp (4-hour intervals)'",
         f"COMMENT ON COLUMN {target}.sensor_readings.value IS 'Sensor reading value in the sensor unit'",
     ]
 
