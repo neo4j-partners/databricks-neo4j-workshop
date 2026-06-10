@@ -40,24 +40,23 @@ The notebook will be created in `workshop-setup/`, as `workshop-setup/notebooks/
 - Participants in their own workspace use the defaults; participants on a shared workspace prefix the catalog with their username; admins enter the shared catalog name once.
 - Note that catalog creation needs metastore privileges; if it fails, use a catalog an admin created for you.
 
-### Cell 4: Download the data from GitHub (code) — to be decided, added later
+### Cell 4: Download the data from GitHub (code)
 
-> **Status**: the approach for getting the data into the volume is still to be decided. This cell will be designed and added in a later revision. The notes below capture the current thinking.
-
-- The dataset is now committed directly in the repo: `workshop-setup/aircraft_digital_twin_data/` holds the 22 CSVs (generated at a 4-hour reading interval, so `nodes_readings.csv` is ~29 MB, under GitHub's 100 MB limit) plus the 5 maintenance manuals Lab 3 needs. A GitHub release asset is only needed if the workshop switches to the full hourly readings file (~114 MB), which can be produced with `populate-aircraft-db generate --readings-only --reading-interval 1`.
-- The cell mirrors the `data_loader.py` pattern from the `graph-on-databricks/aircraft-graphrag` project:
-  - A `DATA_SOURCE` switch: `"github"` downloads the release zip with `urllib.request.urlopen`, `"volume"` assumes the files are already in the volume and skips the download. Re-runs are cheap.
-  - Placeholder URL until the release exists: `https://github.com/<org>/databricks-neo4j-workshop/releases/download/<tag>/aircraft_digital_twin_data.zip`
-  - Download to local disk, extract, and copy every CSV and MD file into `/Volumes/<catalog>/<volume_schema>/<volume_name>/`.
+- The dataset is committed directly in the repo: `workshop-setup/aircraft_digital_twin_data/` holds the 22 CSVs (generated at a 4-hour reading interval, so `nodes_readings.csv` is ~29 MB and the whole directory ~35 MB) plus the 5 maintenance manuals Lab 3 needs. No release asset or zip is required.
+- The cell mirrors the `data_loader.py` pattern from the `graph-on-databricks/aircraft-graphrag` project, which reads raw files straight from the public repo:
+  - Base URL, pinned to a release tag so the workshop data cannot change mid-class: `https://raw.githubusercontent.com/neo4j-partners/databricks-neo4j-workshop/v1.1.0/workshop-setup/aircraft_digital_twin_data`
+  - One-time admin step: create the `v1.1.0` tag on a commit that includes `aircraft_digital_twin_data/` and push it. (The existing local `v1.0.0` tag predates the data and was never pushed.)
+  - A hardcoded list of the 27 filenames; for each, fetch `f"{base}/{name}"` with `urllib.request.urlopen` and write the bytes to `/Volumes/<catalog>/<volume_schema>/<volume_name>/<name>`.
+  - Skip files that already exist in the volume so re-runs are cheap.
 - Finish with a file listing of the volume so participants confirm all 27 files landed.
 
 ### Cell 5: Lakehouse setup (SQL)
 
 - Create the four Delta tables from the volume CSVs, reusing the DDL from `workshop-setup/auto_scripts/src/databricks_setup/lakehouse_tables.py::get_table_creation_sql`:
-  - `aircraft`, `systems`, `sensors`: `CREATE TABLE IF NOT EXISTS ... AS SELECT * FROM read_files('<volume>/nodes_*.csv', format => 'csv', header => 'true', inferSchema => 'true')` with `TBLPROPERTIES ('delta.columnMapping.mode' = 'name')`.
+  - `aircraft`, `systems`, `sensors`: `CREATE TABLE IF NOT EXISTS ... AS SELECT * FROM read_files('<volume>/nodes_<table>.csv', format => 'csv', header => 'true', inferSchema => 'true')` with `TBLPROPERTIES ('delta.columnMapping.mode' = 'name')`. Each table reads its specific file (`nodes_aircraft.csv`, `nodes_systems.csv`, `nodes_sensors.csv`), never a glob, since the volume also holds the other 18 `nodes_*`/`rels_*` CSVs.
   - `sensor_readings`: same pattern but `PARTITIONED BY (sensor_id)` and selecting `reading_id`, `sensor_id`, `to_timestamp(ts) as timestamp`, `CAST(value AS DOUBLE) as value`.
 - Apply the Genie table and column comments from `lakehouse_tables.py::get_comment_sql` so Lab 4's Genie space understands the model. There are 4 table comments and 15 column comments.
-- End with the row-count verification query from `get_verification_sql`, a `UNION ALL` of `COUNT(*)` per table. The v1 counts are aircraft 20, systems 80, sensors 160, sensor_readings 345,600; the v2 dataset is roughly 5x larger for readings, so compute and document the v2 expected counts when building the notebook.
+- End with the row-count verification query from `get_verification_sql`, a `UNION ALL` of `COUNT(*)` per table. Expected counts for the committed dataset: aircraft 100, systems 400, sensors 800, sensor_readings 432,000.
 
 ## Other setup steps not covered by this notebook
 
@@ -68,8 +67,3 @@ The notebook will be created in `workshop-setup/`, as `workshop-setup/notebooks/
 - **Unity Catalog grants**: on a shared catalog, an admin must grant participants `USE CATALOG`, `USE SCHEMA`, `READ VOLUME`, and `SELECT` on the lakehouse tables. This stays an admin step outside the notebook.
 - **Lab 4 components**: the Genie space over the lakehouse schema, the Unity Catalog HTTP connection to the Neo4j MCP server (`workshop-setup/neo4j_mcp_connection/`), and the Supervisor Agent in Agent Bricks are created in Lab 4 itself, not in setup.
 - **Verification**: `verify_labs` checks the Neo4j side after Lab 2; the notebook's own row-count query covers the Databricks side.
-
-## Open items
-
-- Decide and add the data download cell (Cell 4): publish the GitHub release with the v2 data zip, including the 3 maintenance manuals, and replace the placeholder URL, or choose another way to land the files in the volume.
-- Compute the v2 expected row counts for the verification cell.
