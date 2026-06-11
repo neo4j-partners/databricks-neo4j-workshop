@@ -1,6 +1,6 @@
 """Automated validation of Lab 3: SimpleKGPipeline and Semantic Search.
 
-Replicates the Lab 3 notebook process (03_data_and_embeddings.ipynb) as a
+Replicates the Lab 3 notebook process (01_data_and_embeddings.ipynb) as a
 standalone script: runs SimpleKGPipeline to chunk, embed, and extract entities
 from the A320-200 maintenance manual, creates vector and fulltext indexes,
 cross-links documents to aircraft topology, and validates with PASS/FAIL checks.
@@ -8,7 +8,7 @@ cross-links documents to aircraft topology, and validates with PASS/FAIL checks.
 Requires data_utils.py uploaded alongside this script.
 
 Usage:
-    ./upload.sh --all && ./submit.sh run_lab3_03.py
+    ./upload.sh --all && ./submit.sh run_lab3_01.py
 """
 
 import argparse

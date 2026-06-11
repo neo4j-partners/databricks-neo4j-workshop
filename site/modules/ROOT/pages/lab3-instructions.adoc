@@ -15,35 +15,35 @@ TIP: For concepts and background, see xref:lab3.adoc[Lab 3: Concepts and Referen
 
 == Notebooks
 
-After building the data pipeline in notebook 03, there are two ways to run graph queries. Choose based on your setup.
+After building the data pipeline in notebook 01, there are two ways to run graph queries. Choose based on your setup.
 
-=== Path A: Direct Neo4j Connection (Notebooks 04 + 06)
+=== Path A: Direct Neo4j Connection (Notebooks 02 + 03)
 
 Connect directly to Neo4j Aura using the Python driver and `neo4j-graphrag` library. Uses `VectorRetriever`, `VectorCypherRetriever`, and `GraphRAG` to combine vector search with LLM-generated answers.
 
-**Run:** `03` -> `04` -> `06` (optional)
+**Run:** `01` -> `02` -> `03` (optional)
 
-=== Path B: Neo4j MCP Server (Notebook 05)
+=== Path B: Neo4j MCP Server (Notebook 04)
 
 Query the same graph through a remote MCP server using the FastMCP client. Write explicit Cypher queries and send them via MCP's `read-cypher` tool. No Neo4j credentials or embedding model needed.
 
-**Run:** `03` -> `05`
+**Run:** `01` -> `04`
 
 [cols="2,4"]
 |===
 | Notebook | Description
 
-| `03_data_and_embeddings.ipynb`
+| `01_data_and_embeddings.ipynb`
 | Load the A320-200 Maintenance Manual, create Document and Chunk nodes, generate embeddings using Databricks Foundation Model APIs (BGE-large), create vector and fulltext indexes, and perform similarity search. **Required for both paths.**
 
-| `04_graphrag_retrievers.ipynb` _(Path A)_
+| `02_graphrag_retrievers.ipynb` _(Path A)_
 | Set up a VectorRetriever, use GraphRAG to combine vector search with LLM-generated answers, create custom Cypher queries with VectorCypherRetriever, and compare standard vs. graph-enhanced retrieval.
 
-| `05_mcp_graph_queries.ipynb` _(Path B)_
-| Connect to a remote MCP server using FastMCP, discover tools, execute Cypher queries via `read-cypher`, and replicate the same retrieval patterns from notebook 04 using fulltext search.
-
-| `06_hybrid_retrievers.ipynb` _(Optional, Path A)_
+| `03_hybrid_retrievers.ipynb` _(Optional, Path A)_
 | Combine vector similarity with keyword-based fulltext search using HybridRetriever and HybridCypherRetriever. Compare hybrid retrieval against pure vector search.
+
+| `04_mcp_graph_queries.ipynb` _(Path B)_
+| Connect to a remote MCP server using FastMCP, discover tools, execute Cypher queries via `read-cypher`, and replicate the same retrieval patterns from notebook 02 using fulltext search.
 |===
 
 NOTE: The `data_utils.py` utility module is included in the lab folder and will be imported by the notebooks automatically.
@@ -59,7 +59,7 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = ""  # Your password from Lab 1
 ----
 
-**Path B (MCP Server):** Notebook 05 has a Configuration cell for MCP server details:
+**Path B (MCP Server):** Notebook 04 has a Configuration cell for MCP server details:
 
 [source,python]
 ----
@@ -72,11 +72,11 @@ The embedding and LLM models use Databricks Foundation Model APIs which are pre-
 == Getting Started
 
 1. Ensure Lab 2 is complete (aircraft topology loaded)
-2. Open `Lab_3_Semantic_Search/03_data_and_embeddings.ipynb` from your cloned workspace folder (cloned in Lab 2)
+2. Open `Lab_3_Semantic_Search/01_data_and_embeddings.ipynb` from your cloned workspace folder (cloned in Lab 2)
 3. Attach your personal compute cluster
 4. Enter your Neo4j credentials in the Configuration cell
 5. Run all cells sequentially
-6. Continue to **notebook 04** (direct Neo4j) or **notebook 05** (MCP server)
+6. Continue to **notebook 02** (direct Neo4j) or **notebook 04** (MCP server)
 
 == Sample Queries
 
@@ -89,7 +89,7 @@ After completing this lab, you can ask questions like:
 
 Copy and paste queries from the Sample Queries reference (`SAMPLE_QUERIES.md` in the lab materials) to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
 
-NOTE: Vector similarity search is not included in the sample queries because it requires embedding the query text with the same model used to generate the stored embeddings (Databricks BGE-large). The notebooks handle this automatically via the Databricks Foundation Model APIs. See notebooks 04 and 06 for hands-on semantic search examples.
+NOTE: Vector similarity search is not included in the sample queries because it requires embedding the query text with the same model used to generate the stored embeddings (Databricks BGE-large). The notebooks handle this automatically via the Databricks Foundation Model APIs. See notebooks 02 and 03 for hands-on semantic search examples.
 
 Congratulations -- you have added semantic search capabilities to your knowledge graph.
 

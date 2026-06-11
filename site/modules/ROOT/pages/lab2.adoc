@@ -8,7 +8,7 @@ TIP: Ready to start? Jump to the xref:lab2-instructions.adoc[Lab 2 Instructions]
 
 * **Table rows become graph nodes**, foreign keys become relationships — the Spark Connector handles the mapping
 * **Nodes load first**, then relationships — both endpoints must exist before edges can be created
-* **Notebook 01** builds aircraft topology (20 aircraft, 80 systems, 320 components); **Notebook 02** adds sensors, flights, delays, and maintenance events
+* **The lab notebook** builds aircraft topology (20 aircraft, 80 systems, 320 components), then adds sensors, flights, delays, and maintenance events
 * **Graph insights flow back** to the Lakehouse as enrichment columns in Gold Delta tables
 * **Validation** compares node/relationship counts against source row counts to catch silent failures
 
@@ -104,7 +104,7 @@ A **notebook** is an interactive document of cells containing Python, SQL, or ma
 
 This loads 20 aircraft, 80 systems (engines, avionics, hydraulics), and 320 components (fans, compressors, turbines, pumps).
 
-**Notebook 02** adds operational and maintenance data on top of that topology: sensors attached to systems, flights operated by aircraft, delays on flights, maintenance events affecting components, and component removals. This brings in approximately 160 sensors, 800 flights, 300 delays, 300 maintenance events, and 60 removals across 12 airports.
+The notebook then adds operational and maintenance data on top of that topology: sensors attached to systems, flights operated by aircraft, delays on flights, maintenance events affecting components, and component removals. This brings in approximately 160 sensors, 800 flights, 300 delays, 300 maintenance events, and 60 removals across 12 airports.
 
 == Key Concepts
 

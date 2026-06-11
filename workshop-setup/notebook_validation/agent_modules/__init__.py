@@ -1,7 +1,7 @@
 """agent_modules — Python package for cluster scripts and MLflow-bundled modules.
 
 All Python files live here. Scripts submitted via submit.sh (run_lab2_01.py,
-run_lab3_03.py, test_hello.py) and modules bundled into the MLflow model
+run_lab3_01.py, test_hello.py) and modules bundled into the MLflow model
 (future agent modules per MEMORY.md) coexist in this package.
 
 Import strategy:

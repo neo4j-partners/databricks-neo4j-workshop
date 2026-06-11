@@ -1,44 +1,42 @@
-"""Automated validation of Lab 3 Notebook 04: GraphRAG Retrievers.
+"""MCP Server verification — read-only checks via MCP protocol.
 
-Read-only validation that the KG built by notebook 03 supports the retriever
-patterns from 04_graphrag_retrievers.ipynb: VectorRetriever, GraphRAG,
-VectorCypherRetriever with document context, adjacent chunks, topology
-traversal (APPLIES_TO), and operating limit queries (HAS_LIMIT).
+Validates that the Neo4j MCP server is accessible and returns expected data
+by calling get-schema and read-cypher tools over HTTP JSON-RPC. Mirrors the
+queries from Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb.
 
-Requires data_utils.py uploaded alongside this script.
-Prerequisite: run_lab3_03.py must have been run first (KG + indexes exist).
+Uses only stdlib (urllib, json) — no fastmcp or other dependencies required.
 
 Usage:
-    ./upload.sh --all && ./submit.sh run_lab3_04.py
+    ./upload.sh run_lab3_04.py && ./submit.sh run_lab3_04.py
 """
 
 import argparse
+import json
 import sys
+import urllib.error
+import urllib.request
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Lab 3 Validation: GraphRAG Retrievers (Notebook 04)"
-    )
-    parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
-    parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
-    parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
-    # Accept extra args for submit.sh compatibility (unused by this script)
+    parser = argparse.ArgumentParser(description="Lab 6 MCP Server Verification")
+    parser.add_argument("--mcp-endpoint", required=True, help="MCP server endpoint URL")
+    parser.add_argument("--mcp-api-key", required=True, help="MCP server API key")
+    parser.add_argument("--mcp-path", default="/mcp", help="MCP path (default: /mcp)")
+    # Accept Neo4j args for submit.sh compatibility (unused)
+    parser.add_argument("--neo4j-uri", default="", help="(unused)")
+    parser.add_argument("--neo4j-username", default="", help="(unused)")
+    parser.add_argument("--neo4j-password", default="", help="(unused)")
     parser.add_argument("--data-path", default="", help="(unused)")
-    parser.add_argument("--mcp-endpoint", default="", help="(unused)")
-    parser.add_argument("--mcp-api-key", default="", help="(unused)")
-    parser.add_argument("--mcp-path", default="", help="(unused)")
     args = parser.parse_args()
 
-    from data_utils import get_embedder, get_llm
-    from neo4j import GraphDatabase
-    from neo4j_graphrag.generation import GraphRAG
-    from neo4j_graphrag.retrievers import VectorCypherRetriever, VectorRetriever
+    endpoint = f"{args.mcp_endpoint.rstrip('/')}{args.mcp_path}"
 
-    # ── Configuration ────────────────────────────────────────────────────────
-
-    VECTOR_INDEX_NAME = "maintenanceChunkEmbeddings"
-    SEARCH_SCORE_THRESHOLD = 0.75
+    print("=" * 60)
+    print("Lab 6 — MCP Server Verification")
+    print("=" * 60)
+    print(f"MCP Endpoint: {endpoint}")
+    print(f"API Key:      {args.mcp_api_key[:8]}...{args.mcp_api_key[-4:]}")
+    print()
 
     results = []  # (name, passed, detail)
 
@@ -47,327 +45,203 @@ def main():
         results.append((name, passed, detail))
         print(f"  [{status}] {name}" + (f" — {detail}" if detail else ""))
 
-    print("=" * 70)
-    print("Lab 3 Validation: GraphRAG Retrievers (Notebook 04)")
-    print("=" * 70)
-    print(f"Neo4j URI:  {args.neo4j_uri}")
-    print()
+    def mcp_request(method, params=None):
+        """Send a JSON-RPC request to the MCP server."""
+        payload = {"jsonrpc": "2.0", "method": method, "id": 1}
+        if params:
+            payload["params"] = params
+        data = json.dumps(payload).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {args.mcp_api_key}",
+            "Accept": "application/json",
+        }
+        req = urllib.request.Request(endpoint, data=data, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
 
-    # ── Connect to Neo4j ─────────────────────────────────────────────────────
+    def call_tool(name, arguments=None):
+        """Call an MCP tool and return the text content."""
+        response = mcp_request("tools/call", {"name": name, "arguments": arguments or {}})
+        if "error" in response:
+            raise RuntimeError(f"MCP error: {response['error']}")
+        content = response.get("result", {}).get("content", [])
+        return content[0]["text"] if content else ""
 
-    driver = GraphDatabase.driver(
-        args.neo4j_uri,
-        auth=(args.neo4j_username, args.neo4j_password),
-    )
-    driver.verify_connectivity()
-    print("Connected to Neo4j successfully!\n")
+    # ── Check 1: Authentication ────────────────────────────────────────────────
 
-    # ── Initialize LLM and Embedder ──────────────────────────────────────────
+    print("\n--- Authentication ---")
+    try:
+        # Verify that requests without API key are rejected
+        payload = json.dumps({"jsonrpc": "2.0", "method": "tools/list", "id": 1}).encode()
+        no_auth_req = urllib.request.Request(
+            endpoint,
+            data=payload,
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(no_auth_req, timeout=10)
+            record("Auth rejection (no key)", False, "request was accepted without API key")
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                record("Auth rejection (no key)", True, "401 returned as expected")
+            else:
+                record("Auth rejection (no key)", False, f"unexpected HTTP {e.code}")
+    except Exception as e:
+        record("Auth rejection (no key)", False, str(e))
 
-    print("Initializing LLM and Embedder...")
-    llm = get_llm()
-    embedder = get_embedder()
-    print(f"  LLM: {llm.model_id}")
-    print(f"  Embedder: {embedder.model_id}\n")
+    # ── Check 2: List Tools ────────────────────────────────────────────────────
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 1: VectorRetriever
-    # ══════════════════════════════════════════════════════════════════════════
+    print("\n--- Tool Discovery ---")
+    try:
+        response = mcp_request("tools/list")
+        tools = response.get("result", {}).get("tools", [])
+        tool_names = [t["name"] for t in tools]
+        record("tools/list", True, f"{len(tools)} tools: {', '.join(tool_names)}")
 
-    print("=" * 70)
-    print("STAGE 1: VectorRetriever")
-    print("=" * 70)
+        has_schema = "get-schema" in tool_names
+        has_cypher = "read-cypher" in tool_names
+        record("get-schema tool available", has_schema)
+        record("read-cypher tool available", has_cypher)
+    except Exception as e:
+        record("tools/list", False, str(e))
+        # Can't proceed without tools
+        _print_summary(results)
+        sys.exit(1)
 
-    vector_retriever = VectorRetriever(
-        driver=driver,
-        index_name=VECTOR_INDEX_NAME,
-        embedder=embedder,
-        return_properties=["text"],
-    )
+    # ── Check 3: Get Schema ────────────────────────────────────────────────────
 
-    # -- Vector search --------------------------------------------------------
+    print("\n--- Schema Retrieval ---")
+    try:
+        schema = call_tool("get-schema")
+        has_content = len(schema) > 50
+        record("get-schema returns data", has_content, f"{len(schema)} chars")
 
-    query = "What are the steps to troubleshoot engine vibration?"
-    result = vector_retriever.search(query_text=query, top_k=5)
+        # Check for expected node labels in schema
+        expected_labels = ["Aircraft", "Chunk", "Document"]
+        found = [label for label in expected_labels if label in schema]
+        record(
+            "Schema contains expected labels",
+            len(found) == len(expected_labels),
+            f"found: {', '.join(found)}",
+        )
+    except Exception as e:
+        record("get-schema", False, str(e))
 
-    record("VectorRetriever returns results",
-           len(result.items) > 0,
-           f"results={len(result.items)}")
+    # ── Check 4: Basic Cypher (node counts) ────────────────────────────────────
 
-    if result.items:
-        top_score = result.items[0].metadata["score"]
-        record("Vector search score above threshold",
-               top_score >= SEARCH_SCORE_THRESHOLD,
-               f"query='{query}', score={top_score:.4f}, threshold={SEARCH_SCORE_THRESHOLD}")
+    print("\n--- Basic Cypher Queries ---")
+    try:
+        result = call_tool("read-cypher", {
+            "query": "MATCH (n) WITH labels(n) AS nodeLabels "
+                     "UNWIND nodeLabels AS label "
+                     "RETURN label, count(*) AS count ORDER BY count DESC"
+        })
+        has_data = "Aircraft" in result
+        record("Node count query", True, f"returned {len(result)} chars")
+        record("Aircraft nodes present", has_data)
+    except Exception as e:
+        record("Node count query", False, str(e))
 
-        has_content = len(result.items[0].content) > 50
-        record("Vector search returns text content", has_content,
-               f"content_length={len(result.items[0].content)}")
+    # ── Check 5: Aircraft topology ─────────────────────────────────────────────
 
-    # -- GraphRAG pipeline ----------------------------------------------------
+    try:
+        result = call_tool("read-cypher", {
+            "query": "MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System) "
+                     "RETURN a.tail_number AS aircraft, collect(s.name) AS systems "
+                     "ORDER BY a.tail_number LIMIT 3"
+        })
+        has_topology = "aircraft" in result.lower() or "system" in result.lower()
+        record("Aircraft topology query", has_topology, "HAS_SYSTEM traversal works")
+    except Exception as e:
+        record("Aircraft topology query", False, str(e))
 
-    print("\n  GraphRAG pipeline...")
-    query = "What are the normal EGT operating limits for the V2500 engine?"
-    rag = GraphRAG(llm=llm, retriever=vector_retriever)
-    response = rag.search(
-        query,
-        retriever_config={"top_k": 5},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
+    # ── Check 6: Document-Chunk structure ──────────────────────────────────────
 
-    has_answer = len(response.answer) > 50
-    record("GraphRAG returns LLM answer", has_answer,
-           f"answer_length={len(response.answer)}")
+    print("\n--- Document-Chunk Structure ---")
+    try:
+        result = call_tool("read-cypher", {
+            "query": "MATCH (d:Document) "
+                     "OPTIONAL MATCH (d)<-[:FROM_DOCUMENT]-(c:Chunk) "
+                     "RETURN d.documentId AS document_id, d.title AS title, count(c) AS chunks"
+        })
+        has_docs = "document_id" in result.lower() or "title" in result.lower() or len(result) > 10
+        record("Document-Chunk query", has_docs, "FROM_DOCUMENT traversal works")
+    except Exception as e:
+        record("Document-Chunk query", False, str(e))
 
-    has_context = len(response.retriever_result.items) > 0
-    record("GraphRAG returns retriever context", has_context,
-           f"context_items={len(response.retriever_result.items)}")
+    try:
+        result = call_tool("read-cypher", {
+            "query": "MATCH (c:Chunk)-[:NEXT_CHUNK]->(next:Chunk) "
+                     "RETURN count(*) AS chain_links"
+        })
+        record("NEXT_CHUNK chain exists", "0" not in result or len(result) > 5, result.strip())
+    except Exception as e:
+        record("NEXT_CHUNK chain exists", False, str(e))
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 2: VectorCypherRetriever — Document Context
-    # ══════════════════════════════════════════════════════════════════════════
+    # ── Check 7: Fulltext search ───────────────────────────────────────────────
 
-    print("\n" + "=" * 70)
-    print("STAGE 2: VectorCypherRetriever — Document Context")
-    print("=" * 70)
+    print("\n--- Fulltext Search (Lab 6 entry point) ---")
+    try:
+        result = call_tool("read-cypher", {
+            "query": "CALL db.index.fulltext.queryNodes('maintenanceChunkText', 'engine vibration') "
+                     "YIELD node, score "
+                     "RETURN score, substring(node.text, 0, 100) AS context "
+                     "ORDER BY score DESC LIMIT 3"
+        })
+        has_results = "score" in result.lower() or "context" in result.lower() or len(result) > 20
+        record("Fulltext search", has_results, "maintenanceChunkText index works")
+    except Exception as e:
+        record("Fulltext search", False, str(e))
 
-    document_context_query = """
-MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)
-RETURN
-    doc.documentId AS document_id,
-    doc.aircraftType AS aircraft_type,
-    doc.title AS document_title,
-    node.index AS chunk_index,
-    node.text AS context
-"""
+    # ── Check 8: Graph-enhanced search (topology traversal) ────────────────────
 
-    document_retriever = VectorCypherRetriever(
-        driver=driver,
-        index_name=VECTOR_INDEX_NAME,
-        embedder=embedder,
-        retrieval_query=document_context_query,
-    )
+    print("\n--- Graph-Enhanced Search ---")
+    try:
+        result = call_tool("read-cypher", {
+            "query": "CALL db.index.fulltext.queryNodes('maintenanceChunkText', 'fuel pump') "
+                     "YIELD node, score "
+                     "MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)-[:APPLIES_TO]->(a:Aircraft) "
+                     "MATCH (a)-[:HAS_SYSTEM]->(s:System) "
+                     "OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(comp:Component) "
+                     "WITH node, doc, a, s, comp, score "
+                     "RETURN doc.documentId AS document_id, "
+                     "       a.tail_number AS aircraft, "
+                     "       COLLECT(DISTINCT s.name)[0..3] AS systems, "
+                     "       COLLECT(DISTINCT comp.name)[0..3] AS components, "
+                     "       substring(node.text, 0, 100) AS context "
+                     "ORDER BY score DESC LIMIT 3"
+        })
+        has_topology = len(result) > 20
+        record("Topology traversal via fulltext", has_topology, "Chunk→Doc→Aircraft→System works")
+    except Exception as e:
+        record("Topology traversal via fulltext", False, str(e))
 
-    query = "What are the hydraulic system pressure limits?"
-    rag = GraphRAG(llm=llm, retriever=document_retriever)
-    response = rag.search(
-        query,
-        retriever_config={"top_k": 3},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
+    # ── Check 9: Operating limits traversal ────────────────────────────────────
 
-    has_results = len(response.retriever_result.items) > 0
-    record("Document context retriever returns results", has_results,
-           f"items={len(response.retriever_result.items)}")
+    try:
+        result = call_tool("read-cypher", {
+            "query": "CALL db.index.fulltext.queryNodes('maintenanceChunkText', 'EGT temperature') "
+                     "YIELD node, score "
+                     "MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)-[:APPLIES_TO]->(a:Aircraft) "
+                     "OPTIONAL MATCH (a)-[:HAS_SYSTEM]->(sys:System)"
+                     "-[:HAS_SENSOR]->(s:Sensor)-[:HAS_LIMIT]->(ol:OperatingLimit) "
+                     "WITH node, doc, a, score, "
+                     "     COLLECT(DISTINCT {sensor: s.type, parameter: ol.parameterName, "
+                     "       max: ol.maxValue, unit: ol.unit})[0..3] AS limits "
+                     "RETURN doc.aircraftType AS aircraft_type, limits, "
+                     "       substring(node.text, 0, 100) AS context "
+                     "ORDER BY score DESC LIMIT 3"
+        })
+        # Soft check — operating limits may be empty if entity extraction didn't produce them
+        record("Operating limits traversal", True, "full chain query executed (limits may be empty)")
+    except Exception as e:
+        record("Operating limits traversal", False, str(e))
 
-    if has_results:
-        content = response.retriever_result.items[0].content
-        has_doc_meta = "document_id" in content.lower() or "aircraft_type" in content.lower()
-        record("Results include document metadata", has_doc_meta)
-
-    record("Document context GraphRAG returns answer",
-           len(response.answer) > 50,
-           f"answer_length={len(response.answer)}")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 3: VectorCypherRetriever — Adjacent Chunks
-    # ══════════════════════════════════════════════════════════════════════════
-
-    print("\n" + "=" * 70)
-    print("STAGE 3: VectorCypherRetriever — Adjacent Chunks")
-    print("=" * 70)
-
-    adjacent_chunks_query = """
-WITH node
-OPTIONAL MATCH (prev:Chunk)-[:NEXT_CHUNK]->(node)
-OPTIONAL MATCH (node)-[:NEXT_CHUNK]->(next:Chunk)
-MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)
-RETURN
-    doc.documentId AS document_id,
-    node.index AS chunk_index,
-    COALESCE(prev.text, '') AS previous_context,
-    node.text AS main_context,
-    COALESCE(next.text, '') AS next_context
-"""
-
-    adjacent_retriever = VectorCypherRetriever(
-        driver=driver,
-        index_name=VECTOR_INDEX_NAME,
-        embedder=embedder,
-        retrieval_query=adjacent_chunks_query,
-    )
-
-    query = "How do I perform the engine vibration diagnostic flow?"
-    rag = GraphRAG(llm=llm, retriever=adjacent_retriever)
-    response = rag.search(
-        query,
-        retriever_config={"top_k": 3},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
-
-    has_results = len(response.retriever_result.items) > 0
-    record("Adjacent chunks retriever returns results", has_results,
-           f"items={len(response.retriever_result.items)}")
-
-    if has_results:
-        content = response.retriever_result.items[0].content
-        has_adjacent = "previous_context" in content.lower() or "next_context" in content.lower()
-        record("Results include adjacent chunk context", has_adjacent)
-
-    record("Adjacent chunks GraphRAG returns answer",
-           len(response.answer) > 50,
-           f"answer_length={len(response.answer)}")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 4: VectorCypherRetriever — Aircraft Topology (APPLIES_TO)
-    # ══════════════════════════════════════════════════════════════════════════
-
-    print("\n" + "=" * 70)
-    print("STAGE 4: VectorCypherRetriever — Aircraft Topology")
-    print("=" * 70)
-
-    system_context_query = """
-WITH node
-MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)-[:APPLIES_TO]->(a:Aircraft)
-MATCH (a)-[:HAS_SYSTEM]->(s:System)
-OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(comp:Component)
-
-WITH node, doc, a, s, comp
-RETURN
-    doc.documentId AS document_id,
-    doc.aircraftType AS aircraft_type,
-    a.tail_number AS aircraft,
-    COLLECT(DISTINCT s.name)[0..3] AS systems,
-    COLLECT(DISTINCT comp.name)[0..3] AS components,
-    node.text AS context
-"""
-
-    system_retriever = VectorCypherRetriever(
-        driver=driver,
-        index_name=VECTOR_INDEX_NAME,
-        embedder=embedder,
-        retrieval_query=system_context_query,
-    )
-
-    query = "What maintenance is required for the engine fuel pump?"
-    rag = GraphRAG(llm=llm, retriever=system_retriever)
-    response = rag.search(
-        query,
-        retriever_config={"top_k": 3},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
-
-    has_results = len(response.retriever_result.items) > 0
-    record("Topology retriever returns results", has_results,
-           f"items={len(response.retriever_result.items)}")
-
-    if has_results:
-        content = response.retriever_result.items[0].content
-        has_topology = "aircraft" in content.lower() or "systems" in content.lower()
-        record("Results include aircraft topology", has_topology)
-
-    record("Topology GraphRAG returns answer",
-           len(response.answer) > 50,
-           f"answer_length={len(response.answer)}")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 5: VectorCypherRetriever — Operating Limits
-    # ══════════════════════════════════════════════════════════════════════════
-
-    print("\n" + "=" * 70)
-    print("STAGE 5: VectorCypherRetriever — Operating Limits")
-    print("=" * 70)
-
-    operating_limit_query = """
-WITH node
-MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)-[:APPLIES_TO]->(a:Aircraft)
-OPTIONAL MATCH (a)-[:HAS_SYSTEM]->(sys:System)-[:HAS_SENSOR]->(s:Sensor)-[:HAS_LIMIT]->(ol:OperatingLimit)
-
-WITH node, doc, a,
-     COLLECT(DISTINCT {
-         sensor: s.type,
-         parameter: ol.parameterName,
-         max: ol.maxValue,
-         unit: ol.unit,
-         regime: ol.regime
-     })[0..5] AS operating_limits
-
-RETURN
-    doc.aircraftType AS aircraft_type,
-    operating_limits,
-    node.text AS context
-"""
-
-    limit_retriever = VectorCypherRetriever(
-        driver=driver,
-        index_name=VECTOR_INDEX_NAME,
-        embedder=embedder,
-        retrieval_query=operating_limit_query,
-    )
-
-    query = "What are the EGT temperature limits for the engine?"
-    rag = GraphRAG(llm=llm, retriever=limit_retriever)
-    response = rag.search(
-        query,
-        retriever_config={"top_k": 3},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
-
-    has_results = len(response.retriever_result.items) > 0
-    record("Operating limits retriever returns results", has_results,
-           f"items={len(response.retriever_result.items)}")
-
-    # Soft check — operating limits depend on LLM extraction quality
-    record("Operating limits query executed (soft)", True,
-           "full chain query ran (limits may be empty depending on extraction)")
-
-    record("Operating limits GraphRAG returns answer",
-           len(response.answer) > 50,
-           f"answer_length={len(response.answer)}")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # STAGE 6: Retriever Comparison
-    # ══════════════════════════════════════════════════════════════════════════
-
-    print("\n" + "=" * 70)
-    print("STAGE 6: Retriever Comparison")
-    print("=" * 70)
-
-    comparison_query = "What should I do if the EGT exceeds normal limits?"
-
-    rag_basic = GraphRAG(llm=llm, retriever=vector_retriever)
-    response_basic = rag_basic.search(
-        comparison_query,
-        retriever_config={"top_k": 3},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
-
-    rag_enhanced = GraphRAG(llm=llm, retriever=adjacent_retriever)
-    response_enhanced = rag_enhanced.search(
-        comparison_query,
-        retriever_config={"top_k": 3},
-        return_context=True,
-        response_fallback="No relevant maintenance procedures found.",
-    )
-
-    both_answered = len(response_basic.answer) > 50 and len(response_enhanced.answer) > 50
-    record("Both retrievers return answers for comparison", both_answered,
-           f"vector={len(response_basic.answer)} chars, "
-           f"adjacent={len(response_enhanced.answer)} chars")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # SUMMARY
-    # ══════════════════════════════════════════════════════════════════════════
+    # ── Summary ────────────────────────────────────────────────────────────────
 
     _print_summary(results)
-    driver.close()
-    print("Connection closed.")
 
     failed = sum(1 for _, p, _ in results if not p)
     if failed > 0:
@@ -380,9 +254,9 @@ def _print_summary(results):
     failed = sum(1 for _, p, _ in results if not p)
     total = len(results)
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 60)
     print("SUMMARY")
-    print("=" * 70)
+    print("=" * 60)
 
     for name, p, detail in results:
         status = "PASS" if p else "FAIL"
@@ -390,7 +264,7 @@ def _print_summary(results):
 
     print()
     print(f"Total: {total}  Passed: {passed}  Failed: {failed}")
-    print("=" * 70)
+    print("=" * 60)
 
     if failed > 0:
         print("FAILED")

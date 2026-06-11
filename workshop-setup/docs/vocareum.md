@@ -20,14 +20,14 @@ The `.dbc` and `.dat` files are byte-identical zip archives containing all noteb
 
 ### 1. Edit the source notebook
 
-Make your change in the repo root (e.g., `Lab_3_Semantic_Search/05_mcp_graph_queries.ipynb`).
+Make your change in the repo root (e.g., `Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb`).
 
 ### 2. Copy to the vocareum staging directory
 
 ```bash
 # Copy the changed file(s)
-cp Lab_3_Semantic_Search/05_mcp_graph_queries.ipynb \
-   vocareum/courseware/data/Lab_3_Semantic_Search/05_mcp_graph_queries.ipynb
+cp Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb \
+   vocareum/courseware/data/Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb
 ```
 
 Or copy an entire lab directory if multiple files changed:
@@ -72,10 +72,10 @@ Confirm the vocareum staging copy matches the repo source:
 ```bash
 for f in \
     Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb \
-    Lab_3_Semantic_Search/03_data_and_embeddings.ipynb \
-    Lab_3_Semantic_Search/04_graphrag_retrievers.ipynb \
-    Lab_3_Semantic_Search/05_mcp_graph_queries.ipynb \
-    Lab_3_Semantic_Search/06_hybrid_retrievers.ipynb \
+    Lab_3_Semantic_Search/01_data_and_embeddings.ipynb \
+    Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb \
+    Lab_3_Semantic_Search/03_hybrid_retrievers.ipynb \
+    Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb \
     Lab_3_Semantic_Search/data_utils.py; do
     diff "$f" "vocareum/courseware/data/$f" > /dev/null 2>&1 \
         && echo "MATCH: $f" \

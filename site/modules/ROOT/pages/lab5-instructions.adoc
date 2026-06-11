@@ -9,7 +9,7 @@ TIP: For concepts and background, see xref:lab5.adoc[Lab 5: Concepts and Referen
 == Prerequisites
 
 * Completed **Lab 1** (Neo4j Aura setup)
-* Completed **Lab 2** (Databricks ETL -- both notebooks)
+* Completed **Lab 2** (Databricks ETL)
 * Completed **Lab 3** (Semantic Search -- embeddings and vector index)
 
 The knowledge graph you built in Labs 2 and 3 contains the aircraft topology, operational data, and maintenance manual embeddings that the agent tools will use.
