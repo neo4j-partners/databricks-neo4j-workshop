@@ -12,7 +12,7 @@ Before starting, ensure you have:
 - Completed **Part A** (Genie space for sensor analytics)
 - Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft` (tables and volume)
 
-> **Note on the Neo4j MCP connection:** This lab uses a **pre-configured Neo4j MCP connection** that has already been set up by the workshop administrators. The MCP server points to the **Reference Aura Instance**, an administrator-managed Neo4j Aura instance, not your individual Aura instance from Lab 1. It contains the **complete dataset**: all 100 aircraft, 400 systems, 1,700 components, 800 sensors, 893 maintenance events, 40,389 flights, and 15,103 delays. This ensures every participant has access to the full graph regardless of which Lab 2 notebooks they completed.
+> **Note on the Neo4j MCP connection:** This lab uses a **pre-configured Neo4j MCP connection** that has already been set up by the workshop administrators. The MCP server points to the **Reference Aura Instance**, an administrator-managed Neo4j Aura instance, not your individual Aura instance from Lab 1. It contains the **complete dataset**: the full fleet with all systems, components, sensors, maintenance events, flights, and delays. This ensures every participant has access to the full graph regardless of which Lab 2 notebooks they completed.
 
 ---
 
@@ -93,14 +93,14 @@ BEST FOR:
 - Graph traversals: "Show the path from aircraft to sensor"
 
 DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-workshop/aircraft/raw_data/):
-- Aircraft (100): Fleet inventory with tail numbers, models, operators
-- Systems (400): Engines, Avionics, Hydraulics per aircraft
-- Components (1,700): Turbines, Compressors, Pumps, etc.
-- Sensors (800): Monitoring equipment metadata
-- MaintenanceEvents (893): Faults, severity, corrective actions
-- Flights (40,389): Operations with departure/arrival
-- Delays (15,103): Delay causes and durations
-- Airports (40): Route network locations
+- Aircraft: Fleet inventory with tail numbers, models, operators
+- Systems: Engines, Avionics, Hydraulics per aircraft
+- Components: Turbines, Compressors, Pumps, etc.
+- Sensors: Monitoring equipment metadata
+- MaintenanceEvents: Faults, severity, corrective actions
+- Flights: Operations with departure/arrival
+- Delays: Delay causes and durations
+- Airports: Route network locations
 
 RELATIONSHIP TYPES:
 - HAS_SYSTEM: Aircraft -> System
@@ -150,10 +150,10 @@ BEST FOR:
 - Aggregations: "What was the maximum N1 speed recorded?"
 
 DATA AVAILABLE:
-- sensor_readings (432,000 rows): Telemetry every 4 hours over 90 days
-- sensors (800 rows): Sensor metadata (type, unit, system)
-- systems (400 rows): Aircraft system information
-- aircraft (100 rows): Fleet metadata (model, operator)
+- sensor_readings: Telemetry every 4 hours over 90 days
+- sensors: Sensor metadata (type, unit, system)
+- systems: Aircraft system information
+- aircraft: Fleet metadata (model, operator)
 
 SENSOR TYPES:
 - EGT: Exhaust Gas Temperature (640-700 C)
@@ -379,7 +379,7 @@ print(response.json())
 
 You've created a multi-agent system that combines two purpose-built data platforms:
 
-- **Genie + Lakehouse for time-series data** — SQL-powered analytics over 432,000 sensor readings, ideal for aggregations, trends, and statistical analysis
+- **Genie + Lakehouse for time-series data** — SQL-powered analytics over sensor telemetry readings, ideal for aggregations, trends, and statistical analysis
 - **Neo4j for rich relational data** — graph-powered traversals across aircraft topology, maintenance events, flights, and delays, ideal for relationship queries and multi-hop navigation
 - **Intelligent routing** — the supervisor directs each question to the right data source automatically
 - **Cross-source synthesis** — complex questions that span both systems are answered by querying each sequentially and combining the results

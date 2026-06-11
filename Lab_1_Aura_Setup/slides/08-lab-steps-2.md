@@ -16,10 +16,10 @@ Data loading is handled in **Lab 2 - Databricks ETL to Neo4j** using:
 
 | Content | Count |
 |---------|-------|
-| Aircraft | 100 with tail numbers and models |
-| Systems | 400 (Engines, Avionics, Hydraulics) |
-| Components | 1,700 (Turbines, Compressors, Pumps) |
-| Flights | ~40,000 flight operations |
+| Aircraft | 36 with tail numbers and models |
+| Systems | 144 (Engines, Avionics, Hydraulics) |
+| Components | 612 (Turbines, Compressors, Pumps) |
+| Flights | ~14,500 flight operations |
 
 ---
 

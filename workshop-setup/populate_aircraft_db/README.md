@@ -42,7 +42,7 @@ The committed dataset in `workshop-setup/aircraft_digital_twin_data/` was produc
 uv run populate-aircraft-db generate --seed 42 --reading-interval 4
 ```
 
-`--reading-interval 4` writes one reading every 4 hours (432,000 rows, ~29MB), keeping `nodes_readings.csv` small enough to commit. See **[DATA_GENERATOR.md](DATA_GENERATOR.md)** for the full guide: all options, controlling dataset size, regenerating only the readings file with `--readings-only`, and what gets generated.
+`--reading-interval 4` writes one reading every 4 hours (155,520 rows, ~11MB), keeping `nodes_readings.csv` small enough to commit. See **[DATA_GENERATOR.md](DATA_GENERATOR.md)** for the full guide: all options, controlling dataset size, regenerating only the readings file with `--readings-only`, and what gets generated.
 
 ### Typical full-load sequence
 

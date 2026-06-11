@@ -28,18 +28,18 @@ Participants work through lab exercises in Databricks and Neo4j Aura, using Data
 
 The workshop uses a comprehensive **Aircraft Digital Twin** dataset that models a complete aviation fleet over 90 operational days. The data is split across two platforms, each chosen for the workload it handles best:
 
-- **Databricks Lakehouse** stores the **time-series sensor telemetry** — 432,000 readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
+- **Databricks Lakehouse** stores the **time-series sensor telemetry** — 155,520 readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
 - **Neo4j Aura** stores the **richly connected relational data** — aircraft topology, component hierarchies, maintenance events, flights, delays, and airport routes. A graph database handles multi-hop relationship traversals natively, avoiding the expensive JOINs a tabular database would require for queries like "Which components caused flight delays?"
 
 Together the dataset includes:
 
-- **100 Aircraft** with tail numbers, models, and operators
-- **400 Systems** (Engines, Avionics, Hydraulics)
-- **1,700 Components** (Turbines, Compressors, Pumps, etc.)
-- **800 Sensors** with monitoring metadata
-- **432,000 Sensor Readings** (telemetry over 90 days)
-- **40,000+ Flights** with departure/arrival information
-- **~900 Maintenance Events** with fault severity and corrective actions
+- **36 Aircraft** with tail numbers, models, and operators
+- **144 Systems** (Engines, Avionics, Hydraulics)
+- **612 Components** (Turbines, Compressors, Pumps, etc.)
+- **288 Sensors** with monitoring metadata
+- **155,520 Sensor Readings** (telemetry over 90 days)
+- **14,500+ Flights** with departure/arrival information
+- **~290 Maintenance Events** with fault severity and corrective actions
 - **40 Airports** in the route network
 
 ### Key Technologies

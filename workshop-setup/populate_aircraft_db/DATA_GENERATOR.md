@@ -21,7 +21,7 @@ uv run populate-aircraft-db validate-csv
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `--aircraft`, `-a` | `100` | Number of aircraft in the fleet |
+| `--aircraft`, `-a` | `36` | Number of aircraft in the fleet |
 | `--airports` | `40` | Number of airports, capped at 40 |
 | `--days`, `-d` | `90` | Days of sensor telemetry, starting 2024-07-01 |
 | `--seed` | `42` | Random seed. Same seed and parameters always reproduce identical files |
@@ -37,11 +37,11 @@ Sensor readings dominate the dataset size. The row count is:
 aircraft x 2 engines x 4 sensors x (days x 24 / reading-interval)
 ```
 
-| `--reading-interval` | Rows (100 aircraft, 90 days) | File size | Use |
-|----------------------|------------------------------|-----------|-----|
-| `1` | 1,728,000 | ~114 MB | Full-resolution Delta table in Databricks. Too large to commit to git |
-| `4` | 432,000 | ~29 MB | The committed workshop dataset |
-| `8` | 216,000 | ~15 MB | Minimal footprint; degradation trends stay visible but anomaly spikes get sparse |
+| `--reading-interval` | Rows (36 aircraft, 90 days) | File size | Use |
+|----------------------|-----------------------------|-----------|-----|
+| `1` | 622,080 | ~44 MB | Full-resolution Delta table in Databricks. Too large to commit to git |
+| `4` | 155,520 | ~11 MB | The committed workshop dataset |
+| `8` | 77,760 | ~5.5 MB | Minimal footprint; degradation trends stay visible but anomaly spikes get sparse |
 
 ### How `--reading-interval` works
 
@@ -66,7 +66,7 @@ The seed and fleet parameters must match the original run. Changing `--seed`, `-
 
 | Group | Files | Contents |
 |-------|-------|----------|
-| Fleet topology | `nodes_aircraft.csv`, `nodes_systems.csv`, `nodes_components.csv`, `nodes_sensors.csv` + 3 `rels_*` files | 100 aircraft across five models, each with 2 Engine systems plus Avionics and Hydraulics. Each engine carries 4 sensors: EGT, Vibration, N1Speed, FuelFlow |
+| Fleet topology | `nodes_aircraft.csv`, `nodes_systems.csv`, `nodes_components.csv`, `nodes_sensors.csv` + 3 `rels_*` files | 36 aircraft across five models, each with 2 Engine systems plus Avionics and Hydraulics. Each engine carries 4 sensors: EGT, Vibration, N1Speed, FuelFlow |
 | Sensor readings | `nodes_readings.csv` | Time series per sensor with per-engine degradation slopes and random anomaly spikes |
 | Maintenance | `nodes_maintenance.csv` + 3 `rels_*` files | Events triggered probabilistically when readings exceed model-specific warning and critical thresholds. Fault type follows from which sensor crossed; severity from how far |
 | Operations | `nodes_airports.csv`, `nodes_flights.csv`, `nodes_delays.csv` + 4 `rels_*` files | 3 to 6 flights per aircraft per day over a hub-and-spoke network; weighted delay causes |
@@ -99,19 +99,19 @@ The dataset feeds two complementary databases. Neo4j holds the relationship-rich
 
 ## Dataset summary
 
-Defaults: 100 aircraft, seed 42, 90 days (2024-07-01 to 2024-09-28), 4-hour reading interval.
+Defaults: 36 aircraft, seed 42, 90 days (2024-07-01 to 2024-09-28), 4-hour reading interval.
 
 | Entity | Count | Neo4j | Databricks |
 |--------|-------|-------|------------|
-| Aircraft | 100 | yes | yes |
-| Systems | 400 | yes | yes |
-| Components | 1,700 | yes | no |
-| Sensors | 800 | yes | yes |
-| Readings | 432,000 | yes | yes |
+| Aircraft | 36 | yes | yes |
+| Systems | 144 | yes | yes |
+| Components | 612 | yes | no |
+| Sensors | 288 | yes | yes |
+| Readings | 155,520 | yes | yes |
 | Airports | 40 | yes | no |
-| Flights | 40,389 | yes | no |
-| Delays | 15,103 | yes | no |
-| Maintenance events | 893 | yes | no |
+| Flights | 14,543 | yes | no |
+| Delays | 5,541 | yes | no |
+| Maintenance events | 286 | yes | no |
 | Removals | 165 | yes | no |
 
 Fleet composition: 35 B737-800, 25 A320-200, 20 A321neo, 10 A220-300, 10 E190, spread evenly across four operators (ExampleAir, SkyWays, RegionalCo, NorthernJet).
@@ -184,10 +184,10 @@ ORDER BY avg_egt_before_event DESC
 
 | Table | Source CSV | Rows | Purpose |
 |-------|------------|------|---------|
-| `sensor_readings` | `nodes_readings.csv` | 432,000 | Time-series telemetry: `reading_id`, `sensor_id`, `ts`, `value` |
-| `sensors` | `nodes_sensors.csv` | 800 | Sensor metadata so queries can filter by `type = 'EGT'` instead of cryptic IDs |
-| `systems` | `nodes_systems.csv` | 400 | Links sensors to aircraft |
-| `aircraft` | `nodes_aircraft.csv` | 100 | Tail numbers, models, operators for human-readable filtering |
+| `sensor_readings` | `nodes_readings.csv` | 155,520 | Time-series telemetry: `reading_id`, `sensor_id`, `ts`, `value` |
+| `sensors` | `nodes_sensors.csv` | 288 | Sensor metadata so queries can filter by `type = 'EGT'` instead of cryptic IDs |
+| `systems` | `nodes_systems.csv` | 144 | Links sensors to aircraft |
+| `aircraft` | `nodes_aircraft.csv` | 36 | Tail numbers, models, operators for human-readable filtering |
 
 The join chain `sensor_readings → sensors → systems → aircraft` lets Genie answer questions like "average EGT by aircraft model":
 

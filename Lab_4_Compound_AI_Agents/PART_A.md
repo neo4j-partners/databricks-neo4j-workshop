@@ -13,12 +13,12 @@ Your workshop admin has pre-loaded a set of tables into Unity Catalog that repre
 2. Expand **databricks-neo4j-workshop > aircraft**.
 3. Browse the available tables:
 
-| Table | Rows | Description |
-|-------|------|-------------|
-| `aircraft` | 100 | Fleet inventory — tail numbers, models, manufacturers, operators |
-| `systems` | 400 | Aircraft systems — engines, avionics, hydraulics |
-| `sensors` | 800 | Sensor metadata — EGT, vibration, N1 speed, fuel flow |
-| `sensor_readings` | 432,000 | Telemetry readings every 4 hours over 90 days (July–September 2024) |
+| Table | Description |
+|-------|-------------|
+| `aircraft` | Fleet inventory — tail numbers, models, manufacturers, operators |
+| `systems` | Aircraft systems — engines, avionics, hydraulics |
+| `sensors` | Sensor metadata — EGT, vibration, N1 speed, fuel flow |
+| `sensor_readings` | Telemetry readings every 4 hours over 90 days (July–September 2024) |
 
 4. Click on any table (e.g., `sensor_readings`) and select the **Sample Data** tab to preview its contents.
 
@@ -101,20 +101,17 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 - FuelFlow: Normal range 0.85-1.95 kg/s, measured in kg/s
 
 ## Fleet Information
-- 100 aircraft in the fleet
-- 4 operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
+- Operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
 - Models: B737-800 (Boeing), A320-200 (Airbus), A321neo (Airbus), E190 (Embraer)
 
 ## Sensor Configuration
 - Each aircraft has 2 engines
 - Each engine has 4 sensors: EGT, Vibration, N1Speed, FuelFlow
-- Total: 800 sensors across the fleet (100 aircraft x 2 engines x 4 sensors)
 
 ## Data Conventions
 - Timestamps are stored as timestamp type in the `timestamp` column
 - Data period: July 1, 2024 to September 28, 2024 (90 days)
 - Readings are every 4 hours (6 per day per sensor)
-- 540 readings per sensor over the 90-day period
 
 ## Sensor ID Format
 - Format: AC{aircraft_number}-S{system_number}-SN{sensor_number}
@@ -215,7 +212,7 @@ Note the exact name of your Genie space (e.g., `Aircraft Sensor Analyst RK`). Yo
 
 You've created a Genie space that can:
 
-- Query 432,000 sensor readings using natural language
+- Query sensor telemetry readings using natural language
 - Aggregate by aircraft, model, operator, or sensor type
 - Perform statistical analysis (averages, percentiles, standard deviation)
 - Join across the data model to provide context-rich answers

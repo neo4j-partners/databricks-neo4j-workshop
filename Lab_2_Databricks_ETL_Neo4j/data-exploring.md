@@ -44,7 +44,7 @@ RETURN labels(n)[0] AS Label, count(n) AS Count
 ORDER BY Count DESC
 ```
 
-> **Concepts**: `labels(n)` returns a list of labels on a node; `[0]` takes the first. Gives a census of the entire graph. Expected: ~40K Flights, ~15K Delays, ~1.7K Components, 893 MaintenanceEvents, 165 Removals, 100 Aircraft, 800 Sensors, 400 Systems, 40 Airports.
+> **Concepts**: `labels(n)` returns a list of labels on a node; `[0]` takes the first. Gives a census of the entire graph. Expected: ~14.5K Flights, ~5.5K Delays, ~612 Components, 286 MaintenanceEvents, 57 Removals, 36 Aircraft, 288 Sensors, 144 Systems, 40 Airports.
 
 ### Visualize the full graph schema
 

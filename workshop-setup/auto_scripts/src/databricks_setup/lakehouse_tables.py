@@ -13,10 +13,10 @@ from .utils import print_header
 from .warehouse import execute_sql
 
 EXPECTED_ROW_COUNTS: dict[str, int] = {
-    "aircraft": 100,
-    "systems": 400,
-    "sensors": 800,
-    "sensor_readings": 432000,
+    "aircraft": 36,
+    "systems": 144,
+    "sensors": 288,
+    "sensor_readings": 155520,
 }
 
 

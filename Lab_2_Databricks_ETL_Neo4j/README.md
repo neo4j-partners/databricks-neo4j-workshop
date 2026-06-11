@@ -53,7 +53,7 @@ Use the Vocareum lab setup to complete the Databricks workspace configuration an
 
 ## What You Loaded
 
-After notebook 02 completes, Neo4j holds the full Aircraft Digital Twin graph: 100 aircraft, 400 systems, 1,700 components, 800 sensors, and roughly 40,000 flights with their delays, maintenance events, and removals. The 432,000 sensor readings stay in Databricks Delta tables. For the full schema reference, see [DATA_GENERATOR.md](../workshop-setup/populate_aircraft_db/DATA_GENERATOR.md).
+After notebook 02 completes, Neo4j holds the full Aircraft Digital Twin graph: 36 aircraft, 144 systems, 612 components, 288 sensors, and roughly 14,500 flights with their delays, maintenance events, and removals. The 155,520 sensor readings stay in Databricks Delta tables. For the full schema reference, see [DATA_GENERATOR.md](../workshop-setup/populate_aircraft_db/DATA_GENERATOR.md).
 
 ---
 
