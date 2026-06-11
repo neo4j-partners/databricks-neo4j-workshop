@@ -74,7 +74,7 @@ Upload from `vocareum/` in this repo to Vocareum filesystem:
 1. **dbacademy** creates metastore, default catalog (`databricks-neo4j-workshop`), shared warehouse
 2. **workshop_data_setup.py** then:
    - Creates catalog, schemas, and UC volume
-   - Uploads 22 CSV files to `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/`
+   - Uploads 22 CSV files to `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/`
    - Uploads DLT notebook to `/Shared/workshop/dlt_fleet_etl`
    - Creates and runs a **serverless DLT pipeline** (`Fleet Digital Twin ETL`):
      - **Bronze**: Raw CSV ingestion (10 node tables + 12 relationship tables)
@@ -188,12 +188,12 @@ SELECT http_request(
 ```
 
 ### C. Genie Space (Lab 4)
-Create a Genie Space pointed at `databricks-neo4j-workshop.lakehouse` tables for the Genie Agent. This is a UI-only step done in the workspace after init.
+Create a Genie Space pointed at `databricks-neo4j-workshop.aircraft` tables for the Genie Agent. This is a UI-only step done in the workspace after init.
 
 1. Go to **Genie** in the workspace sidebar
 2. Click **New** to create a Genie Space
 3. Name: `Aircraft Fleet Analytics`
-4. Add tables: `databricks-neo4j-workshop.lakehouse.aircraft`, `systems`, `sensors`, `sensor_readings`
+4. Add tables: `databricks-neo4j-workshop.aircraft.aircraft`, `systems`, `sensors`, `sensor_readings`
 5. The tables already have Genie-friendly comments from workspace init
 6. Copy the Genie Space ID (from the URL) — it's needed for the multi-agent supervisor config
 
@@ -203,7 +203,7 @@ Create a Genie Space pointed at `databricks-neo4j-workshop.lakehouse` tables for
 2. Verify workspace initializes (check logs for errors)
 3. Verify notebooks load in the workspace
 4. Verify cluster starts with Neo4j Spark Connector
-5. Verify Delta tables exist: `SELECT * FROM databricks-neo4j-workshop.lakehouse.aircraft`
+5. Verify Delta tables exist: `SELECT * FROM databricks-neo4j-workshop.aircraft.aircraft`
 6. Run through Lab 2 notebook 1 end-to-end
 
 ## Step 6: Enroll Participants
@@ -228,8 +228,8 @@ For direct enrollment (LTI disabled):
 |----------|---------|
 | Workspace | Vocareum-provisioned (auto) |
 | Catalog | `databricks-neo4j-workshop` |
-| Volume | `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/` |
-| Lakehouse Schema | `databricks-neo4j-workshop.lakehouse` |
+| Volume | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
+| Lakehouse Schema | `databricks-neo4j-workshop.aircraft` |
 | Tables | `aircraft`, `systems`, `sensors`, `sensor_readings` |
 | Cluster | Single-node i3.xlarge, DBR 16.4 |
 | Spark Connector | `org.neo4j:neo4j-connector-apache-spark_2.12:5.3.1_for_spark_3` |

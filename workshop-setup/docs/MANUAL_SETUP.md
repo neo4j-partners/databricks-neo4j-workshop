@@ -2,7 +2,7 @@
 
 **Purpose:** Step-by-step instructions for setting up the entire Databricks workshop environment through the UI, without using the `databricks-setup` CLI.
 
-> **Prefer the automated approach?** Run `uv run databricks-setup` from `workshop-setup/auto_scripts/` instead — it handles Steps 2–5 below in one command. See the main [README.md](README.md) for details.
+> **Prefer the automated approach?** Run `uv run databricks-setup` from `workshop-setup/auto_scripts/` instead — it handles Steps 2–5 below in one command. See the [Automated Setup Guide](automated-setup-guide.md) for details.
 
 ---
 
@@ -53,7 +53,7 @@ Newer Databricks workspaces use **Default Storage**, which blocks programmatic c
 ### 1.2 Create a Schema
 
 1. Within the catalog, click **Create Schema**
-2. Name it `lab-schema`
+2. Name it `aircraft`
 3. Click **Create**
 
 ### 1.3 Create the Volume
@@ -61,11 +61,11 @@ Newer Databricks workspaces use **Default Storage**, which blocks programmatic c
 1. Navigate to the schema created above
 2. Click **Create** > **Volume**
 3. Configure:
-   - **Name:** `lab-volume`
+   - **Name:** `raw_data`
    - **Volume type:** Managed
 4. Click **Create**
 
-**Resulting path:** `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/`
+**Resulting path:** `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/`
 
 ---
 
@@ -139,7 +139,7 @@ Install each library one at a time (or use the bulk install option if available)
 Upload the CSV and Markdown files from the `aircraft_digital_twin_data/` directory to the volume using the Databricks CLI:
 
 ```bash
-VOLUME_PATH="dbfs:/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume"
+VOLUME_PATH="dbfs:/Volumes/databricks-neo4j-workshop/aircraft/raw_data"
 
 # Lab 2 - Aircraft digital twin (core: notebook 01)
 databricks fs cp workshop-setup/aircraft_digital_twin_data/nodes_aircraft.csv    "${VOLUME_PATH}/nodes_aircraft.csv" --overwrite
@@ -177,7 +177,7 @@ databricks fs cp workshop-setup/aircraft_digital_twin_data/rels_system_sensor.cs
 
 Alternatively, upload via the **Databricks UI**:
 
-1. Navigate to **Data** > **Catalogs** > `databricks-neo4j-workshop` > `lab-schema` > `lab-volume`
+1. Navigate to **Data** > **Catalogs** > `databricks-neo4j-workshop` > `aircraft` > `raw_data`
 2. Click **Upload to this volume**
 3. Drag and drop (or browse) to upload each file listed above
 
@@ -192,7 +192,7 @@ databricks fs ls "${VOLUME_PATH}"
 The volume should contain 25 files (22 CSV + 3 Markdown):
 
 ```
-/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/
+/Volumes/databricks-neo4j-workshop/aircraft/raw_data/
 │
 │  Nodes (Lab 2 core)
 ├── nodes_aircraft.csv

@@ -4,97 +4,24 @@
 
 ---
 
-## Quick Start: Load CSVs and Lakehouse Tables Only
-
-To upload the CSV data and create the lakehouse Delta tables without running the full provisioning (cluster creation, library installs), use the `load_lakehouse_data.py` script. This runs only the data portion of `databricks-setup setup`.
-
-**Prerequisites:** The catalog, schema, and volume must already exist (see [Step 1](#step-1-create-unity-catalog-and-volume-ui)). The script does not create them. Authenticate the Databricks CLI and configure `workshop-setup/.env` (see [Prerequisites](#prerequisites)).
-
-```bash
-cd workshop-setup/auto_scripts
-uv sync
-uv run python load_lakehouse_data.py
-```
-
-The script:
-
-1. Uploads the CSVs and the `MAINTENANCE_*.md` manuals from `aircraft_digital_twin_data/` to the Unity Catalog volume.
-2. Creates the `aircraft`, `systems`, `sensors`, and `sensor_readings` Delta tables via the Statement Execution API.
-3. Prints the per-table row counts so you can confirm the load.
-
-For the full administrator setup, continue with the checklist below.
-
----
-
 ## Pre-Workshop Checklist
 
 Complete these steps before the workshop begins:
 
-- [ ] Create Unity Catalog, Schema, and Volume (Step 1 — UI required)
-- [ ] Run `databricks-setup setup` to upload data and create tables (Step 2)
+- [ ] Create the Unity Catalog catalog (Step 1, UI required)
+- [ ] Run the `workshop_setup.ipynb` notebook to provision everything else (Step 2)
 - [ ] Test the complete workflow
 - [ ] Document connection details for participants
 
 ---
 
-## Prerequisites
+## Step 1: Create the Catalog (UI, Required)
 
-### Databricks CLI Authentication
+### Why Catalog Creation Is Manual
 
-Before running any CLI commands, authenticate the Databricks CLI with your user account:
+Newer Databricks workspaces use **Default Storage**, which blocks programmatic catalog creation via CLI, REST API, and SQL. All return the same error. Only the UI has the special handling to assign Default Storage to a new catalog. Once the catalog exists, everything else (schema, volume, compute, data download, and table creation) is handled by the setup notebook.
 
-```bash
-databricks auth login --host <your-workspace-url>
-```
-
-This opens a browser for OAuth login. After authenticating, verify you are logged in as your user (not a service principal):
-
-```bash
-databricks current-user me
-```
-
-You should see your email address in the output.
-
-#### Using a Named Profile
-
-If you have multiple Databricks profiles configured, set `DATABRICKS_PROFILE` in `.env` (see Step 2.1), or export for ad-hoc CLI commands:
-
-```bash
-export DATABRICKS_CONFIG_PROFILE=<your-profile-name>
-```
-
-### Python and uv
-
-The CLI requires Python 3.11+ and [uv](https://docs.astral.sh/uv/):
-
-```bash
-cd workshop-setup/auto_scripts && uv sync
-```
-
-### Databricks Resources
-
-The following resources must exist before running `databricks-setup`. See details below for setup instructions.
-
-| Resource | Name | Created In |
-|----------|------|------------|
-| Unity Catalog | `databricks-neo4j-workshop` | [Step 1.1](#11-create-a-catalog) |
-| Schema | `lab-schema` | [Step 1.2](#12-create-a-schema) |
-| Volume | `lab-volume` | [Step 1.3](#13-create-the-volume) |
-
----
-
-
-## Why Catalog Creation Is Manual
-
-Newer Databricks workspaces use **Default Storage**, which blocks programmatic catalog creation via CLI, REST API, and SQL — all return the same error. Only the UI has the special handling to assign Default Storage to a new catalog. Once the catalog exists, everything else (schema, volume, compute, data upload, and table creation) is automated by `databricks-setup`. 
-
----
-
-## Step 1: Create Unity Catalog and Volume (UI)
-
-Create the catalog, schema, and volume through the Databricks UI.
-
-### 1.1 Create a Catalog
+### Create the Catalog
 
 1. Navigate to **Data** > **Catalogs** in the Databricks workspace
 2. Click **Create Catalog**
@@ -102,92 +29,39 @@ Create the catalog, schema, and volume through the Databricks UI.
 4. Select the appropriate metastore
 5. Click **Create**
 
-### 1.2 Create a Schema
-
-1. Within the catalog, click **Create Schema**
-2. Name it `lab-schema`
-3. Click **Create**
-
-### 1.3 Create the Volume
-
-1. Navigate to the schema created above
-2. Click **Create** > **Volume**
-3. Configure:
-   - **Name:** `lab-volume`
-   - **Volume type:** Managed
-4. Click **Create**
-
-**Resulting path:** `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/`
-
-### 1.4 Verify Creation (CLI)
-
-Confirm the catalog, schema, and volume exist with one command:
-
-```bash
-databricks volumes read databricks-neo4j-workshop.lab-schema.lab-volume
-```
-
-This returns volume metadata if successful, or an error if any component is missing.
+The schema (`aircraft`) and volume (`raw_data`) are created by the setup notebook in Step 2; you do not need to create them in the UI.
 
 ---
 
-## Step 2: Automated Setup
+## Step 2: Run the Setup Notebook
 
-The `databricks-setup` CLI (in `auto_scripts/`) handles everything after catalog creation. It runs two sequential tracks:
+The notebook [`workshop_setup.ipynb`](workshop_setup.ipynb) provisions everything after catalog creation. Run it top to bottom as an admin preparing a shared workspace, or as a participant self-serving in your own workspace or Free Edition account.
 
-- **Track A:** Creates/starts an admin cluster and installs libraries (Neo4j Spark Connector + Python packages)
-- **Track B:** Uploads data files, notebooks, and creates Delta Lake tables via SQL Warehouse
+### Get the notebook into the workspace
 
-### 2.1 Configure Environment
+Either:
 
-Copy the example environment file and customize:
-
-```bash
-cp workshop-setup/.env.example workshop-setup/.env
-```
-
-Edit `.env` and set at minimum:
-
-```bash
-# Databricks CLI profile (optional - uses default if empty)
-DATABRICKS_PROFILE=""
-```
-
-For the full list of configuration options, see the [auto_scripts README](auto_scripts/README.md#configuration).
-
-### 2.2 Run Setup
-
-```bash
-cd workshop-setup/auto_scripts
-uv run databricks-setup setup
-```
-
-All configuration is loaded from `workshop-setup/.env` — there are no CLI arguments.
+- **Import it**: in the workspace, go to **Workspace** > **Import** and upload `workshop-setup/workshop_setup.ipynb`, or
+- **Clone the repo as a Git folder** and open the notebook from `workshop-setup/`.
 
 ### What it does
 
-Runs two tracks sequentially:
+1. **Classic compute cluster and libraries**: UI steps to create the cluster Labs 2 and 3 need (the Neo4j Spark Connector is a Maven library, which serverless compute cannot install), plus an optional cell that automates it with the Databricks SDK.
+2. **Catalog, schema, and volume**: creates the schema and volume under the catalog from Step 1. If you used a different catalog name, change the `CATALOG` constant in the notebook.
+3. **Workshop data**: downloads the 22 CSVs and 5 maintenance manuals from the public GitHub repo straight into the volume.
+4. **Lakehouse tables**: creates the four Delta tables (`aircraft`, `systems`, `sensors`, `sensor_readings`) with Genie-friendly table and column comments, then verifies row counts.
+5. **SQL warehouse check**: confirms a SQL warehouse exists for the labs and Genie.
 
-**Track A — Admin Cluster + Libraries:**
-1. Creates or reuses a dedicated admin Spark cluster
-2. Waits for the cluster to reach RUNNING state
-3. Installs Neo4j Spark Connector and Python packages
+All cells are idempotent, so the notebook is safe to re-run.
 
-**Track B — Data Upload + Lakehouse Tables:**
-1. Finds the configured SQL Warehouse
-2. Uploads CSV and Markdown data files to the volume
-3. Uploads workshop notebooks to the shared workspace folder
-4. Creates Delta Lake tables via the Statement Execution API
-
-All operations are idempotent — safe to re-run.
-
-For configuration details (environment variables, cluster defaults, cloud provider options), see the [auto_scripts README](auto_scripts/README.md#configuration).
+**Free Edition note:** Free Edition provides serverless compute only and cannot create classic clusters, so the cluster step needs a standard workspace. The rest of the notebook runs fine on Free Edition.
 
 ---
 
-### Manual Setup (UI Alternative)
+## Alternative Setup Paths
 
-If you prefer to set up the data through the Databricks UI instead of using `databricks-setup`, see the complete step-by-step guide in **[MANUAL_SETUP.md](docs/MANUAL_SETUP.md)**.
+- **CLI automation**: the `databricks-setup` CLI in `auto_scripts/` automates cluster creation, data upload, and table creation from your laptop. See **[docs/automated-setup-guide.md](docs/automated-setup-guide.md)**.
+- **Full UI walkthrough**: to set everything up through the Databricks UI step by step, see **[docs/MANUAL_SETUP.md](docs/MANUAL_SETUP.md)**.
 
 ---
 
@@ -200,7 +74,7 @@ Create a handout or slide with:
 | Resource | Value |
 |----------|-------|
 | Databricks Workspace URL | `https://your-workspace.cloud.databricks.com` |
-| Data Volume Path | `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/` |
+| Data Volume Path | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
 | Shared Notebook Folder | `/Shared/databricks-neo4j-workshop/` |
 
 ### Quick Start Instructions
@@ -215,24 +89,6 @@ Create a handout or slide with:
 ---
 
 ## Troubleshooting
-
-### Authentication
-
-If you see a UUID instead of your email when running `databricks current-user me`, your CLI may be configured with a service principal. Check for overriding environment variables:
-
-```bash
-env | grep -i DATABRICKS
-```
-
-If present, unset them for interactive use:
-
-```bash
-unset DATABRICKS_TOKEN
-unset DATABRICKS_CLIENT_ID
-unset DATABRICKS_CLIENT_SECRET
-```
-
-Then re-run `databricks auth login`.
 
 ### Common Issues
 
@@ -259,7 +115,7 @@ Then re-run `databricks auth login`.
   ```
 
 **Genie not generating correct SQL**
-- Ensure table comments are added (handled by `databricks-setup` CLI)
+- Ensure table comments are added (handled by the setup notebook)
 - Verify table relationships are configured in the Genie Space
 - Add more sample questions to guide the model
 
@@ -270,21 +126,11 @@ Then re-run `databricks auth login`.
 
 ---
 
-## CLI Command Reference
-
-```
-databricks-setup setup                         # Create admin cluster, upload data, create tables
-databricks-setup cleanup [--yes]               # Delete data, tables, and catalog
-databricks-setup sync                          # Upload/sync workshop notebooks to workspace
-```
-
----
-
 ## File Inventory
 
 For the full file inventory with sizes, record counts, and sensor data details, see **[MANUAL_SETUP.md](docs/MANUAL_SETUP.md#file-inventory)**.
 
-The setup CLI uploads **27 files** to the Volume:
+The setup notebook downloads **27 files** into the Volume:
 - **22 CSV files** from `aircraft_digital_twin_data/` (nodes and relationships for Labs 2 and 3)
 - **5 Markdown files** (maintenance manuals for Lab 3: A220, A320, A321neo, B737, E190)
 
@@ -297,24 +143,6 @@ The setup CLI uploads **27 files** to the Volume:
 - **Storage:** Volume storage for CSV files is negligible (~25 MB total)
 - **Delta Lake:** The lakehouse tables add minimal storage overhead
 - **Genie:** Genie queries consume compute resources; monitor usage during workshop
-
----
-
-## Cleanup
-
-To tear down the data (lakehouse tables, volume, schemas, catalog, and notebook folder):
-
-```bash
-cd workshop-setup/auto_scripts
-
-# Interactive confirmation
-uv run databricks-setup cleanup
-
-# Skip confirmation
-uv run databricks-setup cleanup --yes
-```
-
-Each step is idempotent — safe to re-run if partially completed.
 
 ---
 

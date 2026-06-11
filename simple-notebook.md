@@ -32,11 +32,10 @@ The notebook will be created in `workshop-setup/`, as `workshop-setup/notebooks/
 
 ### Cell 3: Catalog and schema setup (markdown)
 
-- Markdown documenting the Unity Catalog objects the workshop needs, with the default names matching `config.py::VolumeConfig`:
-  - Catalog: `databricks-neo4j-workshop`
-  - Volume schema: `lab-schema`
-  - Volume name: `lab-volume`
-  - Lakehouse schema: `lakehouse`
+- Markdown documenting the Unity Catalog objects the workshop needs, with the default names matching `config.py::VolumeConfig`. One schema holds both the volume and the Delta tables, set as three constants in the notebook:
+  - `CATALOG`: `databricks-neo4j-workshop`
+  - `SCHEMA`: `aircraft`
+  - `VOLUME`: `raw_data`
 - Participants in their own workspace use the defaults; participants on a shared workspace prefix the catalog with their username; admins enter the shared catalog name once.
 - Note that catalog creation needs metastore privileges; if it fails, use a catalog an admin created for you.
 

@@ -2,7 +2,7 @@
 
 A modular Python CLI tool for setting up and cleaning up Databricks environments for the Neo4j workshop.
 
-For full usage instructions, configuration options, and examples, see the main [Lab Admin Setup Guide](../README.md#step-2-automated-setup).
+For full usage instructions, configuration options, and examples, see the [Automated Setup Guide](../docs/automated-setup-guide.md).
 
 ## Quick Start
 
@@ -78,9 +78,9 @@ DATABRICKS_PROFILE=""
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `CATALOG_NAME` | Unity Catalog name | `databricks-neo4j-workshop` |
-| `VOLUME_SCHEMA` | Schema for the data volume | `lab-schema` |
-| `VOLUME_NAME` | Volume name for CSV data upload | `lab-volume` |
-| `LAKEHOUSE_SCHEMA` | Schema for lakehouse Delta tables | `lakehouse` |
+| `VOLUME_SCHEMA` | Schema for the data volume | `aircraft` |
+| `VOLUME_NAME` | Volume name for CSV data upload | `raw_data` |
+| `LAKEHOUSE_SCHEMA` | Schema for lakehouse Delta tables | `aircraft` |
 | `WAREHOUSE_NAME` | SQL Warehouse name (for lakehouse tables) | `Starter Warehouse` |
 | `WAREHOUSE_TIMEOUT` | SQL statement timeout (seconds) | `600` |
 | `DATABRICKS_PROFILE` | CLI profile from ~/.databrickscfg | Default |

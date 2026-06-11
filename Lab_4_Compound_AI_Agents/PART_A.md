@@ -37,7 +37,7 @@ These four tables form a join chain — `sensor_readings` → `sensors` → `sys
 
 ### 2.2 Connect Your Data
 
-After clicking **New Genie space**, the **Connect your data** dialog appears. Select All Catalogs ->  `databricks-neo4j-workshop`  -> `lakehouse` -> then select `sensor_readings`, `aircraft`, `sensors`, `systems`.
+After clicking **New Genie space**, the **Connect your data** dialog appears. Select All Catalogs ->  `databricks-neo4j-workshop`  -> `aircraft` -> then select `sensor_readings`, `aircraft`, `sensors`, `systems`.
 
 > **Tip:** These tables form a join chain: `sensor_readings` -> `sensors` -> `systems` -> `aircraft`
 

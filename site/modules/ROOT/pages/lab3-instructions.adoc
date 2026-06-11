@@ -11,7 +11,7 @@ TIP: For concepts and background, see xref:lab3.adoc[Lab 3: Concepts and Referen
 * Completed **Lab 2** (Databricks ETL) -- aircraft graph loaded in Neo4j
 * Neo4j Aura credentials from Lab 1
 * Running in a **Databricks notebook environment** (for Foundation Model API access)
-* **Maintenance manual** already uploaded to the Unity Catalog Volume at `/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/MAINTENANCE_A320.md` (pre-loaded by workshop administrators)
+* **Maintenance manual** already uploaded to the Unity Catalog Volume at `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/MAINTENANCE_A320.md` (pre-loaded by workshop administrators)
 
 == Notebooks
 

@@ -103,7 +103,7 @@ The embedding and LLM models use Databricks Foundation Model APIs which are pre-
 1. Ensure Lab 2 is complete (aircraft topology loaded)
 2. Verify the maintenance manual is uploaded to the Volume:
    ```
-   /Volumes/databricks-neo4j-workshop/lab-schema/lab-volume/MAINTENANCE_A320.md
+   /Volumes/databricks-neo4j-workshop/aircraft/raw_data/MAINTENANCE_A320.md
    ```
 3. Upload the notebook files and `data_utils.py` to your Databricks workspace
 4. Open `03_data_and_embeddings.ipynb`

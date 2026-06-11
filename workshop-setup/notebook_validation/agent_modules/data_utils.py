@@ -285,7 +285,7 @@ class Neo4jConnection:
 # =============================================================================
 
 # Default Volume path for workshop data
-DEFAULT_VOLUME_PATH = "/Volumes/databricks-neo4j-workshop/lab-schema/lab-volume"
+DEFAULT_VOLUME_PATH = "/Volumes/databricks-neo4j-workshop/aircraft/raw_data"
 
 
 class DataLoader:
@@ -336,7 +336,7 @@ class VolumeDataLoader:
         Args:
             file_name: Name of the file in the Volume (e.g., "maintenance_manual.md")
             volume_path: Path to the Unity Catalog Volume.
-                        Defaults to /Volumes/databricks-neo4j-workshop/lab-schema/lab-volume
+                        Defaults to /Volumes/databricks-neo4j-workshop/aircraft/raw_data
         """
         self.volume_path = Path(volume_path)
         self.file_name = file_name

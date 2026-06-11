@@ -77,9 +77,9 @@ class VolumeConfig:
     """Unity Catalog volume configuration."""
 
     catalog: str = "databricks-neo4j-workshop"
-    schema: str = "lab-schema"
-    volume: str = "lab-volume"
-    lakehouse_schema: str = "lakehouse"
+    schema: str = "aircraft"
+    volume: str = "raw_data"
+    lakehouse_schema: str = "aircraft"
 
     @classmethod
     def from_env(cls) -> VolumeConfig:
