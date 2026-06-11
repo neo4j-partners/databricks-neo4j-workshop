@@ -85,6 +85,26 @@ Loads the A320 maintenance manual, chunks it, generates embeddings, creates vect
 
 > Requires `data_utils.py` on the cluster (included when you run `./upload.sh --all`).
 
+### Step 7: Verify Lab 3 GraphRAG retrievers (read-only)
+
+Read-only validation that the KG built in Step 6 supports the retriever patterns from `02_graphrag_retrievers.ipynb` (VectorRetriever, GraphRAG, VectorCypherRetriever, adjacent chunks, topology traversal, operating limits):
+
+```bash
+./submit.sh run_lab3_02.py
+```
+
+> Requires `data_utils.py` on the cluster and that `run_lab3_01.py` has already been run (KG + indexes must exist).
+
+### Step 8: Verify Lab 3 Neo4j MCP server (read-only)
+
+Confirms the Neo4j MCP server is reachable and returns expected data by calling the `get-schema` and `read-cypher` tools over HTTP JSON-RPC, mirroring `04_mcp_graph_queries.ipynb`:
+
+```bash
+./submit.sh run_lab3_04.py
+```
+
+> Uses only the Python standard library — no `data_utils.py` or Spark required.
+
 ## Scripts Reference
 
 | Script | Purpose | Destructive | Needs Spark |
@@ -94,6 +114,8 @@ Loads the A320 maintenance manual, chunks it, generates embeddings, creates vect
 | `run_lab2_01.py` | Load Lab 2 data + validate (19 checks) | **Yes** — clears DB | Yes |
 | `verify_lab2.py` | Read-only Lab 2 verification (13 queries) | No | No |
 | `run_lab3_01.py` | Build Lab 3 embedding pipeline + validate (16 checks) | **Yes** — clears Document/Chunk nodes | No |
+| `run_lab3_02.py` | Read-only validation of Lab 3 GraphRAG retriever patterns | No | No |
+| `run_lab3_04.py` | Read-only verification of the Neo4j MCP server (get-schema, read-cypher) | No | No |
 | `data_utils.py` | Shared utilities (embeddings, Neo4j connection, text splitting) | — | — |
 
 ## Shell Scripts
