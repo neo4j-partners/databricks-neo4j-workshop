@@ -103,12 +103,17 @@ def main():
             .load())
 
     def run_script(script):
-        """Execute a Cypher script (DDL operations like constraints)."""
-        return (spark.read
+        """Execute a Cypher script (DDL operations like constraints).
+
+        Spark reads are lazy — without .collect() the script is never sent
+        to Neo4j.
+        """
+        (spark.read
             .format("org.neo4j.spark.DataSource")
             .option("script", script)
             .option("query", "RETURN 1 AS done")
-            .load())
+            .load()
+            .collect())
 
     # ── Section 1: Clear Database ────────────────────────────────────────────
 
@@ -157,7 +162,12 @@ def main():
     ]
 
     run_script(";\n".join(constraints + indexes))
-    record("Constraints and indexes", True)
+    constraint_count = run_cypher("SHOW CONSTRAINTS YIELD name RETURN name").count()
+    record(
+        "Constraints and indexes",
+        constraint_count >= len(constraints),
+        f"{constraint_count} constraints in database, expected >= {len(constraints)}",
+    )
 
     # ── Section 3: Load Nodes ────────────────────────────────────────────────
 

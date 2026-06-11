@@ -105,6 +105,19 @@ Confirms the Neo4j MCP server is reachable and returns expected data by calling 
 
 > Uses only the Python standard library — no `data_utils.py` or Spark required.
 
+## Profiling the Lab 2 Load
+
+When the Lab 2 load is slow, `profile_lab2_load.py` shows where the time goes. It runs the same load as `run_lab2_01.py` but times every step (clear, constraints, each node and relationship load), measures fixed overheads (Neo4j driver round trip vs Spark connector round trip vs CSV scan), verifies all indexes are ONLINE before loading, and A/B tests the Flight node load (the largest node file) across four write strategies: MERGE vs CREATE, serial vs 4 parallel partitions. It ends with a timing report sorted slowest-first.
+
+```bash
+./upload.sh profile_lab2_load.py
+./submit.sh profile_lab2_load.py
+```
+
+> **Destructive**: clears the database like `run_lab2_01.py`. With `--flights-only` it skips the full load and only deletes/reloads Flight nodes (faster iteration on the A/B variants), but `submit.sh` does not inject extra flags — submit manually or edit `submit.sh` to pass them. `--batch-size N` changes the connector batch size for all writes.
+
+Reading the report: steps whose total time is close to the "connector RETURN 1" baseline are dominated by fixed Spark job overhead, not Neo4j write throughput. The Flight A/B rows show directly what MERGE vs CREATE and serial vs parallel cost on your cluster and Aura instance.
+
 ## Scripts Reference
 
 | Script | Purpose | Destructive | Needs Spark |
@@ -112,6 +125,7 @@ Confirms the Neo4j MCP server is reachable and returns expected data by calling 
 | `test_hello.py` | Cluster smoke test (Python, Spark, Connector) | No | Yes |
 | `check_neo4j.py` | Neo4j connectivity and data presence check | No | No |
 | `run_lab2_01.py` | Load Lab 2 data + validate (19 checks) | **Yes** — clears DB | Yes |
+| `profile_lab2_load.py` | Profile the Lab 2 load: per-step timings, overhead baselines, Flight A/B write strategies | **Yes** — clears DB (Flight nodes only with `--flights-only`) | Yes |
 | `verify_lab2.py` | Read-only Lab 2 verification (13 queries) | No | No |
 | `run_lab3_01.py` | Build Lab 3 embedding pipeline + validate (16 checks) | **Yes** — clears Document/Chunk nodes | No |
 | `run_lab3_02.py` | Read-only validation of Lab 3 GraphRAG retriever patterns | No | No |
