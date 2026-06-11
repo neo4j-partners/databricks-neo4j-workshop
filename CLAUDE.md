@@ -58,7 +58,7 @@ Each under `workshop-setup/` is a standalone Python package with its own `pyproj
 
 ### Dual-Database Strategy
 - **Neo4j**: `(Aircraft)-[:HAS_SYSTEM]->(System)-[:HAS_COMPONENT]->(Component)`, plus Sensors, Flights, Delays, MaintenanceEvents
-- **Databricks**: Delta tables for `sensor_readings` (432K rows), `sensors`, `systems`, `aircraft`
+- **Databricks**: Delta tables for `sensor_readings` (~155K rows), `sensors`, `systems`, `aircraft`
 - Aircraft/Systems/Sensors exist in **both** databases as join points
 
 ### Multi-Agent Architecture (Lab 4)

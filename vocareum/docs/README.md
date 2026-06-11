@@ -20,7 +20,7 @@ Welcome to the hands-on workshop! You'll build production-ready AI agents that c
 ## Architecture
 
 **Dual Database Strategy:**
-- **Databricks Lakehouse** — Time-series sensor telemetry (432K readings)
+- **Databricks Lakehouse** — Time-series sensor telemetry (~155K readings)
 - **Neo4j Aura** — Graph relationships (aircraft topology, maintenance, flights)
 
 **Multi-Agent Supervisor:**

@@ -8,22 +8,21 @@ Load aircraft data from Databricks into Neo4j using the Spark Connector.
 
 ---
 
-## Core Notebooks
+## Core Notebook
 
-The core flow is two notebooks:
+The core flow is a single notebook:
 
 | Notebook | Description | Required For |
 |----------|-------------|--------------|
-| [`01_aircraft_etl_to_neo4j.ipynb`](01_aircraft_etl_to_neo4j.ipynb) | Guided walkthrough that teaches the Spark Connector mechanics by loading Aircraft, System, and Component nodes | Learning the ETL pattern |
-| [`02_load_neo4j_full.ipynb`](02_load_neo4j_full.ipynb) | Clears the database first (`CLEAR_DATABASE = True`), then loads the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals | **Labs 3, 4** |
+| [`01_aircraft_etl_to_neo4j.ipynb`](01_aircraft_etl_to_neo4j.ipynb) | Guided walkthrough that teaches the Spark Connector mechanics while loading the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals. Clears the database first (`CLEAR_DATABASE = True`) | **Labs 3, 4** |
 
-> **Important:** Run **both** notebooks before proceeding. Notebook 01 is the guided walkthrough that teaches how the Spark Connector works. Notebook 02 clears the database and loads the full canonical dataset, so its output is what Labs 3 and 4 depend on.
+> **Important:** Run this notebook before proceeding. It teaches how the Spark Connector works while clearing the database and loading the full canonical dataset, so its output is what Labs 3 and 4 depend on.
 
 ---
 
 ## Optional: Graph Data Science Notebooks
 
-Four optional, more advanced notebooks apply Neo4j Graph Data Science (GDS) algorithms to the loaded graph. All four require notebook 02 to have been run first, and they require the Neo4j Graph Data Science plugin. Notebooks 03 and 04 include a `gds.version()` check cell you can use to confirm GDS is available on your instance.
+Four optional, more advanced notebooks apply Neo4j Graph Data Science (GDS) algorithms to the loaded graph. All four require notebook 01 to have been run first, and they require the Neo4j Graph Data Science plugin. Notebooks 03 and 04 include a `gds.version()` check cell you can use to confirm GDS is available on your instance.
 
 | Notebook | Algorithm | What It Does |
 |----------|-----------|--------------|
@@ -53,7 +52,7 @@ Use the Vocareum lab setup to complete the Databricks workspace configuration an
 
 ## What You Loaded
 
-After notebook 02 completes, Neo4j holds the full Aircraft Digital Twin graph: 36 aircraft, 144 systems, 612 components, 288 sensors, and roughly 14,500 flights with their delays, maintenance events, and removals. The 155,520 sensor readings stay in Databricks Delta tables. For the full schema reference, see [DATA_GENERATOR.md](../workshop-setup/populate_aircraft_db/DATA_GENERATOR.md).
+After notebook 01 completes, Neo4j holds the full Aircraft Digital Twin graph: the fleet with its systems, components, and sensors, plus flights, delays, maintenance events, and removals. The sensor readings stay in Databricks Delta tables. For the full schema reference, including exact row counts, see [DATA_GENERATOR.md](../workshop-setup/populate_aircraft_db/DATA_GENERATOR.md).
 
 ---
 
