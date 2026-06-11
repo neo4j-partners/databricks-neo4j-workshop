@@ -1,6 +1,6 @@
 # GDS Exploring: Aircraft Digital Twin Graph
 
-Sample GDS projection and algorithm queries from notebooks 04, 05, and 06. Copy and paste into the [Neo4j Aura Query interface](https://console.neo4j.io).
+Sample GDS projection and algorithm queries from notebooks 03, 04, and 05. Copy and paste into the [Neo4j Aura Query interface](https://console.neo4j.io).
 
 Notebooks run the full pipeline (feature compute → project → write) from Databricks. These queries let you explore the results in the Neo4j Browser and re-run individual GDS steps directly.
 
@@ -48,7 +48,7 @@ RETURN dropped
 
 ---
 
-## Notebook 04 — kNN Aircraft Similarity
+## Notebook 03 — kNN Aircraft Similarity
 
 Each aircraft gets a feature vector of 7 normalized metrics (sensor averages/std devs and maintenance counts). kNN finds the 3 most operationally similar peer aircraft using cosine similarity.
 
@@ -205,7 +205,7 @@ CALL gds.graph.drop('aircraft-profiles', false) YIELD graphName
 
 ---
 
-## Notebook 05 — PageRank and Betweenness Centrality on the Airport Route Network
+## Notebook 04 — PageRank and Betweenness Centrality on the Airport Route Network
 
 Flights connect airports through intermediate Flight nodes — there are no direct Airport-to-Airport relationships in the base graph. The Cypher aggregation projection builds a virtual weighted Airport graph, where edge weight equals the number of flights on each route.
 
@@ -358,7 +358,7 @@ LIMIT 20
 
 ---
 
-## Notebook 06 — Node Similarity on Aircraft Fault Profiles
+## Notebook 05 — Node Similarity on Aircraft Fault Profiles
 
 Node Similarity computes Jaccard similarity — overlap of shared neighbors — on a bipartite Aircraft-FaultType graph. Aircraft nodes share no direct neighbors in the base graph (each component belongs to exactly one aircraft), so the notebook creates temporary `FaultType` nodes representing distinct `fault + severity` combinations.
 

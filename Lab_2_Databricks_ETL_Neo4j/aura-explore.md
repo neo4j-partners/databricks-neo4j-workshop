@@ -58,7 +58,7 @@ RETURN a, hs, s, hc, c, he, m
 
 ## Step 5 — The peer alert: who else to inspect?
 
-> **Prerequisite:** This query only works after notebook [`04_gds_knn_aircraft.ipynb`](04_gds_knn_aircraft.ipynb) has run, since that notebook creates the `SIMILAR_PROFILE` relationships.
+> **Prerequisite:** This query only works after notebook [`03_gds_knn_aircraft.ipynb`](03_gds_knn_aircraft.ipynb) has run, since that notebook creates the `SIMILAR_PROFILE` relationships.
 
 ```cypher
 MATCH (a:Aircraft {tail_number: 'N10082'})-[r:SIMILAR_PROFILE]->(peer:Aircraft)

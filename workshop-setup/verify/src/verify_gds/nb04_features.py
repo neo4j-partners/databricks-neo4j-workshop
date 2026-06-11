@@ -1,5 +1,5 @@
 """
-Notebook 04 feature computation using pandas instead of Spark.
+Notebook 03 feature computation using pandas instead of Spark.
 
 Reads nodes_readings.csv, nodes_sensors.csv, nodes_systems.csv, and
 nodes_maintenance.csv from aircraft_digital_twin_data/, computes
@@ -106,7 +106,7 @@ def compute_and_write_features(
     driver: Driver, data_dir: Path = _DATA_DIR
 ) -> int:
     """Compute *_norm features from CSV and write to Neo4j Aircraft nodes."""
-    console.rule("[cyan]Notebook 04 — Aircraft Feature Vectors[/cyan]")
+    console.rule("[cyan]Notebook 03 — Aircraft Feature Vectors[/cyan]")
 
     sensor = _sensor_features(data_dir)
     console.print(f"  Sensor features: {len(sensor)} aircraft")

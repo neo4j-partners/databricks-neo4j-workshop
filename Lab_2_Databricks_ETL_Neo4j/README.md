@@ -22,16 +22,16 @@ The core flow is a single notebook:
 
 ## Optional: Graph Data Science Notebooks
 
-Four optional, more advanced notebooks apply Neo4j Graph Data Science (GDS) algorithms to the loaded graph. All four require notebook 01 to have been run first, and they require the Neo4j Graph Data Science plugin. Notebooks 03 and 04 include a `gds.version()` check cell you can use to confirm GDS is available on your instance.
+Four optional, more advanced notebooks apply Neo4j Graph Data Science (GDS) algorithms to the loaded graph. All four require notebook 01 to have been run first, and they require the Neo4j Graph Data Science plugin. Notebooks 02 and 03 include a `gds.version()` check cell you can use to confirm GDS is available on your instance.
 
 | Notebook | Algorithm | What It Does |
 |----------|-----------|--------------|
-| [`03_gds_louvain_maintenance.ipynb`](03_gds_louvain_maintenance.ipynb) | Louvain | Community detection on maintenance events, grouping aircraft into risk communities based on shared fault patterns |
-| [`04_gds_knn_aircraft.ipynb`](04_gds_knn_aircraft.ipynb) | kNN | Computes per-aircraft feature vectors from sensor and maintenance data, then writes `SIMILAR_PROFILE` relationships between similar aircraft |
-| [`05_gds_pagerank_airports.ipynb`](05_gds_pagerank_airports.ipynb) | PageRank + Betweenness | Centrality analysis on the airport route network, writing `pagerank_score` and `betweenness_score` to Airport nodes |
-| [`06_gds_node_similarity_aircraft.ipynb`](06_gds_node_similarity_aircraft.ipynb) | Node Similarity | Jaccard similarity over shared fault types, writing `SIMILAR_FAULT_PROFILE` relationships between aircraft |
+| [`02_gds_louvain_maintenance.ipynb`](02_gds_louvain_maintenance.ipynb) | Louvain | Community detection on maintenance events, grouping aircraft into risk communities based on shared fault patterns |
+| [`03_gds_knn_aircraft.ipynb`](03_gds_knn_aircraft.ipynb) | kNN | Computes per-aircraft feature vectors from sensor and maintenance data, then writes `SIMILAR_PROFILE` relationships between similar aircraft |
+| [`04_gds_pagerank_airports.ipynb`](04_gds_pagerank_airports.ipynb) | PageRank + Betweenness | Centrality analysis on the airport route network, writing `pagerank_score` and `betweenness_score` to Airport nodes |
+| [`05_gds_node_similarity_aircraft.ipynb`](05_gds_node_similarity_aircraft.ipynb) | Node Similarity | Jaccard similarity over shared fault types, writing `SIMILAR_FAULT_PROFILE` relationships between aircraft |
 
-> **Note:** Notebook 06's comparison queries assume notebook 04 has already run.
+> **Note:** Notebook 05's comparison queries assume notebook 03 has already run.
 
 ---
 

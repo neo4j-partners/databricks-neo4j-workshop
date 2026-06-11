@@ -1,8 +1,8 @@
 """Verify GDS Cypher queries against the Aircraft Digital Twin graph.
 
 Loads Neo4j credentials from workshop-setup/.env and runs every query from
-gds-exploring.md in order: GDS version check, kNN (Notebook 04),
-PageRank/Betweenness (Notebook 05), Node Similarity (Notebook 06),
+gds-exploring.md in order: GDS version check, kNN (Notebook 03),
+PageRank/Betweenness (Notebook 04), Node Similarity (Notebook 05),
 and cross-algorithm queries.
 
 Usage:
@@ -65,9 +65,9 @@ CALL gds.graph.list()
 YIELD graphName, nodeCount, relationshipCount
 RETURN graphName, nodeCount, relationshipCount""",
     },
-    # ── Notebook 04 — kNN Aircraft Similarity ─────────────────────────────────
+    # ── Notebook 03 — kNN Aircraft Similarity ─────────────────────────────────
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Verify feature properties landed on Aircraft nodes",
         "min_rows": 1,
         "cypher": """\
@@ -83,13 +83,13 @@ ORDER BY a.tail_number
 LIMIT 10""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Drop aircraft-profiles projection (pre-create)",
         "min_rows": 0,
         "cypher": "CALL gds.graph.drop('aircraft-profiles', false) YIELD graphName",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Project Aircraft nodes for kNN",
         "min_rows": 1,
         "cypher": """\
@@ -110,7 +110,7 @@ CALL gds.graph.project(
 YIELD graphName, nodeCount, relationshipCount""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Stream kNN similarity pairs",
         "min_rows": 1,
         "cypher": """\
@@ -135,7 +135,7 @@ RETURN gds.util.asNode(node1).tail_number AS Aircraft,
 ORDER BY Aircraft, SimilarityScore DESC""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Write SIMILAR_PROFILE relationships",
         "min_rows": 1,
         "cypher": """\
@@ -155,7 +155,7 @@ CALL gds.knn.write('aircraft-profiles', {
 YIELD relationshipsWritten, nodesCompared""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Visualize the full similarity network",
         "min_rows": 1,
         "cypher": """\
@@ -163,7 +163,7 @@ MATCH (a:Aircraft)-[r:SIMILAR_PROFILE]->(peer:Aircraft)
 RETURN a, r, peer""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Top kNN pairs by similarity score",
         "min_rows": 1,
         "cypher": """\
@@ -178,7 +178,7 @@ ORDER BY Similarity DESC
 LIMIT 10""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Cross-model similarity — peers across model boundaries",
         "min_rows": 0,
         "cypher": """\
@@ -193,7 +193,7 @@ RETURN a.tail_number   AS Aircraft,
 ORDER BY Similarity DESC""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Peer alert: who to inspect when N10000 flags an anomaly?",
         "min_rows": 0,
         "cypher": """\
@@ -206,14 +206,14 @@ RETURN peer.tail_number AS PeerTail,
 ORDER BY Similarity DESC""",
     },
     {
-        "section": "Notebook 04 — kNN Aircraft Similarity",
+        "section": "Notebook 03 — kNN Aircraft Similarity",
         "name": "Drop aircraft-profiles projection (cleanup)",
         "min_rows": 0,
         "cypher": "CALL gds.graph.drop('aircraft-profiles', false) YIELD graphName",
     },
-    # ── Notebook 05 — PageRank and Betweenness ────────────────────────────────
+    # ── Notebook 04 — PageRank and Betweenness ────────────────────────────────
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Explore airport traffic before projecting",
         "min_rows": 1,
         "cypher": """\
@@ -227,7 +227,7 @@ RETURN ap.iata     AS IATA,
 ORDER BY Departures DESC""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Top routes by flight frequency",
         "min_rows": 1,
         "cypher": """\
@@ -240,13 +240,13 @@ ORDER BY Flights DESC
 LIMIT 15""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Drop airport-routes projection (pre-create)",
         "min_rows": 0,
         "cypher": "CALL gds.graph.drop('airport-routes', false) YIELD graphName",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Build the weighted airport route projection (Cypher aggregation)",
         "min_rows": 1,
         "cypher": """\
@@ -266,7 +266,7 @@ RETURN gds.graph.project(
 )""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Stream PageRank — which airports are most influential?",
         "min_rows": 1,
         "cypher": """\
@@ -283,7 +283,7 @@ RETURN gds.util.asNode(nodeId).iata AS IATA,
 ORDER BY PageRank DESC""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Stream Louvain — which airports cluster together?",
         "min_rows": 1,
         "cypher": """\
@@ -297,7 +297,7 @@ RETURN gds.util.asNode(nodeId).iata AS IATA,
 ORDER BY Community, IATA""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Write PageRank scores to Airport nodes",
         "min_rows": 1,
         "cypher": """\
@@ -309,7 +309,7 @@ CALL gds.pageRank.write('airport-routes', {
 YIELD nodePropertiesWritten""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Write Louvain community to Airport nodes",
         "min_rows": 1,
         "cypher": """\
@@ -320,7 +320,7 @@ CALL gds.louvain.write('airport-routes', {
 YIELD communityCount, nodePropertiesWritten""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Airports ranked by PageRank with community (after write)",
         "min_rows": 1,
         "cypher": """\
@@ -333,7 +333,7 @@ RETURN ap.iata                     AS IATA,
 ORDER BY PageRank DESC""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Community membership — which airports cluster together?",
         "min_rows": 1,
         "cypher": """\
@@ -346,7 +346,7 @@ RETURN ap.community_id                  AS Community,
 ORDER BY Airports DESC""",
     },
     {
-        "section": "Notebook 05 — PageRank and Louvain",
+        "section": "Notebook 04 — PageRank and Louvain",
         "name": "Maintenance delays departing from the top PageRank airport",
         "min_rows": 0,
         "cypher": """\
@@ -361,9 +361,9 @@ RETURN ap.iata         AS Airport,
 ORDER BY DelayMinutes DESC
 LIMIT 20""",
     },
-    # ── Notebook 06 — Node Similarity ─────────────────────────────────────────
+    # ── Notebook 05 — Node Similarity ─────────────────────────────────────────
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Explore fault type vocabulary",
         "min_rows": 1,
         "cypher": """\
@@ -375,7 +375,7 @@ RETURN FaultKey, Fault, Severity, count(*) AS Occurrences
 ORDER BY Occurrences DESC""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Fault type diversity per aircraft",
         "min_rows": 1,
         "cypher": """\
@@ -388,7 +388,7 @@ RETURN a.tail_number                                          AS Aircraft,
 ORDER BY DistinctFaultTypes DESC""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Create FaultType nodes (graph enrichment step)",
         "min_rows": 1,
         "cypher": """\
@@ -405,7 +405,7 @@ RETURN count(DISTINCT ft) AS FaultTypeNodes,
        count(DISTINCT a)  AS AircraftConnected""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Verify the bipartite structure",
         "min_rows": 1,
         "cypher": """\
@@ -417,13 +417,13 @@ ORDER BY FaultTypes DESC
 LIMIT 10""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Drop aircraft-faulttype projection (pre-create)",
         "min_rows": 0,
         "cypher": "CALL gds.graph.drop('aircraft-faulttype', false) YIELD graphName",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Project the bipartite Aircraft-FaultType graph",
         "min_rows": 1,
         "cypher": """\
@@ -435,7 +435,7 @@ CALL gds.graph.project(
 YIELD graphName, nodeCount, relationshipCount""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Stream Node Similarity — top Jaccard pairs",
         "min_rows": 1,
         "cypher": """\
@@ -455,7 +455,7 @@ ORDER BY JaccardSimilarity DESC
 LIMIT 20""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Write SIMILAR_FAULT_PROFILE relationships",
         "min_rows": 1,
         "cypher": """\
@@ -468,7 +468,7 @@ CALL gds.nodeSimilarity.write('aircraft-faulttype', {
 YIELD nodesCompared, relationshipsWritten""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Most similar aircraft pairs by Jaccard score (after write)",
         "min_rows": 1,
         "cypher": """\
@@ -483,7 +483,7 @@ ORDER BY JaccardScore DESC
 LIMIT 15""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Cross-model fault profile similarity",
         "min_rows": 0,
         "cypher": """\
@@ -498,7 +498,7 @@ RETURN a.tail_number        AS Aircraft,
 ORDER BY JaccardScore DESC""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Visualize the fault profile similarity network",
         "min_rows": 1,
         "cypher": """\
@@ -506,13 +506,13 @@ MATCH (a:Aircraft)-[r:SIMILAR_FAULT_PROFILE]->(b:Aircraft)
 RETURN a, r, b""",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Drop aircraft-faulttype projection (cleanup)",
         "min_rows": 0,
         "cypher": "CALL gds.graph.drop('aircraft-faulttype', false) YIELD graphName",
     },
     {
-        "section": "Notebook 06 — Node Similarity",
+        "section": "Notebook 05 — Node Similarity",
         "name": "Clean up FaultType scaffolding (preserves SIMILAR_FAULT_PROFILE)",
         "min_rows": 0,
         "cypher": "MATCH (ft:FaultType) DETACH DELETE ft",

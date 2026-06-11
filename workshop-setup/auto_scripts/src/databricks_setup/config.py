@@ -142,10 +142,10 @@ class NotebookConfig:
             "01_aircraft_etl_to_neo4j.ipynb",
         ), "Lab_2_Databricks_ETL_Neo4j"),
         ("Lab_3_Semantic_Search", (
-            "03_data_and_embeddings.ipynb",
-            "04_graphrag_retrievers.ipynb",
-            "05_mcp_graph_queries.ipynb",
-            "06_hybrid_retrievers.ipynb",
+            "01_data_and_embeddings.ipynb",
+            "02_graphrag_retrievers.ipynb",
+            "03_hybrid_retrievers.ipynb",
+            "04_mcp_graph_queries.ipynb",
             "data_utils.py",
         ), "Lab_3_Semantic_Search"),
         ("workshop-setup/neo4j_mcp_connection", (
