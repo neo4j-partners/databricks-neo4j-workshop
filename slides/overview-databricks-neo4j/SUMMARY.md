@@ -159,7 +159,7 @@ Every node and relationship can carry properties (names, dates, measurements), s
 ## Multi-Agent Routing in Action
 
 - **"What is the average EGT for engine AC5?"** → Genie agent (numeric aggregation over sensor data)
-- **"Which components were serviced on aircraft N95040A?"** → Neo4j agent (relationship traversal)
+- **"Which components were serviced on aircraft N10000?"** → Neo4j agent (relationship traversal)
 - **"Find aircraft with high vibration readings and show their maintenance history"** → Both agents in sequence, supervisor synthesizes a combined answer
 
 No Cypher or SQL knowledge required from the end user.

@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "faker>=24.0.0",
     "neo4j>=6.2.0",
-    "neo4j-graphrag[openai]>=1.17.0",
+    "neo4j-graphrag[openai,sentence-transformers]>=1.17.0",
     "numpy>=1.26.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.0.0",

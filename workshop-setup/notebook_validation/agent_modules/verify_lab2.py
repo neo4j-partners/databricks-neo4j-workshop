@@ -37,11 +37,11 @@ RETURN type(r) AS RelType, count(*) AS Count
 ORDER BY RelType""",
     },
     {
-        "name": "Aircraft hierarchy for N95040A",
+        "name": "Aircraft hierarchy for N10000",
         "notebook": "01",
         "min_rows": 1,
         "cypher": """\
-MATCH (a:Aircraft {tail_number: 'N95040A'})-[:HAS_SYSTEM]->(s:System)
+MATCH (a:Aircraft {tail_number: 'N10000'})-[:HAS_SYSTEM]->(s:System)
 WHERE s.type IS NOT NULL AND s.name IS NOT NULL
 OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(c:Component)
 RETURN a.tail_number AS Aircraft,
@@ -76,7 +76,7 @@ ORDER BY Count DESC""",
         "notebook": "01",
         "min_rows": 1,
         "cypher": """\
-MATCH (a:Aircraft {tail_number: 'N95040A'})-[:HAS_SYSTEM]->(s:System)-[:HAS_COMPONENT]->(c:Component)
+MATCH (a:Aircraft {tail_number: 'N10000'})-[:HAS_SYSTEM]->(s:System)-[:HAS_COMPONENT]->(c:Component)
 WHERE s.type IS NOT NULL AND s.name IS NOT NULL AND c.name IS NOT NULL
 RETURN a.tail_number AS Aircraft, s.name AS System, s.type AS SystemType,
        c.name AS Component, c.type AS ComponentType

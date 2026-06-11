@@ -108,7 +108,7 @@ def get_comment_sql(volume_config: VolumeConfig) -> list[str]:
         # Aircraft table
         f"COMMENT ON TABLE {target}.aircraft IS 'Fleet of aircraft with tail numbers, models, and operators'",
         f"COMMENT ON COLUMN {target}.aircraft.`:ID(Aircraft)` IS 'Unique aircraft identifier'",
-        f"COMMENT ON COLUMN {target}.aircraft.tail_number IS 'Aircraft registration/tail number (e.g., N95040A)'",
+        f"COMMENT ON COLUMN {target}.aircraft.tail_number IS 'Aircraft registration/tail number (e.g., N10000)'",
         f"COMMENT ON COLUMN {target}.aircraft.model IS 'Aircraft model (e.g., B737-800, A320-200)'",
         f"COMMENT ON COLUMN {target}.aircraft.operator IS 'Airline operator name'",
         # Systems table

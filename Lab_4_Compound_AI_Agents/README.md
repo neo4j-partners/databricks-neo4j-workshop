@@ -2,8 +2,6 @@
 
 In this lab, you'll build a compound AI agent system using Databricks Agent Bricks that combines a **Genie space** (for sensor time-series analytics) with **Neo4j MCP** (for graph relationship queries). The Supervisor Agent routes each question to the right system and, for complex questions spanning both, queries each sequentially and synthesizes a combined answer.
 
-> **Background Reading:** For the concepts and architecture behind this lab, see [CONTENT.md](CONTENT.md).
-
 > **Infrastructure:** This lab uses **shared** workshop resources — the Genie space queries shared Lakehouse tables in Unity Catalog, and the Neo4j MCP agent queries the **Reference Aura Instance** (the fully populated graph). You do not need data in your personal Aura instance for this lab.
 
 ## Multi-Agent Architecture
@@ -40,15 +38,14 @@ Build a supervisor agent that coordinates two specialized sub-agents:
 
 ## Getting Started
 
-1. **Part A** (~30 min): Create and configure the Genie space for sensor analytics
-2. **Part B** (~45 min): Build the Supervisor Agent with Neo4j integration
+1. **[Part A](PART_A.md)** (~30 min): Create and configure the Genie space for sensor analytics
+2. **[Part B](PART_B.md)** (~45 min): Build the Supervisor Agent with Neo4j integration
 
 ## Files
 
 | File | Description |
 |------|-------------|
 | `README.md` | This overview document |
-| `CONTENT.md` | Concepts and reference (dual-database architecture, routing strategy, domain knowledge) |
 | `PART_A.md` | Genie space configuration guide |
 | `PART_B.md` | Supervisor Agent setup guide |
 

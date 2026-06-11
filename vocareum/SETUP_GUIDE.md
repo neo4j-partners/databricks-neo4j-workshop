@@ -53,7 +53,7 @@ Upload from `vocareum/` in this repo to Vocareum filesystem:
 |------------|-----------|---------|
 | `courseware/neo4j-databricks-workshop.cfg` | `/voc/private/courseware/` | Course config |
 | `courseware/neo4j-databricks-workshop.dat` | `/voc/private/courseware/` | Lab notebooks (`.dat` prevents Vocareum auto-extract) |
-| `courseware/aircraft_digital_twin_data.dat` | `/voc/private/courseware/` | CSV data, 3.4MB (`.dat` prevents auto-extract) |
+| `courseware/aircraft_digital_twin_data.zip` | `/voc/private/courseware/` | CSV data, 3.4MB (init script also accepts `.dat` or a pre-extracted folder) |
 | `scripts/workspace_init.sh` | `/voc/scripts/` | Shell wrapper |
 | `scripts/user_setup.sh` | `/voc/scripts/` | Shell wrapper |
 | `scripts/lab_setup.sh` | `/voc/scripts/` | Shell wrapper |

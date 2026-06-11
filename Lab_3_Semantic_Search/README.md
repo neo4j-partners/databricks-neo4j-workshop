@@ -2,8 +2,6 @@
 
 In this lab, you'll add semantic search capabilities to your aircraft knowledge graph. Building on the aircraft topology loaded in Lab 2, you'll create a Document-Chunk structure for the A320-200 Maintenance Manual and enable AI-powered retrieval of maintenance procedures.
 
-> **Background Reading:** For the concepts and architecture behind this lab, see [CONTENT.md](CONTENT.md).
-
 > **Infrastructure:** This lab uses your **personal** Aura instance. You'll load maintenance manual chunks and generate embeddings into the graph you built in Lab 2.
 
 ## Prerequisites
@@ -28,6 +26,8 @@ Connect directly to Neo4j Aura using the Python driver and `neo4j-graphrag` libr
 
 ### Path B: Neo4j MCP Server (Notebook 06)
 
+> **Under construction:** Path B is currently unavailable. Notebook 06 is broken and being actively worked on. Follow Path A for now.
+
 Query the same graph through a remote **MCP server** using the FastMCP client. Instead of connecting to Neo4j directly, your notebook talks to an MCP server that manages the database connection. You write explicit Cypher queries and send them via MCP's `read-cypher` tool.
 
 **When to use:** You have MCP server credentials (endpoint URL + API key) and want to explore graph queries without direct database access. No Neo4j credentials or embedding model needed — uses fulltext search instead of vector search.
@@ -46,6 +46,8 @@ Query the same graph through a remote **MCP server** using the FastMCP client. I
 | **Best for** | Application code, GraphRAG pipelines | AI agents, tool-calling, decoupled access |
 
 ## Lab Overview
+
+The notebooks are numbered 03-06 because they continue from Lab 2's notebooks 01-02, which built the aircraft graph these notebooks extend.
 
 ### 03_data_and_embeddings.ipynb - Data Preparation (Required for both paths)
 Build the foundation for semantic search over maintenance documentation:
@@ -120,7 +122,6 @@ The embedding and LLM models use Databricks Foundation Model APIs which are pre-
 | `05_hybrid_retrievers.ipynb` | Hybrid search combining vector + keyword retrieval (Optional) |
 | `06_mcp_graph_queries.ipynb` | MCP-based graph queries (Path B, under construction) |
 | `data_utils.py` | Utility functions for Neo4j and Databricks |
-| `CONTENT.md` | Concepts and reference (knowledge graph structure, Foundation Model APIs, key concepts) |
 | `README.md` | This file |
 
 **Note:** The `MAINTENANCE_A320.md` file must be uploaded to the Unity Catalog Volume before running the notebooks.
@@ -129,6 +130,8 @@ The embedding and LLM models use Databricks Foundation Model APIs which are pre-
 
 Congratulations! You've completed the Semantic Search lab. You can now combine vector search with graph traversal to build powerful GraphRAG retrievers.
 
-Copy and paste queries from the [Sample Queries](SAMPLE_QUERIES.md) page to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
+Copy and paste queries from the [Sample Queries](../Lab_1_Aura_Setup/SAMPLE_QUERIES.md) page to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
 
 > **Note:** Vector similarity search is not included in the sample queries because it requires embedding the query text with the same model used to generate the stored embeddings (Databricks BGE-large). The notebooks handle this automatically via the Databricks Foundation Model APIs. See notebooks 04 and 05 for hands-on semantic search examples.
+
+When you're ready, continue to [Lab 4 - Compound AI Agents](../Lab_4_Compound_AI_Agents) to build a Supervisor Agent that routes questions between a Genie space and Neo4j MCP.

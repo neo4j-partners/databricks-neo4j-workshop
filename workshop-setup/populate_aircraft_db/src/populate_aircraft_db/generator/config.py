@@ -7,7 +7,7 @@ from pathlib import Path
 
 @dataclass
 class GeneratorConfig:
-    n_aircraft: int = 100
+    n_aircraft: int = 36
     n_airports: int = 40
     n_days: int = 90
     start_date: datetime = field(default_factory=lambda: datetime(2024, 7, 1))

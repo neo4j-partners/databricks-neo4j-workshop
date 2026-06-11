@@ -6,17 +6,13 @@ In this part, you'll create a multi-agent supervisor that intelligently routes q
 
 ---
 
-For background on why this lab uses two data sources and how they complement each other, see [CONTENT.md](CONTENT.md#why-two-data-sources).
-
----
-
 ## Prerequisites
 
 Before starting, ensure you have:
 - Completed **Part A** (Genie space for sensor analytics)
 - Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft` (tables and volume)
 
-> **Note on the Neo4j MCP connection:** This lab uses a **pre-configured Neo4j MCP connection** that has already been set up by the workshop administrators. The MCP server points to the **administrator's Neo4j Aura instance** (not your individual Aura instance from Lab 1), because it contains the **complete dataset** — all 20 aircraft, 80 systems, 320 components, 160 sensors, 300 maintenance events, 800 flights, and 300 delays. This ensures every participant has access to the full graph regardless of which Lab 2 notebooks they completed.
+> **Note on the Neo4j MCP connection:** This lab uses a **pre-configured Neo4j MCP connection** that has already been set up by the workshop administrators. The MCP server points to the **Reference Aura Instance**, an administrator-managed Neo4j Aura instance, not your individual Aura instance from Lab 1. It contains the **complete dataset**: all 100 aircraft, 400 systems, 1,700 components, 800 sensors, 893 maintenance events, 40,389 flights, and 15,103 delays. This ensures every participant has access to the full graph regardless of which Lab 2 notebooks they completed.
 
 ---
 
@@ -31,7 +27,7 @@ The Neo4j MCP connection has been **pre-configured** by the workshop administrat
 3. Locate the Neo4j MCP connection named `neo4j_agentcore_mcp`
 4. Verify the connection status shows as configured
 
-> **Note:** This MCP connection points to the administrator's Neo4j Aura instance, which contains the full Aircraft Digital Twin dataset. You do not need to configure this yourself — it has been set up ahead of time so that all participants share the same complete graph data.
+> **Note:** This MCP connection points to the Reference Aura Instance, which contains the full Aircraft Digital Twin dataset. You do not need to configure this yourself — it has been set up ahead of time so that all participants share the same complete graph data.
 
 ### 1.2 Verify MCP Tools Are Available
 
@@ -97,14 +93,14 @@ BEST FOR:
 - Graph traversals: "Show the path from aircraft to sensor"
 
 DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-workshop/aircraft/raw_data/):
-- Aircraft (20): Fleet inventory with tail numbers, models, operators
-- Systems (~80): Engines, Avionics, Hydraulics per aircraft
-- Components (320): Turbines, Compressors, Pumps, etc.
-- Sensors (160): Monitoring equipment metadata
-- MaintenanceEvents (300): Faults, severity, corrective actions
-- Flights (800): Operations with departure/arrival
-- Delays (~300): Delay causes and durations
-- Airports (12): Route network locations
+- Aircraft (100): Fleet inventory with tail numbers, models, operators
+- Systems (400): Engines, Avionics, Hydraulics per aircraft
+- Components (1,700): Turbines, Compressors, Pumps, etc.
+- Sensors (800): Monitoring equipment metadata
+- MaintenanceEvents (893): Faults, severity, corrective actions
+- Flights (40,389): Operations with departure/arrival
+- Delays (15,103): Delay causes and durations
+- Airports (40): Route network locations
 
 RELATIONSHIP TYPES:
 - HAS_SYSTEM: Aircraft -> System
@@ -154,10 +150,10 @@ BEST FOR:
 - Aggregations: "What was the maximum N1 speed recorded?"
 
 DATA AVAILABLE:
-- sensor_readings (345,600+ rows): Hourly telemetry over 90 days
-- sensors (160 rows): Sensor metadata (type, unit, system)
-- systems (~80 rows): Aircraft system information
-- aircraft (20 rows): Fleet metadata (model, operator)
+- sensor_readings (432,000 rows): Telemetry every 4 hours over 90 days
+- sensors (800 rows): Sensor metadata (type, unit, system)
+- systems (400 rows): Aircraft system information
+- aircraft (100 rows): Fleet metadata (model, operator)
 
 SENSOR TYPES:
 - EGT: Exhaust Gas Temperature (640-700 C)
@@ -383,13 +379,11 @@ print(response.json())
 
 You've created a multi-agent system that combines two purpose-built data platforms:
 
-- **Genie + Lakehouse for time-series data** — SQL-powered analytics over 345,600+ sensor readings, ideal for aggregations, trends, and statistical analysis
+- **Genie + Lakehouse for time-series data** — SQL-powered analytics over 432,000 sensor readings, ideal for aggregations, trends, and statistical analysis
 - **Neo4j for rich relational data** — graph-powered traversals across aircraft topology, maintenance events, flights, and delays, ideal for relationship queries and multi-hop navigation
 - **Intelligent routing** — the supervisor directs each question to the right data source automatically
 - **Cross-source synthesis** — complex questions that span both systems are answered by querying each sequentially and combining the results
 - **Natural language access** — users ask questions without needing SQL or Cypher knowledge
-
-For the full architecture diagram and data sources reference, see [CONTENT.md](CONTENT.md#multi-agent-architecture).
 
 ---
 
@@ -429,7 +423,7 @@ For the full architecture diagram and data sources reference, see [CONTENT.md](C
 
 ### Sensor Analytics (sensor_data_agent)
 ```
-What is the average EGT temperature for aircraft N95040A?
+What is the average EGT temperature for aircraft N10000?
 Show daily vibration trends for Engine 1 in August 2024
 Find all sensors with readings above the 95th percentile
 Compare fuel flow rates by aircraft model

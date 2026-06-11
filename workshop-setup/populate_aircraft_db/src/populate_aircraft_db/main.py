@@ -79,6 +79,7 @@ class _LLMCredentials:
     anthropic_key: str | None
     llm_model: str
     llm_max_tokens: int
+    embedding_provider: Literal["bge", "openai"]
     embedding_model: str
     embedding_dims: int
 
@@ -86,26 +87,28 @@ class _LLMCredentials:
 def _resolve_llm_credentials(settings: Settings) -> _LLMCredentials:
     """Validate and resolve LLM credentials from settings. Raises typer.BadParameter on failure."""
     provider = settings.llm_provider
+    embedding_provider = settings.embedding_provider
     openai_key = None
     anthropic_key = None
 
-    if provider == "openai":
+    # OpenAI is needed for extraction (llm_provider=openai) and/or embeddings
+    # (embedding_provider=openai). The default BGE embedder runs locally and
+    # needs no API key.
+    if provider == "openai" or embedding_provider == "openai":
         if settings.openai_api_key is None:
+            usage = (
+                "extraction" if provider == "openai" else "embeddings"
+            )
             raise typer.BadParameter(
-                "OPENAI_API_KEY is required when using OpenAI. "
+                f"OPENAI_API_KEY is required for {usage} when using OpenAI. "
                 "Set it in .env or as an env var."
             )
         openai_key = settings.openai_api_key.get_secret_value()
+
+    if provider == "openai":
         llm_model = settings.openai_extraction_model
         llm_max_tokens = settings.openai_extraction_max_completion_tokens
     elif provider == "anthropic":
-        # Anthropic still needs OpenAI for embeddings.
-        if settings.openai_api_key is None:
-            raise typer.BadParameter(
-                "OPENAI_API_KEY is required for embeddings when using Anthropic. "
-                "Set it in .env or as an env var."
-            )
-        openai_key = settings.openai_api_key.get_secret_value()
         if settings.anthropic_api_key is None:
             raise typer.BadParameter(
                 "ANTHROPIC_API_KEY is required when using Anthropic. "
@@ -119,17 +122,15 @@ def _resolve_llm_credentials(settings: Settings) -> _LLMCredentials:
             f"Unknown provider: {provider!r}. Use 'openai' or 'anthropic'."
         )
 
-    embedding_model = settings.openai_embedding_model
-    embedding_dims = settings.openai_embedding_dimensions
-
     return _LLMCredentials(
         provider=provider,
         openai_key=openai_key,
         anthropic_key=anthropic_key,
         llm_model=llm_model,
         llm_max_tokens=llm_max_tokens,
-        embedding_model=embedding_model,
-        embedding_dims=embedding_dims,
+        embedding_provider=embedding_provider,
+        embedding_model=settings.embedding_model,
+        embedding_dims=settings.embedding_dimensions,
     )
 
 
@@ -175,6 +176,7 @@ def _run_enrich(driver: Driver, settings: Settings, creds: _LLMCredentials) -> N
         anthropic_api_key=creds.anthropic_key,
         llm_model=creds.llm_model,
         llm_max_tokens=creds.llm_max_tokens,
+        embedding_provider=creds.embedding_provider,
         embedding_model=creds.embedding_model,
         embedding_dimensions=creds.embedding_dims,
         chunk_size=settings.chunk_size,
@@ -234,7 +236,7 @@ def setup_cmd() -> None:
 
         verify(
             driver,
-            expected_embedding_dimensions=settings.openai_embedding_dimensions,
+            expected_embedding_dimensions=settings.embedding_dimensions,
         )
 
     elapsed = time.monotonic() - start
@@ -256,7 +258,7 @@ def verify_cmd(
     with _connect(settings) as driver:
         passed = verify(
             driver,
-            expected_embedding_dimensions=settings.openai_embedding_dimensions,
+            expected_embedding_dimensions=settings.embedding_dimensions,
             strict=strict,
         )
 
@@ -412,6 +414,7 @@ def agent_samples_cmd() -> None:
             openai_key=creds.openai_key,
             anthropic_key=creds.anthropic_key,
             llm_model=creds.llm_model,
+            embedding_provider=creds.embedding_provider,
             embedding_model=creds.embedding_model,
             embedding_dimensions=creds.embedding_dims,
             sample_size=settings.sample_size,

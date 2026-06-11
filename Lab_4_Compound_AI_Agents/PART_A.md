@@ -10,15 +10,15 @@ In this part, you'll create a Databricks AI/BI Genie space that enables natural 
 Your workshop admin has pre-loaded a set of tables into Unity Catalog that represent the Aircraft Digital Twin sensor telemetry. This is the data you will use to create your Genie space — a natural language interface that lets agents query sensor readings, compare fleet metrics, and detect anomalies using SQL under the hood.
 
 1. Click **Catalog** in the left sidebar.
-2. Expand **databricks-neo4j-workshop > lakehouse**.
+2. Expand **databricks-neo4j-workshop > aircraft**.
 3. Browse the available tables:
 
 | Table | Rows | Description |
 |-------|------|-------------|
-| `aircraft` | 20 | Fleet inventory — tail numbers, models, manufacturers, operators |
-| `systems` | 80 | Aircraft systems — engines, avionics, hydraulics |
-| `sensors` | 160 | Sensor metadata — EGT, vibration, N1 speed, fuel flow |
-| `sensor_readings` | 345,600 | Hourly telemetry readings over 90 days (July–September 2024) |
+| `aircraft` | 100 | Fleet inventory — tail numbers, models, manufacturers, operators |
+| `systems` | 400 | Aircraft systems — engines, avionics, hydraulics |
+| `sensors` | 800 | Sensor metadata — EGT, vibration, N1 speed, fuel flow |
+| `sensor_readings` | 432,000 | Telemetry readings every 4 hours over 90 days (July–September 2024) |
 
 4. Click on any table (e.g., `sensor_readings`) and select the **Sample Data** tab to preview its contents.
 
@@ -64,7 +64,7 @@ Still on the **Settings** tab, scroll down to **Sample questions**. These train 
 **Time-Series Analytics**
 
 ```
-What is the average EGT temperature for aircraft N95040A over the last 30 days?
+What is the average EGT temperature for aircraft N10000 over the last 30 days?
 ```
 
 **Fleet Comparisons**
@@ -82,12 +82,12 @@ Find sensors with readings above their 95th percentile value
 **Trend Analysis**
 
 ```
-Show the trend of EGT temperatures over the 90-day period for aircraft N95040A
+Show the trend of EGT temperatures over the 90-day period for aircraft N10000
 ```
 
 ---
 
-## Step 4: Add Instructions
+## Step 3: Add Instructions
 
 Navigate to **Configure** > **Instructions**. Instructions provide domain knowledge and query conventions. These instructions give the Genie domain knowledge about sensor types, normal ranges, and data conventions so it can generate accurate SQL queries. Enter the following:
 
@@ -101,20 +101,20 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 - FuelFlow: Normal range 0.85-1.95 kg/s, measured in kg/s
 
 ## Fleet Information
-- 20 aircraft in the fleet
+- 100 aircraft in the fleet
 - 4 operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
 - Models: B737-800 (Boeing), A320-200 (Airbus), A321neo (Airbus), E190 (Embraer)
 
 ## Sensor Configuration
 - Each aircraft has 2 engines
 - Each engine has 4 sensors: EGT, Vibration, N1Speed, FuelFlow
-- Total: 160 sensors across the fleet (20 aircraft x 2 engines x 4 sensors)
+- Total: 800 sensors across the fleet (100 aircraft x 2 engines x 4 sensors)
 
 ## Data Conventions
 - Timestamps are stored as timestamp type in the `timestamp` column
-- Data period: July 1, 2024 to September 29, 2024 (90 days)
-- Readings are hourly (24 per day per sensor)
-- 2,160 readings per sensor over the 90-day period
+- Data period: July 1, 2024 to September 28, 2024 (90 days)
+- Readings are every 4 hours (6 per day per sensor)
+- 540 readings per sensor over the 90-day period
 
 ## Sensor ID Format
 - Format: AC{aircraft_number}-S{system_number}-SN{sensor_number}
@@ -131,20 +131,20 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 ## Query Conventions
 - When asked about "Engine 1", filter by systems where name contains "#1"
 - When asked about "Engine 2", filter by systems where name contains "#2"
-- Use tail_number for human-readable aircraft references (e.g., N95040A)
+- Use tail_number for human-readable aircraft references (e.g., N10000)
 - Use aircraft_id for internal references (e.g., AC1001)
 - Always include units in results (C, ips, rpm, kg/s)
 ```
 
 ---
 
-## Step 5: Test the Genie
+## Step 4: Test the Genie
 
-### 5.1 Start a Conversation
+### 4.1 Start a Conversation
 
 Click **Start conversation** or go to the chat interface.
 
-### 5.2 Test Basic Queries
+### 4.2 Test Basic Queries
 
 Try these progressively complex queries:
 
@@ -156,7 +156,7 @@ Expected: A single number around 650-680 degrees Celsius
 
 **Query 2: Filtering by Aircraft**
 ```
-Show the average EGT for aircraft N95040A
+Show the average EGT for aircraft N10000
 ```
 Expected: Average EGT for that specific aircraft
 
@@ -178,7 +178,7 @@ Find the top 5 sensors with the highest average readings for their type
 ```
 Expected: Top sensors with their average values and types
 
-### 5.3 View the SQL Generation
+### 4.3 View the SQL Generation
 
 For each query, click **View Code** to see the generated query is correct:
 
@@ -199,13 +199,13 @@ ORDER BY avg_vibration DESC
 
 ---
 
-## Step 6: Save and Note the Genie space ID
+## Step 5: Save and Note the Genie space ID
 
-### 6.1 Save Configuration
+### 5.1 Save Configuration
 
 Click **Save** to preserve your Genie space configuration.
 
-### 6.2 Record the Genie space Name
+### 5.2 Record the Genie space Name
 
 Note the exact name of your Genie space (e.g., `Aircraft Sensor Analyst RK`). You'll need this in Part B when configuring the multi-agent supervisor.
 
@@ -215,7 +215,7 @@ Note the exact name of your Genie space (e.g., `Aircraft Sensor Analyst RK`). Yo
 
 You've created a Genie space that can:
 
-- Query 345,600+ sensor readings using natural language
+- Query 432,000 sensor readings using natural language
 - Aggregate by aircraft, model, operator, or sensor type
 - Perform statistical analysis (averages, percentiles, standard deviation)
 - Join across the data model to provide context-rich answers
@@ -267,4 +267,4 @@ Calculate the 7-day rolling average of vibration for Engine 1 on AC1001
 
 ## Next Steps
 
-Proceed to **Part B** to create the multi-agent supervisor that combines this Genie space with the Neo4j MCP agent for comprehensive aircraft intelligence.
+Proceed to **[Part B](PART_B.md)** to create the multi-agent supervisor that combines this Genie space with the Neo4j MCP agent for comprehensive aircraft intelligence.

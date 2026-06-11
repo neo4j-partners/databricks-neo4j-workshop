@@ -2,24 +2,37 @@
 
 Load aircraft data from Databricks into Neo4j using the Spark Connector.
 
-> **Background Reading:** For the concepts and architecture behind this lab, see [CONTENT.md](CONTENT.md).
-
 > **Infrastructure:** This lab uses the Vocareum lab environment for the Databricks workspace setup and notebook execution.
 
-**Duration:** ~45 minutes
+**Duration:** ~45 minutes for the core notebooks, plus optional extra time for the Graph Data Science notebooks
 
 ---
 
-## Notebooks
+## Core Notebooks
 
-This lab has two notebooks:
+The core flow is two notebooks:
 
 | Notebook | Description | Required For |
 |----------|-------------|--------------|
-| [`01_aircraft_etl_to_neo4j.ipynb`](01_aircraft_etl_to_neo4j.ipynb) | Core ETL — loads Aircraft, System, and Component nodes using the Spark Connector | Labs 3, 4 |
-| [`02_load_neo4j_full.ipynb`](02_load_neo4j_full.ipynb) | Full dataset — adds Sensors, Airports, Flights, Delays, Maintenance Events, and Removals using the Spark Connector | **Lab 4** |
+| [`01_aircraft_etl_to_neo4j.ipynb`](01_aircraft_etl_to_neo4j.ipynb) | Guided walkthrough that teaches the Spark Connector mechanics by loading Aircraft, System, and Component nodes | Learning the ETL pattern |
+| [`02_load_neo4j_full.ipynb`](02_load_neo4j_full.ipynb) | Clears the database first (`CLEAR_DATABASE = True`), then loads the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals | **Labs 3, 4** |
 
-> **Important:** Run **both** notebooks before proceeding. Notebook 01 loads the core aircraft topology needed by all subsequent labs. Notebook 02 loads the complete dataset required by the Neo4j MCP agent in Lab 4 (Compound AI Agents).
+> **Important:** Run **both** notebooks before proceeding. Notebook 01 is the guided walkthrough that teaches how the Spark Connector works. Notebook 02 clears the database and loads the full canonical dataset, so its output is what Labs 3 and 4 depend on.
+
+---
+
+## Optional: Graph Data Science Notebooks
+
+Four optional, more advanced notebooks apply Neo4j Graph Data Science (GDS) algorithms to the loaded graph. All four require notebook 02 to have been run first, and they require the Neo4j Graph Data Science plugin. Notebooks 03 and 04 include a `gds.version()` check cell you can use to confirm GDS is available on your instance.
+
+| Notebook | Algorithm | What It Does |
+|----------|-----------|--------------|
+| [`03_gds_louvain_maintenance.ipynb`](03_gds_louvain_maintenance.ipynb) | Louvain | Community detection on maintenance events, grouping aircraft into risk communities based on shared fault patterns |
+| [`04_gds_knn_aircraft.ipynb`](04_gds_knn_aircraft.ipynb) | kNN | Computes per-aircraft feature vectors from sensor and maintenance data, then writes `SIMILAR_PROFILE` relationships between similar aircraft |
+| [`05_gds_pagerank_airports.ipynb`](05_gds_pagerank_airports.ipynb) | PageRank + Betweenness | Centrality analysis on the airport route network, writing `pagerank_score` and `betweenness_score` to Airport nodes |
+| [`06_gds_node_similarity_aircraft.ipynb`](06_gds_node_similarity_aircraft.ipynb) | Node Similarity | Jaccard similarity over shared fault types, writing `SIMILAR_FAULT_PROFILE` relationships between aircraft |
+
+> **Note:** Notebook 06's comparison queries assume notebook 04 has already run.
 
 ---
 
@@ -40,7 +53,7 @@ Use the Vocareum lab setup to complete the Databricks workspace configuration an
 
 ## What You Loaded
 
-For the full data model diagrams, entity counts, and sample aircraft, see [CONTENT.md](CONTENT.md#the-aircraft-digital-twin-data-model).
+After notebook 02 completes, Neo4j holds the full Aircraft Digital Twin graph: 100 aircraft, 400 systems, 1,700 components, 800 sensors, and roughly 40,000 flights with their delays, maintenance events, and removals. The 432,000 sensor readings stay in Databricks Delta tables. For the full schema reference, see [DATA_GENERATOR.md](../workshop-setup/populate_aircraft_db/DATA_GENERATOR.md).
 
 ---
 
@@ -81,7 +94,18 @@ For the full data model diagrams, entity counts, and sample aircraft, see [CONTE
 
 ## Key Concepts
 
-See [CONTENT.md](CONTENT.md#key-concepts) for a summary of Unity Catalog Volumes, the Spark Connector, and other concepts from this lab.
+This lab introduced Unity Catalog Volumes, where the workshop CSV files live, and the Neo4j Spark Connector, which writes Spark DataFrames into Neo4j as nodes and relationships.
+
+---
+
+## Explore Further
+
+| File | Description |
+|------|-------------|
+| [SAMPLE_QUERIES.md](SAMPLE_QUERIES.md) | Library of sample Cypher queries covering schema, aircraft topology, sensors, maintenance, flights, removals, and cross-domain analysis, with concept notes for each |
+| [aura-explore.md](aura-explore.md) | Five progressive queries that build a graph visualization story in Aura Explore, from one aircraft out to its peer similarity network |
+| [data-exploring.md](data-exploring.md) | Sample Cypher queries for creating nodes with `MERGE` and exploring the loaded dataset, from schema census to multi-hop patterns |
+| [gds-exploring.md](gds-exploring.md) | Companion queries for the GDS notebooks: inspect projections, re-run individual algorithm steps, and explore the written results |
 
 ---
 

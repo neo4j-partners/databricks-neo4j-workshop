@@ -1,6 +1,6 @@
 # populate-aircraft-db
 
-Standalone CLI tool that generates the Aircraft Digital Twin dataset and loads it into a Neo4j Aura instance. The `generate` command produces the synthetic CSV dataset with correlated sensor degradation. The `setup` command handles the full loading pipeline: CSV data loading, maintenance manual chunking, OpenAI embedding generation, and independently configured LLM-powered entity extraction (OpenAI or Anthropic) via `neo4j-graphrag`'s `SimpleKGPipeline`.
+Standalone CLI tool that generates the Aircraft Digital Twin dataset and loads it into a Neo4j Aura instance. The `generate` command produces the synthetic CSV dataset with correlated sensor degradation. The `setup` command handles the full loading pipeline: CSV data loading, maintenance manual chunking, BGE-large embedding generation (local, via sentence-transformers), and independently configured LLM-powered entity extraction (OpenAI or Anthropic) via `neo4j-graphrag`'s `SimpleKGPipeline`.
 
 ## Quick Start
 
@@ -12,8 +12,8 @@ cp .env.example .env
 # Edit .env with your credentials
 
 # Install and run
-uv sync                              # OpenAI only
-uv sync --extra anthropic            # include Anthropic support
+uv sync                              # BGE embeddings + OpenAI extraction
+uv sync --extra anthropic            # include Anthropic extraction support
 uv run populate-aircraft-db clean
 uv run populate-aircraft-db setup
 ```
@@ -93,9 +93,12 @@ Settings are loaded from a `.env` file in the project root or from environment v
 | `DATA_DIR` | no | `../aircraft_digital_twin_data` | CSV directory for operational graph loading |
 | `DOCUMENT_DIR` | no | `../aircraft_digital_twin_data` | Maintenance manual directory for enrichment (same directory; CSVs and manuals live together) |
 | `LLM_PROVIDER` | no | `openai` | LLM provider for entity extraction: `openai` or `anthropic` |
-| `OPENAI_API_KEY` | for setup | - | OpenAI API key. Always required for Chunk embeddings, and also used for extraction when `LLM_PROVIDER=openai` |
-| `OPENAI_EMBEDDING_MODEL` | no | `text-embedding-3-small` | Embedding model |
-| `OPENAI_EMBEDDING_DIMENSIONS` | no | `1536` | Embedding dimensions |
+| `EMBEDDING_PROVIDER` | no | `bge` | Chunk embedding provider: `bge` (local sentence-transformers, no API key) or `openai` |
+| `BGE_EMBEDDING_MODEL` | no | `BAAI/bge-large-en-v1.5` | BGE embedding model (used when `EMBEDDING_PROVIDER=bge`) |
+| `BGE_EMBEDDING_DIMENSIONS` | no | `1024` | BGE embedding dimensions — matches the Lab 3 `maintenanceChunkEmbeddings` index |
+| `OPENAI_API_KEY` | for setup (openai) | - | OpenAI API key. Required for extraction when `LLM_PROVIDER=openai` and for embeddings when `EMBEDDING_PROVIDER=openai` |
+| `OPENAI_EMBEDDING_MODEL` | no | `text-embedding-3-small` | OpenAI embedding model (used when `EMBEDDING_PROVIDER=openai`) |
+| `OPENAI_EMBEDDING_DIMENSIONS` | no | `1536` | OpenAI embedding dimensions (used when `EMBEDDING_PROVIDER=openai`) |
 | `OPENAI_EXTRACTION_MODEL` | no | `gpt-5-mini` | Chat model for entity extraction (OpenAI) |
 | `OPENAI_EXTRACTION_MAX_COMPLETION_TOKENS` | no | `8000` | OpenAI extraction output budget. Keep this high for GPT-5-family structured extraction |
 | `ANTHROPIC_API_KEY` | for setup (anthropic) | - | Anthropic API key |
@@ -108,15 +111,21 @@ Settings are loaded from a `.env` file in the project root or from environment v
 
 ### Embeddings vs extractor LLM
 
-Chunk embeddings always use OpenAI because the graph creates an OpenAI-backed vector index over `Chunk.embedding`. Entity extraction is controlled separately with `LLM_PROVIDER`.
+Chunk embeddings default to BGE-large (`BAAI/bge-large-en-v1.5`, 1024 dimensions), run locally via sentence-transformers with no API key. This matches the `databricks-bge-large-en` embeddings and the 1024-dim `maintenanceChunkEmbeddings` vector index used in Lab 3, so embeddings are compatible across the workshop. Entity extraction is controlled separately with `LLM_PROVIDER` and always needs an OpenAI or Anthropic API key.
 
-To use OpenAI for embeddings and Anthropic for entity extraction:
+To use the default BGE embeddings with Anthropic entity extraction (no OpenAI key needed):
 
 ```dotenv
-OPENAI_API_KEY=sk-your-openai-key
 LLM_PROVIDER=anthropic
 ANTHROPIC_API_KEY=sk-ant-your-key
 ANTHROPIC_EXTRACTION_MODEL=claude-sonnet-4-6
+```
+
+To opt back in to OpenAI embeddings (1536 dimensions — incompatible with the Lab 3 index dimensions):
+
+```dotenv
+EMBEDDING_PROVIDER=openai
+OPENAI_API_KEY=sk-your-openai-key
 ```
 
 If `LLM_PROVIDER=openai` and you see repeated `LLM response has improper format` messages, keep `OPENAI_EXTRACTION_MAX_COMPLETION_TOKENS` at `8000` or higher. GPT-5-family models can spend part of that budget on structured-output reasoning before emitting the JSON graph.
@@ -170,7 +179,7 @@ Uses `neo4j-graphrag`'s `SimpleKGPipeline` to process maintenance manuals from
 `DOCUMENT_DIR` (A320-200, A321neo, B737-800, E190, A220-300 by default):
 
 1. **Chunking**: Splits text into ~800-character chunks with overlap
-2. **Embedding**: Generates OpenAI embeddings stored on Chunk nodes
+2. **Embedding**: Generates BGE-large embeddings (local sentence-transformers, 1024 dimensions) stored on Chunk nodes
 3. **Entity extraction**: Uses the configured extractor LLM to extract **AircraftModel**, **SystemReference**, **ComponentReference**, **Fault**, **MaintenanceProcedure**, and **OperatingLimit** entities
 4. **Entity resolution**: Deduplicates entities with matching `name` property (via APOC)
 5. **Cross-linking**:

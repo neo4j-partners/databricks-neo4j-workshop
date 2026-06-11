@@ -90,7 +90,7 @@ def _fleet_rows(fleet: list[AircraftNode]) -> tuple[
 
 
 def generate(
-    aircraft: int = typer.Option(100, "--aircraft", "-a", help="Number of aircraft to generate."),
+    aircraft: int = typer.Option(36, "--aircraft", "-a", help="Number of aircraft to generate."),
     airports: int = typer.Option(40, "--airports", help="Number of airports (max 40)."),
     days: int = typer.Option(90, "--days", "-d", help="Days of sensor telemetry."),
     seed: int = typer.Option(42, "--seed", help="Random seed for reproducibility."),

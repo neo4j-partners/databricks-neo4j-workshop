@@ -406,10 +406,10 @@ def main():
     record("Component removal query", removals.count() > 0,
            f"rows={removals.count()}")
 
-    # Aircraft hierarchy for N95040A
+    # Aircraft hierarchy for N10000
     hierarchy = run_cypher("""
         CALL {
-            MATCH (a:Aircraft {tail_number: 'N95040A'})-[:HAS_SYSTEM]->(s:System)
+            MATCH (a:Aircraft {tail_number: 'N10000'})-[:HAS_SYSTEM]->(s:System)
                   -[:HAS_COMPONENT]->(c:Component)
             WHERE s.type IS NOT NULL AND s.name IS NOT NULL AND c.name IS NOT NULL
             RETURN a.tail_number AS Aircraft, s.name AS System, s.type AS SystemType,

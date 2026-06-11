@@ -9,7 +9,7 @@ Notebooks run the full pipeline (feature compute → project → write) from Dat
 | Notebook | Writes to Neo4j |
 |---|---|
 | 04 — kNN | `*_norm` properties on `Aircraft` nodes; `SIMILAR_PROFILE` relationships with `similarity_score` |
-| 05 — PageRank / Louvain | `pagerank_score` and `community_id` properties on `Airport` nodes |
+| 05 — PageRank / Betweenness | `pagerank_score` and `betweenness_score` properties on `Airport` nodes |
 | 06 — Node Similarity | `SIMILAR_FAULT_PROFILE` relationships with `jaccard_score` |
 
 ---
@@ -205,7 +205,7 @@ CALL gds.graph.drop('aircraft-profiles', false) YIELD graphName
 
 ---
 
-## Notebook 05 — PageRank and Louvain Community Detection on the Airport Route Network
+## Notebook 05 — PageRank and Betweenness Centrality on the Airport Route Network
 
 Flights connect airports through intermediate Flight nodes — there are no direct Airport-to-Airport relationships in the base graph. The Cypher aggregation projection builds a virtual weighted Airport graph, where edge weight equals the number of flights on each route.
 
@@ -279,22 +279,20 @@ ORDER BY PageRank DESC
 
 > **Concepts**: PageRank scores an airport by both the volume of connections and the importance of the airports it connects to. `relationshipWeightProperty: 'weight'` means high-frequency routes contribute more influence. `dampingFactor: 0.85` is the standard value (probability of following a link vs. jumping randomly).
 
-### Stream Louvain — which airports cluster together?
+### Stream Betweenness — which airports are critical connectors?
 
 ```sql
-CALL gds.louvain.stream('airport-routes', {
-    relationshipWeightProperty: 'weight'
-})
-YIELD nodeId, communityId
+CALL gds.betweenness.stream('airport-routes')
+YIELD nodeId, score
 RETURN gds.util.asNode(nodeId).iata AS IATA,
        gds.util.asNode(nodeId).city AS City,
-       communityId                  AS Community
-ORDER BY Community, IATA
+       round(score, 2)              AS Betweenness
+ORDER BY Betweenness DESC
 ```
 
-> **Concepts**: Louvain detects communities — groups of airports more densely connected to each other than to the rest of the network. `relationshipWeightProperty: 'weight'` means high-frequency routes pull airports into the same community more strongly than low-frequency ones. Communities often correspond to geographic regions or shared hub affiliations.
+> **Concepts**: Betweenness measures how often an airport lies on the shortest path between any two other airports. A high-betweenness airport is a structural connector: removing it would fragment the network most severely. Compare the ranking with PageRank, since airports that rank high on both are simultaneously traffic hubs and critical connectors.
 
-### Write PageRank and Louvain community to Airport nodes
+### Write PageRank and Betweenness scores to Airport nodes
 
 ```sql
 CALL gds.pageRank.write('airport-routes', {
@@ -304,42 +302,42 @@ CALL gds.pageRank.write('airport-routes', {
 })
 YIELD nodePropertiesWritten;
 
-CALL gds.louvain.write('airport-routes', {
-    writeProperty: 'community_id',
-    relationshipWeightProperty: 'weight'
+CALL gds.betweenness.write('airport-routes', {
+    writeProperty: 'betweenness_score'
 })
-YIELD communityCount, nodePropertiesWritten
+YIELD nodePropertiesWritten
 ```
 
 > **Concepts**: `write` mode persists results as node properties, making them queryable from any Cypher client and visible in the graph visualization. Each statement runs sequentially using the same `airport-routes` projection.
 
-### Airports ranked by PageRank with community (after write)
+### Airports ranked by PageRank with betweenness (after write)
 
 ```sql
 MATCH (ap:Airport)
 WHERE ap.pagerank_score IS NOT NULL
-RETURN ap.iata                     AS IATA,
-       ap.city                     AS City,
-       round(ap.pagerank_score, 4) AS PageRank,
-       ap.community_id             AS Community
+RETURN ap.iata                          AS IATA,
+       ap.city                          AS City,
+       round(ap.pagerank_score, 4)      AS PageRank,
+       round(ap.betweenness_score, 1)   AS Betweenness
 ORDER BY PageRank DESC
 ```
 
 > **Concepts**: Once written, scores are plain node properties — queryable without any active projection. `IS NOT NULL` ensures only enriched Airport nodes appear.
 
-### Community membership — which airports cluster together?
+### Hubs vs. connectors — where the two rankings disagree
 
 ```sql
 MATCH (ap:Airport)
-WHERE ap.community_id IS NOT NULL
-RETURN ap.community_id                  AS Community,
-       count(ap)                        AS Airports,
-       collect(ap.iata)                 AS Members,
-       round(avg(ap.pagerank_score), 4) AS AvgPageRank
-ORDER BY Airports DESC
+WHERE ap.pagerank_score IS NOT NULL
+  AND ap.betweenness_score IS NOT NULL
+RETURN ap.iata                          AS IATA,
+       ap.city                          AS City,
+       round(ap.pagerank_score, 4)      AS PageRank,
+       round(ap.betweenness_score, 1)   AS Betweenness
+ORDER BY Betweenness DESC
 ```
 
-> **Concepts**: Groups airports by their Louvain community and shows the member IATA codes alongside the community's average PageRank. Communities with a high average PageRank are influential clusters — losing any one member affects the others disproportionately.
+> **Concepts**: Sorting by betweenness instead of PageRank surfaces the disagreements. An airport with high PageRank but low betweenness is a busy hub inside a dense cluster; one with high betweenness but modest PageRank is a bridge between regions and a structural single point of failure.
 
 ### Maintenance delays departing from the top PageRank airport
 
@@ -568,7 +566,7 @@ OPTIONAL MATCH (f)-[:HAS_DELAY]->(d:Delay {cause: 'Maintenance'})
 RETURN ap.iata                                       AS IATA,
        ap.city                                       AS City,
        round(ap.pagerank_score, 4)                   AS PageRank,
-       ap.community_id                               AS Community,
+       round(ap.betweenness_score, 1)                AS Betweenness,
        count(DISTINCT f)                             AS TotalFlights,
        count(d)                                      AS MaintenanceDelays,
        round(100.0 * count(d) / count(DISTINCT f), 1) AS MaintenanceDelayPct

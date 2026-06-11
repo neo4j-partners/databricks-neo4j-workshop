@@ -28,19 +28,19 @@ Participants work through lab exercises in Databricks and Neo4j Aura, using Data
 
 The workshop uses a comprehensive **Aircraft Digital Twin** dataset that models a complete aviation fleet over 90 operational days. The data is split across two platforms, each chosen for the workload it handles best:
 
-- **Databricks Lakehouse** stores the **time-series sensor telemetry** — 345,600+ hourly readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
+- **Databricks Lakehouse** stores the **time-series sensor telemetry** — 432,000 readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
 - **Neo4j Aura** stores the **richly connected relational data** — aircraft topology, component hierarchies, maintenance events, flights, delays, and airport routes. A graph database handles multi-hop relationship traversals natively, avoiding the expensive JOINs a tabular database would require for queries like "Which components caused flight delays?"
 
 Together the dataset includes:
 
-- **20 Aircraft** with tail numbers, models, and operators
-- **80 Systems** (Engines, Avionics, Hydraulics) per aircraft
-- **320 Components** (Turbines, Compressors, Pumps, etc.)
-- **160 Sensors** with monitoring metadata
-- **345,600+ Sensor Readings** (hourly telemetry over 90 days)
-- **800 Flights** with departure/arrival information
-- **300 Maintenance Events** with fault severity and corrective actions
-- **12 Airports** in the route network
+- **100 Aircraft** with tail numbers, models, and operators
+- **400 Systems** (Engines, Avionics, Hydraulics)
+- **1,700 Components** (Turbines, Compressors, Pumps, etc.)
+- **800 Sensors** with monitoring metadata
+- **432,000 Sensor Readings** (telemetry over 90 days)
+- **40,000+ Flights** with departure/arrival information
+- **~900 Maintenance Events** with fault severity and corrective actions
+- **40 Airports** in the route network
 
 ### Key Technologies
 
@@ -64,8 +64,7 @@ Together the dataset includes:
 
 | Lab | Description | Time |
 |-----|-------------|------|
-| [Lab 0 - Sign In](./Lab_0_Sign_In) | Access workshop resources | 10 min |
-| [Lab 1 - Neo4j Aura Setup](./Lab_1_Aura_Setup) | Save connection credentials | 20 min |
+| [Lab 1 - Neo4j Aura Setup](./Lab_1_Aura_Setup) | Create an Aura free trial, save credentials, learn Cypher basics | 20 min |
 
 ---
 
@@ -90,22 +89,12 @@ Together the dataset includes:
 
 ---
 
-### Phase 4: Aura Agents
-
-*Build AI agents directly in Neo4j Aura using the Create with AI experience.*
-
-| Lab | Description | Time |
-|-----|-------------|------|
-| [Lab 5 - Aura Agents](./Lab_5_Aura_Agents) | Create AI agents in Neo4j Aura that query the knowledge graph | 30 min |
-
----
-
 ## Sample Queries
 
 ### Aircraft Topology
 ```cypher
-// What systems does aircraft N95040A have?
-MATCH (a:Aircraft {tail_number: 'N95040A'})-[:HAS_SYSTEM]->(s:System)
+// What systems does aircraft N10000 have?
+MATCH (a:Aircraft {tail_number: 'N10000'})-[:HAS_SYSTEM]->(s:System)
 RETURN a.tail_number, s.name, s.type
 ```
 
@@ -133,7 +122,7 @@ LIMIT 10
 
 - **Laptop** with a modern web browser
 - **Network Access** to Databricks and Neo4j Aura
-- Neo4j Aura account (SSO or free trial)
+- Neo4j Aura free trial account (created in Lab 1)
 - Databricks workspace with Model Serving enabled
 - No local software installation required
 

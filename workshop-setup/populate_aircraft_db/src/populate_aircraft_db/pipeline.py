@@ -108,7 +108,7 @@ class ContextPrependingSplitter(TextSplitter):
 
 
 # ---------------------------------------------------------------------------
-# Dimension-aware embedder wrapper
+# Embedder factory
 # ---------------------------------------------------------------------------
 
 
@@ -125,6 +125,33 @@ class DimensionAwareOpenAIEmbeddings(OpenAIEmbeddings):
 
     def embed_query(self, text: str, **kwargs: Any) -> list[float]:
         return super().embed_query(text, dimensions=self._dimensions, **kwargs)
+
+
+def create_embedder(
+    *,
+    embedding_provider: str,
+    embedding_model: str,
+    embedding_dimensions: int,
+    openai_api_key: str | None,
+):
+    """Create the embedder for Chunk embeddings.
+
+    "bge" (default) runs the model locally via sentence-transformers, so no
+    API key is needed. "openai" calls the OpenAI embeddings API.
+    """
+    if embedding_provider == "bge":
+        from neo4j_graphrag.embeddings.sentence_transformers import (
+            SentenceTransformerEmbeddings,
+        )
+
+        return SentenceTransformerEmbeddings(model=embedding_model)
+    if embedding_provider == "openai":
+        return DimensionAwareOpenAIEmbeddings(
+            dimensions=embedding_dimensions,
+            model=embedding_model,
+            api_key=openai_api_key,
+        )
+    raise ValueError(f"Unknown embedding provider: {embedding_provider!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +281,7 @@ def _create_pipeline(
     anthropic_api_key: str | None,
     llm_model: str,
     llm_max_tokens: int,
+    embedding_provider: str,
     embedding_model: str,
     embedding_dimensions: int,
     chunk_size: int,
@@ -277,10 +305,11 @@ def _create_pipeline(
     )
 
     # --- Embedder ---
-    embedder = DimensionAwareOpenAIEmbeddings(
-        dimensions=embedding_dimensions,
-        model=embedding_model,
-        api_key=openai_api_key,
+    embedder = create_embedder(
+        embedding_provider=embedding_provider,
+        embedding_model=embedding_model,
+        embedding_dimensions=embedding_dimensions,
+        openai_api_key=openai_api_key,
     )
 
     # --- Text splitter (with per-chunk context injection) ---
@@ -407,6 +436,7 @@ def process_all_documents(
     anthropic_api_key: str | None,
     llm_model: str,
     llm_max_tokens: int,
+    embedding_provider: str,
     embedding_model: str,
     embedding_dimensions: int,
     chunk_size: int,
@@ -426,6 +456,7 @@ def process_all_documents(
         anthropic_api_key=anthropic_api_key,
         llm_model=llm_model,
         llm_max_tokens=llm_max_tokens,
+        embedding_provider=embedding_provider,
         embedding_model=embedding_model,
         embedding_dimensions=embedding_dimensions,
         chunk_size=chunk_size,

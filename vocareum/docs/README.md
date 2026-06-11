@@ -10,19 +10,17 @@ Welcome to the hands-on workshop! You'll build production-ready AI agents that c
 
 | Lab | Topic | Type |
 |-----|-------|------|
-| **Lab 0** | Sign in to Databricks | Setup |
 | **Lab 1** | Neo4j Aura Setup | Setup (browser) |
 | **Lab 2** | Databricks ETL to Neo4j | Notebooks |
 | **Lab 3** | Semantic Search | Notebooks |
 | **Lab 4** | Compound AI Agents | Notebooks + UI |
-| **Lab 5** | Aura Agents | Notebooks + UI |
 
 ---
 
 ## Architecture
 
 **Dual Database Strategy:**
-- **Databricks Lakehouse** — Time-series sensor telemetry (345K+ readings)
+- **Databricks Lakehouse** — Time-series sensor telemetry (432K readings)
 - **Neo4j Aura** — Graph relationships (aircraft topology, maintenance, flights)
 
 **Multi-Agent Supervisor:**
@@ -46,4 +44,4 @@ Welcome to the hands-on workshop! You'll build production-ready AI agents that c
 
 ## Neo4j Credentials
 
-Your Neo4j Aura credentials will be provided during Lab 1. Store them in Databricks Secrets as instructed in the notebook.
+You will create your own Neo4j Aura free trial account in Lab 1 and download your credentials there. Enter them in the Configuration cell at the top of each notebook.

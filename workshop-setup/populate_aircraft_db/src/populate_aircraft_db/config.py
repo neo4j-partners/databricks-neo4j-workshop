@@ -32,7 +32,17 @@ class Settings(BaseSettings):
     data_dir: DirectoryPath = _DATA_DIR  # type: ignore[assignment]
     document_dir: DirectoryPath = _DOCUMENT_DIR  # type: ignore[assignment]
 
-    # OpenAI embeddings — required for the `setup` command.
+    # Embedding provider selection — "bge" (local sentence-transformers, default)
+    # or "openai" (OpenAI embeddings API).
+    embedding_provider: Literal["bge", "openai"] = "bge"
+
+    # BGE embeddings — default. Runs locally via sentence-transformers and
+    # matches the 1024-dim maintenanceChunkEmbeddings index used in Lab 3.
+    bge_embedding_model: str = "BAAI/bge-large-en-v1.5"
+    bge_embedding_dimensions: int = 1024
+
+    # OpenAI — API key required for extraction when llm_provider is "openai"
+    # and for embeddings when embedding_provider is "openai".
     openai_api_key: SecretStr | None = None
     openai_embedding_model: str = "text-embedding-3-small"
     openai_embedding_dimensions: int = 1536
@@ -58,6 +68,20 @@ class Settings(BaseSettings):
 
     # Number of rows to show per section in the `samples` command.
     sample_size: int = 10
+
+    @property
+    def embedding_model(self) -> str:
+        """Embedding model name for the selected embedding provider."""
+        if self.embedding_provider == "bge":
+            return self.bge_embedding_model
+        return self.openai_embedding_model
+
+    @property
+    def embedding_dimensions(self) -> int:
+        """Embedding dimensions for the selected embedding provider."""
+        if self.embedding_provider == "bge":
+            return self.bge_embedding_dimensions
+        return self.openai_embedding_dimensions
 
     @model_validator(mode="after")
     def _check_uri_scheme(self) -> Settings:

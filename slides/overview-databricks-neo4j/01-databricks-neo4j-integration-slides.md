@@ -278,7 +278,7 @@ It decides based on the nature of the question:
 **"What is the average EGT for engine AC5?"**
 → Supervisor sends to the **Genie agent** — this is a numeric aggregation over sensor data
 
-**"Which components were serviced on aircraft N95040A?"**
+**"Which components were serviced on aircraft N10000?"**
 → Supervisor sends to the **Neo4j agent** — this is a relationship traversal through the graph
 
 **"Find aircraft with high vibration readings and show their maintenance history"**

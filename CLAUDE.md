@@ -71,7 +71,7 @@ User Question → Supervisor Agent (Agent Bricks)
 The MCP agent (`workshop-setup/neo4j_mcp_connection/neo4j_mcp_agent.py`) uses OAuth2 M2M auth via Unity Catalog HTTP connection to an external MCP server.
 
 ### Lab Progression
-Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 (compound AI agents: Genie space + Supervisor Agent) → Lab 5 (Aura Agents: Create with AI)
+Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 (compound AI agents: Genie space + Supervisor Agent)
 
 ## Configuration
 

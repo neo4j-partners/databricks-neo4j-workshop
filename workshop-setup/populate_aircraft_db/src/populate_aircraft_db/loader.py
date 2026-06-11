@@ -517,7 +517,7 @@ def _verify_vector_search(
 def verify(
     driver: Driver,
     *,
-    expected_embedding_dimensions: int = 1536,
+    expected_embedding_dimensions: int = 1024,
     strict: bool = False,
 ) -> bool:
     """Print comprehensive graph verification and return whether it passed."""

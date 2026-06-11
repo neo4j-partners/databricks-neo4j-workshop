@@ -62,7 +62,7 @@ Relationships:
 - (OperatingLimit)-[:FROM_CHUNK]->(Chunk)
 - (Sensor)-[:HAS_LIMIT]->(OperatingLimit)
 
-Sample tail numbers: N95040A (B737-800), N30268B (A320-200), N54980C (A321neo).
+Sample tail numbers: N10000 (B737-800), N10001 (A320-200), N10002 (A321neo).
 Operators: ExampleAir, SkyWays, RegionalCo, NorthernJet.
 Airport IATA codes: JFK, LAX, ORD, ATL, DFW, DEN, SFO, SEA, MIA, BOS, MSP, DTW.
 """
@@ -108,27 +108,27 @@ class SampleQuestion:
 SAMPLE_QUESTIONS: list[SampleQuestion] = [
     # -- Cypher Template style (answered via text2cypher) --
     SampleQuestion(
-        "Tell me about aircraft N95040A",
+        "Tell me about aircraft N10000",
         "Aircraft Overview",
         "text2cypher",
     ),
     SampleQuestion(
-        "What are the sensor operating limits for N30268B?",
+        "What are the sensor operating limits for N10001?",
         "Sensor Operating Limits",
         "text2cypher",
     ),
     SampleQuestion(
-        "Show the maintenance summary for N54980C",
+        "Show the maintenance summary for N10002",
         "Maintenance Summary",
         "text2cypher",
     ),
     SampleQuestion(
-        "What faults do aircraft N95040A and N26760M share?",
+        "What faults do aircraft N10000 and N10003 share?",
         "Shared Faults",
         "text2cypher",
     ),
     SampleQuestion(
-        "What maintenance manual applies to N30268B?",
+        "What maintenance manual applies to N10001?",
         "Manual Lookup",
         "text2cypher",
     ),
@@ -239,10 +239,11 @@ def _create_llm_client(
     openai_key: str | None = None,
     anthropic_key: str | None = None,
     llm_model: str,
+    embedding_provider: str,
     embedding_model: str,
     embedding_dimensions: int,
 ):
-    """Return an LLM callable and an embed callable based on the provider."""
+    """Return an LLM callable and an embed callable based on the providers."""
 
     if provider == "openai":
         from openai import OpenAI
@@ -260,20 +261,10 @@ def _create_llm_client(
             )
             return resp.choices[0].message.content or ""
 
-        def embed(text: str) -> list[float]:
-            resp = client.embeddings.create(
-                model=embedding_model,
-                input=text,
-                dimensions=embedding_dimensions,
-            )
-            return resp.data[0].embedding
-
     elif provider == "anthropic":
         import anthropic
-        from openai import OpenAI
 
         anth_client = anthropic.Anthropic(api_key=anthropic_key)
-        oai_client = OpenAI(api_key=openai_key)
 
         def chat(system: str, user: str) -> str:
             resp = anth_client.messages.create(
@@ -284,16 +275,20 @@ def _create_llm_client(
             )
             return resp.content[0].text
 
-        def embed(text: str) -> list[float]:
-            resp = oai_client.embeddings.create(
-                model=embedding_model,
-                input=text,
-                dimensions=embedding_dimensions,
-            )
-            return resp.data[0].embedding
-
     else:
         raise ValueError(f"Unknown provider: {provider!r}")
+
+    from .pipeline import create_embedder
+
+    embedder = create_embedder(
+        embedding_provider=embedding_provider,
+        embedding_model=embedding_model,
+        embedding_dimensions=embedding_dimensions,
+        openai_api_key=openai_key,
+    )
+
+    def embed(text: str) -> list[float]:
+        return embedder.embed_query(text)
 
     return chat, embed
 
@@ -424,6 +419,7 @@ def run_agent_samples(
     openai_key: str | None = None,
     anthropic_key: str | None = None,
     llm_model: str,
+    embedding_provider: str,
     embedding_model: str,
     embedding_dimensions: int,
     sample_size: int = 0,
@@ -434,6 +430,7 @@ def run_agent_samples(
         openai_key=openai_key,
         anthropic_key=anthropic_key,
         llm_model=llm_model,
+        embedding_provider=embedding_provider,
         embedding_model=embedding_model,
         embedding_dimensions=embedding_dimensions,
     )

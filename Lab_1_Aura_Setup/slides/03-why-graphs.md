@@ -13,7 +13,7 @@ Traditional databases struggle with **connected data**:
 ## Real-World Impact
 
 Questions like:
-- "Which components caused flight delays for aircraft N95040A?"
+- "Which components caused flight delays for aircraft N10000?"
 - "What maintenance events affect the hydraulics system?"
 
 These require **traversing relationships** - exactly what graphs do best.

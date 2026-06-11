@@ -84,7 +84,7 @@ def get_post_pipeline_sql() -> list[str]:
         f"COMMENT ON TABLE {target}.fleet_readiness IS 'Per-aircraft fleet readiness with mission status'",
         f"COMMENT ON TABLE {target}.sensor_health IS 'Per-sensor health summary with anomaly detection'",
         # Column comments for Genie
-        f"COMMENT ON COLUMN {target}.aircraft.tail_number IS 'Aircraft registration/tail number (e.g., N95040A)'",
+        f"COMMENT ON COLUMN {target}.aircraft.tail_number IS 'Aircraft registration/tail number (e.g., N10000)'",
         f"COMMENT ON COLUMN {target}.aircraft.model IS 'Aircraft model (e.g., B737-800, A320-200)'",
         f"COMMENT ON COLUMN {target}.aircraft.operator IS 'Airline operator name'",
         f"COMMENT ON COLUMN {target}.systems.system_type IS 'System type (Engine, Avionics, Hydraulics)'",

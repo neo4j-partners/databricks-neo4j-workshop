@@ -10,16 +10,16 @@ Data loading is handled in **Lab 2 - Databricks ETL to Neo4j** using:
 
 ### Notebook 02: Full Dataset Load
 - Adds Sensors, Airports, Flights, Delays, MaintenanceEvents, and Removals
-- Uses the Python neo4j driver
+- Uses the Neo4j Spark Connector
 
 ## What You'll Load
 
 | Content | Count |
 |---------|-------|
-| Aircraft | 20 with tail numbers and models |
-| Systems | 80 (Engines, Avionics, Hydraulics) |
-| Components | 320 (Turbines, Compressors, Pumps) |
-| Flights | ~800 flight operations |
+| Aircraft | 100 with tail numbers and models |
+| Systems | 400 (Engines, Avionics, Hydraulics) |
+| Components | 1,700 (Turbines, Compressors, Pumps) |
+| Flights | ~40,000 flight operations |
 
 ---
 

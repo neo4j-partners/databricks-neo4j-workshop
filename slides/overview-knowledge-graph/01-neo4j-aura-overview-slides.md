@@ -181,8 +181,6 @@ h2 { font-size: 32px; }
 
 ## Aura Agents: No-Code GraphRAG
 
-**Coming up in this workshop:** Neo4j Aura Agents
-
 Aura Agents let you build **AI-powered conversational interfaces** to your graph:
 
 - **No code required** - Configure through a simple UI
