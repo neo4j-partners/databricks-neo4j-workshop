@@ -41,10 +41,10 @@ The notebook will be created in `workshop-setup/`, as `workshop-setup/notebooks/
 
 ### Cell 4: Download the data from GitHub (code)
 
-- The dataset is committed directly in the repo: `workshop-setup/aircraft_digital_twin_data/` holds the 22 CSVs (generated at a 4-hour reading interval, so `nodes_readings.csv` is ~29 MB and the whole directory ~35 MB) plus the 5 maintenance manuals Lab 3 needs. No release asset or zip is required.
+- The dataset is committed directly in the repo: `workshop-setup/aircraft_digital_twin_data/` holds the 22 CSVs (generated at a 4-hour reading interval, so `nodes_readings.csv` is ~11 MB and the whole directory ~13 MB) plus the 5 maintenance manuals Lab 3 needs. No release asset or zip is required.
 - The cell mirrors the `data_loader.py` pattern from the `graph-on-databricks/aircraft-graphrag` project, which reads raw files straight from the public repo:
-  - Base URL, pinned to a release tag so the workshop data cannot change mid-class: `https://raw.githubusercontent.com/neo4j-partners/databricks-neo4j-workshop/v1.1.0/workshop-setup/aircraft_digital_twin_data`
-  - One-time admin step: create the `v1.1.0` tag on a commit that includes `aircraft_digital_twin_data/` and push it. (The existing local `v1.0.0` tag predates the data and was never pushed.)
+  - Base URL, pinned to a release tag so the workshop data cannot change mid-class: `https://raw.githubusercontent.com/neo4j-partners/databricks-neo4j-workshop/v1.2.0/workshop-setup/aircraft_digital_twin_data`
+  - One-time admin step: create the `v1.2.0` tag on a commit that includes the regenerated `aircraft_digital_twin_data/` and push it. (The earlier `v1.0.0` and `v1.1.0` tags predate this 36-aircraft dataset.)
   - A hardcoded list of the 27 filenames; for each, fetch `f"{base}/{name}"` with `urllib.request.urlopen` and write the bytes to `/Volumes/<catalog>/<volume_schema>/<volume_name>/<name>`.
   - Skip files that already exist in the volume so re-runs are cheap.
 - Finish with a file listing of the volume so participants confirm all 27 files landed.
