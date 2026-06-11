@@ -81,21 +81,21 @@ Go to the **Libraries** tab on your cluster and install these packages from PyPI
 
 | Library | Version | Notes |
 |---------|---------|-------|
-| `databricks-agents` | `>=1.2.0` | Agent deployment framework |
-| `databricks-langchain` | `>=0.11.0` | Databricks LangChain integration |
-| `langgraph` | `==1.0.5` | LangGraph agent framework |
-| `langchain-core` | `>=1.2.0` | LangChain core |
-| `langchain-openai` | `==1.1.2` | OpenAI integration (for embeddings) |
+| `databricks-agents` | `>=1.11.0` | Agent deployment framework |
+| `databricks-langchain` | `>=0.20.0` | Databricks LangChain integration |
+| `langgraph` | `==1.2.4` | LangGraph agent framework |
+| `langchain-core` | `>=1.4.6` | LangChain core |
+| `langchain-openai` | `==1.3.0` | OpenAI integration (for embeddings) |
 | `mcp` | latest | Model Context Protocol |
 | `databricks-mcp` | latest | Databricks MCP client |
-| `pydantic` | `==2.12.5` | Data validation |
-| `neo4j` | `==6.0.2` | Neo4j Python driver (optional) |
-| `neo4j-graphrag` | `>=1.10.0` | Neo4j GraphRAG (optional) |
+| `pydantic` | `==2.13.4` | Data validation |
+| `neo4j` | `==6.2.0` | Neo4j Python driver (optional) |
+| `neo4j-graphrag` | `>=1.17.0` | Neo4j GraphRAG (optional) |
 
 **To add a library:**
 1. Click **Install new** on the Libraries tab
 2. Select **PyPI** as the source
-3. Enter the package name with version (e.g., `langgraph==1.0.5`)
+3. Enter the package name with version (e.g., `langgraph==1.2.4`)
 4. Click **Install**
 
 ## Overview

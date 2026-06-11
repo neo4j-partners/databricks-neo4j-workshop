@@ -112,22 +112,24 @@ After the cluster is created and running, install the following libraries:
 
 | Type | Coordinates |
 |------|-------------|
-| Maven | `org.neo4j:neo4j-connector-apache-spark_2.13:5.3.10_for_spark_3` |
+| Maven | `org.neo4j:neo4j-connector-apache-spark_2.13:5.4.3_for_spark_3` |
+
+The 5.4.3 connector is the latest `for_spark_3` build and has been extensively tested to work with Spark 4.0 on Databricks Runtime 17.3 LTS ML.
 
 ### PyPI libraries
 
 | Package | Type |
 |---------|------|
-| `neo4j==6.0.2` | PyPI |
-| `databricks-agents>=1.2.0` | PyPI |
-| `langgraph==1.0.5` | PyPI |
-| `langchain-openai==1.1.2` | PyPI |
-| `pydantic==2.12.5` | PyPI |
-| `langchain-core>=1.2.0` | PyPI |
-| `databricks-langchain>=0.11.0` | PyPI |
-| `dspy>=3.0.4` | PyPI |
-| `neo4j-graphrag>=1.10.0` | PyPI |
-| `beautifulsoup4>=4.12.0` | PyPI |
+| `neo4j==6.2.0` | PyPI |
+| `databricks-agents>=1.11.0` | PyPI |
+| `langgraph==1.2.4` | PyPI |
+| `langchain-openai==1.3.0` | PyPI |
+| `pydantic==2.13.4` | PyPI |
+| `langchain-core>=1.4.6` | PyPI |
+| `databricks-langchain>=0.20.0` | PyPI |
+| `dspy>=3.2.1` | PyPI |
+| `neo4j-graphrag>=1.17.0` | PyPI |
+| `beautifulsoup4>=4.15.0` | PyPI |
 | `sentence_transformers` | PyPI |
 
 Install each library one at a time (or use the bulk install option if available). Wait for all libraries to show **Installed** status before proceeding.

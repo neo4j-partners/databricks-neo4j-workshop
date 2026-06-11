@@ -31,18 +31,20 @@ CLUSTER_NAME = "Small Spark 4.0"
 SPARK_VERSION = "17.3.x-cpu-ml-scala2.13"  # 17.3 LTS ML (Spark 4.0)
 NODE_TYPE = "m5.large"  # AWS default; use the 2-core, 8 GB equivalent on Azure or GCP
 AUTOTERMINATION_MINUTES = 30
-MAVEN_COORDINATES = "org.neo4j:neo4j-connector-apache-spark_2.13:5.3.10_for_spark_3"
+# Connector 5.4.3 is the latest for_spark_3 build; extensively tested to work
+# with Spark 4.0 on Databricks Runtime 17.3 LTS ML.
+MAVEN_COORDINATES = "org.neo4j:neo4j-connector-apache-spark_2.13:5.4.3_for_spark_3"
 PYPI_PACKAGES = [
-    "neo4j==6.0.2",
-    "databricks-agents>=1.2.0",
-    "langgraph==1.0.5",
-    "langchain-openai==1.1.2",
-    "pydantic==2.12.5",
-    "langchain-core>=1.2.0",
-    "databricks-langchain>=0.11.0",
-    "dspy>=3.0.4",
-    "neo4j-graphrag>=1.13.0",
-    "beautifulsoup4>=4.12.0",
+    "neo4j==6.2.0",
+    "databricks-agents>=1.11.0",
+    "langgraph==1.2.4",
+    "langchain-openai==1.3.0",
+    "pydantic==2.13.4",
+    "langchain-core>=1.4.6",
+    "databricks-langchain>=0.20.0",
+    "dspy>=3.2.1",
+    "neo4j-graphrag>=1.17.0",
+    "beautifulsoup4>=4.15.0",
     "sentence_transformers",
 ]
 

@@ -56,18 +56,18 @@ class ClusterConfig:
 class LibraryConfig:
     """Library installation configuration."""
 
-    neo4j_spark_connector: str = "org.neo4j:neo4j-connector-apache-spark_2.13:5.3.10_for_spark_3"
+    neo4j_spark_connector: str = "org.neo4j:neo4j-connector-apache-spark_2.13:5.4.3_for_spark_3"
     pypi_packages: list[str] = field(default_factory=lambda: [
-        "neo4j==6.0.2",
-        "databricks-agents>=1.2.0",
-        "langgraph==1.0.5",
-        "langchain-openai==1.1.2",
-        "pydantic==2.12.5",
-        "langchain-core>=1.2.0",
-        "databricks-langchain>=0.11.0",
-        "dspy>=3.0.4",
-        "neo4j-graphrag>=1.13.0",
-        "beautifulsoup4>=4.12.0",
+        "neo4j==6.2.0",
+        "databricks-agents>=1.11.0",
+        "langgraph==1.2.4",
+        "langchain-openai==1.3.0",
+        "pydantic==2.13.4",
+        "langchain-core>=1.4.6",
+        "databricks-langchain>=0.20.0",
+        "dspy>=3.2.1",
+        "neo4j-graphrag>=1.17.0",
+        "beautifulsoup4>=4.15.0",
         "sentence_transformers",
     ])
 

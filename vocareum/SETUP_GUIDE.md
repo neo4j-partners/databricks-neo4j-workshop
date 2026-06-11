@@ -232,5 +232,5 @@ For direct enrollment (LTI disabled):
 | Lakehouse Schema | `databricks-neo4j-workshop.aircraft` |
 | Tables | `aircraft`, `systems`, `sensors`, `sensor_readings` |
 | Cluster | Single-node i3.xlarge, DBR 16.4 |
-| Spark Connector | `org.neo4j:neo4j-connector-apache-spark_2.12:5.3.1_for_spark_3` |
+| Spark Connector | `org.neo4j:neo4j-connector-apache-spark_2.12:5.4.3_for_spark_3` |
 | Session Length | 4 hours |

@@ -26,8 +26,8 @@ The notebook will be created in `workshop-setup/`, as `workshop-setup/notebooks/
   - Node type `m5.large` on AWS or the equivalent 2-core, 8 GB type on Azure or GCP.
   - Auto-termination at 30 minutes.
 - Markdown listing the libraries to install on the cluster:
-  - Maven: `org.neo4j:neo4j-connector-apache-spark_2.13:5.3.10_for_spark_3`.
-  - PyPI: `neo4j==6.0.2`, `databricks-agents>=1.2.0`, `langgraph==1.0.5`, `langchain-openai==1.1.2`, `pydantic==2.12.5`, `langchain-core>=1.2.0`, `databricks-langchain>=0.11.0`, `dspy>=3.0.4`, `neo4j-graphrag>=1.13.0`, `beautifulsoup4>=4.12.0`, `sentence_transformers`.
+  - Maven: `org.neo4j:neo4j-connector-apache-spark_2.13:5.4.3_for_spark_3`.
+  - PyPI: `neo4j==6.2.0`, `databricks-agents>=1.11.0`, `langgraph==1.2.4`, `langchain-openai==1.3.0`, `pydantic==2.13.4`, `langchain-core>=1.4.6`, `databricks-langchain>=0.20.0`, `dspy>=3.2.1`, `neo4j-graphrag>=1.17.0`, `beautifulsoup4>=4.15.0`, `sentence_transformers`.
 - An optional code cell that does the same thing with the Databricks SDK for admins who prefer automation: find or create the cluster by name, wait for it to reach RUNNING, install the libraries, and wait for them to report INSTALLED. Port this from `workshop-setup/auto_scripts/src/databricks_setup/cluster.py` (`get_or_create_cluster`, `wait_for_cluster_running`) and `libraries.py` (`ensure_libraries_installed`, `wait_for_libraries`). Mark the cell clearly as optional so participants without cluster-create permission skip it.
 
 ### Cell 3: Catalog and schema setup (markdown)

@@ -4,9 +4,9 @@ version = "0.1.0"
 description = "Cluster-submitted validation scripts and agent modules for the Aircraft Digital Twin workshop"
 requires-python = ">=3.11"
 dependencies = [
-    "neo4j>=5.17.0",
-    "neo4j-graphrag>=1.0.0",
-    "pydantic>=2.7.0",
+    "neo4j>=6.2.0",
+    "neo4j-graphrag>=1.17.0",
+    "pydantic>=2.13.4",
     "mlflow>=2.10.0",
 ]
 
