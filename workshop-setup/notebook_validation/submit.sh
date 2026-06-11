@@ -3,8 +3,8 @@
 #
 # Usage:
 #   ./submit.sh                             # runs test_hello.py (default)
-#   ./submit.sh run_lab2_02.py              # runs the Lab 2 notebook
-#   ./submit.sh run_lab2_02.py --no-wait    # submit without waiting
+#   ./submit.sh run_lab2_01.py              # runs the Lab 2 notebook
+#   ./submit.sh run_lab2_01.py --no-wait    # submit without waiting
 #
 # Scripts live in agent_modules/ on the remote workspace.
 # Neo4j credentials from .env are automatically injected as script parameters.

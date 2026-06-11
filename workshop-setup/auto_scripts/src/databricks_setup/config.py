@@ -140,7 +140,6 @@ class NotebookConfig:
     lab_notebooks: tuple[tuple[str, tuple[str, ...], str], ...] = (
         ("Lab_2_Databricks_ETL_Neo4j", (
             "01_aircraft_etl_to_neo4j.ipynb",
-            "02_load_neo4j_full.ipynb",
         ), "Lab_2_Databricks_ETL_Neo4j"),
         ("Lab_3_Semantic_Search", (
             "03_data_and_embeddings.ipynb",

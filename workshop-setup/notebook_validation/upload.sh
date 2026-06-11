@@ -6,7 +6,7 @@
 #
 # Usage:
 #   ./upload.sh                    # uploads test_hello.py (default)
-#   ./upload.sh run_lab2_02.py     # uploads a specific file
+#   ./upload.sh run_lab2_01.py     # uploads a specific file
 #   ./upload.sh --all              # uploads all agent_modules/*.py files
 
 set -euo pipefail

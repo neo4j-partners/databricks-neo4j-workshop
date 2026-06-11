@@ -62,7 +62,7 @@ Quick check that Neo4j is reachable and contains data:
 Clears the database, creates constraints/indexes, loads all 9 node types and 11 relationship types from CSV, then runs 19 PASS/FAIL checks:
 
 ```bash
-./submit.sh run_lab2_02.py
+./submit.sh run_lab2_01.py
 ```
 
 > To skip the database clear: participants can pass `--skip-clear`, but `submit.sh` does not inject this flag by default.
@@ -91,7 +91,7 @@ Loads the A320 maintenance manual, chunks it, generates embeddings, creates vect
 |--------|---------|-------------|-------------|
 | `test_hello.py` | Cluster smoke test (Python, Spark, Connector) | No | Yes |
 | `check_neo4j.py` | Neo4j connectivity and data presence check | No | No |
-| `run_lab2_02.py` | Load Lab 2 data + validate (19 checks) | **Yes** — clears DB | Yes |
+| `run_lab2_01.py` | Load Lab 2 data + validate (19 checks) | **Yes** — clears DB | Yes |
 | `verify_lab2.py` | Read-only Lab 2 verification (13 queries) | No | No |
 | `run_lab3_03.py` | Build Lab 3 embedding pipeline + validate (16 checks) | **Yes** — clears Document/Chunk nodes | No |
 | `data_utils.py` | Shared utilities (embeddings, Neo4j connection, text splitting) | — | — |
@@ -110,7 +110,7 @@ Loads the A320 maintenance manual, chunks it, generates embeddings, creates vect
 
 ```bash
 ./upload.sh                     # uploads test_hello.py (default)
-./upload.sh run_lab2_02.py      # uploads a specific file
+./upload.sh run_lab2_01.py      # uploads a specific file
 ./upload.sh --all               # uploads all agent_modules/*.py files
 ```
 
@@ -119,7 +119,7 @@ Loads the A320 maintenance manual, chunks it, generates embeddings, creates vect
 ```bash
 ./submit.sh                     # runs test_hello.py (default)
 ./submit.sh verify_lab2.py      # runs a specific script
-./submit.sh run_lab2_02.py --no-wait   # submit without waiting for completion
+./submit.sh run_lab2_01.py --no-wait   # submit without waiting for completion
 ```
 
 Neo4j credentials and `DATA_PATH` from `.env` are automatically injected as command-line arguments. The cluster is auto-started if terminated (polls up to 10 minutes).
@@ -128,7 +128,7 @@ Neo4j credentials and `DATA_PATH` from `.env` are automatically injected as comm
 
 ```bash
 ./validate.sh                   # list all remote files
-./validate.sh run_lab2_02.py    # check if a specific file exists
+./validate.sh run_lab2_01.py    # check if a specific file exists
 ```
 
 ### clean.sh

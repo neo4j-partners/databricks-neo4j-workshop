@@ -57,7 +57,7 @@ The agent's identity is a maintenance engineering assistant with access to the a
 
 ## How This Relates to Existing Lab Content
 
-This prototype sits between Lab 2 (data loading, already validated by run_lab2_02.py) and Lab 4 (multi-agent supervisor). Lab 2 proves the data is in Neo4j. This prototype proves a single agent can query that data intelligently with memory. Lab 4 then composes that agent with Genie into a multi-agent system.
+This prototype sits between Lab 2 (data loading, already validated by run_lab2_01.py) and Lab 4 (multi-agent supervisor). Lab 2 proves the data is in Neo4j. This prototype proves a single agent can query that data intelligently with memory. Lab 4 then composes that agent with Genie into a multi-agent system.
 
 The prototype is phased to respect the dependency on Lab 3. Phase 1 works with only the base graph from Lab 2 plus the Lakehouse sensor tables. Phase 2, built after Lab 3 validation exists, adds GraphRAG knowledge tools for semantic search over maintenance manuals.
 

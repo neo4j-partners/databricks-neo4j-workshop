@@ -63,7 +63,7 @@ diff vocareum/courseware/neo4j-databricks-workshop.dbc \
 Check that:
 - All expected files are present (directories use `Stored`, files use `Defl:N`)
 - Only the files you changed have new timestamps and CRC-32 values
-- File count matches (currently 9 files: 2 Lab 2 notebooks, 4 Lab 3 notebooks, `data_utils.py`, 2 directory entries)
+- File count matches (currently 8 files: 1 Lab 2 notebook, 4 Lab 3 notebooks, `data_utils.py`, 2 directory entries)
 
 ### 5. Verify source parity
 
@@ -72,7 +72,6 @@ Confirm the vocareum staging copy matches the repo source:
 ```bash
 for f in \
     Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb \
-    Lab_2_Databricks_ETL_Neo4j/02_load_neo4j_full.ipynb \
     Lab_3_Semantic_Search/03_data_and_embeddings.ipynb \
     Lab_3_Semantic_Search/04_graphrag_retrievers.ipynb \
     Lab_3_Semantic_Search/05_mcp_graph_queries.ipynb \

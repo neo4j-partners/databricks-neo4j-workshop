@@ -1,8 +1,8 @@
 """Read-only verification of Lab 2 data in Neo4j.
 
-Runs all 13 Cypher verification queries (8 from Notebook 01, 5 from Notebook 02)
-against an existing Neo4j instance without modifying any data. Use this to verify
-Lab 2 data was loaded correctly without the destructive clear+reload of run_lab2_02.py.
+Runs all 13 Cypher verification queries (all from Notebook 01) against an
+existing Neo4j instance without modifying any data. Use this to verify
+Lab 2 data was loaded correctly without the destructive clear+reload of run_lab2_01.py.
 
 Queries ported from verify_labs/src/verify_labs/lab2_queries.py.
 
@@ -17,7 +17,7 @@ import time
 # ── Query definitions (from verify_labs lab2_queries.py) ──────────────────────
 
 QUERIES = [
-    # ── Notebook 01: 01_aircraft_etl_to_neo4j.ipynb ───────────────────────────
+    # ── Core topology (Aircraft, System, Component) ───────────────────────────
     {
         "name": "Node counts by label",
         "notebook": "01",
@@ -99,10 +99,10 @@ MATCH (s:System {type: 'Engine'})-[:HAS_COMPONENT]->(c:Component)
 RETURN c.type AS ComponentType, count(c) AS Count
 ORDER BY Count DESC""",
     },
-    # ── Notebook 02: 02_load_neo4j_full.ipynb ─────────────────────────────────
+    # ── Operational data (Sensors, Flights, Delays, Maintenance, Removals) ────
     {
         "name": "Comprehensive node counts",
-        "notebook": "02",
+        "notebook": "01",
         "min_rows": 9,
         "cypher": """\
 CALL () {
@@ -129,14 +129,14 @@ ORDER BY count DESC""",
     },
     {
         "name": "Total relationship count",
-        "notebook": "02",
+        "notebook": "01",
         "min_rows": 1,
         "cypher": """\
 MATCH ()-[r]->() RETURN count(r) AS count""",
     },
     {
         "name": "Critical maintenance issues",
-        "notebook": "02",
+        "notebook": "01",
         "min_rows": 1,
         # NOTE: CSV data stores 'CRITICAL' (not 'Critical')
         "cypher": """\
@@ -149,7 +149,7 @@ LIMIT 10""",
     },
     {
         "name": "Flight delays by cause",
-        "notebook": "02",
+        "notebook": "01",
         "min_rows": 1,
         "cypher": """\
 MATCH (f:Flight)-[:HAS_DELAY]->(d:Delay)
@@ -158,7 +158,7 @@ ORDER BY Count DESC""",
     },
     {
         "name": "Component removal history",
-        "notebook": "02",
+        "notebook": "01",
         "min_rows": 1,
         "cypher": """\
 MATCH (a:Aircraft)-[:HAS_REMOVAL]->(r:Removal)-[:REMOVED_COMPONENT]->(c:Component)
