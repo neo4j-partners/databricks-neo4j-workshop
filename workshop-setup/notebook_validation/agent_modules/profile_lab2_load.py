@@ -115,14 +115,11 @@ def main():
         return spark.read.format("org.neo4j.spark.DataSource").option("query", query).load()
 
     def run_script(script):
-        # Spark reads are lazy — without .collect() the script never runs.
-        (
-            spark.read.format("org.neo4j.spark.DataSource")
-            .option("script", script)
-            .option("query", "RETURN 1 AS done")
-            .load()
-            .collect()
-        )
+        # The connector's read sessions reject DDL ("Writing in read access
+        # mode not allowed"), so schema statements go through the driver.
+        for statement in script.split(";"):
+            if statement.strip():
+                cypher(statement)
 
     def write_nodes(df, label, mode, partitions, node_key=None):
         """Write nodes with an explicit strategy so variants can be compared.
@@ -223,7 +220,7 @@ def main():
         "CREATE INDEX idx_flight_aircraft_id IF NOT EXISTS FOR (n:Flight) ON (n.aircraft_id)",
         "CREATE INDEX idx_removal_aircraft_id IF NOT EXISTS FOR (n:Removal) ON (n.aircraft_id)",
     ]
-    with timed("constraints and indexes (via connector)"):
+    with timed("constraints and indexes (via driver)"):
         run_script(";\n".join(constraints + indexes))
 
     # A still-populating index silently turns every keyed lookup into a label

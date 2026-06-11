@@ -12,6 +12,8 @@ Usage:
 import argparse
 import sys
 
+from neo4j import GraphDatabase
+
 
 def main():
     parser = argparse.ArgumentParser(description="Lab 2 Notebook 01: Full Data Load to Neo4j")
@@ -102,38 +104,37 @@ def main():
             .option("query", query)
             .load())
 
-    def run_script(script):
-        """Execute a Cypher script (DDL operations like constraints).
+    def neo4j_driver():
+        return GraphDatabase.driver(
+            args.neo4j_uri, auth=(args.neo4j_username, args.neo4j_password)
+        )
 
-        Spark reads are lazy — without .collect() the script is never sent
-        to Neo4j.
+    def run_script(script):
+        """Execute Cypher DDL/admin statements via the Python driver.
+
+        The connector's spark.read sessions are read-only, so DDL and
+        deletes cannot go through the connector's script option.
         """
-        (spark.read
-            .format("org.neo4j.spark.DataSource")
-            .option("script", script)
-            .option("query", "RETURN 1 AS done")
-            .load()
-            .collect())
+        with neo4j_driver() as drv, drv.session(database="neo4j") as session:
+            for statement in script.split(";"):
+                if statement.strip():
+                    session.run(statement).consume()
 
     # ── Section 1: Clear Database ────────────────────────────────────────────
 
     if not args.skip_clear:
         print("Clearing database...")
         MAX_CLEAR_PASSES = 20
-        for pass_num in range(1, MAX_CLEAR_PASSES + 1):
-            # Delete batch via script, count via query — combined in one read.
-            # No IN TRANSACTIONS (works in explicit tx). Comment busts Spark cache.
-            result = (spark.read
-                .format("org.neo4j.spark.DataSource")
-                .option("script",
-                    "MATCH (n) WITH n LIMIT 10000 DETACH DELETE n")
-                .option("query",
-                    f"MATCH (n) RETURN count(n) AS remaining // pass {pass_num}")
-                .load())
-            remaining = result.collect()[0]["remaining"]
-            print(f"  Clear pass {pass_num}: {remaining} nodes remaining")
-            if remaining == 0:
-                break
+        with neo4j_driver() as drv:
+            for pass_num in range(1, MAX_CLEAR_PASSES + 1):
+                records, _, _ = drv.execute_query(
+                    "MATCH (n) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) AS c"
+                )
+                print(f"  Clear pass {pass_num}: deleted {records[0]['c']} nodes")
+                if records[0]["c"] == 0:
+                    break
+            records, _, _ = drv.execute_query("MATCH (n) RETURN count(n) AS remaining")
+            remaining = records[0]["remaining"]
         record("Clear database", remaining == 0, f"remaining={remaining}")
     else:
         print("Skipping database clear (--skip-clear)")
@@ -162,7 +163,11 @@ def main():
     ]
 
     run_script(";\n".join(constraints + indexes))
-    constraint_count = run_cypher("SHOW CONSTRAINTS YIELD name RETURN name").count()
+    # SHOW commands cannot run through the connector's query option,
+    # so verify through the driver.
+    with neo4j_driver() as drv:
+        records, _, _ = drv.execute_query("SHOW CONSTRAINTS YIELD name RETURN name")
+        constraint_count = len(records)
     record(
         "Constraints and indexes",
         constraint_count >= len(constraints),
