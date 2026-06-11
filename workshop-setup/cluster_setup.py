@@ -14,11 +14,18 @@ from databricks.sdk.service.compute import (
     DataSecurityMode,
     EbsVolumeType,
     Library,
-    LibraryInstallStatus,
     MavenLibrary,
     PythonPyPiLibrary,
     State,
 )
+
+try:
+    from databricks.sdk.service.compute import LibraryInstallStatus
+except ImportError:
+    # databricks-sdk < 0.21.0 uses the old enum name
+    from databricks.sdk.service.compute import (
+        LibraryFullStatusStatus as LibraryInstallStatus,
+    )
 
 CLUSTER_NAME = "Small Spark 4.0"
 SPARK_VERSION = "17.3.x-cpu-ml-scala2.13"  # 17.3 LTS ML (Spark 4.0)

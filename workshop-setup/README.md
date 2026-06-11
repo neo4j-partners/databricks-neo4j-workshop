@@ -10,8 +10,10 @@ Complete these steps before the workshop begins:
 
 - [ ] Create the Unity Catalog catalog (Step 1, UI required)
 - [ ] Run the `workshop_setup.ipynb` notebook to provision everything else (Step 2)
+- [ ] Upload the lab notebooks to the shared workspace folder (Step 3)
+- [ ] Grant participant access on shared workspaces (Step 4)
 - [ ] Test the complete workflow
-- [ ] Document connection details for participants
+- [ ] Document connection details for participants (Step 5)
 
 ---
 
@@ -58,6 +60,45 @@ All cells are idempotent, so the notebook is safe to re-run.
 
 ---
 
+## Step 3: Upload the Lab Notebooks
+
+The setup notebook does not upload the lab notebooks that participants run. Get them into the workspace with either:
+
+- **`databricks-setup sync`**: uploads the Lab 2, Lab 3, and MCP notebooks to `/Shared/databricks-neo4j-workshop/`. Requires the CLI environment described in the [Automated Setup Guide](docs/automated-setup-guide.md):
+
+  ```bash
+  cd workshop-setup/auto_scripts
+  uv sync
+  uv run databricks-setup sync
+  ```
+
+- **Git folder**: clone the workshop repo as a Git folder in the workspace. Participants open the notebooks from `Lab_2_Databricks_ETL_Neo4j/` and `Lab_3_Semantic_Search/` directly.
+
+---
+
+## Step 4: Grant Participant Access (Shared Workspaces)
+
+If participants share one workspace, grant them access to the catalog and data created in Steps 1 and 2: `USE CATALOG` and `USE SCHEMA` on `databricks-neo4j-workshop`.`aircraft`, `READ VOLUME` on the `raw_data` volume, and `SELECT` on the four lakehouse tables. Apply the grants in **Catalog Explorer** > **Permissions**, or via SQL:
+
+```sql
+GRANT USE CATALOG ON CATALOG `databricks-neo4j-workshop` TO `<participant-group>`;
+GRANT USE SCHEMA ON SCHEMA `databricks-neo4j-workshop`.aircraft TO `<participant-group>`;
+GRANT READ VOLUME ON VOLUME `databricks-neo4j-workshop`.aircraft.raw_data TO `<participant-group>`;
+GRANT SELECT ON SCHEMA `databricks-neo4j-workshop`.aircraft TO `<participant-group>`;
+```
+
+Skip this step if each participant uses their own workspace or Free Edition account.
+
+---
+
+## Neo4j Setup
+
+The Databricks side is now ready. The Neo4j graph side is populated during the labs themselves: participants create a free Aura instance in Lab 1, load the aircraft graph with the Lab 2 ETL notebooks, and build the Document-Chunk structure with embeddings in Lab 3.
+
+Admins who need a fully populated Neo4j instance outside the lab flow, for example to back the Neo4j MCP server or a demo, can use the `populate_aircraft_db` CLI in `workshop-setup/populate_aircraft_db/`. It loads the CSV data and runs the full GraphRAG enrichment in one command.
+
+---
+
 ## Alternative Setup Paths
 
 - **CLI automation**: the `databricks-setup` CLI in `auto_scripts/` automates cluster creation, data upload, and table creation from your laptop. See **[docs/automated-setup-guide.md](docs/automated-setup-guide.md)**.
@@ -65,7 +106,7 @@ All cells are idempotent, so the notebook is safe to re-run.
 
 ---
 
-## Step 3: Prepare Participant Instructions
+## Step 5: Prepare Participant Instructions
 
 Create a handout or slide with:
 
