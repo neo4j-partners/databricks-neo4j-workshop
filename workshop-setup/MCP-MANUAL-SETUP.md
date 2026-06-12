@@ -133,15 +133,25 @@ Databricks cluster using the notebook's own credentials.
 #### Option B — CLI one-liner
 
 Use this if you have the Databricks CLI and `jq` installed locally. The `jq`
-merge overlays the flag and secret onto the existing options, then pipes the
-result back to `update`:
+step keeps only the writable options (dropping read-only fields like
+`access_token_expiration` that `update` rejects), overlays the flag and secret,
+then pipes the result back to `update`:
 
 ```bash
 export CLIENT_SECRET='...'   # client_secret from .mcp-credentials.json
 
 databricks connections get neo4j_aircraft_mcp_server --output json \
-  | jq --arg s "$CLIENT_SECRET" \
-       '{options: (.options + {is_mcp_connection: "true", client_secret: $s})}' \
+  | jq --arg s "$CLIENT_SECRET" '{
+        options: (
+          (.options | with_entries(select(.key | IN(
+            "host","port","base_path","client_id","oauth_scope","token_endpoint",
+            "is_mcp_connection","payload_logging_destination",
+            "on_call_service_policies","on_call_service_policy_bodies",
+            "on_result_service_policies","on_result_service_policy_bodies"
+          ))))
+          + {is_mcp_connection: "true", client_secret: $s}
+        )
+      }' \
   | databricks connections update neo4j_aircraft_mcp_server --json @-
 ```
 

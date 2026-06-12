@@ -33,27 +33,6 @@ Agentic Graph Enrichment with Neo4j and Databricks
 
 ---
 
-## Partnership Overview and Recap
-
-- **Joint Customer Base:** over 200 shared customers across Aura and Enterprise deployments, including Gilead, iFord, Comcast, and Ashley Furniture
-- **Neo4j Spark Connector:** bidirectional data transfer between Databricks Lakehouse and Neo4j, supporting Unity Catalog and Delta tables. Silver tables feed the graph; Gold tables capture graph insights
-- **Connection Patterns:** Spark Connector for batch pipelines, Unity Catalog JDBC for governed SQL and BI federation, Neo4j MCP Server for agent-driven Cypher, neo4j-graphrag-python for knowledge graph construction
-
-<!--
-Quick recap of what we covered in the previous webinar. Over 200
-organizations run both Neo4j and Databricks. The Spark Connector
-is the foundation for everything that follows today: it moves data
-bidirectionally between the Lakehouse and the graph. Silver tables
-feed the graph through batched upserts, and Gold tables capture
-graph algorithm results as columns.
-
-The connection patterns give you the full toolkit: batch pipelines
-through the Spark Connector, governed SQL federation through JDBC,
-agent-driven Cypher through the MCP Server, and knowledge graph
-construction through the Python library. Today we're adding the
-next layer on top of all of this: agentic graph enrichment.
--->
-
 ---
 
 # Why Standard KG Pipelines Are Not Enough

@@ -1,14 +1,8 @@
-= Databricks Intelligence Platform
+= How Neo4j + Databricks Work Together
 
-The aircraft digital twin dataset has three shapes of data, each requiring a different query engine:
+Databricks and Neo4j are complementary platforms connected through governed data pipelines. Databricks governs and refines data at scale and answers aggregation questions through SQL. Neo4j makes the connections between entities explicit and answers traversal questions through Cypher. Delta Lake serves as the interchange format between them, the Spark Connector moves data in both directions, and Mosaic AI powers the agents that route questions to the right engine.
 
-* **Sensor telemetry**: 345,600+ hourly readings across 90 days, needing SQL aggregation for fleet-wide statistical comparisons.
-* **Fleet topology**: aircraft, systems, components, and maintenance events, needing graph traversal to trace how a failed part connects to other components through shared systems.
-* **Maintenance manuals**: unstructured text, needing semantic search to surface relevant procedures.
-
-Databricks provides the data foundation that feeds all three. Delta Lake governs the sensor readings and fleet metadata, the Spark Connector projects structural data into Neo4j for graph traversal, and Mosaic AI powers the agents that route questions to the right engine.
-
-This page covers the Databricks platform architecture. For hands-on implementation, see xref:lab2.adoc[Lab 2] (Spark Connector ETL), xref:lab3.adoc[Lab 3] (semantic search), and xref:lab4.adoc[Lab 4] (agents).
+This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the four integration patterns that carry data and queries between the systems. For the dataset this architecture operates on and the lab roadmap, see the xref:workshop-overview.adoc[Workshop Overview]. For hands-on implementation, see xref:lab2.adoc[Lab 2] (Spark Connector ETL), xref:lab3.adoc[Lab 3] (semantic search), and xref:lab4.adoc[Lab 4] (agents).
 
 == Two Platforms, Two Query Shapes
 
@@ -37,43 +31,6 @@ Delta Lake provides ACID transactions, schema enforcement, and time travel on to
 The Neo4j Spark Connector is the Databricks-certified bridge for bulk data movement. It reads silver Delta tables and writes them as graph nodes and relationships. The transformation follows a consistent pattern: table rows become nodes with column values as properties, foreign keys become relationships, and shared attribute values (like an airport code appearing on multiple flights) become shared nodes that make hidden connections explicit. The connector also reads from Neo4j back into DataFrames for validation and bidirectional data flow.
 
 See xref:lab2.adoc[Lab 2] for a hands-on walkthrough loading the aircraft digital twin data, including the specific transformation patterns for each entity type.
-
-== How the Aircraft Data Splits
-
-image::dual-database-architecture.png[Dual Database Architecture,align=center]
-
-Databricks holds the sensor telemetry tables: `sensor_readings` (345,600+ hourly rows), `sensors` (160), `systems` (80), and `aircraft` (20), optimized for time-series aggregation and statistical analysis. Neo4j holds the knowledge graph: Aircraft, System, Component, Sensor, Flight, Delay, MaintenanceEvent, and Airport nodes connected by HAS_SYSTEM, HAS_COMPONENT, HAS_SENSOR, OPERATES_FLIGHT, HAS_EVENT, and other relationship types, plus Document and Chunk nodes for GraphRAG retrieval over maintenance manuals.
-
-Aircraft, Systems, and Sensors exist in both platforms as join points. The Spark Connector syncs governed Delta tables to graph nodes.
-
-.Databricks SQL: fleet-wide sensor aggregation
-[source,sql]
-----
-SELECT a.model, sen.type,
-       AVG(r.value) AS avg_reading,
-       STDDEV(r.value) AS volatility
-FROM sensor_readings r
-  JOIN sensors sen ON r.sensor_id = sen.sensor_id
-  JOIN systems s ON sen.system_id = s.system_id
-  JOIN aircraft a ON s.aircraft_id = a.aircraft_id
-WHERE sen.type = 'EGT'
-GROUP BY a.model, sen.type
-ORDER BY volatility DESC
-----
-
-.Neo4j Cypher: maintenance impact across connected components
-[source,cypher]
-----
-MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)
-      -[:HAS_COMPONENT]->(c:Component)
-      -[:HAS_EVENT]->(m:MaintenanceEvent)
-WHERE a.tail_number = 'N95040A'
-  AND m.severity = 'CRITICAL'
-RETURN s.name, c.name, m.description, m.event_date
-ORDER BY m.event_date DESC
-----
-
-A dual-database query combines both: _"Which aircraft models have the highest EGT volatility?"_ routes to Databricks SQL, then _"What maintenance events and component failures are connected to those aircraft?"_ routes to Neo4j Cypher. The supervisor agent coordinates both and synthesizes the answer.
 
 == Four Integration Patterns
 
@@ -171,4 +128,4 @@ See xref:lab4.adoc[Lab 4] for the hands-on implementation of Genie, the Neo4j MC
 
 == Next Steps
 
-Continue to xref:lab1.adoc[Lab 1: Neo4j Aura Setup] to begin the hands-on labs, or return to the xref:index.adoc[Home] page for the full workshop overview.
+Continue to the xref:workshop-overview.adoc[Workshop Overview] for the dataset and lab roadmap, or jump to xref:lab1.adoc[Lab 1: Neo4j Aura Setup] to begin the hands-on labs.

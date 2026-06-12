@@ -174,4 +174,4 @@ In this lesson, you learned:
 - **ReAct pattern**: Reason → Act → Observe → Respond
 - **Result**: Users ask naturally; agents figure out how to answer
 
-**Next:** Learn about the Microsoft Agent Framework.
+**Next:** Learn how Databricks Genie, Neo4j MCP, and the multi-agent supervisor work together.

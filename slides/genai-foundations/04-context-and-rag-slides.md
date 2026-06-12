@@ -34,7 +34,7 @@ ol > li {
 
 ## RAG Helps, But Introduces New Challenges
 
-We've seen how RAG provides context to LLMs:
+Traditional RAG grounds LLM responses in real documents:
 - Retrieves relevant chunks based on semantic similarity
 - Grounds responses in actual documents
 - Reduces hallucination

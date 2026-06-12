@@ -33,30 +33,6 @@ Feature Engineering in Unity Catalog + scikit-learn + MLflow
 
 ---
 
-## Partnership Overview and Recap
-
-- **Joint Customer Base:** over 200 shared customers across Aura and Enterprise, including Gilead, iFord, Comcast, and Ashley Furniture
-- **Neo4j Spark Connector (5.x):** bidirectional data transfer between Databricks Lakehouse and Neo4j, supporting Unity Catalog and Delta tables. Silver tables (cleaned, structured data) feed the graph; Gold tables (analytics-ready output) capture graph insights
-- **Connection Patterns:** Spark Connector for batch pipelines, Unity Catalog JDBC for governed SQL and BI federation, Neo4j MCP Server for agent-driven Cypher, neo4j-graphrag-python for knowledge graph construction
-- **Previous webinar:** built a knowledge graph from unstructured documents, then used GraphRAG to combine vector search with graph traversal so agents receive richer context than text search alone
-
-<!--
-Quick recap of the partnership and what we covered last time.
-Over 200 organizations run both Neo4j and Databricks. The Spark
-Connector is the foundation for everything today: it moves data
-bidirectionally between the Lakehouse and the graph.
-
-The previous webinar built a knowledge graph from unstructured
-documents: chunking, embedding, entity extraction. GraphRAG
-combined vector search with graph traversal so agents receive
-document context alongside structured data. Specialized agents
-like Genie for SQL and Neo4j MCP for Cypher route through a
-supervisor to span both platforms.
-
-Today we add the next layer: feature engineering from graph
-topology.
--->
-
 ---
 
 ## What You'll Learn

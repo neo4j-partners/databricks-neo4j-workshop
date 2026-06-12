@@ -1,5 +1,22 @@
 # Plan: Fix the 88 Dependabot Security Warnings
 
+## Progress status
+
+Work is happening on branch `fix-dependabot-warnings`.
+
+| Phase | Scope | Status |
+|---|---|---|
+| Phase 1 | npm `site/` criticals (convict, handlebars) | DONE |
+| Phase 2 | npm `slides/` + leftover `site/` moderates | DONE |
+| Phase 3 | pip `notebook_validation/` (mlflow group) | not started |
+| Phase 4 | pip `auto_scripts/` | not started |
+| Phase 5 | pip `populate_aircraft_db/` | not started |
+| Phase 6 | verify, single PR, dismiss no-fix alerts | not started |
+
+Notes from the completed work:
+- `site/`: `npm audit fix` cleared all 6 reported vulnerabilities (2 critical, 1 high, 3 moderate) with no `--force` needed. Antora build (`npm run build`) still produces site output cleanly. Lock file changed only at the transitive level; top-level Antora versions untouched.
+- `slides/`: `npm audit fix` cleared all 7 vulnerabilities (4 high, 3 moderate) with no `--force` needed. The patched `@marp-team/marp-cli` binary loads and runs. Note the `build:html` script finds no `.md` source files in the input dirs (they hold only PDFs/PNGs today), so it prints usage and emits nothing new. This is a pre-existing repo state, not a regression from the dependency bump.
+
 ## What is going on
 
 GitHub Dependabot found 88 open vulnerability alerts on the default branch: 4 critical, 31 high, 46 moderate, 7 low. They live in six dependency files across two ecosystems:
@@ -27,7 +44,7 @@ This is workshop and tooling code, not an internet-facing production service, so
 4. Start with the critical alerts, then high, then moderate and low.
 5. Push and watch the Dependabot count drop after each phase.
 
-## Phase 1: Critical alerts (npm site, 4 criticals)
+## Phase 1: Critical alerts (npm site, 4 criticals) — DONE
 
 All four critical alerts are in the docs site builder: `convict` (2) and `handlebars` (1 critical, plus high/moderate/low), pulled in through Antora.
 
@@ -42,7 +59,7 @@ Patched targets for reference: `convict` 6.2.5, `handlebars` 4.7.9.
 
 Why first: critical severity, and the docs site is self-contained, so the blast radius is small.
 
-## Phase 2: Remaining npm (slides + leftover site)
+## Phase 2: Remaining npm (slides + leftover site) — DONE
 
 `slides/package-lock.json` has high and moderate alerts, all transitive through `@marp-team/marp-cli`: `@xmldom/xmldom`, `basic-ftp`, `tmp`, `ws`, `postcss`, `ip-address`.
 

@@ -34,12 +34,12 @@ ol > li {
 
 ## Why RAG Was Adopted
 
-Remember the LLM limitations we discussed:
+LLMs have three core limitations that make them unreliable for enterprise data:
 - **Hallucination** - Generates confident but wrong information
-- **Knowledge cutoff** - No access to your private data
-- **Relationship blindness** - Can't connect information
+- **Knowledge cutoff** - No access to your private or recent data
+- **Relationship blindness** - Can't reason across connected information
 
-**The insight:** If we could provide LLMs with relevant context, we could address these limitations.
+**The insight:** Providing relevant context in the prompt addresses all three.
 
 This led to **Retrieval-Augmented Generation (RAG)**.
 

@@ -35,8 +35,8 @@ ol > li {
 ## From Knowledge Graph to Answers
 
 You have a knowledge graph with:
-- **Entities**: Companies, products, risks, executives
-- **Relationships**: OWNS, FACES_RISK, MENTIONS, WORKS_FOR
+- **Entities**: Aircraft, systems, components, sensors, maintenance events
+- **Relationships**: HAS_SYSTEM, HAS_COMPONENT, HAS_EVENT, OPERATES_FLIGHT
 - **Embeddings**: Vector representations for semantic search
 
 **The question**: How do you *retrieve* the right information to answer user questions?
@@ -85,8 +85,8 @@ The retriever's job is finding the right context. The LLM's job is generating a 
 - Returns semantically related content
 
 **Best for:**
-- "What is Apple's strategy?"
-- "Tell me about cybersecurity threats"
+- "What causes hydraulic pressure loss?"
+- "Describe common turbine faults"
 - Conceptual, exploratory questions
 
 **Limitation:** Returns text chunks only—no entity relationships.
@@ -101,8 +101,8 @@ The retriever's job is finding the right context. The LLM's job is generating a 
 - Returns content + structured data
 
 **Best for:**
-- "Which asset managers are affected by crypto regulations?"
-- "What risks do tech companies face?"
+- "Which aircraft have components with critical maintenance events?"
+- "What maintenance procedures apply to engines with bearing wear?"
 - Questions needing both content and relationships
 
 **Key insight:** The chunk is the anchor—you traverse from what vector search finds.
@@ -117,8 +117,8 @@ The retriever's job is finding the right context. The LLM's job is generating a 
 - Returns precise, structured results
 
 **Best for:**
-- "How many risk factors does Apple face?"
-- "List all companies owned by BlackRock"
+- "How many critical maintenance events are there?"
+- "List all components removed from aircraft N10001"
 - Counts, lists, specific lookups
 
 **Limitation:** Question must map to graph schema.

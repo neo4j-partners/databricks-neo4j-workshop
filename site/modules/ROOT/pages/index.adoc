@@ -17,7 +17,7 @@ The integration rests on four pillars:
 
 === Databricks: Volume and Governance
 
-Databricks provides the governed data foundation. Delta Lake stores operational data as open lakehouse tables. Unity Catalog governs access across data and AI assets. Databricks SQL handles aggregation workloads at petabyte scale, including time-series analysis and fleet-wide statistical comparisons. The Lakehouse is the system of record and the analytical engine for everything that stays in rows and columns. See the xref:databricks-platform.adoc[Databricks Intelligence Platform] overview for architecture details, xref:lab2.adoc[Lab 2] for how data flows from the Lakehouse into the graph, and xref:lab4.adoc[Lab 4] for the AI platform capabilities (Mosaic AI, Genie, Agent Bricks).
+Databricks provides the governed data foundation. Delta Lake stores operational data as open lakehouse tables. Unity Catalog governs access across data and AI assets. Databricks SQL handles aggregation workloads at petabyte scale, including time-series analysis and fleet-wide statistical comparisons. The Lakehouse is the system of record and the analytical engine for everything that stays in rows and columns. See xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] for architecture details, xref:lab2.adoc[Lab 2] for how data flows from the Lakehouse into the graph, and xref:lab4.adoc[Lab 4] for the AI platform capabilities (Mosaic AI, Genie, Agent Bricks).
 
 === Neo4j: Topology and Traversal
 
@@ -79,4 +79,4 @@ The rule of thumb: counting things stays in SQL. Following connections moves to 
 
 == Next Steps
 
-Continue to the xref:workshop-overview.adoc[Workshop Overview] for the dataset and lab roadmap, or jump straight to xref:lab1.adoc[Lab 1: Neo4j Aura Setup].
+Continue to xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] for the integration architecture, then the xref:workshop-overview.adoc[Workshop Overview] for the dataset and lab roadmap.

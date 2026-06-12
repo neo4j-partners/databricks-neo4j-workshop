@@ -27,10 +27,6 @@ ol > li {
 }
 </style>
 
-# GraphRAG Agent Blueprint with AWS
-
----
-
 # Neo4j Aura: Cloud Graph Database
 
 ---

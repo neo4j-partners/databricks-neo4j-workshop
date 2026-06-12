@@ -39,11 +39,11 @@ ol > li {
 **Vector Cypher Retriever:** Returns text chunks + related entities from graph traversal.
 
 ```
-Query: "What risks affect companies?"
+Query: "What maintenance issues affect aircraft components?"
     ↓
 Vector Search: Find relevant chunks
     ↓
-Graph Traversal: From chunks → Companies → RiskFactors → AssetManagers
+Graph Traversal: From chunks → Components → MaintenanceEvents → Aircraft
     ↓
 Result: Content + structured entity data
 ```
@@ -73,17 +73,17 @@ Result: Content + structured entity data
 from neo4j_graphrag.retrievers import VectorCypherRetriever
 
 retrieval_query = """
-MATCH (node)-[:FROM_DOCUMENT]-(doc:Document)-[:FILED]-(company:Company)
-OPTIONAL MATCH (company)-[:FACES_RISK]->(risk:RiskFactor)
-WITH node, score, company, collect(risk.name)[0..20] AS risks
+MATCH (node)-[:FROM_DOCUMENT]-(doc:Document)-[:DESCRIBES]->(component:Component)
+OPTIONAL MATCH (component)-[:HAS_EVENT]->(event:MaintenanceEvent)
+WITH node, score, component, collect(event.fault)[0..20] AS faults
 RETURN node.text AS text, score,
-       {company: company.name, risks: risks} AS metadata
+       {component: component.name, faults: faults} AS metadata
 ORDER BY score DESC
 """
 
 retriever = VectorCypherRetriever(
     driver=driver,
-    index_name='chunkEmbeddings',
+    index_name='maintenanceChunkEmbeddings',
     embedder=embedder,
     retrieval_query=retrieval_query
 )
@@ -110,18 +110,18 @@ YIELD node, score
 ## Query Breakdown
 
 ```cypher
--- Traverse from chunk to company
-MATCH (node)-[:FROM_DOCUMENT]-(doc:Document)-[:FILED]-(company:Company)
+-- Traverse from chunk to the component it describes
+MATCH (node)-[:FROM_DOCUMENT]-(doc:Document)-[:DESCRIBES]->(component:Component)
 
--- Get related risks (OPTIONAL so companies without risks still appear)
-OPTIONAL MATCH (company)-[:FACES_RISK]->(risk:RiskFactor)
+-- Get related maintenance events (OPTIONAL so components without events still appear)
+OPTIONAL MATCH (component)-[:HAS_EVENT]->(event:MaintenanceEvent)
 
--- Aggregate risks, limit to 20
-WITH node, score, company, collect(risk.name)[0..20] AS risks
+-- Aggregate faults, limit to 20
+WITH node, score, component, collect(event.fault)[0..20] AS faults
 
 -- Return chunk text + metadata
 RETURN node.text AS text, score,
-       {company: company.name, risks: risks} AS metadata
+       {component: component.name, faults: faults} AS metadata
 ```
 
 ---
@@ -153,9 +153,9 @@ Returns *all* companies; risks list is empty if none exist.
 - You want to traverse from relevant content to connected data
 
 **Example questions:**
-- "Which asset managers are affected by cryptocurrency policies?"
-- "What products do companies mention alongside AI?"
-- "What risks connect to companies in the tech sector?"
+- "Which components have bearing wear and what aircraft are they on?"
+- "What maintenance events affect engines mentioned in these documents?"
+- "Which aircraft systems are linked to the faults described in these manuals?"
 
 ---
 

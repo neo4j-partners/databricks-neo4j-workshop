@@ -41,7 +41,7 @@ The **simplest retriever**—finds content by meaning, not keywords.
 2. Search vector index for similar chunk embeddings
 3. Return the most semantically similar chunks
 
-**Key insight:** "Cybersecurity threats" finds content about "data breaches" and "hacking risks" even without exact word matches.
+**Key insight:** "Engine bearing wear" finds content about "turbine component degradation" even without exact word matches.
 
 ---
 
@@ -51,10 +51,10 @@ The **simplest retriever**—finds content by meaning, not keywords.
 from neo4j_graphrag.retrievers import VectorRetriever
 
 vector_retriever = VectorRetriever(
-    driver=driver,                    # Neo4j connection
-    index_name='chunkEmbeddings',     # Vector index name
-    embedder=embedder,                # Embedding model
-    return_properties=['text']        # Properties to return
+    driver=driver,
+    index_name='maintenanceChunkEmbeddings',
+    embedder=embedder,
+    return_properties=['text']
 )
 ```
 
@@ -68,11 +68,11 @@ vector_retriever = VectorRetriever(
 ## Performing a Search
 
 ```python
-query = "What are the risks that Apple faces?"
+query = "What maintenance procedures apply to engine bearing wear?"
 
 results = vector_retriever.search(
     query_text=query,
-    top_k=5  # Return 5 most similar chunks
+    top_k=5
 )
 
 for record in results.records:
@@ -110,9 +110,9 @@ Higher scores indicate stronger semantic matches.
 - When exact keywords don't match but meaning does
 
 **Example questions:**
-- "What is Apple's business strategy?"
-- "Describe cybersecurity threats"
-- "What challenges do tech companies face?"
+- "What causes hydraulic system failures?"
+- "Describe bearing wear in turbine engines"
+- "What maintenance actions address fuel flow issues?"
 
 ---
 
@@ -126,9 +126,9 @@ Higher scores indicate stronger semantic matches.
 - Can't traverse connections
 
 **Example limitation:**
-- Question: "What risks does Apple face?"
-- Returns: Chunks about risks (may not be Apple-specific)
-- Missing: Structured FACES_RISK relationships
+- Question: "What maintenance events affect Aircraft N10001?"
+- Returns: Chunks about maintenance (may not be N10001-specific)
+- Missing: Structured HAS_EVENT relationships for that aircraft
 
 **When you need more:** Use Vector Cypher Retriever.
 
