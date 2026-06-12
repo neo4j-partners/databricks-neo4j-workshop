@@ -196,7 +196,7 @@ def main():
                         ]
                     }
                 },
-                {}
+                '*'
             )
             YIELD graphName, nodeCount, relationshipCount
         """)[0]
@@ -212,7 +212,8 @@ def main():
                 topK: 3,
                 nodeProperties: $props,
                 similarityCutoff: 0.4,
-                randomSeed: 42
+                randomSeed: 42,
+                concurrency: 1
             })
             YIELD node1, node2, similarity
             RETURN gds.util.asNode(node1).tail_number AS aircraft,
@@ -230,7 +231,8 @@ def main():
                 writeRelationshipType: 'SIMILAR_PROFILE',
                 writeProperty: 'similarity_score',
                 nodeProperties: $props,
-                randomSeed: 42
+                randomSeed: 42,
+                concurrency: 1
             })
             YIELD relationshipsWritten, nodesCompared
         """, {"props": knn_props})[0]

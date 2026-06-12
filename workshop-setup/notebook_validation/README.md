@@ -144,6 +144,7 @@ Reading the report: steps whose total time is close to the "connector RETURN 1" 
 | `run_lab2_03.py` | GDS kNN aircraft similarity (notebook 03) + validate | Additive — writes `*_norm` + `SIMILAR_PROFILE`, drops projection | Yes |
 | `run_lab2_04.py` | GDS PageRank + Betweenness (notebook 04) + validate | Additive — writes `pagerank_score`/`betweenness_score`, drops projection | Yes |
 | `run_lab2_05.py` | GDS Node Similarity (notebook 05) + validate | Additive — writes `SIMILAR_FAULT_PROFILE`, removes temp `FaultType` nodes | Yes |
+| `recreate_lakehouse_tables.py` | One-off admin fix: rebuild aircraft/systems/sensors Delta tables so key columns are `aircraft_id`/`system_id`/`sensor_id` (not raw `:ID(...)` headers) | **Yes** — drops + recreates 3 dimension tables | Yes |
 | `run_lab3_01.py` | Build Lab 3 embedding pipeline + validate (16 checks) | **Yes** — clears Document/Chunk nodes | No |
 | `run_lab3_02.py` | Read-only validation of Lab 3 GraphRAG retriever patterns | No | No |
 | `run_lab3_04.py` | Read-only verification of the Neo4j MCP server (get-schema, read-cypher) | No | No |
