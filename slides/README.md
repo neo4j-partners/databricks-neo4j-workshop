@@ -49,7 +49,7 @@ The full pipeline for building a knowledge graph from unstructured documents. Fi
 GraphRAG retriever patterns. Four files covering the retriever overview and decision framework, Vector Retriever, Vector Cypher Retriever, and Text2Cypher Retriever.
 
 ### `agents/`
-AI agents and multi-agent systems. Two files: the ReAct pattern and agent fundamentals, and the detailed treatment of Genie, Neo4j MCP, and the multi-agent supervisor.
+AI agents and multi-agent systems. Two files: `01-from-retrievers-to-agents-slides.md` covers the ReAct pattern and agent fundamentals; `02-power-of-graphrag-slides.md` covers Genie, Neo4j MCP, and the multi-agent supervisor in depth.
 
 ### `graph-ml/`
 Graph Data Science and graph feature engineering. Two files: GDS algorithms, MLflow lift comparison, and bidirectional data loop; and the agentic graph enrichment loop with confidence scoring and ontology validation.

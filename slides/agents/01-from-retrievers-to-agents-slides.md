@@ -42,9 +42,9 @@ You know three retrieval patterns:
 **But users don't know about retriever types.**
 
 They just ask questions:
-- "What is Apple's strategy?"
-- "How many companies are in the database?"
-- "Which asset managers own companies facing cyber risks?"
+- "What causes turbine bearing wear?"
+- "How many critical maintenance events are in the database?"
+- "Which aircraft have engines with components that had recent faults?"
 
 ---
 
@@ -81,7 +81,7 @@ Tools are capabilities the agent can use—functions it can call to get informat
 
 The agent matches questions to tool descriptions:
 
-**Question:** "How many companies are there?"
+**Question:** "How many critical maintenance events are there?"
 
 **Tool descriptions:**
 - `get_graph_schema`: "Get database structure..."
@@ -98,8 +98,8 @@ Your retrievers become tools:
 
 | Tool | Based On | When Agent Uses It |
 |------|----------|-------------------|
-| Schema Tool | Graph introspection | "What data exists?" |
-| Semantic Search | Vector Retriever | "What is...", "Tell me about..." |
+| Schema Tool | Graph introspection | "What data exists in the graph?" |
+| Semantic Search | Vector Retriever | "What causes...", "Describe..." |
 | Database Query | Text2Cypher | "How many...", "List all..." |
 
 Each tool has a description that tells the agent when to use it.
@@ -111,11 +111,11 @@ Each tool has a description that tells the agent when to use it.
 Agents follow **ReAct** (Reasoning + Acting):
 
 ```
-1. Receive question: "How many risk factors does Apple face?"
+1. Receive question: "How many critical events does Engine #1 on N10001 have?"
 2. Reason: "This asks for a count"
 3. Act: Call Database Query Tool
-4. Observe: Result = 45
-5. Respond: "Apple faces 45 risk factors."
+4. Observe: Result = 7
+5. Respond: "Engine #1 on N10001 has 7 critical maintenance events."
 ```
 
 For complex questions, the agent may loop through multiple cycles.
@@ -124,16 +124,16 @@ For complex questions, the agent may loop through multiple cycles.
 
 ## Multi-Tool Example
 
-**Question:** "What are Apple's main risks and which investors are affected?"
+**Question:** "What bearing faults affect Engine #1 and which aircraft is it on?"
 
 **Agent process:**
-1. **Reason:** Need risk content AND investor relationships
-2. **Act:** Call Semantic Search for Apple's risks
-3. **Observe:** Risk descriptions
-4. **Reason:** Now need investors
-5. **Act:** Call Database Query for Apple's investors
-6. **Observe:** Investor list
-7. **Respond:** Combine both into comprehensive answer
+1. **Reason:** Need fault content AND aircraft relationship
+2. **Act:** Call Semantic Search for bearing fault descriptions
+3. **Observe:** Maintenance manual chunks about bearing wear
+4. **Reason:** Now need the specific aircraft
+5. **Act:** Call Database Query for aircraft linked to Engine #1
+6. **Observe:** Aircraft tail number N10001
+7. **Respond:** Combine both into a comprehensive answer
 
 ---
 

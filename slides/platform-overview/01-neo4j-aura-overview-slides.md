@@ -191,6 +191,38 @@ Aura Agents let you build **AI-powered conversational interfaces** to your graph
 
 ---
 
+## Aura Agents: How They Work
+
+An Aura Agent combines three retrieval strategies behind a single chat interface:
+
+| Strategy | What It Does | Best For |
+|----------|-------------|---------|
+| **Cypher Templates** | Pre-written queries with parameters the LLM fills in | High-precision, repeatable questions |
+| **Text2Cypher** | LLM generates Cypher from natural language | Ad-hoc graph queries |
+| **Similarity Search** | Vector similarity over embedded nodes | Conceptual and semantic questions |
+
+The agent selects the right strategy per question automatically.
+
+---
+
+## Aura Agents: Example Conversation
+
+**Setup:** An aircraft fleet knowledge graph with maintenance manuals loaded.
+
+**User:** "Which engines on N10001 have had bearing faults?"
+
+**Agent reasoning:** Entity-specific count question. Cypher Template or Text2Cypher.
+
+**Agent response:** "Engine CFM56-7B #1 on aircraft N10001 had three bearing fault events in the last 90 days: two MAJOR and one CRITICAL."
+
+**User:** "What do the maintenance manuals say to do about bearing wear?"
+
+**Agent reasoning:** Semantic content question. Similarity Search over embedded chunks.
+
+**Agent response:** Retrieves and summarizes the relevant manual sections.
+
+---
+
 ## Summary
 
 Neo4j Aura provides:
@@ -200,7 +232,7 @@ Neo4j Aura provides:
 - **AI/GenAI capabilities** - Vector indexes, GraphRAG support
 - **Graph Analytics** - Built-in algorithms for insights
 - **Integrated Tools** - Query, Explore, and Dashboards
-- **Aura Agents** - No-code conversational AI over your graph
+- **Aura Agents** - No-code conversational AI combining Cypher Templates, Text2Cypher, and Similarity Search
 
-**Next:** Learn about the promise and limits of GenAI—and why we need RAG.
+**Next:** Learn about the promise and limits of GenAI and why we need RAG.
 

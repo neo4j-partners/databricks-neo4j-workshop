@@ -164,10 +164,10 @@ Returns *all* companies; risks list is empty if none exist.
 **Critical concept:** You can only traverse from what vector search finds.
 
 **Example problem:**
-- Query: "What risks does Apple face?"
-- Vector search finds: Chunks about "risk management" (not Apple-specific)
-- Traversal: Goes to companies mentioned in those chunks
-- Result: May not include Apple!
+- Query: "What maintenance events affect Aircraft N10001?"
+- Vector search finds: Chunks about "maintenance procedures" (not N10001-specific)
+- Traversal: Goes to components mentioned in those chunks
+- Result: May not include components on N10001
 
 **Solution:** Ensure your question surfaces relevant chunks, or use Text2Cypher for entity-specific queries.
 

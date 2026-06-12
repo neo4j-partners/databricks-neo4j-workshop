@@ -10,6 +10,33 @@ Databricks answers "how much?" and "how often?" through SQL aggregation over row
 
 An aircraft maintenance investigation illustrates why. A fleet manager asks: "Which aircraft models have the highest EGT volatility, and what maintenance events are connected to those aircraft?" The first half is a `GROUP BY` with `STDDEV` over the `sensor_readings` table. The second half is a multi-hop traversal from Aircraft through System, Component, and MaintenanceEvent nodes. Neither platform can answer the full question alone. A supervisor agent decomposes the question, routes each half to the platform built for it, and synthesizes a single response.
 
+.Databricks SQL: the aggregation half
+[source,sql]
+----
+SELECT a.model, sen.type,
+       AVG(r.value) AS avg_reading,
+       STDDEV(r.value) AS volatility
+FROM sensor_readings r
+  JOIN sensors sen ON r.sensor_id = sen.sensor_id
+  JOIN systems s ON sen.system_id = s.system_id
+  JOIN aircraft a ON s.aircraft_id = a.aircraft_id
+WHERE sen.type = 'EGT'
+GROUP BY a.model, sen.type
+ORDER BY volatility DESC
+----
+
+.Neo4j Cypher: the traversal half
+[source,cypher]
+----
+MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)
+      -[:HAS_COMPONENT]->(c:Component)
+      -[:HAS_EVENT]->(m:MaintenanceEvent)
+WHERE a.tail_number = 'N95040A'
+  AND m.severity = 'CRITICAL'
+RETURN s.name, c.name, m.description, m.event_date
+ORDER BY m.event_date DESC
+----
+
 The architecture treats Databricks and Neo4j as complementary systems connected through governed data pipelines. Counting stays in SQL. Following connections moves to the graph. Questions that span both route to specialized agents. See xref:lab4.adoc[Lab 4] for how the supervisor implements this routing.
 
 == Lakehouse Architecture

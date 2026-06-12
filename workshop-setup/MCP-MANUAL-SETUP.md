@@ -135,10 +135,12 @@ Databricks cluster using the notebook's own credentials.
 Use this if you have the Databricks CLI and `jq` installed locally. The `jq`
 step keeps only the writable options (dropping read-only fields like
 `access_token_expiration` that `update` rejects), overlays the flag and secret,
-then pipes the result back to `update`:
+and writes the request body to a file. The CLI's `--json` flag reads from a file
+path (`@file`), not from stdin, so the body goes through a temp file:
 
 ```bash
 export CLIENT_SECRET='...'   # client_secret from .mcp-credentials.json
+BODY="$(mktemp).json"
 
 databricks connections get neo4j_aircraft_mcp_server --output json \
   | jq --arg s "$CLIENT_SECRET" '{
@@ -151,8 +153,10 @@ databricks connections get neo4j_aircraft_mcp_server --output json \
           ))))
           + {is_mcp_connection: "true", client_secret: $s}
         )
-      }' \
-  | databricks connections update neo4j_aircraft_mcp_server --json @-
+      }' > "$BODY"
+
+databricks connections update neo4j_aircraft_mcp_server --json "@$BODY"
+rm -f "$BODY"   # the body contains the client secret
 ```
 
 Add `--profile <name>` to both commands if you are not using the default

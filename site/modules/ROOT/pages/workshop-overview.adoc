@@ -33,38 +33,9 @@ image::dual-database-architecture.png[Dual Database Architecture,align=center]
 The data splits across two platforms, each chosen for the workload it handles best:
 
 * **Databricks Lakehouse** stores the time-series sensor telemetry: `sensor_readings` (345,600+ hourly rows), `sensors` (160), `systems` (80), and `aircraft` (20). Columnar storage and SQL make it ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
-* **Neo4j Aura** stores the knowledge graph: Aircraft, System, Component, Sensor, Flight, Delay, MaintenanceEvent, and Airport nodes connected by HAS_SYSTEM, HAS_COMPONENT, HAS_SENSOR, OPERATES_FLIGHT, HAS_EVENT, and other relationship types, plus Document and Chunk nodes for GraphRAG retrieval over maintenance manuals. A graph database traverses multi-hop relationships natively, avoiding the expensive JOINs a tabular database would require.
+* **Neo4j Aura** stores the knowledge graph: Aircraft, System, Component, Sensor, Flight, Delay, MaintenanceEvent, and Airport nodes connected by relationships such as HAS_SYSTEM, HAS_COMPONENT, OPERATES_FLIGHT, and HAS_EVENT, plus Document and Chunk nodes for GraphRAG retrieval over maintenance manuals. A graph traverses these multi-hop relationships natively, avoiding the expensive JOINs a tabular database would require.
 
-Aircraft, Systems, and Sensors exist in both platforms as join points. The Neo4j Spark Connector syncs governed Delta tables to graph nodes.
-
-A single question often draws on both. _"Which aircraft models have the highest EGT volatility?"_ routes to Databricks SQL; _"What maintenance events and component failures are connected to those aircraft?"_ routes to Neo4j Cypher. The Supervisor Agent coordinates both and synthesizes the answer.
-
-.Databricks SQL: fleet-wide sensor aggregation
-[source,sql]
-----
-SELECT a.model, sen.type,
-       AVG(r.value) AS avg_reading,
-       STDDEV(r.value) AS volatility
-FROM sensor_readings r
-  JOIN sensors sen ON r.sensor_id = sen.sensor_id
-  JOIN systems s ON sen.system_id = s.system_id
-  JOIN aircraft a ON s.aircraft_id = a.aircraft_id
-WHERE sen.type = 'EGT'
-GROUP BY a.model, sen.type
-ORDER BY volatility DESC
-----
-
-.Neo4j Cypher: maintenance impact across connected components
-[source,cypher]
-----
-MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)
-      -[:HAS_COMPONENT]->(c:Component)
-      -[:HAS_EVENT]->(m:MaintenanceEvent)
-WHERE a.tail_number = 'N95040A'
-  AND m.severity = 'CRITICAL'
-RETURN s.name, c.name, m.description, m.event_date
-ORDER BY m.event_date DESC
-----
+Aircraft, Systems, and Sensors exist in both platforms as join points, kept in sync by the Neo4j Spark Connector. Many real questions span both stores, which is why the workshop builds a Supervisor Agent to route each one and combine the results. xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] shows the SQL and Cypher query shapes side by side.
 
 == What You Will Learn
 

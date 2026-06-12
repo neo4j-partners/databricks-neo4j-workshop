@@ -43,26 +43,27 @@ ol > li {
 4. Precise, structured results returned
 
 **Example:**
-- Question: "How many risk factors does Apple face?"
-- Generated: `MATCH (c:Company {name:'APPLE INC'})-[:FACES_RISK]->(r) RETURN count(r)`
-- Result: `45`
+- Question: "How many critical maintenance events does aircraft N10001 have?"
+- Generated: `MATCH (a:Aircraft {tailNumber:'N10001'})-[:HAS_SYSTEM]->()-[:HAS_COMPONENT]->()-[:HAS_EVENT]->(e:MaintenanceEvent {severity:'CRITICAL'}) RETURN count(e)`
+- Result: `7`
 
 ---
 
 ## How It Works
 
 ```
-User: "Which companies does BlackRock own?"
+User: "Which components were removed from aircraft N10001?"
     ↓
 [LLM + Schema] → Generate Cypher
     ↓
-MATCH (am:AssetManager {managerName: 'BlackRock Inc.'})
-      -[:OWNS]->(c:Company)
+MATCH (a:Aircraft {tailNumber: 'N10001'})
+      -[:HAS_SYSTEM]->()-[:HAS_COMPONENT]->(c:Component)
+WHERE EXISTS { (c)-[:HAS_EVENT]->(:MaintenanceEvent {action: 'REMOVED'}) }
 RETURN c.name
     ↓
 [Execute Query]
     ↓
-Result: Apple Inc., Microsoft Corp., Alphabet Inc., ...
+Result: High-pressure Turbine, Low-pressure Compressor, ...
 ```
 
 ---
@@ -92,13 +93,14 @@ text2cypher_retriever = Text2CypherRetriever(
 **Schema tells the LLM:**
 ```
 Node properties:
-  Company {name: STRING, ticker: STRING}
-  RiskFactor {name: STRING}
-  AssetManager {managerName: STRING}
+  Aircraft {tailNumber: STRING, model: STRING}
+  Component {name: STRING, type: STRING}
+  MaintenanceEvent {fault: STRING, severity: STRING}
 
 Relationships:
-  (:Company)-[:FACES_RISK]->(:RiskFactor)
-  (:AssetManager)-[:OWNS]->(:Company)
+  (:Aircraft)-[:HAS_SYSTEM]->(:System)
+  (:System)-[:HAS_COMPONENT]->(:Component)
+  (:Component)-[:HAS_EVENT]->(:MaintenanceEvent)
 ```
 
 **With schema:** LLM knows exactly what entities and relationships exist.
@@ -116,17 +118,17 @@ Relationships:
 - Direct graph queries (no semantic search)
 
 **Example questions:**
-- "How many risk factors does Apple face?"
-- "List all companies owned by Vanguard"
-- "Which company has the most products?"
-- "What is the average number of risks per company?"
+- "How many critical maintenance events does aircraft N10001 have?"
+- "List all components removed from the hydraulics system"
+- "Which aircraft has the most maintenance events?"
+- "What is the average severity score per system?"
 
 ---
 
 ## Performing a Search
 
 ```python
-query = "What companies does BlackRock own?"
+query = "Which components were removed from aircraft N10001?"
 
 results = text2cypher_retriever.search(query_text=query)
 
@@ -188,11 +190,11 @@ Text2Cypher executes LLM-generated queries. Important safeguards:
 
 | Question | Best Retriever | Why |
 |----------|---------------|-----|
-| "What is AI safety?" | Vector | Semantic content |
-| "Which companies mention AI?" | Vector Cypher | Content + entities |
-| "How many companies mention AI?" | Text2Cypher | Precise count |
-| "Tell me about Apple" | Vector | Exploratory content |
-| "List Apple's risks" | Text2Cypher | Specific entity facts |
+| "What causes turbine bearing wear?" | Vector | Semantic content |
+| "Which aircraft have components with bearing faults?" | Vector Cypher | Content + entities |
+| "How many critical events are on Engine #1?" | Text2Cypher | Precise count |
+| "Describe hydraulic system failures" | Vector | Exploratory content |
+| "List components removed from N10001" | Text2Cypher | Specific entity facts |
 
 ---
 

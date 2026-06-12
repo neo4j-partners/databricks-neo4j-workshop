@@ -124,8 +124,107 @@ Patched targets: `pypdf` 6.10.2, `idna` 3.15, `python-dotenv` 1.2.2, `Pygments` 
 
 ## After the cleanup: prevent the backlog from returning
 
+### On version ceilings and supply-chain risk
+
+A reasonable question is whether every dependency should carry an upper bound (for example `mlflow<4.0`) so the project never resolves to a brand-new release that could be compromised. The short answer is no, blanket ceilings are a weak defense and they work against the patching we just did. The reasoning:
+
+- **Lock files, not ceilings, are the real control.** `uv.lock` and `package-lock.json` pin exact versions and integrity hashes. With the lock committed, a normal install (`uv sync`, `npm ci`) never pulls "latest" and refuses anything whose hash does not match the lock. A new malicious release cannot enter the build unless someone deliberately regenerates and commits the lock, which is a reviewable act. The loose `>=` floors only matter at that moment, not on every install.
+- **Ceilings block security patches.** That is the exact problem this whole effort fixed. A cap of `mlflow<3.0` would have hidden the critical fix that lives in 3.11. A ceiling cannot tell a dangerous major bump apart from the patch you need.
+- **Ceilings do not stop the realistic attack.** Most supply-chain compromises ship as a hijacked patch or minor release (a poisoned `1.2.4`), which sits inside a `<2.0` range and is waved straight through.
+- **Python upper bounds cause resolver conflicts** and are widely discouraged for anything other packages depend on.
+
+What actually lowers supply-chain risk here, in order of value:
+
+1. Keep committing lock files with hashes. This is most of the benefit and is already in place.
+2. Install reproducibly: `uv sync` and `npm ci` in any automation, never bare `pip install` or `npm install`.
+3. Add a release cooldown so a version is never adopted on its publish day, which is when most malicious releases are caught and yanked. Dependabot supports a `cooldown` block; `uv` supports `--exclude-newer <date>` for time-windowed resolution.
+4. Review the lock diff on every dependency PR, watching for unexpected new transitive packages (typosquats, surprise additions).
+5. Keep `>=` floors and raise them only when a CVE requires it, as was done for `mlflow`.
+
+A defensible middle ground, if some guardrail is wanted, is to cap only the major version of a few direct deps with a history of breaking changes (for example `mlflow`, possibly `pydantic`) and leave everything else floor-only. That is a stability choice, not a security one.
+
+### Automate the updates
+
 1. Add a `.github/dependabot.yml` so Dependabot opens version-bump pull requests automatically going forward, one config block per ecosystem and directory (npm in `site/` and `slides/`, pip in the four `workshop-setup/*` dirs).
-2. Consider grouping the updates weekly so they arrive as a small number of PRs rather than a flood.
+2. Group updates weekly so they arrive as a small number of PRs rather than a flood, and apply a cooldown so brand-new releases are not adopted immediately.
+
+Sketch for `.github/dependabot.yml` (to be created in Phase 6):
+
+```yaml
+version: 2
+updates:
+  # --- npm ---
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      site-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /slides
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      slides-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+
+  # --- pip (uv-managed projects) ---
+  - package-ecosystem: pip
+    directory: /workshop-setup/notebook_validation
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      notebook-validation-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pip
+    directory: /workshop-setup/auto_scripts
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      auto-scripts-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pip
+    directory: /workshop-setup/populate_aircraft_db
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      populate-aircraft-db-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pip
+    directory: /workshop-setup/verify
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      verify-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+```
+
+Two caveats to confirm before relying on this file:
+- The `cooldown` key is a newer Dependabot feature. If the repo's Dependabot version does not recognize it, that block is ignored rather than fatal, and the weekly grouping still applies.
+- Dependabot's `pip` ecosystem reads `pyproject.toml` and updates `uv.lock` for uv projects. Verify it regenerates the lock in the same hashed form `uv lock` produces; if not, the fallback is a small scheduled CI job running `uv lock --upgrade` per directory.
 
 ## Quick reference: counts by file
 

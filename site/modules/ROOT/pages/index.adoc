@@ -2,81 +2,12 @@
 
 == Welcome
 
-Databricks and Neo4j solve different halves of the same problem. This page explains how the two platforms fit together: where each one is strong, how data flows between them, and how AI agents query both through natural language. For what you will build and the lab roadmap, see the xref:workshop-overview.adoc[Workshop Overview].
+Databricks and Neo4j solve different halves of the same problem. Databricks is the Data Intelligence Platform: it governs and analyzes structured, semi-structured, and unstructured data at scale. Neo4j is the Graph Intelligence Platform: it makes the connections between entities explicit and traversable. Databricks handles volume and governance; Neo4j handles topology and traversal. Together they form a complete intelligence platform that AI agents can query through natural language.
 
-== Data Intelligence Meets Graph Intelligence
+This workshop builds a production AI system on that pairing: a multi-agent supervisor that routes each question to the platform built to answer it, then combines the results.
 
-Databricks is the Data Intelligence Platform. It governs and analyzes structured, semi-structured, and unstructured data at scale. Neo4j is the Graph Intelligence Platform. It makes connections between entities explicit and traversable. Together they form a complete intelligence platform: Databricks handles volume and governance, Neo4j handles topology and traversal.
+== Where to Start
 
-The integration rests on four pillars:
-
-* **Bi-directional data pipelines**: the Databricks-certified Spark Connector moves data between the Lakehouse and the graph in both directions.
-* **Graph analytics**: graph algorithms surface patterns that stay invisible in flat tables.
-* **GraphRAG retrieval**: graph-grounded retrieval anchors AI responses in structured knowledge.
-* **Agent integration**: AI systems query both platforms through natural language.
-
-=== Databricks: Volume and Governance
-
-Databricks provides the governed data foundation. Delta Lake stores operational data as open lakehouse tables. Unity Catalog governs access across data and AI assets. Databricks SQL handles aggregation workloads at petabyte scale, including time-series analysis and fleet-wide statistical comparisons. The Lakehouse is the system of record and the analytical engine for everything that stays in rows and columns. See xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] for architecture details, xref:lab2.adoc[Lab 2] for how data flows from the Lakehouse into the graph, and xref:lab4.adoc[Lab 4] for the AI platform capabilities (Mosaic AI, Genie, Agent Bricks).
-
-=== Neo4j: Topology and Traversal
-
-Neo4j makes the structural relationships between entities explicit and directly traversable. The graph captures how entities connect, what paths exist between them, and which communities form. Graph algorithm results write back to the Lakehouse as enrichment columns in Gold tables. See xref:lab1.adoc[Lab 1] for graph database fundamentals and Cypher.
-
-== From Data Pipeline to Agents
-
-Four stages connect Databricks to Neo4j, each building on the previous:
-
-* **ELT Data Pipeline**: governed Delta tables project into graph nodes and relationships via the Spark Connector. This is the primary path for bulk loading structured data.
-* **Knowledge Graph Construction**: unstructured documents such as maintenance manuals, regulatory text, and policy documents are chunked, embedded, and entity-extracted using the neo4j-graphrag-python SimpleKGPipeline. The results write into Neo4j as searchable chunks linked to extracted entities.
-* **Data Analytics**: graph insights flow back to Gold Delta tables for dashboards and ML. The Spark Connector provides first-class GDS integration. PageRank, community detection, and other graph algorithms run directly and return results as DataFrames.
-* **GraphRAG Retrieval and Agents**: agents query both platforms through vector search, Cypher, and SQL. The Neo4j MCP Server exposes schema inspection and read-only Cypher as agent tools. A multi-agent supervisor routes questions to the right specialist.
-
-=== Neo4j Connection Patterns by Platform Stage
-
-Each stage uses a different connector optimized for its workload.
-
-[cols="2,3,4"]
-|===
-| Stage | Connector | Purpose
-
-| Data Pipeline
-| Neo4j Spark Connector
-| Batch DataFrame writes into Neo4j
-
-| Knowledge Graph Construction
-| neo4j-graphrag-python (Python driver)
-| Chunking, entity extraction, embedding generation
-
-| Data Analytics
-| Spark Connector + Unity Catalog JDBC
-| GDS algorithm results as DataFrames; governed SQL via JDBC
-
-| GraphRAG Retrieval / Agent
-| Neo4j MCP Server + Python driver
-| Schema inspection, read-only Cypher, vector search
-|===
-
-== Data Intelligence, Graph Intelligence, or Both?
-
-Each platform answers a different shape of question. SQL handles aggregation, computing totals, averages, and distributions across large datasets. Cypher handles traversal, following variable-depth hops and matching patterns across multiple relationship types.
-
-[cols="4,2"]
-|===
-| Question | Platform
-
-| Average EGT by aircraft model
-| Databricks (SQL aggregation)
-
-| Components within three hops of a failed part
-| Neo4j (graph traversal)
-
-| Aircraft with high EGT volatility, plus the maintenance events connected to them
-| Both
-|===
-
-The rule of thumb: counting things stays in SQL. Following connections moves to the graph. Most real-world questions need both platforms working together. See xref:lab4.adoc[Lab 4] for aircraft-specific routing examples.
-
-== Next Steps
-
-Continue to xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] for the integration architecture, then the xref:workshop-overview.adoc[Workshop Overview] for the dataset and lab roadmap.
+* xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] explains the integration architecture: where each platform is strong, how data flows between the Lakehouse and the graph, and how agents query both through natural language.
+* xref:workshop-overview.adoc[Workshop Overview] covers what you will build, the aircraft digital twin dataset, and the lab roadmap.
+* xref:lab1.adoc[Lab 1: Neo4j Aura Setup] begins the hands-on labs.
