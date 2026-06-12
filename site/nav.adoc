@@ -10,5 +10,3 @@
 *** xref:lab3-instructions.adoc[Instructions]
 ** xref:lab4.adoc[Lab 4: Compound AI Agents]
 *** xref:lab4-instructions.adoc[Instructions]
-** xref:lab5.adoc[Lab 5: Aura Agents]
-*** xref:lab5-instructions.adoc[Instructions]

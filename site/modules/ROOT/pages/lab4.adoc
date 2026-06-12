@@ -139,4 +139,4 @@ The supervisor does not answer questions itself. It reads the question, determin
 
 == Next Steps
 
-Continue to xref:lab4-instructions.adoc[Lab 4 Instructions] to build the agents, or proceed to xref:lab5.adoc[Lab 5: Aura Agents].
+Continue to xref:lab4-instructions.adoc[Lab 4 Instructions] to build the agents.

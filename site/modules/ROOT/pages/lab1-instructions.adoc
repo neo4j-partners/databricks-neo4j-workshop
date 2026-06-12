@@ -6,46 +6,18 @@ TIP: For concepts and background, see xref:lab1.adoc[Lab 1: Concepts and Referen
 
 == Prerequisites
 
-* For **Workshop SSO Login**: Access to OneBlink credentials page (provided by your organizer)
-* For **Free Trial Signup**: A valid email address
+* A valid email address
 
 == Part 1: Neo4j Aura Signup
 
-There are two signup options for this lab. **Please follow the signup process provided by your workshop organizer.**
+Sign up for a Neo4j Aura free trial:
 
-=== Option A: Workshop SSO Login (Recommended for organized workshops)
-
-If your organizer has provided OneBlink credentials, use the SSO login process. Follow the Neo4j Aura SSO Login guide (`SSO_Neo4j_Aura_Signup.md` in the lab materials). This option uses pre-configured workshop accounts.
-
-=== Option B: Free Trial Signup (For self-paced learning)
-
-If you are completing this lab independently or your organizer has instructed you to create a free trial, follow the Neo4j Aura Free Trial Signup guide (`Aura_Free_Trial.md` in the lab materials). This option provides a 14-day free trial with an automatically created instance.
-
-=== Create Your Database Instance
-
-NOTE: If you signed up using the **Free Trial** option (Option B), your instance was already created during the signup process. You can skip ahead to <<Save Your Credentials>>.
-
-1. After logging in, click on **Instances** in the left sidebar under "Data services", then click the **Create instance** button.
-
-image::lab1-create-instance.png[Neo4j Aura Console showing Create instance button]
-
-TIP: If you already have existing instances, click the **Create instance** button in the top-right corner of the Instances page.
-
-image::lab1-create-instance-alt.png[Create instance button for existing instances]
-
-2. Configure your new instance with the following settings:
-** Select the **Aura Professional** plan
-** Set the **Instance name** to a unique name based on your name (e.g., `ryans-lab-instance`). If you get an error, try another unique name by adding your initials or a number.
-** Set the **Sizing** to **4 GB RAM / 1 CPU**
-** Enable **Vector-optimized configuration** under Additional settings
-
-image::lab1-instance-details.png[Create instance configuration page]
-
-3. Click **Create** to provision your database instance.
+* Follow the Neo4j Aura Free Trial Signup guide (`Aura_Free_Trial.md` in the lab materials) to create your own account
+* This provides a 14-day free trial with an automatically created instance
 
 == Save Your Credentials
 
-**Save your connection credentials immediately.** When your instance is created, a dialog will appear showing your database credentials (Username and Password). Click **Download and continue** to save the credentials file.
+**Save your connection credentials immediately.** During signup, a dialog appears showing your database credentials (Username and Password). Click **Download and continue** to save the credentials file.
 
 image::lab1-download-credentials.png[Save your Neo4j Aura credentials]
 

@@ -1,6 +1,6 @@
 = Lab 1: Neo4j Aura Setup
 
-This is Lab 1 of 5. The graph database you provision here is the foundation for everything that follows: the ETL pipelines in Lab 2 load data into it, Lab 3 runs semantic search against its maintenance manuals, Lab 4 connects it to a multi-agent system, and Lab 5 builds a no-code conversational interface on top of it. Getting Aura running and understanding what the graph contains is the starting point.
+This is Lab 1 of 4. The graph database you provision here is the foundation for everything that follows: the ETL pipelines in Lab 2 load data into it, Lab 3 runs semantic search against its maintenance manuals, and Lab 4 connects it to a multi-agent system. Getting Aura running and understanding what the graph contains is the starting point.
 
 TIP: Ready to start? Jump to the xref:lab1-instructions.adoc[Lab 1 Instructions] for step-by-step setup.
 
@@ -102,13 +102,13 @@ Neo4j Aura is a fully managed cloud graph database service. It provides the Neo4
 .Vector search, Graph Data Science, and AI capabilities
 [%collapsible]
 ====
-Aura provides capabilities beyond the core graph engine that support AI retrieval pipelines directly. Built-in vector indexes store embeddings alongside graph data, enabling semantic similarity search without a separate vector store. Cypher queries can combine vector search with graph traversal in a single operation, retrieving documents by semantic similarity and then following relationships to pull in structural context. Graph Data Science algorithms like PageRank and community detection run directly within Aura for analytical workloads. These capabilities come together in Lab 3 (semantic search over maintenance manuals) and Lab 5 (Aura Agents).
+Aura provides capabilities beyond the core graph engine that support AI retrieval pipelines directly. Built-in vector indexes store embeddings alongside graph data, enabling semantic similarity search without a separate vector store. Cypher queries can combine vector search with graph traversal in a single operation, retrieving documents by semantic similarity and then following relationships to pull in structural context. Graph Data Science algorithms like PageRank and community detection run directly within Aura for analytical workloads. These capabilities come together in Lab 3 (semantic search over maintenance manuals).
 ====
 
 .Aura Agents — no-code agent platform
 [%collapsible]
 ====
-Aura Agents is Neo4j's no-code agent platform for building conversational interfaces grounded in graph data. Users describe a use case, and the platform auto-generates an agent with tools tailored to the graph's schema: Cypher query templates for deterministic traversals, vector similarity search over embedded content, and text-to-Cypher generation for ad-hoc exploration. Agents deploy as REST API endpoints or MCP server endpoints, making them callable by external orchestrators like the Databricks supervisor agent built in xref:lab4.adoc[Lab 4]. See xref:lab5.adoc[Lab 5] for the full Aura Agents workflow.
+Aura Agents is Neo4j's no-code agent platform for building conversational interfaces grounded in graph data. Users describe a use case, and the platform auto-generates an agent with tools tailored to the graph's schema: Cypher query templates for deterministic traversals, vector similarity search over embedded content, and text-to-Cypher generation for ad-hoc exploration. Agents deploy as REST API endpoints or MCP server endpoints, making them callable by external orchestrators like the Databricks supervisor agent built in xref:lab4.adoc[Lab 4].
 ====
 
 == Aura Developer Tools

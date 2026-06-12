@@ -25,14 +25,14 @@ Create an AI/BI Genie space that enables natural language queries over sensor te
 2. Expand **databricks-neo4j-workshop > lakehouse**.
 3. Browse the available tables:
 
-[cols="1,1,3"]
+[cols="1,3"]
 |===
-| Table | Rows | Description
+| Table | Description
 
-| `aircraft` | 20 | Fleet inventory
-| `systems` | 80 | Aircraft systems
-| `sensors` | 160 | Sensor metadata
-| `sensor_readings` | 345,600 | Hourly telemetry over 90 days
+| `aircraft` | Fleet inventory -- tail numbers, models, operators
+| `systems` | Aircraft systems -- engines, avionics, hydraulics
+| `sensors` | Sensor metadata -- type, unit, system
+| `sensor_readings` | Telemetry time series
 |===
 
 image::lab4-lakehouse-sensor-readings.png[Lakehouse sensor_readings table in Unity Catalog]
@@ -77,14 +77,12 @@ Navigate to **Configure** > **Instructions** and add domain knowledge about sens
 - FuelFlow: Normal range 0.85-1.95 kg/s, measured in kg/s
 
 ## Fleet Information
-- 20 aircraft in the fleet
-- 4 operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
-- Models: B737-800 (Boeing), A320-200 (Airbus), A321neo (Airbus), E190 (Embraer)
+- Fleet of aircraft across 4 operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
+- Models: B737-800 (Boeing), A220-300 (Airbus), A320-200 (Airbus), A321neo (Airbus), E190 (Embraer)
 
 ## Sensor Configuration
 - Each aircraft has 2 engines
 - Each engine has 4 sensors: EGT, Vibration, N1Speed, FuelFlow
-- Total: 160 sensors across the fleet (20 aircraft x 2 engines x 4 sensors)
 
 ## Data Conventions
 - Timestamps are stored as timestamp type in the `timestamp` column
@@ -100,6 +98,7 @@ Navigate to **Configure** > **Instructions** and add domain knowledge about sens
 
 ## Engine Names by Model
 - B737-800: CFM56-7B engines
+- A220-300: PW1500G engines
 - A320-200: V2500-A1 engines
 - A321neo: PW1100G engines
 - E190: CF34-10E engines
@@ -244,14 +243,14 @@ BEST FOR:
 - Graph traversals: "Show the path from aircraft to sensor"
 
 DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-workshop/aircraft/raw_data/):
-- Aircraft (20): Fleet inventory with tail numbers, models, operators
-- Systems (~80): Engines, Avionics, Hydraulics per aircraft
-- Components (320): Turbines, Compressors, Pumps, etc.
-- Sensors (160): Monitoring equipment metadata
-- MaintenanceEvents (300): Faults, severity, corrective actions
-- Flights (800): Operations with departure/arrival
-- Delays (~300): Delay causes and durations
-- Airports (12): Route network locations
+- Aircraft: Fleet inventory with tail numbers, models, operators
+- Systems: Engines, Avionics, Hydraulics per aircraft
+- Components: Turbines, Compressors, Pumps, etc.
+- Sensors: Monitoring equipment metadata
+- MaintenanceEvents: Faults, severity, corrective actions
+- Flights: Operations with departure/arrival
+- Delays: Delay causes and durations
+- Airports: Route network locations
 
 RELATIONSHIP TYPES:
 - HAS_SYSTEM: Aircraft -> System
@@ -293,10 +292,10 @@ BEST FOR:
 - Aggregations: "What was the maximum N1 speed recorded?"
 
 DATA AVAILABLE:
-- sensor_readings (345,600+ rows): Hourly telemetry over 90 days
-- sensors (160 rows): Sensor metadata (type, unit, system)
-- systems (~80 rows): Aircraft system information
-- aircraft (20 rows): Fleet metadata (model, operator)
+- sensor_readings: Telemetry time series
+- sensors: Sensor metadata (type, unit, system)
+- systems: Aircraft system information
+- aircraft: Fleet metadata (model, operator)
 
 SENSOR TYPES:
 - EGT: Exhaust Gas Temperature (640-700 C)
@@ -550,4 +549,4 @@ Show maintenance events for aircraft with the lowest fuel efficiency
 
 == Next Steps
 
-Continue to xref:lab5.adoc[Lab 5: Aura Agents] to build an agent using Neo4j's "Create with AI" workflow.
+You have completed the workshop. The compound AI agent combining Genie (Databricks) and Neo4j MCP is now operational.

@@ -16,7 +16,7 @@ Databricks provides the governed data foundation. Delta Lake stores operational 
 
 === Neo4j: Topology and Traversal
 
-Neo4j makes the structural relationships between entities explicit and directly traversable. The graph captures how entities connect, what paths exist between them, and which communities form. Graph algorithm results write back to the Lakehouse as enrichment columns in Gold tables. See xref:lab1.adoc[Lab 1] for graph database fundamentals and Cypher, and xref:lab5.adoc[Lab 5] for Aura Agents.
+Neo4j makes the structural relationships between entities explicit and directly traversable. The graph captures how entities connect, what paths exist between them, and which communities form. Graph algorithm results write back to the Lakehouse as enrichment columns in Gold tables. See xref:lab1.adoc[Lab 1] for graph database fundamentals and Cypher.
 
 == From Data Pipeline to Agents
 
@@ -103,9 +103,6 @@ image::lab-architecture-overview.png[Multi-agent supervisor routing to Genie and
 | Compound AI Agents: Genie + Supervisor
 | 75 min
 
-| xref:lab5.adoc[Lab 5]
-| Aura Agents: Create with AI
-| 30 min
 |===
 
 == Prerequisites

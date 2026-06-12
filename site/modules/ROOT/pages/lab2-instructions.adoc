@@ -13,7 +13,7 @@ TIP: For concepts and background, see xref:lab2.adoc[Lab 2: Concepts and Referen
 
 == Notebooks
 
-This lab has a single notebook. Run it before proceeding. It teaches how the Spark Connector works while loading the complete canonical dataset needed by all subsequent labs, including the Neo4j MCP agent in Lab 4 (Compound AI Agents).
+This lab has one required notebook and four optional Graph Data Science notebooks.
 
 [cols="2,4,1"]
 |===
@@ -22,7 +22,25 @@ This lab has a single notebook. Run it before proceeding. It teaches how the Spa
 | `01_aircraft_etl_to_neo4j.ipynb`
 | Guided Spark Connector walkthrough that loads the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals. Clears the database first (`CLEAR_DATABASE = True`)
 | Labs 3, 4
+
+| `02_gds_louvain_maintenance.ipynb`
+| Optional: Community detection — clusters aircraft by shared fault patterns using Louvain algorithm
+| Optional
+
+| `03_gds_knn_aircraft.ipynb`
+| Optional: kNN similarity — builds per-aircraft feature vectors from sensor and maintenance data, then finds operationally similar peers
+| Optional
+
+| `04_gds_pagerank_airports.ipynb`
+| Optional: Centrality — runs PageRank and betweenness centrality on the airport route network, then correlates with maintenance delays
+| Optional
+
+| `05_gds_node_similarity_aircraft.ipynb`
+| Optional: Node similarity — finds aircraft with overlapping fault-type portfolios using Jaccard similarity
+| Optional
 |===
+
+NOTE: Optional notebooks require AuraDB Professional with the Graph Data Science plugin enabled.
 
 == Instructions
 
@@ -38,6 +56,8 @@ Use the Vocareum lab setup to complete the Databricks workspace configuration an
 (Aircraft) -[:OPERATES_FLIGHT]-> (Flight) -[:DEPARTS_FROM / :ARRIVES_AT]-> (Airport)
 (Flight) -[:HAS_DELAY]-> (Delay)
 (Component) -[:HAS_EVENT]-> (MaintenanceEvent)
+(MaintenanceEvent) -[:AFFECTS_SYSTEM]-> (System)
+(MaintenanceEvent) -[:AFFECTS_AIRCRAFT]-> (Aircraft)
 (Aircraft) -[:HAS_REMOVAL]-> (Removal) -[:REMOVED_COMPONENT]-> (Component)
 ----
 
