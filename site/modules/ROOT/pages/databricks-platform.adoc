@@ -71,7 +71,16 @@ Governed Delta tables project into graph nodes and relationships via the Spark C
 
 The ELT data pipeline moves data into Neo4j. The virtual graph leaves it in place. A schema map defines a graph model over existing Delta tables, and a virtual graph database translates Cypher into SQL that pushes down to the lakehouse. Rows become nodes, foreign keys become relationships, and the query executes where the data already lives. No ETL job runs and no second copy of the data exists in Neo4j.
 
-This inverts the Unity Catalog JDBC federation covered below. JDBC federation registers Neo4j as a SQL source so BI tools query the graph through SQL. The virtual graph registers the lakehouse as a graph source so Neo4j tooling queries Delta tables through Cypher. The full Neo4j Graph Intelligence Platform applies: Browser, Bloom, Copilot, and Graph Analytics operate against lakehouse data without a load step.
+The virtual graph registers the lakehouse as a graph source so Neo4j tooling queries Delta tables through Cypher. The full Neo4j Graph Intelligence Platform applies: Browser, Bloom, Copilot, and Graph Analytics operate against lakehouse data without a load step.
+
+....
+  Neo4j tooling (Browser, Bloom, GDS)
+        │  Cypher
+        ▼
+  Virtual graph ──── translates Cypher to SQL ────▶ Delta tables
+        ▲                                            (data stays in lakehouse)
+        └──────────── results as nodes / relationships ──┘
+....
 
 Four properties define the pattern:
 
@@ -137,6 +146,15 @@ For the GraphRAG architecture, Unity Catalog plays two specific roles:
 
 * **Governance of graph-bound data**: the silver tables that feed the Spark Connector are governed assets with lineage tracking. When graph data quality issues surface, lineage traces back through the exact transformations and source records that produced the data.
 * **Federated access to Neo4j**: Neo4j can be registered as a JDBC connection in Unity Catalog using the Neo4j JDBC driver. The driver translates SQL into Cypher automatically, so users and BI tools write SQL against what appears to be another catalog, and Neo4j executes the equivalent graph query. This enables federated queries that combine graph relationships and lakehouse metrics in a single SQL statement, governed under the same access controls as the rest of the lakehouse. Graph data can also be materialized as Delta tables for use in dashboards and Genie spaces. This is the reverse of the virtual graph pattern: JDBC federation translates SQL into Cypher to query the graph as SQL, while the virtual graph translates Cypher into SQL to query the lakehouse as a graph.
+
+....
+  BI tools (Power BI, Tableau) / Genie
+        │  SQL
+        ▼
+  Unity Catalog JDBC ──── translates SQL to Cypher ────▶ Neo4j graph
+        ▲                                                 (graph stays in Neo4j)
+        └──────────── results as rows / columns ──────────┘
+....
 
 == Agent Systems
 
