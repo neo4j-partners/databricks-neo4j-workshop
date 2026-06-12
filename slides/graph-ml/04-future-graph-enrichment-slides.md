@@ -94,7 +94,7 @@ the resulting graph structure.
 
 ## Graph-Enhanced Retrieval
 
-![GraphRAG Retrieval Flow](graphrag-retrieval-flow.png)
+![GraphRAG Retrieval Flow](../databricks-in-depth/graphrag-retrieval-flow.png)
 
 - **Vector / fulltext search** finds the chunks closest in meaning to the question
 - **Graph traversal** follows extracted entities and relationships from those chunks into the operational graph

@@ -65,13 +65,13 @@ Each platform answers a different shape of question. SQL handles aggregation, co
 |===
 | Question | Platform
 
-| Total transfer volume by account
+| Average EGT by aircraft model
 | Databricks (SQL aggregation)
 
-| Accounts within three hops of a flagged account
+| Components within three hops of a failed part
 | Neo4j (graph traversal)
 
-| Find the fraud ring, compute its total volume
+| Aircraft with high EGT volatility, plus the maintenance events connected to them
 | Both
 |===
 

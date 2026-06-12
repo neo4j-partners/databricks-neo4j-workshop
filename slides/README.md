@@ -8,16 +8,16 @@ Requires Node.js 22 LTS (`brew install node@22`) and a one-time `npm install` in
 
 ```bash
 cd slides
-/opt/homebrew/opt/node@22/bin/node ./node_modules/.bin/marp overview-databricks-neo4j --server
+/opt/homebrew/opt/node@22/bin/node ./node_modules/.bin/marp platform-overview --server
 ```
 
-Opens at http://localhost:8080/. Replace `overview-databricks-neo4j` with any slide deck directory name.
+Opens at http://localhost:8080/. Replace `platform-overview` with any topic folder name.
 
 ## Export All Presentations
 
 ```bash
 cd slides
-for dir in overview-*/ databricks-*/; do
+for dir in platform-overview/ genai-foundations/ kg-construction/ retrieval-patterns/ agents/ graph-ml/ governance/; do
   /opt/homebrew/opt/node@22/bin/node ./node_modules/.bin/marp "$dir" --pdf --allow-local-files
 done
 ```
@@ -34,17 +34,28 @@ done
 
 ## Slide Decks
 
-### `overview-databricks-neo4j/`
-High-level introduction to the Databricks + Neo4j partnership — the dual-database architecture, why graphs complement lakehouse analytics, and the workshop roadmap.
+Slides are organized by topic. Each folder contains all canonical files for that topic.
 
-### `databricks-in-depth/`
-Deeper dive into the Databricks + Neo4j integration and the power of GraphRAG — how graph-enhanced retrieval goes beyond traditional RAG.
+### `platform-overview/`
+Why Databricks and Neo4j complement each other. Covers the dual-database architecture, the Neo4j Spark Connector, Neo4j Aura, and the workshop use case (aircraft digital twin). Four files: an aircraft-lens overview deck, a fraud-lens deep dive, the workshop opener, and the Aura product overview.
 
-### `overview-knowledge-graph/`
-End-to-end knowledge graph foundations — Neo4j Aura, GenAI limitations, traditional RAG, context and GraphRAG, building knowledge graphs from documents, schema design, chunking strategies, entity resolution, and vectors/semantic search.
+### `genai-foundations/`
+LLM capabilities and limitations, traditional RAG, and the case for GraphRAG. Three files covering LLM limitations, the RAG retrieval pattern, and Context ROT.
 
-### `overview-retrievers/`
-GraphRAG retriever patterns — retriever overview, Vector Retriever, Vector + Cypher Retriever, Text2Cypher Retriever, and the bridge from retrievers to agents.
+### `kg-construction/`
+The full pipeline for building a knowledge graph from unstructured documents. Five files covering SimpleKGPipeline, schema design, chunking strategies, entity resolution, and vectors and embeddings.
+
+### `retrieval-patterns/`
+GraphRAG retriever patterns. Four files covering the retriever overview and decision framework, Vector Retriever, Vector Cypher Retriever, and Text2Cypher Retriever.
+
+### `agents/`
+AI agents and multi-agent systems. Two files: the ReAct pattern and agent fundamentals, and the detailed treatment of Genie, Neo4j MCP, and the multi-agent supervisor.
+
+### `graph-ml/`
+Graph Data Science and graph feature engineering. Two files: GDS algorithms, MLflow lift comparison, and bidirectional data loop; and the agentic graph enrichment loop with confidence scoring and ontology validation.
+
+### `governance/`
+Authorization sync and the semantic layer. One file covering four patterns for aligning access privileges between Unity Catalog and Neo4j.
 
 ---
 

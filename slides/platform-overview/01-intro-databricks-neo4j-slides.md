@@ -167,7 +167,7 @@ together.
 
 ## The Intelligence Platform — Data Flow
 
-![Intelligence Platform Data Flow](intelligence-platform-flow.png)
+![Intelligence Platform Data Flow](../databricks-in-depth/intelligence-platform-flow.png)
 
 <!--
 The same four stages visualized as a data flow. Stages 1-2 flow
@@ -250,7 +250,7 @@ represents the cycle directly; the table has to reconstruct it.
 
 ## Fraud Ring — Dual Database Architecture
 
-![Fraud Ring Dual Database Architecture](fraud-ring-dual-architecture.png)
+![Fraud Ring Dual Database Architecture](../databricks-in-depth/fraud-ring-dual-architecture.png)
 
 ---
 

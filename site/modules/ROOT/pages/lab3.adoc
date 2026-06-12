@@ -6,9 +6,9 @@ TIP: Ready to start? Jump to the xref:lab3-instructions.adoc[Lab 3 Instructions]
 
 .**At a Glance**
 
-* **Embeddings** convert text to numerical vectors that capture meaning — "engine overheating" and "thermal runaway in turbine" match by similarity, not keywords
+* **Embeddings** convert text to numerical vectors that capture meaning: "engine overheating" and "thermal runaway in turbine" match by similarity, not keywords
 * **SimpleKGPipeline** chunks the maintenance manual, extracts entities, generates embeddings, and stores everything in Neo4j
-* **GraphRAG** adds graph traversal after vector search — chunks anchor the search, then Cypher gathers connected entities and relationships
+* **GraphRAG** adds graph traversal after vector search: chunks anchor the search, then Cypher gathers connected entities and relationships
 * **VectorRetriever** vs **VectorCypherRetriever**: pure text retrieval vs graph-enriched context
 * **Databricks Foundation Model APIs** provide hosted embedding and LLM models (BGE-large, Llama 3.3)
 

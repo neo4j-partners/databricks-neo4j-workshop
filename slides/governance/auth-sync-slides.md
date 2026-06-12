@@ -180,7 +180,7 @@ Bridging this gap requires a common semantic layer.
 
 ## The Dual Database Architecture
 
-![Fraud Ring Dual Database Architecture](fraud-ring-dual-architecture.png)
+![Fraud Ring Dual Database Architecture](../databricks-in-depth/fraud-ring-dual-architecture.png)
 
 <!--
 Consider a financial fraud detection architecture where both

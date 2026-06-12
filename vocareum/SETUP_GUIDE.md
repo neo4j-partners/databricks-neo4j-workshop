@@ -126,14 +126,25 @@ aws-starter neo4j-agentcore-mcp-server
 
 **Step B2: Store OAuth2 secrets in the Vocareum workspace**
 
+Values come from `neo4j-agentcore-mcp-server/.mcp-credentials.json`.
 After workspace init completes and you have workspace access:
+
 ```bash
 # Point at the Vocareum-provisioned workspace
 export DATABRICKS_HOST="https://dbc-xxxxx.cloud.databricks.com"
 export DATABRICKS_TOKEN="dapi..."
 
-cd workshop-setup/neo4j_mcp_connection/
-./setup_databricks_secrets.sh mcp-neo4j-secrets
+# Create the secret scope
+databricks secrets create-scope mcp-neo4j-secrets
+
+# Store each credential (replace placeholders with values from .mcp-credentials.json)
+echo -n "https://<gateway-host>.gateway.bedrock-agentcore.<region>.amazonaws.com" \
+  | databricks secrets put-secret mcp-neo4j-secrets gateway_host
+echo -n "<client_id>"    | databricks secrets put-secret mcp-neo4j-secrets client_id
+echo -n "<client_secret>" | databricks secrets put-secret mcp-neo4j-secrets client_secret
+echo -n "https://<cognito-domain>/oauth2/token" \
+  | databricks secrets put-secret mcp-neo4j-secrets token_endpoint
+echo -n "<scope>"        | databricks secrets put-secret mcp-neo4j-secrets oauth_scope
 ```
 
 This creates a secret scope `mcp-neo4j-secrets` with keys: `gateway_host`, `client_id`, `client_secret`, `token_endpoint`, `oauth_scope`.

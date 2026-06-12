@@ -68,7 +68,7 @@ User Question → Supervisor Agent (Agent Bricks)
   └→ Neo4j MCP Agent → Neo4j Aura (LangGraph + MCP tools: get-schema, read-cypher)
 ```
 
-The MCP agent (`workshop-setup/neo4j_mcp_connection/neo4j_mcp_agent.py`) uses OAuth2 M2M auth via Unity Catalog HTTP connection to an external MCP server.
+The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connection to an external MCP server. Setup: `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`.
 
 ### Lab Progression
 Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 (compound AI agents: Genie space + Supervisor Agent)

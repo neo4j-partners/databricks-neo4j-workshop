@@ -6,8 +6,8 @@ TIP: Ready to start? Jump to the xref:lab1-instructions.adoc[Lab 1 Instructions]
 
 .**At a Glance**
 
-* **Graph databases** store data as nodes and relationships — connections are explicit and traversable, not hidden in foreign keys and joins
-* **Cypher** is Neo4j's pattern-matching query language — queries read like the graph patterns they match
+* **Graph databases** store data as nodes and relationships: connections are explicit and traversable, not hidden in foreign keys and joins
+* **Cypher** is Neo4j's pattern-matching query language: queries read like the graph patterns they match
 * **The Aircraft Digital Twin** graph has five entity types: Aircraft, Systems, Components, Flights, and Maintenance Events
 * **Neo4j Aura** is the managed cloud graph database, with built-in vector search, Graph Data Science, and Aura Agents
 * **Aura developer tools**: Query Workspace (Cypher editor), Explore (visual graph canvas), and Dashboards (low-code visualization)
@@ -32,10 +32,10 @@ Where relational databases represent connections implicitly through foreign keys
 
 image::lab1-property-graph.png[Aircraft Digital Twin property graph showing Aircraft, System, and Maintenance nodes connected by typed relationships]
 
-.Graph Insight — Maintenance Impact Chain
+.Graph Insight: Maintenance Impact Chain
 [%collapsible]
 ====
-A single maintenance event connects to both the affected engine _and_ the aircraft through typed relationships (`AFFECTS_SYSTEM`, `AFFECTS_AIRCRAFT`). This triangle of connections means you can start from any node and traverse to the others: "Which aircraft have critical faults?" or "What maintenance events affect Engine #1?" — queries that would require multiple JOINs in a relational database are single traversal patterns in the graph.
+A single maintenance event connects to both the affected engine _and_ the aircraft through typed relationships (`AFFECTS_SYSTEM`, `AFFECTS_AIRCRAFT`). This triangle of connections means you can start from any node and traverse to the others: "Which aircraft have critical faults?" or "What maintenance events affect Engine #1?" Queries that would require multiple JOINs in a relational database are single traversal patterns in the graph.
 ====
 
 Cypher is the query language for interacting with Neo4j. It uses a pattern-matching syntax that mirrors the visual structure of nodes and relationships, making graph queries readable as descriptions of the data they retrieve:
@@ -111,7 +111,7 @@ Aura provides capabilities beyond the core graph engine that support AI retrieva
 These capabilities come together in Lab 3, semantic search over maintenance manuals.
 ====
 
-.Aura Agents — no-code agent platform
+.Aura Agents: no-code agent platform
 [%collapsible]
 ====
 Aura Agents is Neo4j's no-code agent platform for building conversational interfaces grounded in graph data. Users describe a use case, and the platform auto-generates an agent with tools tailored to the graph's schema: Cypher query templates for deterministic traversals, vector similarity search over embedded content, and text-to-Cypher generation for ad-hoc exploration. Agents deploy as REST API endpoints or MCP server endpoints, making them callable by external orchestrators like the Databricks supervisor agent built in xref:lab4.adoc[Lab 4].

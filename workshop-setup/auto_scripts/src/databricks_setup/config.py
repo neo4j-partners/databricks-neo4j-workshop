@@ -149,9 +149,8 @@ class NotebookConfig:
             "data_utils.py",
         ), "Lab_3_Semantic_Search"),
         ("workshop-setup/neo4j_mcp_connection", (
-            "neo4j_mcp_agent.py",
-            "neo4j-mcp-agent-deploy.ipynb",
-            "neo4j-mcp-http-connection.ipynb",
+            "mcp-set-flag.ipynb",
+            "mcp-validate.ipynb",
         ), "neo4j_mcp_connection"),
     )
 

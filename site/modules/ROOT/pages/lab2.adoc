@@ -6,8 +6,8 @@ TIP: Ready to start? Jump to the xref:lab2-instructions.adoc[Lab 2 Instructions]
 
 .**At a Glance**
 
-* **Table rows become graph nodes**, foreign keys become relationships — the Spark Connector handles the mapping
-* **Nodes load first**, then relationships — both endpoints must exist before edges can be created
+* **Table rows become graph nodes**, foreign keys become relationships. The Spark Connector handles the mapping
+* **Nodes load first**, then relationships. Both endpoints must exist before edges can be created
 * **The lab notebook** builds aircraft topology (Aircraft, Systems, Components), then layers in Sensors, Flights, Delays, MaintenanceEvents, and Removals
 * **Graph insights flow back** to the Lakehouse as enrichment columns in Gold Delta tables
 * **Validation** compares node/relationship counts against source row counts to catch silent failures

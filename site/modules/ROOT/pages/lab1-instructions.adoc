@@ -37,7 +37,7 @@ NEO4J_PASSWORD = "<your-password>"
 Once your instance is running, restore the pre-built aircraft maintenance database from a backup file.
 
 1. Click the **three dots** (`...`) menu on your instance and select **Backup & restore**.
-
++
 image::lab1-backup-restore.png[Instance menu showing Backup & restore option]
 
 2. In the Backup & restore panel, upload the `aircraft_maintenance_v2.backup` file (provided in the `data/` folder of this lab) and follow the prompts to restore it to your instance.

@@ -153,7 +153,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 4: Move Files into Topic Folders
 
-**Status: Pending**
+**Status: Complete**
 
 **Goal:** Files live under topic-named folders matching the Target Structure from Phase 2.
 

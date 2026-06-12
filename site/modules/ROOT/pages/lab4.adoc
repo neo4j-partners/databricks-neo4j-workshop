@@ -6,10 +6,10 @@ TIP: Ready to start? Jump to the xref:lab4-instructions.adoc[Lab 4 Instructions]
 
 .**At a Glance**
 
-* **Agents** use the ReAct pattern (Reason + Act) — perceive, reason, call tools, observe results, repeat
+* **Agents** use the ReAct pattern (Reason + Act): perceive, reason, call tools, observe results, repeat
 * **Genie space** translates natural language to SQL for sensor telemetry analytics over Delta tables
 * **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get-schema, read-cypher)
-* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist — SQL questions to Genie, graph questions to Neo4j, combined questions to both
+* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both
 * One agent per platform prevents idiom mixing (SQL thinks in rows/aggregations, Cypher thinks in paths/patterns)
 
 == What Are Agents

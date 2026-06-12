@@ -5,9 +5,9 @@ MCP server in the Databricks UI.
 
 Two notebooks support the process:
 
-- [`mcp-set-flag.ipynb`](./mcp-set-flag.ipynb) — use only if the **Is MCP
+- [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb) — use only if the **Is MCP
   connection** checkbox is missing from the UI (Step 3)
-- [`mcp-validate.ipynb`](./mcp-validate.ipynb) — validates the connection after
+- [`mcp-validate.ipynb`](./neo4j_mcp_connection/mcp-validate.ipynb) — validates the connection after
   setup (Step 4)
 
 ## Prerequisites
@@ -111,21 +111,65 @@ Some workspaces do not surface the **Is MCP connection** toggle in the create
 wizard or the Edit dialog. The connection still gets created, but its
 `is_mcp_connection` value stays `false` and it never appears as an MCP server.
 
-Run **[`mcp-set-flag.ipynb`](./mcp-set-flag.ipynb)** on a Databricks cluster.
-The notebook re-sends all connection options with `is_mcp_connection: "true"`
-via the Databricks SDK and confirms the `url` ends in `/mcp`.
+Set the flag with one of the two options below. Both read the connection's
+existing options (host, port, base path, client ID, scope, token endpoint) and
+re-send them with `is_mcp_connection: "true"`. The only value you supply is the
+**client secret**, because the API masks it on read and never returns it.
+
+Pick the option that matches what you have on hand. They produce the same result.
+
+#### Option A — Notebook (no CLI required)
+
+Use this if you do not have the Databricks CLI set up locally. It runs on any
+Databricks cluster using the notebook's own credentials.
+
+1. Open **[`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb)** on a
+   Databricks cluster.
+2. In the config cell, set `CONNECTION_NAME` and paste the `client_secret` from
+   `.mcp-credentials.json` into `CLIENT_SECRET`.
+3. Run all three cells. The last cell confirms `is_mcp_connection` is `true` and
+   the `url` ends in `/mcp`.
+
+#### Option B — CLI one-liner
+
+Use this if you have the Databricks CLI and `jq` installed locally. The `jq`
+merge overlays the flag and secret onto the existing options, then pipes the
+result back to `update`:
+
+```bash
+export CLIENT_SECRET='...'   # client_secret from .mcp-credentials.json
+
+databricks connections get neo4j_aircraft_mcp_server --output json \
+  | jq --arg s "$CLIENT_SECRET" \
+       '{options: (.options + {is_mcp_connection: "true", client_secret: $s})}' \
+  | databricks connections update neo4j_aircraft_mcp_server --json @-
+```
+
+Add `--profile <name>` to both commands if you are not using the default
+profile. Then verify:
+
+```bash
+databricks connections get neo4j_aircraft_mcp_server --output json \
+  | jq '{is_mcp: .options.is_mcp_connection, url}'
+```
+
+Expect `is_mcp` = `"true"` and a `url` ending in `/mcp`.
+
+> Both options replace the full options map, which is why they merge the secret
+> into the existing options rather than sending it alone. Sending only the
+> secret would blank the other fields.
 
 ### Watch the base path
 
 Recreating the connection in the UI can leave **Base path** defaulting to `/`
 instead of `/mcp`. The resulting `url` then ends in `:443/` and requests miss
 the Gateway's MCP endpoint, so calls fail even with `is_mcp_connection = true`.
-Confirm the `url` ends in `/mcp`. If it does not, set `BASE_PATH` to `/mcp` in
-`mcp-set-flag.ipynb` and re-run it.
+Confirm the `url` ends in `/mcp`. If it does not, edit the connection and set
+**Base path** to `/mcp`, then re-run Option A or B above to refresh the flag.
 
 ## Step 4: Validate the connection
 
-Run **[`mcp-validate.ipynb`](./mcp-validate.ipynb)** on a Databricks cluster.
+Run **[`mcp-validate.ipynb`](./neo4j_mcp_connection/mcp-validate.ipynb)** on a Databricks cluster.
 The notebook runs three checks in order:
 
 1. `tools/list` — confirms the connection is reachable and the MCP flag is active
@@ -145,7 +189,7 @@ Tool names are prefixed by the AgentCore Gateway:
 |-------|----------|
 | 401 Unauthorized | Re-run `./deploy.sh credentials`, then re-enter the Client ID, secret, scope, and token endpoint. |
 | Double `/mcp/mcp` in request path | Remove `/mcp` from Host and put it in Base path. |
-| Connection not listed as MCP | Complete Step 3 and check **Is MCP connection**. If the checkbox is missing, run [`mcp-set-flag.ipynb`](./mcp-set-flag.ipynb). |
+| Connection not listed as MCP | Complete Step 3 and check **Is MCP connection**. If the checkbox is missing, run [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb). |
 | `url` ends in `:443/` not `/mcp` | Set **Base path** to `/mcp`. The UI can default it to `/` on recreate, which misses the Gateway endpoint. |
 | HTTP timeout | Verify the MCP server is running: `cd neo4j-agentcore-mcp-server && ./cloud.sh`. |
 | Tool not found | Use the Gateway-prefixed name, for example `neo4j-mcp-server-target___get-schema`. |
@@ -153,8 +197,8 @@ Tool names are prefixed by the AgentCore Gateway:
 
 ## Related documentation
 
-- [`mcp-set-flag.ipynb`](./mcp-set-flag.ipynb) — enable the MCP flag when the UI checkbox is missing
-- [`mcp-validate.ipynb`](./mcp-validate.ipynb) — validate the connection after setup
+- [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb) — enable the MCP flag when the UI checkbox is missing
+- [`mcp-validate.ipynb`](./neo4j_mcp_connection/mcp-validate.ipynb) — validate the connection after setup
 - [Databricks HTTP Connections](https://docs.databricks.com/aws/en/query-federation/http)
 - [Databricks External MCP](https://docs.databricks.com/aws/en/generative-ai/mcp/external-mcp)
 </content>

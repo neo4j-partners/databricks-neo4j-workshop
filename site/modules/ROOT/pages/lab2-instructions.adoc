@@ -24,19 +24,19 @@ This lab has one required notebook and four optional Graph Data Science notebook
 | Labs 3, 4
 
 | `02_gds_louvain_maintenance.ipynb`
-| Optional: Community detection — clusters aircraft by shared fault patterns using Louvain algorithm
+| Optional: Community detection clusters aircraft by shared fault patterns using Louvain algorithm
 | Optional
 
 | `03_gds_knn_aircraft.ipynb`
-| Optional: kNN similarity — builds per-aircraft feature vectors from sensor and maintenance data, then finds operationally similar peers
+| Optional: kNN similarity builds per-aircraft feature vectors from sensor and maintenance data, then finds operationally similar peers
 | Optional
 
 | `04_gds_pagerank_airports.ipynb`
-| Optional: Centrality — runs PageRank and betweenness centrality on the airport route network, then correlates with maintenance delays
+| Optional: Centrality runs PageRank and betweenness centrality on the airport route network, then correlates with maintenance delays
 | Optional
 
 | `05_gds_node_similarity_aircraft.ipynb`
-| Optional: Node similarity — finds aircraft with overlapping fault-type portfolios using Jaccard similarity
+| Optional: Node similarity finds aircraft with overlapping fault-type portfolios using Jaccard similarity
 | Optional
 |===
 
