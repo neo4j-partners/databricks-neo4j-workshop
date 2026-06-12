@@ -1,0 +1,140 @@
+= Sample Cypher Queries
+
+Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore the Aircraft Digital Twin graph loaded by the Lab 2 notebooks.
+
+TIP: All of these queries can also be run programmatically via `uv run populate-aircraft-db samples` from `workshop-setup/populate_aircraft_db/`.
+
+== Cypher Concepts Used
+
+[cols="2,4"]
+|===
+| Concept | What It Does
+
+| `MATCH (n:Label)`
+| Find nodes by label -- the starting point for most queries
+
+| `(a)-[:REL]\->(b)`
+| Traverse a relationship between two nodes (direction matters)
+
+| `OPTIONAL MATCH`
+| Like a SQL LEFT JOIN -- keeps the row even if the pattern has no match
+
+| `RETURN ... AS alias`
+| Project properties and rename columns
+
+| `WITH`
+| Pipes results between query parts -- like a subquery boundary
+
+| `count()`, `collect()`
+| Aggregate functions -- count rows or gather values into a list
+
+| `ORDER BY ... DESC`
+| Sort results (ascending by default)
+
+| `LIMIT n`
+| Cap the number of returned rows
+|===
+
+'''
+
+== Aircraft Fleet Overview
+
+View all aircraft with system and component counts:
+
+[source,cypher]
+----
+MATCH (a:Aircraft)
+OPTIONAL MATCH (a)-[:HAS_SYSTEM]->(s:System)
+OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(c:Component)
+WITH a, count(DISTINCT s) AS systems, count(DISTINCT c) AS components
+RETURN a.tail_number AS tail, a.model AS model,
+       a.manufacturer AS mfr, systems, components
+ORDER BY a.tail_number
+----
+
+NOTE: `OPTIONAL MATCH` ensures aircraft appear even without systems/components. `count(DISTINCT ...)` avoids double-counting when multiple join paths exist.
+
+== System-Component Hierarchy
+
+Full hierarchy for one aircraft:
+
+[source,cypher]
+----
+MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)-[:HAS_COMPONENT]->(c:Component)
+WITH a, s, c ORDER BY s.name, c.name
+WITH a, s, collect(c.name) AS comps ORDER BY s.name
+WITH a, collect({system: s.name, components: comps}) AS systems
+RETURN a.tail_number AS tail, a.model AS model, systems
+LIMIT 1
+----
+
+NOTE: Nested `WITH` + `collect()` builds a hierarchical structure. The inner `collect()` gathers components per system, then the outer `collect()` gathers systems per aircraft. `LIMIT 1` keeps the output manageable.
+
+== Flight Operations
+
+Most frequent routes by flight count:
+
+[source,cypher]
+----
+MATCH (f:Flight)-[:DEPARTS_FROM]->(dep:Airport),
+      (f)-[:ARRIVES_AT]->(arr:Airport)
+WITH dep.iata AS origin, arr.iata AS dest, count(f) AS flights
+RETURN origin, dest, flights
+ORDER BY flights DESC
+LIMIT 10
+----
+
+NOTE: Multi-pattern `MATCH` joins a Flight to both its departure and arrival Airport in one clause. `count()` with `WITH` groups by route.
+
+== Maintenance Events
+
+Recent maintenance events with fault codes and affected systems:
+
+[source,cypher]
+----
+MATCH (me:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(a:Aircraft)
+WHERE me.reported_at IS NOT NULL
+OPTIONAL MATCH (me)-[:AFFECTS_SYSTEM]->(s:System)
+RETURN a.tail_number AS aircraft, me.event_id AS event,
+       me.reported_at AS date, me.severity AS severity, me.fault AS fault,
+       s.name AS system
+ORDER BY me.reported_at DESC
+LIMIT 10
+----
+
+NOTE: `OPTIONAL MATCH` on the system relationship keeps events that don't target a specific system. `WHERE ... IS NOT NULL` ensures sortable dates.
+
+== Sensors
+
+Sensors installed across the fleet:
+
+[source,cypher]
+----
+MATCH (a:Aircraft)-[:HAS_SYSTEM]->(sys:System)-[:HAS_SENSOR]->(s:Sensor)
+RETURN a.tail_number AS aircraft, sys.name AS system,
+       s.sensor_id AS sensor, s.type AS type, s.unit AS unit
+ORDER BY a.tail_number, sys.name
+LIMIT 10
+----
+
+NOTE: Three-hop traversal `Aircraft -> System -> Sensor` follows the physical topology. This is the same sensor data that appears in the Databricks Delta tables -- the join point between the two databases.
+
+== Schema Introspection
+
+View the complete graph schema:
+
+[source,cypher]
+----
+CALL db.schema.visualization()
+----
+
+NOTE: Introspects the database and returns every node label, relationship type, and how they connect. Useful for understanding the full data model at any point in the workshop.
+
+List all indexes:
+
+[source,cypher]
+----
+SHOW INDEXES
+----
+
+NOTE: Shows all indexes in the database -- useful for verifying what's been created so far.

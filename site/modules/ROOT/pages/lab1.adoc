@@ -127,4 +127,4 @@ The Aura console provides three tools you will use throughout the workshop:
 
 == Next Steps
 
-Continue to xref:lab1-instructions.adoc[Lab 1 Instructions] to set up your Neo4j Aura database and practice Cypher basics. See xref:lab1-sample-queries.adoc[Sample Queries] for hands-on Cypher examples to run against the graph. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].
+Continue to xref:lab1-instructions.adoc[Lab 1 Instructions] to set up your Neo4j Aura database and practice Cypher basics. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].

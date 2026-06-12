@@ -115,4 +115,4 @@ After completing this lab, you can ask questions like:
 
 == Next Steps
 
-Continue to xref:lab3-instructions.adoc[Lab 3 Instructions] to run the notebooks, or proceed to xref:lab4.adoc[Lab 4: Compound AI Agents].
+Continue to xref:lab3-instructions.adoc[Lab 3 Instructions] to run the notebooks. Once the notebooks have run, see xref:lab3-sample-queries.adoc[Sample Queries] to explore the GraphRAG structures, or proceed to xref:lab4.adoc[Lab 4: Compound AI Agents].

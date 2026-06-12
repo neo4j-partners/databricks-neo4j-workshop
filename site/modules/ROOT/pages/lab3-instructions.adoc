@@ -87,7 +87,7 @@ After completing this lab, you can ask questions like:
 * "What causes hydraulic pressure loss?"
 * "When should I replace the fuel filter?"
 
-Copy and paste queries from the Sample Queries reference (`SAMPLE_QUERIES.md` in the lab materials) to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
+Copy and paste queries from the xref:lab3-sample-queries.adoc[Sample Queries] reference to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
 
 NOTE: Vector similarity search is not included in the sample queries because it requires embedding the query text with the same model used to generate the stored embeddings (Databricks BGE-large). The notebooks handle this automatically via the Databricks Foundation Model APIs. See notebooks 02 and 03 for hands-on semantic search examples.
 
