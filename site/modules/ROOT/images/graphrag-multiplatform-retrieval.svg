@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 560" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowDash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9AA7B8"/>
+    </marker>
+  </defs>
+
+  <!-- ===== Swim lanes ===== -->
+  <!-- Databricks -->
+  <rect x="20"  y="58" width="270" height="474" rx="14" fill="#FFF0ED" stroke="#FF3621" stroke-opacity="0.25"/>
+  <rect x="20"  y="18" width="270" height="52"  rx="12" fill="#FF3621"/>
+  <text x="155" y="44" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">Databricks</text>
+  <text x="155" y="62" text-anchor="middle" fill="#ffffff" font-size="11.5" opacity="0.95">govern + refine</text>
+
+  <!-- Neo4j -->
+  <rect x="335" y="58" width="270" height="474" rx="14" fill="#ECF6FF" stroke="#018BFF" stroke-opacity="0.25"/>
+  <rect x="335" y="18" width="270" height="52"  rx="12" fill="#018BFF"/>
+  <text x="470" y="44" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">Neo4j</text>
+  <text x="470" y="62" text-anchor="middle" fill="#ffffff" font-size="11.5" opacity="0.95">connect + traverse</text>
+
+  <!-- Agents -->
+  <rect x="650" y="58" width="270" height="474" rx="14" fill="#F4EEFC" stroke="#7C3AED" stroke-opacity="0.25"/>
+  <rect x="650" y="18" width="270" height="52"  rx="12" fill="#7C3AED"/>
+  <text x="785" y="44" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">Agents</text>
+  <text x="785" y="62" text-anchor="middle" fill="#ffffff" font-size="11.5" opacity="0.95">reason + answer</text>
+
+  <!-- ===== Flow arrows (drawn first, under boxes) ===== -->
+  <!-- Bronze -> Silver -->
+  <line x1="155" y1="141" x2="155" y2="163" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="163" y="156" fill="#64748B" font-size="10.5">raw landing</text>
+
+  <!-- Silver -> Nodes+Rels -->
+  <line x1="260" y1="188" x2="363" y2="188" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="312" y="180" text-anchor="middle" fill="#64748B" font-size="10.5">Spark Connector</text>
+
+  <!-- Nodes+Rels -> GDS -->
+  <line x1="470" y1="211" x2="470" y2="243" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- GDS -> Gold (algorithm results, back into lakehouse) -->
+  <line x1="365" y1="268" x2="262" y2="268" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="313" y="261" text-anchor="middle" fill="#64748B" font-size="10.5">algorithm results</text>
+
+  <!-- Gold -> Unity Catalog -->
+  <line x1="155" y1="291" x2="155" y2="328" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="163" y="314" fill="#64748B" font-size="10.5">govern</text>
+
+  <!-- Unity Catalog -> SQL-to-Cypher -->
+  <line x1="260" y1="353" x2="363" y2="353" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="312" y="345" text-anchor="middle" fill="#64748B" font-size="10.5">JDBC</text>
+
+  <!-- Unity Catalog -> Genie -->
+  <line x1="155" y1="376" x2="155" y2="408" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Genie -> Supervisor -->
+  <path d="M260,433 C 480,433 480,475 678,475" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="445" y="450" text-anchor="middle" fill="#64748B" font-size="10.5">SQL</text>
+
+  <!-- Neo4j MCP Agent -> Supervisor -->
+  <line x1="785" y1="376" x2="785" y2="443" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="793" y="413" fill="#64748B" font-size="10.5">results</text>
+
+  <!-- Neo4j MCP Agent -> Neo4j graph (read-cypher) -->
+  <path d="M680,353 L622,353 L622,188 L577,188" fill="none" stroke="#9AA7B8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arrowDash)"/>
+  <text x="616" y="272" text-anchor="middle" fill="#94A3B8" font-size="10" transform="rotate(-90 616 272)">read-cypher</text>
+
+  <!-- ===== Boxes ===== -->
+  <!-- Databricks lane -->
+  <g>
+    <rect x="50" y="95"  width="210" height="46" rx="8" fill="#ffffff" stroke="#FF3621" stroke-width="1.5"/>
+    <text x="155" y="123" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Bronze</text>
+
+    <rect x="50" y="165" width="210" height="46" rx="8" fill="#ffffff" stroke="#FF3621" stroke-width="1.5"/>
+    <text x="155" y="193" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Silver</text>
+
+    <rect x="50" y="245" width="210" height="46" rx="8" fill="#ffffff" stroke="#FF3621" stroke-width="1.5"/>
+    <text x="155" y="273" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Gold</text>
+
+    <rect x="50" y="330" width="210" height="46" rx="8" fill="#ffffff" stroke="#FF3621" stroke-width="1.5"/>
+    <text x="155" y="358" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Unity Catalog</text>
+
+    <rect x="50" y="410" width="210" height="46" rx="8" fill="#ffffff" stroke="#FF3621" stroke-width="1.5"/>
+    <text x="155" y="438" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Genie (SQL)</text>
+  </g>
+
+  <!-- Neo4j lane -->
+  <g>
+    <rect x="365" y="165" width="210" height="46" rx="8" fill="#ffffff" stroke="#018BFF" stroke-width="1.5"/>
+    <text x="470" y="193" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Nodes + Relationships</text>
+
+    <rect x="365" y="245" width="210" height="52" rx="8" fill="#ffffff" stroke="#018BFF" stroke-width="1.5"/>
+    <text x="470" y="268" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">GDS</text>
+    <text x="470" y="284" text-anchor="middle" fill="#64748B" font-size="10">PageRank · community · similarity</text>
+
+    <rect x="365" y="330" width="210" height="46" rx="8" fill="#ffffff" stroke="#018BFF" stroke-width="1.5"/>
+    <text x="470" y="358" text-anchor="middle" fill="#1E293B" font-size="13" font-weight="600">SQL-to-Cypher translation</text>
+  </g>
+
+  <!-- Agents lane -->
+  <g>
+    <rect x="680" y="330" width="210" height="46" rx="8" fill="#ffffff" stroke="#7C3AED" stroke-width="1.5"/>
+    <text x="785" y="358" text-anchor="middle" fill="#1E293B" font-size="13" font-weight="600">Neo4j MCP Agent (Cypher)</text>
+
+    <rect x="680" y="445" width="210" height="60" rx="8" fill="#ffffff" stroke="#7C3AED" stroke-width="2"/>
+    <text x="785" y="470" text-anchor="middle" fill="#1E293B" font-size="14" font-weight="700">Supervisor</text>
+    <text x="785" y="488" text-anchor="middle" fill="#64748B" font-size="10.5">routes by question type</text>
+  </g>
+</svg>

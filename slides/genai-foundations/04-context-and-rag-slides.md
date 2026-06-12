@@ -84,7 +84,7 @@ A surprising discovery: **too much irrelevant context degrades LLM performance**
 - The LLM's context window fills with tangentially related information
 - The model gets confused, distracted, or misled by the noise
 
-**This became known as "Context ROT"** (Retrieval of Tangents)—the retrieved context actually *rots* the quality of the response.
+The term **"Context ROT"** stands for Retrieval of Tangents. The retrieved context actually *rots* the quality of the response.
 
 ---
 

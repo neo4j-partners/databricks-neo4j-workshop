@@ -130,15 +130,15 @@ RETURN node.text AS text, score,
 
 **Without OPTIONAL MATCH:**
 ```cypher
-MATCH (company)-[:FACES_RISK]->(risk)
+MATCH (component)-[:HAS_EVENT]->(event)
 ```
-Only returns companies that *have* risk factors.
+Only returns components that *have* maintenance events.
 
 **With OPTIONAL MATCH:**
 ```cypher
-OPTIONAL MATCH (company)-[:FACES_RISK]->(risk)
+OPTIONAL MATCH (component)-[:HAS_EVENT]->(event)
 ```
-Returns *all* companies; risks list is empty if none exist.
+Returns *all* components; events list is empty if none exist.
 
 **Use OPTIONAL MATCH** for complete results.
 

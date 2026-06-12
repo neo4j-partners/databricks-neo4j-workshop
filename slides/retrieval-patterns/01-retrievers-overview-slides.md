@@ -59,7 +59,7 @@ Each pattern excels at different question types.
 
 ---
 
-## The GraphRAG Class
+## Retrieval to Answer: How GraphRAG Works
 
 Retrievers work with the **GraphRAG** class, which combines retrieval with LLM generation:
 
@@ -208,6 +208,6 @@ In this lesson, you learned:
 - **Text2Cypher Retriever**: Natural language to precise database queries
 - **GraphRAG class**: Wraps any retriever with an LLM for end-to-end question answering
 - **External vector stores**: Databricks Vector Search can replace the built-in vector index
-- **Each retriever excels at different question types**—choosing the right one matters
+- **Each retriever excels at different question types.** Choosing the right one matters.
 
 **Next:** Deep dive into each retriever type.

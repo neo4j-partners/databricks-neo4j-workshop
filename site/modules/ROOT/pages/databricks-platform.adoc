@@ -87,23 +87,7 @@ Unity Catalog JDBC connections add a governed SQL layer: BI tools like Power BI 
 
 Specialized agents query each platform independently. The Neo4j MCP agent discovers the graph schema through `get-schema` and executes read-only Cypher through `read-cypher`. The Genie agent translates natural language into SQL against the lakehouse. A supervisor agent routes questions based on their nature: aggregations and trends go to Genie, relationships and traversals go to the graph agent, and questions that span both platforms decompose into sub-tasks before the supervisor synthesizes a combined answer.
 
-----
-Databricks                     Neo4j                        Agents
-(govern + refine)              (connect + traverse)         (reason + answer)
-      |                              |                            |
-  Bronze  -- raw landing -->  Silver -- Spark Connector -->  Nodes + Rels
-      |                              |                            |
-  Gold  <-- algorithm results --  GDS (PageRank,                 |
-      |      via Spark Connector     community,                  |
-      |                              similarity)                 |
-      |                                                          |
-  Unity Catalog  -- JDBC -->  SQL-to-Cypher translation          |
-      |                                                          |
-  Genie (SQL)  ----+                                             |
-                   +--------->  Supervisor  <---------  Neo4j MCP Agent
-                               (routes by               (Cypher)
-                                question type)
-----
+image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Databricks governs and refines data through the medallion layers, Neo4j connects and traverses it as nodes and relationships with GDS algorithms, and agents reason over both platforms through a supervisor that routes between Genie and the Neo4j MCP agent]
 
 === Connection Patterns by Stage
 

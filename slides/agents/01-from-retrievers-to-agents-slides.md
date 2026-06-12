@@ -108,7 +108,7 @@ Each tool has a description that tells the agent when to use it.
 
 ## The ReAct Pattern
 
-Agents follow **ReAct** (Reasoning + Acting):
+Agents follow the **ReAct** pattern, which stands for Reasoning + Acting:
 
 ```
 1. Receive question: "How many critical events does Engine #1 on N10001 have?"

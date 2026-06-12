@@ -41,7 +41,7 @@ LLMs have three core limitations that make them unreliable for enterprise data:
 
 **The insight:** Providing relevant context in the prompt addresses all three.
 
-This led to **Retrieval-Augmented Generation (RAG)**.
+This led to **RAG**: Retrieval-Augmented Generation.
 
 ---
 
