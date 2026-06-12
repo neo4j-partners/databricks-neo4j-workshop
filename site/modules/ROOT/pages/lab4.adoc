@@ -35,7 +35,14 @@ Mosaic AI is the AI platform within Databricks that provides the infrastructure 
 .Mosaic AI capabilities
 [%collapsible]
 ====
-It spans the full lifecycle: foundation model serving through managed endpoints, vector search for unstructured data retrieval, AI Gateway for managing access across model providers, and MLflow integration for tracing, evaluation, and production monitoring. Unity Catalog provides governance across all of these capabilities, so that models, tools, data, and agent endpoints share a single permission and lineage model.
+It spans the full lifecycle:
+
+* **Foundation model serving** through managed endpoints.
+* **Vector search** for unstructured data retrieval.
+* **AI Gateway** for managing access across model providers.
+* **MLflow integration** for tracing, evaluation, and production monitoring.
+
+Unity Catalog provides governance across all of these capabilities, so that models, tools, data, and agent endpoints share a single permission and lineage model.
 
 Rather than a single product, Mosaic AI is the layer that the agent-specific tools build on. Genie uses Mosaic AI's model serving infrastructure to run its compound AI pipeline. Agent Bricks deploys agents to Mosaic AI's serverless compute and monitors them through MLflow tracing. The platform handles the operational concerns (model hosting, authentication, scaling, observability) so that agent development can focus on the reasoning and tool-calling logic that makes each agent useful.
 ====
@@ -51,7 +58,14 @@ Rather than relying on a single language model to handle everything from parsing
 
 The accuracy of any natural-language-to-SQL system depends on how much context the model has about the data it queries. Genie draws its context from Unity Catalog metadata: table names and descriptions, column names and descriptions, primary and foreign key relationships, and sample column values. Domain experts configure **Genie spaces** by curating a set of tables (up to 25 per space), writing plain-text instructions that teach business terminology and rules, defining JOIN relationships, and supplying example SQL queries that demonstrate correct patterns. When a user's question matches a parameterized example query, Genie marks the response as **Trusted**, signaling that the answer follows a verified pattern rather than a generated one.
 
-Genie also provides a **Knowledge Store** where space authors can define structured business semantics: column-level synonyms, local join relationships, SQL measures with filters and dimensions, and prompt-matching rules. These refinements stay local to the space and do not alter the underlying Unity Catalog metadata, so multiple spaces can present different views of the same tables for different audiences. Every query Genie generates is read-only, which makes it safe to expose to business users who need answers without writing SQL themselves.
+Genie also provides a **Knowledge Store** where space authors can define structured business semantics:
+
+* **Column-level synonyms**
+* **Local join relationships**
+* **SQL measures** with filters and dimensions
+* **Prompt-matching rules**
+
+These refinements stay local to the space and do not alter the underlying Unity Catalog metadata, so multiple spaces can present different views of the same tables for different audiences. Every query Genie generates is read-only, which makes it safe to expose to business users who need answers without writing SQL themselves.
 ====
 
 === Agent Bricks
@@ -61,7 +75,12 @@ Agent Bricks is the platform layer for building, deploying, and governing AI age
 .Agent Bricks builders and Supervisor Agent
 [%collapsible]
 ====
-The platform offers managed agent builders for common patterns. **Knowledge Assistant** converts documents into conversational agents that answer questions with source attribution. **Information Extraction** processes unstructured text into structured data through classification and extraction. **Custom LLM** handles specialized generation tasks like summarization and text transformation. The builder most relevant to this lab is the **Supervisor Agent**, which orchestrates multi-agent systems by routing questions to the right specialist.
+The platform offers managed agent builders for common patterns:
+
+* **Knowledge Assistant** converts documents into conversational agents that answer questions with source attribution.
+* **Information Extraction** processes unstructured text into structured data through classification and extraction.
+* **Custom LLM** handles specialized generation tasks like summarization and text transformation.
+* **Supervisor Agent** orchestrates multi-agent systems by routing questions to the right specialist. This is the builder most relevant to this lab.
 
 The Supervisor Agent supports up to 20 subagents of four types: Genie spaces for natural language analytics over structured data, agent endpoints for document-based Q&A, Unity Catalog functions for custom tool logic, and MCP servers for external services. Each subagent is registered with a name and a detailed description of its capabilities. The supervisor reads these descriptions to determine which subagent should handle each incoming question. When a question requires multiple subagents, the supervisor delegates to each and synthesizes a unified response. Access control flows through the platform: end users only reach subagents they have explicit permissions for.
 ====

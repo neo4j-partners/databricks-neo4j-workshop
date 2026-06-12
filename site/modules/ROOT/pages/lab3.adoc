@@ -43,9 +43,8 @@ An LLM reads each chunk and extracts entities: regulations, thresholds, procedur
 .Schema design and entity resolution
 [%collapsible]
 ====
-**Schema design.** SimpleKGPipeline supports three schema modes: User-Provided (you define the entity and relationship types), Extracted (the LLM discovers the schema), and Free (no constraints). This workshop uses User-Provided because the aircraft domain has known entity types (Aircraft, System, Component, Sensor, MaintenanceEvent) and known relationship patterns. Constraining extraction to these types produces a consistent, queryable graph.
-
-**Entity resolution.** The same real-world component can surface under different names ("HP Turbine," "High-pressure Turbine," "HPT"). Entity resolution merges these duplicates so that queries return complete results. Without it, maintenance event counts and relationship traversals silently miss data.
+* **Schema design.** SimpleKGPipeline supports three schema modes: User-Provided (you define the entity and relationship types), Extracted (the LLM discovers the schema), and Free (no constraints). This workshop uses User-Provided because the aircraft domain has known entity types (Aircraft, System, Component, Sensor, MaintenanceEvent) and known relationship patterns. Constraining extraction to these types produces a consistent, queryable graph.
+* **Entity resolution.** The same real-world component can surface under different names ("HP Turbine," "High-pressure Turbine," "HPT"). Entity resolution merges these duplicates so that queries return complete results. Without it, maintenance event counts and relationship traversals silently miss data.
 ====
 
 == Knowledge Graph Structure
@@ -68,11 +67,10 @@ A user question enters as text, and vector or fulltext search finds the matching
 
 == Retriever Comparison: Vector vs. VectorCypher
 
-The `neo4j-graphrag` package provides two retriever patterns relevant to this lab.
+The `neo4j-graphrag` package provides two retriever patterns relevant to this lab:
 
-**VectorRetriever** performs pure semantic search. It converts the user's question to an embedding, finds the most similar chunks by vector index lookup, and returns their text. This works well for conceptual questions ("How do I troubleshoot engine vibration?") where the answer lives within the matched chunks themselves.
-
-**VectorCypherRetriever** adds a graph traversal step after vector search. It finds semantically similar chunks the same way, then executes a custom Cypher query that traverses from each matched chunk to related entities in the graph. The chunk acts as an anchor: vector search determines relevance, then Cypher gathers the structured context around it.
+* **VectorRetriever** performs pure semantic search. It converts the user's question to an embedding, finds the most similar chunks by vector index lookup, and returns their text. This works well for conceptual questions like "How do I troubleshoot engine vibration?" where the answer lives within the matched chunks themselves.
+* **VectorCypherRetriever** adds a graph traversal step after vector search. It finds semantically similar chunks the same way, then executes a custom Cypher query that traverses from each matched chunk to related entities in the graph. The chunk acts as an anchor: vector search determines relevance, then Cypher gathers the structured context around it.
 
 .When to use which retriever
 [%collapsible]

@@ -1,0 +1,106 @@
+= Workshop Overview
+
+== What You Will Build
+
+By the end of this workshop you will have a working AI system that answers natural language questions about a commercial aviation fleet. Ask it a question and a Supervisor Agent decides which backend can best answer it: Neo4j for relationship questions, Databricks for sensor trend questions.
+
+The system handles two fundamentally different kinds of questions:
+
+* **Relationship questions**: "Which components have had critical failures, and which flights did those failures delay?" These are best answered by traversing a graph in Neo4j.
+* **Time-series analytics questions**: "How have engine temperature readings trended over the last 90 days?" These are best answered by running SQL over columnar data in Databricks.
+
+A single database handles one kind well but not both. This workshop pairs Neo4j and Databricks so each handles the workload it is built for, then connects them through a shared AI layer.
+
+== The Aircraft Digital Twin Dataset
+
+The workshop uses an Aircraft Digital Twin: a simulated aviation fleet with real structure, modeled over 90 operational days. Aircraft have systems and components. Components generate sensor readings and accumulate maintenance events. Aircraft operate flights between airports, and those flights can have delays tied to specific component failures.
+
+The dataset includes:
+
+* **Aircraft** with tail numbers, models, and operators
+* **Systems** such as Engines, Avionics, and Hydraulics
+* **Components** such as Turbines, Compressors, and Pumps
+* **Sensors** with monitoring metadata
+* **Sensor Readings**: telemetry every 4 hours over 90 days, roughly 155K readings
+* **Flights** with departure and arrival information
+* **Maintenance Events** with fault severity and corrective actions
+* **Airports** in the route network
+
+The data splits across two platforms, each chosen for the workload it handles best:
+
+* **Databricks Lakehouse** stores the time-series sensor telemetry. Columnar storage and SQL make it ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
+* **Neo4j Aura** stores the richly connected relational data: aircraft topology, component hierarchies, maintenance events, flights, delays, and airport routes. A graph database traverses multi-hop relationships natively, avoiding the expensive JOINs a tabular database would require.
+
+== What You Will Learn
+
+The labs build on each other, moving from a single graph database to a full multi-agent system:
+
+* **Lab 1** provisions Neo4j Aura and introduces Cypher, the graph query language.
+* **Lab 2** loads the Aircraft Digital Twin into Neo4j from Databricks using the Spark Connector.
+* **Lab 3** adds semantic search: chunk the maintenance manual, generate embeddings, and build GraphRAG retrievers.
+* **Lab 4** builds the compound AI system: a Genie space for sensor analytics and a Supervisor Agent that routes questions across both platforms.
+
+== Architecture
+
+The final architecture is a **Supervisor Agent** built with Databricks Agent Bricks that routes questions to specialized subagents: a **Genie space** for sensor telemetry analytics (natural language to SQL) and a **Neo4j MCP Agent** for graph relationship queries (natural language to Cypher).
+
+image::lab-architecture-overview.png[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
+
+== Labs
+
+[cols="1,3,1"]
+|===
+| Lab | Description | Duration
+
+| xref:lab1.adoc[Lab 1]
+| Neo4j Aura Setup and Cypher Introduction
+| 20 min
+
+| xref:lab2.adoc[Lab 2]
+| Databricks ETL to Neo4j via Spark Connector
+| 45 min
+
+| xref:lab3.adoc[Lab 3]
+| Semantic Search with GraphRAG
+| 45 min
+
+| xref:lab4.adoc[Lab 4]
+| Compound AI Agents: Genie + Supervisor
+| 75 min
+
+|===
+
+== Key Technologies
+
+[cols="1,2"]
+|===
+| Technology | Purpose
+
+| **Neo4j Aura**
+| Managed graph database for aircraft relationships
+
+| **Databricks**
+| Notebooks, Unity Catalog, and the Lakehouse
+
+| **AI/BI Genie**
+| Natural language analytics over Unity Catalog tables
+
+| **Agent Bricks: Supervisor Agent**
+| No-code multi-agent supervisor combining data sources
+
+| **GraphRAG**
+| Graph-enhanced retrieval combining vector search with traversal
+
+| **Neo4j Spark Connector**
+| ETL between Databricks and Neo4j
+|===
+
+== Prerequisites
+
+* A Databricks workspace (provided for the workshop)
+* A Neo4j Aura instance (pre-provisioned by workshop administrators)
+* Basic familiarity with SQL and Python
+
+== Next Steps
+
+Begin with xref:lab1.adoc[Lab 1: Neo4j Aura Setup], or revisit the xref:index.adoc[Neo4j + Databricks integration] for how the two platforms fit together.

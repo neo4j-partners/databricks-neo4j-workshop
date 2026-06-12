@@ -1,6 +1,12 @@
 = Databricks Intelligence Platform
 
-The aircraft digital twin dataset has three shapes of data that require three different query engines. Sensor telemetry (345,600+ hourly readings across 90 days) needs SQL aggregation for fleet-wide statistical comparisons. Fleet topology (aircraft, systems, components, maintenance events) needs graph traversal to trace how a failed part connects to other components through shared systems. Maintenance manuals need semantic search to surface relevant procedures from unstructured text. Databricks provides the data foundation that feeds all three: Delta Lake governs the sensor readings and fleet metadata, the Spark Connector projects structural data into Neo4j for graph traversal, and Mosaic AI powers the agents that route questions to the right engine.
+The aircraft digital twin dataset has three shapes of data, each requiring a different query engine:
+
+* **Sensor telemetry**: 345,600+ hourly readings across 90 days, needing SQL aggregation for fleet-wide statistical comparisons.
+* **Fleet topology**: aircraft, systems, components, and maintenance events, needing graph traversal to trace how a failed part connects to other components through shared systems.
+* **Maintenance manuals**: unstructured text, needing semantic search to surface relevant procedures.
+
+Databricks provides the data foundation that feeds all three. Delta Lake governs the sensor readings and fleet metadata, the Spark Connector projects structural data into Neo4j for graph traversal, and Mosaic AI powers the agents that route questions to the right engine.
 
 This page covers the Databricks platform architecture. For hands-on implementation, see xref:lab2.adoc[Lab 2] (Spark Connector ETL), xref:lab3.adoc[Lab 3] (semantic search), and xref:lab4.adoc[Lab 4] (agents).
 
@@ -16,13 +22,11 @@ The architecture treats Databricks and Neo4j as complementary systems connected 
 
 === The Medallion Pattern
 
-Data moves through three progressive refinement layers.
+Data moves through three progressive refinement layers:
 
-**Bronze** is the raw landing zone. Aircraft CSV files arrive from cloud storage (S3, ADLS Gen2, GCS) with no transformation. This is the system of record for what was ingested and when.
-
-**Silver** is the curation layer. Schema enforcement catches malformed records, column renaming normalizes conventions, and type casting ensures consistency. Silver tables are governed and ready for downstream consumers, including the Neo4j Spark Connector. Graph-bound data gets its last quality check here before projection.
-
-**Gold** is where graph intelligence feeds back into the lakehouse. Graph algorithm results (PageRank scores for component importance, community detection clusters for related maintenance events, degree centrality counts across the fleet topology) write back from Neo4j as columns in gold tables. These join with sensor telemetry and fleet metadata that never left the lakehouse to produce maintenance alerts, risk scores, and ML feature tables.
+* **Bronze** is the raw landing zone. Aircraft CSV files arrive from cloud storage (S3, ADLS Gen2, GCS) with no transformation. This is the system of record for what was ingested and when.
+* **Silver** is the curation layer. Schema enforcement catches malformed records, column renaming normalizes conventions, and type casting ensures consistency. Silver tables are governed and ready for downstream consumers, including the Neo4j Spark Connector. Graph-bound data gets its last quality check here before projection.
+* **Gold** is where graph intelligence feeds back into the lakehouse. Graph algorithm results (PageRank scores for component importance, community detection clusters for related maintenance events, degree centrality counts across the fleet topology) write back from Neo4j as columns in gold tables. These join with sensor telemetry and fleet metadata that never left the lakehouse to produce maintenance alerts, risk scores, and ML feature tables.
 
 === Delta Lake
 
@@ -85,7 +89,13 @@ Maintenance manuals, technical bulletins, and regulatory filings pass through a 
 
 === Data Analytics: Graph as Co-Processor
 
-Graph algorithms run on in-memory projections in Neo4j and write results back to gold Delta tables through the Spark Connector. PageRank produces importance scores for components, community detection (Louvain) identifies clusters of related maintenance events, and degree centrality counts connection density across the fleet topology. These graph-derived metrics become columns in Delta tables, available for dashboards, ML features, and downstream analytics.
+Graph algorithms run on in-memory projections in Neo4j and write results back to gold Delta tables through the Spark Connector:
+
+* **PageRank** produces importance scores for components.
+* **Community detection (Louvain)** identifies clusters of related maintenance events.
+* **Degree centrality** counts connection density across the fleet topology.
+
+These graph-derived metrics become columns in Delta tables, available for dashboards, ML features, and downstream analytics.
 
 Unity Catalog JDBC connections add a governed SQL layer: BI tools like Power BI and Tableau query graph data through standard JDBC, and graph results join with lakehouse data without leaving the SQL environment.
 
@@ -136,21 +146,18 @@ Databricks                     Neo4j                        Agents
 
 == Unity Catalog
 
-For the GraphRAG architecture, Unity Catalog plays two specific roles.
+For the GraphRAG architecture, Unity Catalog plays two specific roles:
 
-**Governance of graph-bound data.** The silver tables that feed the Spark Connector are governed assets with lineage tracking. When graph data quality issues surface, lineage traces back through the exact transformations and source records that produced the data.
-
-**Federated access to Neo4j.** Neo4j can be registered as a JDBC connection in Unity Catalog using the Neo4j JDBC driver. The driver translates SQL into Cypher automatically, so users and BI tools write SQL against what appears to be another catalog, and Neo4j executes the equivalent graph query. This enables federated queries that combine graph relationships and lakehouse metrics in a single SQL statement, governed under the same access controls as the rest of the lakehouse. Graph data can also be materialized as Delta tables for use in dashboards and Genie spaces.
+* **Governance of graph-bound data**: the silver tables that feed the Spark Connector are governed assets with lineage tracking. When graph data quality issues surface, lineage traces back through the exact transformations and source records that produced the data.
+* **Federated access to Neo4j**: Neo4j can be registered as a JDBC connection in Unity Catalog using the Neo4j JDBC driver. The driver translates SQL into Cypher automatically, so users and BI tools write SQL against what appears to be another catalog, and Neo4j executes the equivalent graph query. This enables federated queries that combine graph relationships and lakehouse metrics in a single SQL statement, governed under the same access controls as the rest of the lakehouse. Graph data can also be materialized as Delta tables for use in dashboards and Genie spaces.
 
 == Agent Systems
 
-Databricks provides the agent development and serving stack through Mosaic AI, from foundation model access to multi-agent orchestration.
+Databricks provides the agent development and serving stack through Mosaic AI, from foundation model access to multi-agent orchestration:
 
-**Foundation models** through the AI Gateway handle embedding generation for vector search and the reasoning layer that agents use to select tools and synthesize answers.
-
-**Genie** translates natural language into governed SQL against any data registered in Unity Catalog. Domain experts configure Genie Spaces with curated table sets, domain terminology, and example queries. In this architecture, Genie handles the sensor telemetry half of the multi-agent system: questions about averages, trends, and fleet-wide comparisons route to Genie, which generates SQL against the lakehouse. All generated queries are read-only.
-
-**Agent Bricks** is the control plane for deploying and orchestrating agents. The supervisor agent pattern is configurable through the workspace UI: register sub-agents (Genie spaces, MCP servers, Unity Catalog functions), provide capability descriptions, and the supervisor routes questions based on their nature. Agents package with MLflow, register in Unity Catalog, and deploy to Model Serving endpoints that scale automatically. Built-in tracing and feedback collection through the Review App support production monitoring.
+* **Foundation models** through the AI Gateway handle embedding generation for vector search and the reasoning layer that agents use to select tools and synthesize answers.
+* **Genie** translates natural language into governed SQL against any data registered in Unity Catalog. Domain experts configure Genie Spaces with curated table sets, domain terminology, and example queries. In this architecture, Genie handles the sensor telemetry half of the multi-agent system: questions about averages, trends, and fleet-wide comparisons route to Genie, which generates SQL against the lakehouse. All generated queries are read-only.
+* **Agent Bricks** is the control plane for deploying and orchestrating agents. The supervisor agent pattern is configurable through the workspace UI: register sub-agents (Genie spaces, MCP servers, Unity Catalog functions), provide capability descriptions, and the supervisor routes questions based on their nature. Agents package with MLflow, register in Unity Catalog, and deploy to Model Serving endpoints that scale automatically. Built-in tracing and feedback collection through the Review App support production monitoring.
 
 See xref:lab4.adoc[Lab 4] for the hands-on implementation of Genie, the Neo4j MCP agent, and the supervisor.
 

@@ -2,13 +2,18 @@
 
 == Welcome
 
-This workshop teaches you to build a production architecture that combines Neo4j graph databases with Databricks AI/ML. You will work with an Aircraft Digital Twin dataset, loading data into Neo4j, adding semantic search, and building a multi-agent system that routes questions to the right data source. See the xref:lab1.adoc[Lab 1] overview for the dual-database architecture.
+Databricks and Neo4j solve different halves of the same problem. This page explains how the two platforms fit together: where each one is strong, how data flows between them, and how AI agents query both through natural language. For what you will build and the lab roadmap, see the xref:workshop-overview.adoc[Workshop Overview].
 
 == Data Intelligence Meets Graph Intelligence
 
 Databricks is the Data Intelligence Platform. It governs and analyzes structured, semi-structured, and unstructured data at scale. Neo4j is the Graph Intelligence Platform. It makes connections between entities explicit and traversable. Together they form a complete intelligence platform: Databricks handles volume and governance, Neo4j handles topology and traversal.
 
-The integration rests on four pillars: bi-directional data pipelines through the Databricks-certified Spark Connector, graph analytics that surface patterns invisible in flat tables, GraphRAG retrieval that grounds AI responses in structured knowledge, and agent integration that lets AI systems query both platforms through natural language.
+The integration rests on four pillars:
+
+* **Bi-directional data pipelines**: the Databricks-certified Spark Connector moves data between the Lakehouse and the graph in both directions.
+* **Graph analytics**: graph algorithms surface patterns that stay invisible in flat tables.
+* **GraphRAG retrieval**: graph-grounded retrieval anchors AI responses in structured knowledge.
+* **Agent integration**: AI systems query both platforms through natural language.
 
 === Databricks: Volume and Governance
 
@@ -20,15 +25,12 @@ Neo4j makes the structural relationships between entities explicit and directly 
 
 == From Data Pipeline to Agents
 
-Four stages connect Databricks to Neo4j, each building on the previous.
+Four stages connect Databricks to Neo4j, each building on the previous:
 
-**ELT Data Pipeline.** Governed Delta tables project into graph nodes and relationships via the Spark Connector. This is the primary path for bulk loading structured data.
-
-**Knowledge Graph Construction.** Unstructured documents (maintenance manuals, regulatory text, policy documents) are chunked, embedded, and entity-extracted using the neo4j-graphrag-python SimpleKGPipeline. The results write into Neo4j as searchable chunks linked to extracted entities.
-
-**Data Analytics.** Graph insights flow back to Gold Delta tables for dashboards and ML. The Spark Connector provides first-class GDS integration: PageRank, community detection, and other graph algorithms run directly and return results as DataFrames.
-
-**GraphRAG Retrieval and Agents.** Agents query both platforms through vector search, Cypher, and SQL. The Neo4j MCP Server exposes schema inspection and read-only Cypher as agent tools. A multi-agent supervisor routes questions to the right specialist.
+* **ELT Data Pipeline**: governed Delta tables project into graph nodes and relationships via the Spark Connector. This is the primary path for bulk loading structured data.
+* **Knowledge Graph Construction**: unstructured documents such as maintenance manuals, regulatory text, and policy documents are chunked, embedded, and entity-extracted using the neo4j-graphrag-python SimpleKGPipeline. The results write into Neo4j as searchable chunks linked to extracted entities.
+* **Data Analytics**: graph insights flow back to Gold Delta tables for dashboards and ML. The Spark Connector provides first-class GDS integration. PageRank, community detection, and other graph algorithms run directly and return results as DataFrames.
+* **GraphRAG Retrieval and Agents**: agents query both platforms through vector search, Cypher, and SQL. The Neo4j MCP Server exposes schema inspection and read-only Cypher as agent tools. A multi-agent supervisor routes questions to the right specialist.
 
 === Neo4j Connection Patterns by Platform Stage
 
@@ -75,38 +77,6 @@ Each platform answers a different shape of question. SQL handles aggregation, co
 
 The rule of thumb: counting things stays in SQL. Following connections moves to the graph. Most real-world questions need both platforms working together. See xref:lab4.adoc[Lab 4] for aircraft-specific routing examples.
 
-== Architecture
+== Next Steps
 
-The final architecture is a **Supervisor Agent** built with Databricks Agent Bricks that routes questions to specialized subagents: a **Genie space** for sensor telemetry analytics (natural language to SQL) and a **Neo4j MCP Agent** for graph relationship queries (natural language to Cypher).
-
-image::lab-architecture-overview.png[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
-
-== Labs
-
-[cols="1,3,1"]
-|===
-| Lab | Description | Duration
-
-| xref:lab1.adoc[Lab 1]
-| Neo4j Aura Setup and Cypher Introduction
-| 20 min
-
-| xref:lab2.adoc[Lab 2]
-| Databricks ETL to Neo4j via Spark Connector
-| 45 min
-
-| xref:lab3.adoc[Lab 3]
-| Semantic Search with GraphRAG
-| 45 min
-
-| xref:lab4.adoc[Lab 4]
-| Compound AI Agents: Genie + Supervisor
-| 75 min
-
-|===
-
-== Prerequisites
-
-* A Databricks workspace (provided for the workshop)
-* A Neo4j Aura instance (pre-provisioned by workshop administrators)
-* Basic familiarity with SQL and Python
+Continue to the xref:workshop-overview.adoc[Workshop Overview] for the dataset and lab roadmap, or jump straight to xref:lab1.adoc[Lab 1: Neo4j Aura Setup].

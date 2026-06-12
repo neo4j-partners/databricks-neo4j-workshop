@@ -168,7 +168,7 @@ GRANT USE CONNECTION ON CONNECTION neo4j_agentcore_mcp TO `account users`;
 
 #### Option 2: Per-participant MCP (Advanced)
 
-If each participant needs their own MCP connection to their own Aura instance, they would run the MCP setup notebook (`neo4j-mcp-http-connection.ipynb`) themselves during Lab 4. This requires:
+If each participant needs their own MCP connection to their own Aura instance, they would follow `MCP-MANUAL-SETUP.md` themselves during Lab 4. This requires:
 - Each participant deploys their own MCP server (not practical in a timed workshop)
 - OR a shared MCP server that accepts a Neo4j URI as a parameter (not supported by the standard Neo4j MCP server)
 

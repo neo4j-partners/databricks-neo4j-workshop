@@ -127,7 +127,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 3: Consolidate Redundant Files
 
-**Status: Pending**
+**Status: Complete** — SUMMARY.md marked redundant. All five multi-cluster files reviewed; no content merging needed.
 
 **Goal:** Each topic has exactly one canonical slide file. Redundant files are either merged into the canonical file or marked for deletion.
 
@@ -137,6 +137,17 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 - Do not delete files yet. Add a `# REDUNDANT - merge complete` comment at the top of files marked for removal.
 
 **Done when:** Every topic cluster has a single canonical file. No unique content remains in files marked redundant.
+
+**Findings:**
+
+| File | Action | Reason |
+|------|--------|--------|
+| `overview-databricks-neo4j/SUMMARY.md` | Marked redundant | Every section is covered by `01-databricks-neo4j-integration-slides.md`, which has additional appendix content. Nothing unique in SUMMARY.md. |
+| `databricks-in-depth/01-intro-databricks-neo4j-slides.md` | No action | Canonical for platform-overview (fraud lens). Cross-cluster governance content (JDBC) is not covered by auth-sync-slides; stays in file. |
+| `databricks-in-depth/02-power-of-graphrag-slides.md` | No action | Canonical for agents. LLM limitations intro is two slides, fully covered by `overview-knowledge-graph/02-genai-and-limitations-slides.md`. No merge needed. |
+| `databricks-in-depth/04-future-graph-enrichment-slides.md` | No action | Canonical for graph ML. Agents content is application-specific to enrichment; not a duplicate of any agents canonical. |
+| `overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md` | No action | Canonical for platform-overview (aircraft lens). Cross-cluster content (semantic layer, JDBC, MCP overview) is complementary to dedicated canonicals, not duplicative. |
+| `docs/overview-and-genai-foundations.md` | No action | Reference doc kept as-is per Phase 2 decision. Different delivery format; content mirrored by Marp files. |
 
 ---
 

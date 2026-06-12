@@ -26,20 +26,24 @@ image::step2-spark-connector-mapping.png[Spark Connector mapping DataFrame rows 
 
 image::step3-connected-graph.png[The resulting connected graph with a SQL vs Cypher comparison]
 
-**Rows become nodes.** A row in the aircraft table becomes an Aircraft node, with columns like `aircraft_id`, `model`, and `status` as node properties.
-
-**Foreign keys become relationships.** A column like `system.aircraft_id` pointing to `aircraft.aircraft_id` becomes `(:Aircraft)-[:HAS_SYSTEM]->(:System)`. These are straightforward one-hop lookups that SQL also handles well.
-
-**Mapping tables become relationships.** A junction table like `component_removals` doesn't become nodes. Each row becomes a `REMOVED_FROM` relationship with `removal_date` and `reason` as relationship properties. The mapping table disappears entirely.
+* **Rows become nodes.** A row in the aircraft table becomes an Aircraft node, with columns like `aircraft_id`, `model`, and `status` as node properties.
+* **Foreign keys become relationships.** A column like `system.aircraft_id` pointing to `aircraft.aircraft_id` becomes `(:Aircraft)-[:HAS_SYSTEM]->(:System)`. These are straightforward one-hop lookups that SQL also handles well.
+* **Mapping tables become relationships.** A junction table like `component_removals` doesn't become nodes. Each row becomes a `REMOVED_FROM` relationship with `removal_date` and `reason` as relationship properties. The mapping table disappears entirely.
 
 .Shared attributes and self-referential patterns
 [%collapsible]
 ====
-**Shared attributes become shared nodes.** Two aircraft operating at the same airport have no foreign key between them. Discovering that link in the Lakehouse requires a self-join. In the graph, Airport becomes a shared node and both aircraft connect to it, making the hidden connection explicit and traversable.
+* **Shared attributes become shared nodes.** Two aircraft operating at the same airport have no foreign key between them. Discovering that link in the Lakehouse requires a self-join. In the graph, Airport becomes a shared node and both aircraft connect to it, making the hidden connection explicit and traversable.
+* **Self-referential columns become chains.** `origin_airport` and `destination_airport` in a flights table point to two entities in the same table. In the graph this becomes `(:Airport)<-[:DEPARTED_FROM]-(:Flight)-[:ARRIVED_AT]->(:Airport)`. Chains of these are natural traversals in the graph but require complex nested joins in SQL.
 
-**Self-referential columns become chains.** `origin_airport` and `destination_airport` in a flights table point to two entities in the same table. In the graph this becomes `(:Airport)<-[:DEPARTED_FROM]-(:Flight)-[:ARRIVED_AT]->(:Airport)`. Chains of these are natural traversals in the graph but require complex nested joins in SQL.
+The graph advantage grows with each pattern:
 
-Foreign keys are simple one-hop lookups. Mapping tables eliminate multi-table joins. Shared attributes reveal hidden networks. Self-referential chains replace complex nested joins. The further down the list, the more the graph pays off relative to SQL.
+* **Foreign keys** are simple one-hop lookups.
+* **Mapping tables** eliminate multi-table joins.
+* **Shared attributes** reveal hidden networks.
+* **Self-referential chains** replace complex nested joins.
+
+The further down the list, the more the graph pays off relative to SQL.
 ====
 
 == ELT: Lakehouse to Graph
@@ -56,9 +60,8 @@ Delta Lake enforces schema and rejects bad data at ingestion: column renaming, t
 
 The Spark Connector is the officially supported bridge between Databricks and Neo4j. It turns Lakehouse rows into graph nodes and relationships, and pulls graph data back into DataFrames for analytics or ML. It supports batch and incremental loading patterns.
 
-**Node loading** maps DataFrame columns to node properties. Each row becomes a node via batched upserts (create if new, update if existing), making the load idempotent. The connector uses `labels` and `node.keys` options to control which label the node gets and which property serves as its unique identifier. Nodes load first because both endpoints must exist before relationships can be created.
-
-**Relationship loading** matches existing nodes by property values and creates the specified relationship type between them. Transaction details or operational metadata ride as properties on the relationship itself; no separate edge table, no foreign key resolution at query time.
+* **Node loading** maps DataFrame columns to node properties. Each row becomes a node via batched upserts (create if new, update if existing), making the load idempotent. The connector uses `labels` and `node.keys` options to control which label the node gets and which property serves as its unique identifier. Nodes load first because both endpoints must exist before relationships can be created.
+* **Relationship loading** matches existing nodes by property values and creates the specified relationship type between them. Transaction details or operational metadata ride as properties on the relationship itself; no separate edge table, no foreign key resolution at query time.
 
 === Design Decision: Relationship Types vs. Properties
 
@@ -85,7 +88,12 @@ Graph-derived metrics become columns in Delta Gold tables, available for dashboa
 .Graph algorithm examples
 [%collapsible]
 ====
-Cycle detection identifies entities involved in circular chains. PageRank scores influential nodes for risk prioritization. Louvain community detection clusters tightly connected entities into groups. Degree centrality counts connections as ML features. Once in Delta Lake, these insights join with operational data that never left the Lakehouse. This is the Gold layer in action: graph intelligence enriching data intelligence.
+* **Cycle detection** identifies entities involved in circular chains.
+* **PageRank** scores influential nodes for risk prioritization.
+* **Louvain community detection** clusters tightly connected entities into groups.
+* **Degree centrality** counts connections as ML features.
+
+Once in Delta Lake, these insights join with operational data that never left the Lakehouse. This is the Gold layer in action: graph intelligence enriching data intelligence.
 ====
 
 == Databricks Compute and Notebooks

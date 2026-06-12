@@ -1,3 +1,5 @@
+<!-- REDUNDANT - merge complete. All content covered by overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md. Marked for deletion in Phase 4. -->
+
 # Databricks + Neo4j: The Better Together Value
 
 ## What the Graph Looks Like
