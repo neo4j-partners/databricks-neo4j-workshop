@@ -48,7 +48,7 @@ def get_table_creation_sql(
         SqlStep(
             description="Creating aircraft table",
             sql=f"""
-            CREATE TABLE IF NOT EXISTS {target}.aircraft
+            CREATE OR REPLACE TABLE {target}.aircraft
             {tblprops}
             AS SELECT `:ID(Aircraft)` AS aircraft_id, * EXCEPT (`:ID(Aircraft)`)
             FROM read_files('{volume_path}/nodes_aircraft.csv',
@@ -58,7 +58,7 @@ def get_table_creation_sql(
         SqlStep(
             description="Creating systems table",
             sql=f"""
-            CREATE TABLE IF NOT EXISTS {target}.systems
+            CREATE OR REPLACE TABLE {target}.systems
             {tblprops}
             AS SELECT `:ID(System)` AS system_id, * EXCEPT (`:ID(System)`)
             FROM read_files('{volume_path}/nodes_systems.csv',
@@ -68,7 +68,7 @@ def get_table_creation_sql(
         SqlStep(
             description="Creating sensors table",
             sql=f"""
-            CREATE TABLE IF NOT EXISTS {target}.sensors
+            CREATE OR REPLACE TABLE {target}.sensors
             {tblprops}
             AS SELECT `:ID(Sensor)` AS sensor_id, * EXCEPT (`:ID(Sensor)`)
             FROM read_files('{volume_path}/nodes_sensors.csv',
@@ -78,7 +78,7 @@ def get_table_creation_sql(
         SqlStep(
             description="Creating sensor_readings table",
             sql=f"""
-            CREATE TABLE IF NOT EXISTS {target}.sensor_readings
+            CREATE OR REPLACE TABLE {target}.sensor_readings
             {tblprops}
             PARTITIONED BY (sensor_id)
             AS SELECT
