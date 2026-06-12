@@ -2,23 +2,43 @@
 
 # Hands-On Workshop: Neo4j and Databricks
 
-Build AI Agents and Knowledge Graphs with Neo4j and Databricks.
+## What You Will Build
 
-This hands-on workshop teaches you how to build production-ready AI agents that combine the power of graph databases with modern cloud platforms. You'll work with a comprehensive Aircraft Digital Twin dataset, learning to load data into Neo4j, query it with natural language, and build multi-agent systems that intelligently route questions to the right data source.
+By the end of this workshop you will have a working AI system that answers natural language questions about a commercial aviation fleet. Ask it a question and a Supervisor Agent decides which of two specialized backends can best answer it: Neo4j for relationship questions and Databricks for sensor trend questions.
 
-## Dual Database Architecture
+The system answers two fundamentally different kinds of questions:
 
-The workshop is built on a dual database architecture that assigns each workload to the platform best suited for it. Databricks Lakehouse handles high-volume time-series sensor telemetry — optimized for aggregations, trend analysis, and statistical queries over columnar data. Neo4j Aura stores the richly connected relational data — aircraft topology, component hierarchies, maintenance events, flights, and airport routes — where a graph database can traverse multi-hop relationships natively without expensive JOINs.
+- **Relationship questions** such as "Which components have had critical failures, and which flights did those failures delay?" are best answered by traversing a graph.
+- **Time-series analytics questions** such as "How have engine temperature readings trended over the last 90 days?" are best answered by running SQL over columnar data.
 
-Together, the two platforms provide a complete Aircraft Digital Twin: Databricks for "how are the sensors trending?" and Neo4j for "what is connected to what, and why did it fail?"
+A single database handles one kind well but not both. This workshop shows how to pair Neo4j and Databricks so each handles the workload it is built for, then connect them through a shared AI layer.
 
-![Dual Database Architecture](images/dual-database-architecture.png)
+The dataset is an Aircraft Digital Twin: a simulated aviation fleet with real structure. Aircraft have systems and components. Components generate sensor readings and accumulate maintenance events. Aircraft operate flights between airports, and those flights can have delays tied to specific component failures. The combination gives you a realistic, richly connected dataset that exercises both the graph and the analytics platform.
+
+---
 
 ## Workshop Architecture
 
-The end-to-end workshop architecture centers on a **Supervisor Agent** built with Databricks Agent Bricks. When a user asks a question, the supervisor routes it to the right agent: a **Genie Agent** for sensor telemetry analytics over Unity Catalog tables, or a **Neo4j MCP Agent** for graph-powered queries over the knowledge graph. The Neo4j MCP Server exposes the graph database through the Model Context Protocol so agents can query it with natural language. Neo4j Aura provides the graph database, while Databricks handles notebooks, model serving, and vector search.
+The end-to-end architecture routes each user question to the backend best suited to answer it:
+
+- **Supervisor Agent** (Databricks Agent Bricks): receives user questions and decides which specialized agent to call
+- **Genie Agent**: handles sensor telemetry analytics using natural language SQL over Unity Catalog tables
+- **Neo4j MCP Agent**: handles graph-powered queries over the knowledge graph using the Model Context Protocol
+- **Neo4j Aura**: the graph database storing aircraft relationships, maintenance history, and flight operations
+- **Databricks**: provides notebooks, model serving, and vector search
 
 ![Workshop Architecture Overview](images/lab-architecture-overview.png)
+
+## Dual Database Architecture
+
+The workshop is built on a dual database architecture that assigns each workload to the platform best suited for it:
+
+- **Databricks Lakehouse** handles high-volume time-series sensor telemetry, optimized for aggregations, trend analysis, and statistical queries over columnar data.
+- **Neo4j Aura** stores the richly connected relational data: aircraft topology, component hierarchies, maintenance events, flights, and airport routes, traversing multi-hop relationships natively without expensive JOINs.
+
+![Dual Database Architecture](images/dual-database-architecture.png)
+
+---
 
 ## Overview
 
@@ -28,8 +48,8 @@ Participants work through lab exercises in Databricks and Neo4j Aura, using Data
 
 The workshop uses a comprehensive **Aircraft Digital Twin** dataset that models a complete aviation fleet over 90 operational days. The data is split across two platforms, each chosen for the workload it handles best:
 
-- **Databricks Lakehouse** stores the **time-series sensor telemetry** — roughly 155K readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
-- **Neo4j Aura** stores the **richly connected relational data** — aircraft topology, component hierarchies, maintenance events, flights, delays, and airport routes. A graph database handles multi-hop relationship traversals natively, avoiding the expensive JOINs a tabular database would require for queries like "Which components caused flight delays?"
+- **Databricks Lakehouse** stores the **time-series sensor telemetry**, roughly 155K readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
+- **Neo4j Aura** stores the **richly connected relational data**: aircraft topology, component hierarchies, maintenance events, flights, delays, and airport routes. A graph database handles multi-hop relationship traversals natively, avoiding the expensive JOINs a tabular database would require for queries like "Which components caused flight delays?"
 
 Together the dataset includes:
 
@@ -70,7 +90,7 @@ Together the dataset includes:
 
 ### Phase 2: Databricks ETL & Semantic Search
 
-*Load aircraft data into Neo4j, then add semantic search capabilities — chunk maintenance documentation, generate vector embeddings, and build GraphRAG retrievers.*
+*Load aircraft data into Neo4j, then add semantic search capabilities: chunk maintenance documentation, generate vector embeddings, and build GraphRAG retrievers.*
 
 | Lab | Description | Time |
 |-----|-------------|------|
@@ -89,35 +109,6 @@ Together the dataset includes:
 
 ---
 
-## Sample Queries
-
-### Aircraft Topology
-```cypher
-// What systems does aircraft N10000 have?
-MATCH (a:Aircraft {tail_number: 'N10000'})-[:HAS_SYSTEM]->(s:System)
-RETURN a.tail_number, s.name, s.type
-```
-
-### Maintenance Analysis
-```cypher
-// Find aircraft with critical maintenance events
-MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)-[:HAS_COMPONENT]->(c:Component)
-      -[:HAS_EVENT]->(m:MaintenanceEvent {severity: 'Critical'})
-RETURN a.tail_number, s.name, c.name, m.fault, m.reported_at
-ORDER BY m.reported_at DESC
-```
-
-### Flight Operations
-```cypher
-// Find delayed flights and their causes
-MATCH (a:Aircraft)-[:OPERATES_FLIGHT]->(f:Flight)-[:HAS_DELAY]->(d:Delay)
-RETURN a.tail_number, f.flight_number, d.cause, d.minutes
-ORDER BY d.minutes DESC
-LIMIT 10
-```
-
----
-
 ## Prerequisites
 
 - **Laptop** with a modern web browser
@@ -130,9 +121,15 @@ LIMIT 10
 
 ## Knowledge Graph Schema
 
-The Aircraft Digital Twin dataset includes:
-- **Nodes**: Aircraft, System, Component, Sensor, Airport, Flight, Delay, MaintenanceEvent, Removal, Document, Chunk
-- **Relationships**: HAS_SYSTEM, HAS_COMPONENT, HAS_SENSOR, HAS_EVENT, OPERATES_FLIGHT, DEPARTS_FROM, ARRIVES_AT, HAS_DELAY, AFFECTS_SYSTEM, AFFECTS_AIRCRAFT, HAS_REMOVAL, REMOVED_COMPONENT, FROM_DOCUMENT, NEXT_CHUNK
+The knowledge graph models a commercial aviation fleet as a connected network of physical things, operational events, and documentation.
+
+- **Aircraft and their physical structure.** Each aircraft has a tail number, model, and operator. An aircraft contains three main systems: Engines, Avionics, and Hydraulics. Each system contains multiple components. Engines hold turbines and compressors; hydraulic systems hold pumps and actuators. Every component is monitored by one or more sensors that record health and performance readings.
+
+- **Maintenance history.** When a component develops a fault, a maintenance event is recorded against that component. Each event captures the fault description, its severity, the corrective action taken, and when it was reported. Some components are physically removed and replaced, creating a removal record linked to the maintenance event that triggered it.
+
+- **Flight operations.** Aircraft operate flights between airports. Each flight has a flight number, departure airport, and arrival airport. A flight can have one or more delays, and each delay records its cause and duration in minutes. Delays can be traced back through the graph to the specific component failure that caused them.
+
+- **Maintenance documentation.** Technical maintenance manuals are stored as documents and broken into overlapping chunks for semantic search. Each chunk carries a vector embedding so the system can retrieve relevant passages using natural language queries. Chunks link back to their source document and chain to adjacent chunks for context.
 
 ## Technology Stack
 
@@ -155,7 +152,7 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "your_password_here"
 ```
 
-Databricks notebooks use Foundation Model APIs (MLflow deployments client) which handle authentication automatically when running in Databricks.
+Databricks notebooks use Foundation Model APIs, which handle authentication automatically when running in Databricks.
 
 ## Resources
 

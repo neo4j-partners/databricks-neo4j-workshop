@@ -90,6 +90,8 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 1: Label Every File
 
+**Status: Complete** — see File Inventory section below.
+
 **Goal:** Every slide file has a written label stating its topic cluster, audience level, and primary use case example.
 
 - Read each slide file and write a one-line label for it: topic cluster, depth level (overview / practitioner / deep dive), and which use case it uses (aircraft, fraud, portfolio, generic).
@@ -101,6 +103,8 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 ---
 
 ### Phase 2: Decide the Target Folder Structure
+
+**Status: Complete** — see Target Structure section below.
 
 **Goal:** A confirmed list of topic folders with a one-line description of what belongs in each.
 
@@ -123,6 +127,8 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 3: Consolidate Redundant Files
 
+**Status: Pending**
+
 **Goal:** Each topic has exactly one canonical slide file. Redundant files are either merged into the canonical file or marked for deletion.
 
 - For each topic with more than one file, compare the versions side by side. Identify any content in the non-canonical versions that is not in the canonical version.
@@ -135,6 +141,8 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 ---
 
 ### Phase 4: Move Files into Topic Folders
+
+**Status: Pending**
 
 **Goal:** Files live under topic-named folders matching the Target Structure from Phase 2.
 
@@ -149,6 +157,8 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 5: Walk Through and Validate
 
+**Status: Pending**
+
 **Goal:** Confirm the reorganized slides tell a coherent story and nothing important was lost.
 
 - Read through the canonical file for each topic cluster in the order listed in Phase 2.
@@ -157,6 +167,124 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 - Write a short "what is missing" list in this file.
 
 **Done when:** Every topic cluster has been reviewed. Gaps are written down. No content from the original files has been silently lost.
+
+---
+
+## File Inventory
+
+Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` and this file) has a row below with its format, topic cluster, depth level, and primary use case. Files marked with * span more than one cluster.
+
+**Format:** Marp = presentation slide deck | Reference = participant reference doc, no Marp | Outline = planning or narrative arc, not a deliverable slide deck | Admin = README or meta doc
+
+**Depth:** overview | practitioner | deep dive | — (not applicable)
+
+| File | Format | Topic Cluster | Depth | Use Case | Notes |
+|------|--------|---------------|-------|----------|-------|
+| `README.md` | Admin | meta | — | — | Build and usage instructions for the slides directory. Not a slide file. |
+| `databricks-in-depth/01-intro-databricks-neo4j-slides.md` | Marp | platform overview * | deep dive | fraud | * Also covers governance (Spark Connector, bidirectional data flow) and knowledge graph construction (graph modeling decisions). Fraud and portfolio lens; distinct from the aircraft angle of other platform files. |
+| `databricks-in-depth/02-power-of-graphrag-slides.md` | Marp | agents and multi-agent systems * | deep dive | aircraft | * Also covers GenAI foundations (LLM limitations). Most detailed treatment of Genie, Neo4j MCP, and the multi-agent supervisor. |
+| `databricks-in-depth/03-graph-enrichment-slides.md` | Marp | graph ML and enrichment | deep dive | portfolio | GDS algorithms, feature engineering, MLflow lift comparison, bidirectional data loop, incremental sync with Change Data Feed. |
+| `databricks-in-depth/04-future-graph-enrichment-slides.md` | Marp | graph ML and enrichment * | deep dive | portfolio | * Also covers agents (agentic enrichment loop, multi-agent supervisor for gap detection). Overlaps with 03 on incremental sync. |
+| `databricks-in-depth/auth-sync-slides.md` | Marp | governance and integration | deep dive | generic | Unique content: four authorization sync patterns between Unity Catalog and Neo4j, plus the semantic layer data model. No substantial overlap with other files. |
+| `databricks-in-depth/slides.md` | Outline | graph ML and enrichment | — | portfolio | Narrative arc and section flow notes for the graph enrichment portion of the databricks-in-depth deck. Not a deliverable slide file. |
+| `docs/building-knowledge-graphs.md` | Reference | knowledge graph construction | practitioner | aircraft | Participant reference doc combining content from overview-knowledge-graph/05 through 09. Content is covered by those five Marp files; this serves a different delivery format. |
+| `docs/overview-and-genai-foundations.md` | Reference | GenAI foundations * | overview / practitioner | aircraft | * Also covers platform overview (workshop overview, digital twin). Participant reference doc combining content from 01-workshop-over, 02, 03, and 04. Serves a different delivery format than those four Marp files. |
+| `overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md` | Marp | platform overview * | overview | aircraft | * Also covers agents (MCP, multi-agent supervisor) and governance (semantic layer, JDBC federation). Most complete single-file overview of the full partnership. |
+| `overview-databricks-neo4j/SUMMARY.md` | Reference | platform overview | overview | aircraft | Condensed plain-text summary of 01-databricks-neo4j-integration-slides.md. No unique content. Redundant. |
+| `overview-knowledge-graph/01-neo4j-aura-overview-slides.md` | Marp | platform overview | overview | generic | Neo4j Aura managed cloud: Explore tool, Query Workspace, Dashboards, Aura Agents for no-code GraphRAG. No substantial overlap with other files. |
+| `overview-knowledge-graph/01-workshop-over.md` | Marp | platform overview | overview | aircraft | Workshop opener: digital twin definition, dataset stats, dual-database architecture, shared vs personal infrastructure. Distinct role as the workshop entry point. |
+| `overview-knowledge-graph/02-genai-and-limitations-slides.md` | Marp | GenAI foundations | overview | generic | LLM strengths and three core limitations (hallucination, knowledge cutoff, relationship blindness). Clean standalone file. |
+| `overview-knowledge-graph/03-traditional-rag-slides.md` | Marp | GenAI foundations | overview | generic | RAG motivation, embeddings as smart librarian analogy, retrieval flow. Clean standalone file. |
+| `overview-knowledge-graph/04-context-and-rag-slides.md` | Marp | GenAI foundations | practitioner | aircraft | Context ROT, questions RAG cannot answer, GraphRAG solution with three retrieval patterns. Bridges GenAI foundations to knowledge graph construction. |
+| `overview-knowledge-graph/05-building-knowledge-graphs-slides.md` | Marp | knowledge graph construction | practitioner | aircraft | neo4j-graphrag package, SimpleKGPipeline, aircraft digital twin graph structure. Entry point for the KG construction sequence. |
+| `overview-knowledge-graph/06-schema-design-slides.md` | Marp | knowledge graph construction | practitioner | aircraft | Three schema modes, node type definitions, relationship patterns, workshop schema table. |
+| `overview-knowledge-graph/07-chunking-slides.md` | Marp | knowledge graph construction | practitioner | generic | Chunk size trade-off, FixedSizeSplitter parameters, typical size ranges, evaluation Cypher queries. |
+| `overview-knowledge-graph/08-entity-resolution-slides.md` | Marp | knowledge graph construction | practitioner | aircraft | Duplicate entity problem, three resolution strategies, FuzzyMatchResolver example. |
+| `overview-knowledge-graph/09-vectors-slides.md` | Marp | knowledge graph construction | practitioner | generic | Embeddings definition, cosine similarity, storing vectors in Neo4j, combining with graph traversal. |
+| `overview-retrievers/01-retrievers-overview-slides.md` | Marp | retrieval patterns | practitioner | aircraft | Three retriever types, GraphRAG class pipeline, decision framework table. |
+| `overview-retrievers/02-vector-retriever-slides.md` | Marp | retrieval patterns | practitioner | aircraft | VectorRetriever creation, similarity score ranges, top_k parameter, limitations. |
+| `overview-retrievers/03-vector-cypher-retriever-slides.md` | Marp | retrieval patterns | practitioner | aircraft | Two-step vector + Cypher process, retrieval_query with OPTIONAL MATCH, chunk as anchor concept. |
+| `overview-retrievers/04-text2cypher-retriever-slides.md` | Marp | retrieval patterns | practitioner | aircraft | Text2CypherRetriever, schema role, security considerations, generated query quality. |
+| `overview-retrievers/08-from-retrievers-to-agents-slides.md` | Marp | agents and multi-agent systems | practitioner | aircraft | Four agent components, tools, ReAct pattern, multi-tool example. Bridges the retrieval patterns cluster to agents. |
+
+**Multi-cluster files (flagged for review in Phase 3):**
+
+- `databricks-in-depth/01-intro-databricks-neo4j-slides.md`: platform overview + governance and integration + knowledge graph construction
+- `databricks-in-depth/02-power-of-graphrag-slides.md`: agents and multi-agent systems + GenAI foundations
+- `databricks-in-depth/04-future-graph-enrichment-slides.md`: graph ML and enrichment + agents and multi-agent systems
+- `overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md`: platform overview + agents and multi-agent systems + governance and integration
+- `docs/overview-and-genai-foundations.md`: GenAI foundations + platform overview
+
+---
+
+## Target Structure
+
+Phase 2 complete. Proposed topic-based folder layout with canonical files named per cluster and a list of redundant files.
+
+### Proposed Folder Layout
+
+```
+slides/
+  platform-overview/        (why Databricks + Neo4j, dual-database architecture, Neo4j Aura)
+  genai-foundations/        (LLM limitations, traditional RAG, Context ROT)
+  kg-construction/          (schema, chunking, entity resolution, vectors, SimpleKGPipeline)
+  retrieval-patterns/       (Vector, Vector Cypher, Text2Cypher retrievers)
+  agents/                   (ReAct, Genie, MCP, multi-agent supervisor)
+  graph-ml/                 (GDS, feature engineering, enrichment loop, MLflow)
+  governance/               (authorization sync, semantic layer, JDBC federation)
+  docs/                     (keep as-is: participant reference docs, not Marp)
+  README.md                 (update in Phase 4 to describe new layout)
+  organize.md               (this file)
+```
+
+### Canonical Files per Cluster
+
+| Cluster | File | Role |
+|---------|------|------|
+| platform-overview | `overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md` | Most complete overview of the full partnership: dual-database, Spark Connector, GraphRAG, MCP, semantic layer, and multi-agent routing. Primary file for webinars and conference talks. |
+| platform-overview | `overview-knowledge-graph/01-workshop-over.md` | Workshop entry point with digital twin definition, dataset stats, and shared vs personal infrastructure. Serves a different role than the file above; keep separately. |
+| platform-overview | `overview-knowledge-graph/01-neo4j-aura-overview-slides.md` | Unique focus on the managed cloud product: Explore tool, Query Workspace, Dashboards, Aura Agents. No overlap with other platform files; keep separately. |
+| platform-overview | `databricks-in-depth/01-intro-databricks-neo4j-slides.md` | Deeper engineering perspective through fraud and portfolio lens. Assign to platform-overview/ for now; spans multiple clusters, flag for potential split in a future phase. |
+| GenAI foundations | `overview-knowledge-graph/02-genai-and-limitations-slides.md` | Standalone LLM limitations treatment. |
+| GenAI foundations | `overview-knowledge-graph/03-traditional-rag-slides.md` | Standalone traditional RAG introduction. |
+| GenAI foundations | `overview-knowledge-graph/04-context-and-rag-slides.md` | Context ROT and the case for GraphRAG. Bridges GenAI foundations to knowledge graph construction. |
+| knowledge graph construction | `overview-knowledge-graph/05-building-knowledge-graphs-slides.md` | Entry point for the KG construction sequence: neo4j-graphrag package, SimpleKGPipeline. |
+| knowledge graph construction | `overview-knowledge-graph/06-schema-design-slides.md` | Schema design. |
+| knowledge graph construction | `overview-knowledge-graph/07-chunking-slides.md` | Chunking strategies. |
+| knowledge graph construction | `overview-knowledge-graph/08-entity-resolution-slides.md` | Entity resolution. |
+| knowledge graph construction | `overview-knowledge-graph/09-vectors-slides.md` | Vectors and embeddings. |
+| retrieval patterns | `overview-retrievers/01-retrievers-overview-slides.md` | Retriever overview and decision framework. Entry point for the retrieval sequence. |
+| retrieval patterns | `overview-retrievers/02-vector-retriever-slides.md` | Vector Retriever. |
+| retrieval patterns | `overview-retrievers/03-vector-cypher-retriever-slides.md` | Vector Cypher Retriever. |
+| retrieval patterns | `overview-retrievers/04-text2cypher-retriever-slides.md` | Text2Cypher Retriever. |
+| agents and multi-agent systems | `overview-retrievers/08-from-retrievers-to-agents-slides.md` | ReAct pattern and agent fundamentals. Entry point for the agents cluster. |
+| agents and multi-agent systems | `databricks-in-depth/02-power-of-graphrag-slides.md` | Genie, Neo4j MCP, and the multi-agent supervisor. Most detailed treatment. Spans GenAI foundations but the agent architecture is the primary content. |
+| graph ML and enrichment | `databricks-in-depth/03-graph-enrichment-slides.md` | GDS algorithms, graph feature engineering, MLflow lift comparison, bidirectional data loop. |
+| graph ML and enrichment | `databricks-in-depth/04-future-graph-enrichment-slides.md` | Agentic enrichment loop, confidence scoring, ontology validation. Spans agents cluster but graph ML is the primary content. |
+| governance and integration | `databricks-in-depth/auth-sync-slides.md` | Four authorization sync patterns. Unique content; no overlap with other files. |
+
+### Redundant Files
+
+| File | Redundant Because | Proposed Action |
+|------|-------------------|-----------------|
+| `overview-databricks-neo4j/SUMMARY.md` | Condensed plain-text version of `01-databricks-neo4j-integration-slides.md`. No unique content. | Mark for deletion in Phase 3. |
+| `databricks-in-depth/slides.md` | Narrative arc planning document, not a deliverable slide deck. No slide content to preserve. | Move to `docs/` during Phase 4; not a candidate for a topic folder. |
+
+**Reference docs kept as-is (not moved to topic folders):**
+
+| File | Kept Because |
+|------|-------------|
+| `docs/building-knowledge-graphs.md` | Participant reference format (no Marp). Serves a different delivery need than the five Marp files it mirrors. Content is preserved in those files. |
+| `docs/overview-and-genai-foundations.md` | Same reasoning: reference format for a different delivery context than the four Marp files it mirrors. |
+
+### Gaps Identified in Phase 2
+
+No dedicated slide file exists for:
+- JDBC federation and SQL-to-Cypher translation (mentioned in `overview-databricks-neo4j/01` but not developed as standalone slides)
+- Databricks Vector Search as a pluggable external vector store (mentioned in one slide, not developed)
+- Genie Space setup and configuration steps (covered in workshop notebooks, not in slides)
+
+These are content gaps to address in a future content phase, not part of the reorganization.
 
 ---
 
