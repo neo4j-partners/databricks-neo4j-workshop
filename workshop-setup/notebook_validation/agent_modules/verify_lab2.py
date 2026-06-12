@@ -178,6 +178,7 @@ def main():
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
+    parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
         "--data-path",
         default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
@@ -233,7 +234,7 @@ def main():
         print(f"\n  Query {i}/{len(QUERIES)}: {q['name']}")
 
         try:
-            records, _, _ = driver.execute_query(q["cypher"])
+            records, _, _ = driver.execute_query(q["cypher"], database_=args.neo4j_database)
             rows = [dict(r) for r in records]
             row_count = len(rows)
 

@@ -1,7 +1,15 @@
-# Sample Cypher Queries
+# Lab 3: Sample Cypher Queries
 
 
-Copy and paste these queries into the [Neo4j Aura Query interface](https://console.neo4j.io) to explore the Aircraft Digital Twin knowledge graph.
+Copy and paste these queries into the [Neo4j Aura Query interface](https://console.neo4j.io) to explore the GraphRAG data structures built in this lab — document chunking, text embeddings, entity extraction, fulltext indexes, and vector indexes.
+
+These queries run against the structures created during Lab 3. They will not return results until the notebooks in this lab have been run.
+
+All of these queries can also be run programmatically via:
+```bash
+cd workshop-setup/populate_aircraft_db
+uv run populate-aircraft-db samples
+```
 
 ## Cypher Concepts Used
 
@@ -13,7 +21,6 @@ Copy and paste these queries into the [Neo4j Aura Query interface](https://conso
 | `RETURN ... AS alias` | Project properties and rename columns |
 | `WITH` | Pipes results between query parts — like a subquery boundary |
 | `count()`, `collect()` | Aggregate functions — count rows or gather values into a list |
-| `COALESCE(a, b)` | Returns the first non-null value — useful for handling missing optional matches |
 | `substring(str, start, len)` | Extract part of a string — handy for previewing long text |
 | `ORDER BY ... DESC` | Sort results (ascending by default) |
 | `LIMIT n` | Cap the number of returned rows |
@@ -23,121 +30,6 @@ Copy and paste these queries into the [Neo4j Aura Query interface](https://conso
 | `db.index.fulltext.queryNodes()` | Run a keyword search against a named fulltext index |
 | `db.index.vector.queryNodes()` | Run a vector similarity search against a named vector index |
 | `CALL { ... }` | Subquery block — used to scope intermediate results or call procedures |
-
----
-
-# Section 1: Aircraft Graph
-
-These queries explore the core aircraft topology loaded in Lab 2 — Aircraft, Systems, Components, Sensors, Flights, and Maintenance Events.
-
----
-
-## Aircraft Fleet Overview
-
-### View all aircraft with system and component counts
-
-```sql
-MATCH (a:Aircraft)
-OPTIONAL MATCH (a)-[:HAS_SYSTEM]->(s:System)
-OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(c:Component)
-WITH a, count(DISTINCT s) AS systems, count(DISTINCT c) AS components
-RETURN a.tail_number AS tail, a.model AS model,
-       a.manufacturer AS mfr, systems, components
-ORDER BY a.tail_number
-```
-
-> **Concepts**: `OPTIONAL MATCH` ensures aircraft appear even without systems/components. `count(DISTINCT ...)` avoids double-counting when multiple join paths exist.
-
-## System-Component Hierarchy
-
-### Full hierarchy for one aircraft
-
-```sql
-MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)-[:HAS_COMPONENT]->(c:Component)
-WITH a, s, c ORDER BY s.name, c.name
-WITH a, s, collect(c.name) AS comps ORDER BY s.name
-WITH a, collect({system: s.name, components: comps}) AS systems
-RETURN a.tail_number AS tail, a.model AS model, systems
-LIMIT 1
-```
-
-> **Concepts**: Nested `WITH` + `collect()` builds a hierarchical structure. The inner `collect()` gathers components per system, then the outer `collect()` gathers systems per aircraft. `LIMIT 1` keeps the output manageable.
-
-## Flight Operations
-
-### Most frequent routes by flight count
-
-```sql
-MATCH (f:Flight)-[:DEPARTS_FROM]->(dep:Airport),
-      (f)-[:ARRIVES_AT]->(arr:Airport)
-WITH dep.iata AS origin, arr.iata AS dest, count(f) AS flights
-RETURN origin, dest, flights
-ORDER BY flights DESC
-LIMIT 10
-```
-
-> **Concepts**: Multi-pattern `MATCH` joins a Flight to both its departure and arrival Airport in one clause. `count()` with `WITH` groups by route.
-
-## Maintenance Events
-
-### Recent maintenance events with fault codes and affected systems
-
-```sql
-MATCH (me:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(a:Aircraft)
-WHERE me.reported_at IS NOT NULL
-OPTIONAL MATCH (me)-[:AFFECTS_SYSTEM]->(s:System)
-RETURN a.tail_number AS aircraft, me.event_id AS event,
-       me.reported_at AS date, me.severity AS severity, me.fault AS fault,
-       s.name AS system
-ORDER BY me.reported_at DESC
-LIMIT 10
-```
-
-> **Concepts**: `OPTIONAL MATCH` on the system relationship keeps events that don't target a specific system. `WHERE ... IS NOT NULL` ensures sortable dates.
-
-## Sensors
-
-### Sensors installed across the fleet
-
-```sql
-MATCH (a:Aircraft)-[:HAS_SYSTEM]->(sys:System)-[:HAS_SENSOR]->(s:Sensor)
-RETURN a.tail_number AS aircraft, sys.name AS system,
-       s.sensor_id AS sensor, s.type AS type, s.unit AS unit
-ORDER BY a.tail_number, sys.name
-LIMIT 10
-```
-
-> **Concepts**: Three-hop traversal `Aircraft → System → Sensor` follows the physical topology. This is the same sensor data that appears in the Databricks Delta tables — the join point between the two databases.
-
-## Schema Introspection
-
-### View the complete graph schema
-
-```sql
-CALL db.schema.visualization()
-```
-
-> **Concepts**: Introspects the database and returns every node label, relationship type, and how they connect. Useful for understanding the full data model at any point in the workshop.
-
-### List all indexes
-
-```sql
-SHOW INDEXES
-```
-
-> **Concepts**: Shows all indexes in the database — useful for verifying what's been created so far.
-
----
-
-# Section 2: Embeddings, Entity Extraction & Vector Indexes
-
-The following queries run against data structures built in later labs — document chunking, text embeddings, entity extraction, fulltext indexes, and vector indexes. They will not return results until those labs are completed.
-
-All of these queries can also be run programmatically via:
-```bash
-cd workshop-setup/populate_aircraft_db
-uv run populate-aircraft-db samples
-```
 
 ---
 
@@ -392,7 +284,7 @@ RETURN substring(seed.text, 0, 80) AS seed_text,
 
 ---
 
-## Indexes and Schema (Post-Lab 3)
+## Indexes and Schema
 
 ### Verify the fulltext index
 

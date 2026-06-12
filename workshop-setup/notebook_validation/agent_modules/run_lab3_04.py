@@ -26,6 +26,7 @@ def main():
     parser.add_argument("--neo4j-uri", default="", help="(unused)")
     parser.add_argument("--neo4j-username", default="", help="(unused)")
     parser.add_argument("--neo4j-password", default="", help="(unused)")
+    parser.add_argument("--neo4j-database", default="neo4j", help="(unused)")
     parser.add_argument("--data-path", default="", help="(unused)")
     args = parser.parse_args()
 

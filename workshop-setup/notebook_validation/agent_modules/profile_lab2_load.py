@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
+    parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
         "--data-path",
         default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
@@ -57,7 +58,7 @@ def main():
     spark.conf.set("neo4j.url", args.neo4j_uri)
     spark.conf.set("neo4j.authentication.basic.username", args.neo4j_username)
     spark.conf.set("neo4j.authentication.basic.password", args.neo4j_password)
-    spark.conf.set("neo4j.database", "neo4j")
+    spark.conf.set("neo4j.database", args.neo4j_database)
 
     driver = GraphDatabase.driver(args.neo4j_uri, auth=(args.neo4j_username, args.neo4j_password))
 
@@ -92,7 +93,7 @@ def main():
 
     def cypher(query):
         """Run a query via the Neo4j driver and return its records."""
-        records, _, _ = driver.execute_query(query)
+        records, _, _ = driver.execute_query(query, database_=args.neo4j_database)
         return records
 
     def delete_label(label):

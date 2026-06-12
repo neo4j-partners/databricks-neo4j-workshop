@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
+    parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     # Accept extra args for submit.sh compatibility (unused by this script)
     parser.add_argument("--data-path", default="", help="(unused)")
     parser.add_argument("--mcp-endpoint", default="", help="(unused)")
@@ -80,6 +81,7 @@ def main():
 
     vector_retriever = VectorRetriever(
         driver=driver,
+        neo4j_database=args.neo4j_database,
         index_name=VECTOR_INDEX_NAME,
         embedder=embedder,
         return_properties=["text"],
@@ -144,6 +146,7 @@ RETURN
 
     document_retriever = VectorCypherRetriever(
         driver=driver,
+        neo4j_database=args.neo4j_database,
         index_name=VECTOR_INDEX_NAME,
         embedder=embedder,
         retrieval_query=document_context_query,
@@ -194,6 +197,7 @@ RETURN
 
     adjacent_retriever = VectorCypherRetriever(
         driver=driver,
+        neo4j_database=args.neo4j_database,
         index_name=VECTOR_INDEX_NAME,
         embedder=embedder,
         retrieval_query=adjacent_chunks_query,
@@ -247,6 +251,7 @@ RETURN
 
     system_retriever = VectorCypherRetriever(
         driver=driver,
+        neo4j_database=args.neo4j_database,
         index_name=VECTOR_INDEX_NAME,
         embedder=embedder,
         retrieval_query=system_context_query,
@@ -304,6 +309,7 @@ RETURN
 
     limit_retriever = VectorCypherRetriever(
         driver=driver,
+        neo4j_database=args.neo4j_database,
         index_name=VECTOR_INDEX_NAME,
         embedder=embedder,
         retrieval_query=operating_limit_query,

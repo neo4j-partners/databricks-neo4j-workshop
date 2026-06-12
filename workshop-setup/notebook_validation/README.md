@@ -75,6 +75,19 @@ Runs 13 read-only Cypher queries against the existing data without modifying any
 ./submit.sh verify_lab2.py
 ```
 
+### Step 5b: Run the Lab 2 GDS notebooks (additive)
+
+Builds the in-memory projections and runs the four GDS algorithms from notebooks `02`–`05`, validating each with PASS/FAIL checks. These are additive to the base Lab 2 data: each writes properties or relationships to Neo4j, then drops its in-memory projection at the end. Run them after Step 4 (data loaded):
+
+```bash
+./submit.sh run_lab2_02.py    # Louvain community detection → fault_community on Aircraft
+./submit.sh run_lab2_03.py    # kNN aircraft similarity → SIMILAR_PROFILE relationships
+./submit.sh run_lab2_04.py    # PageRank + Betweenness → pagerank_score, betweenness_score on Airport
+./submit.sh run_lab2_05.py    # Node Similarity → SIMILAR_FAULT_PROFILE relationships
+```
+
+> Requires the Aura instance to have GDS available (each script checks `gds.version()` and fails fast if not). `run_lab2_02.py` and `run_lab2_03.py` additionally read the sensor Delta tables; `run_lab2_03.py` also reads `nodes_maintenance.csv` from the Volume. `run_lab2_05.py` creates temporary `FaultType` nodes and removes them on completion.
+
 ### Step 6: Build and verify Lab 3 embedding pipeline
 
 Loads the A320 maintenance manual, chunks it, generates embeddings, creates vector and fulltext indexes, then runs 16 PASS/FAIL checks:
@@ -127,6 +140,10 @@ Reading the report: steps whose total time is close to the "connector RETURN 1" 
 | `run_lab2_01.py` | Load Lab 2 data + validate (19 checks) | **Yes** — clears DB | Yes |
 | `profile_lab2_load.py` | Profile the Lab 2 load: per-step timings, overhead baselines, Flight A/B write strategies | **Yes** — clears DB (Flight nodes only with `--flights-only`) | Yes |
 | `verify_lab2.py` | Read-only Lab 2 verification (13 queries) | No | No |
+| `run_lab2_02.py` | GDS Louvain community detection (notebook 02) + validate | Additive — writes `fault_community`, drops projection | Yes |
+| `run_lab2_03.py` | GDS kNN aircraft similarity (notebook 03) + validate | Additive — writes `*_norm` + `SIMILAR_PROFILE`, drops projection | Yes |
+| `run_lab2_04.py` | GDS PageRank + Betweenness (notebook 04) + validate | Additive — writes `pagerank_score`/`betweenness_score`, drops projection | Yes |
+| `run_lab2_05.py` | GDS Node Similarity (notebook 05) + validate | Additive — writes `SIMILAR_FAULT_PROFILE`, removes temp `FaultType` nodes | Yes |
 | `run_lab3_01.py` | Build Lab 3 embedding pipeline + validate (16 checks) | **Yes** — clears Document/Chunk nodes | No |
 | `run_lab3_02.py` | Read-only validation of Lab 3 GraphRAG retriever patterns | No | No |
 | `run_lab3_04.py` | Read-only verification of the Neo4j MCP server (get-schema, read-cypher) | No | No |

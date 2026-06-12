@@ -130,7 +130,7 @@ The embedding and LLM models use Databricks Foundation Model APIs which are pre-
 
 Congratulations! You've completed the Semantic Search lab. You can now combine vector search with graph traversal to build powerful GraphRAG retrievers.
 
-Copy and paste queries from the [Sample Queries](../Lab_1_Aura_Setup/SAMPLE_QUERIES.md) page to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
+Copy and paste queries from the [Sample Queries](SAMPLE_QUERIES.md) page to explore the Document-Chunk structure and fulltext search in the Neo4j Query Workspace.
 
 > **Note:** Vector similarity search is not included in the sample queries because it requires embedding the query text with the same model used to generate the stored embeddings (Databricks BGE-large). The notebooks handle this automatically via the Databricks Foundation Model APIs. See notebooks 02 and 03 for hands-on semantic search examples.
 

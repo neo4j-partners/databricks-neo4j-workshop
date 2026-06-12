@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
+    parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
         "--data-path",
         default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
@@ -61,7 +62,7 @@ def main():
     # ── Step 2: Check node count ──────────────────────────────────────────────
 
     try:
-        records, _, _ = driver.execute_query("MATCH (n) RETURN count(n) AS count")
+        records, _, _ = driver.execute_query("MATCH (n) RETURN count(n) AS count", database_=args.neo4j_database)
         node_count = records[0]["count"]
         record("Node count", True, f"{node_count:,} nodes")
     except Exception as e:
@@ -71,7 +72,8 @@ def main():
 
     try:
         records, _, _ = driver.execute_query(
-            "CALL dbms.components() YIELD name, versions, edition RETURN name, versions, edition"
+            "CALL dbms.components() YIELD name, versions, edition RETURN name, versions, edition",
+            database_=args.neo4j_database,
         )
         row = dict(records[0])
         version = row["versions"][0] if row["versions"] else "unknown"

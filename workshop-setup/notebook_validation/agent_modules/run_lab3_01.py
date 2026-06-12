@@ -14,6 +14,7 @@ Usage:
 import argparse
 import sys
 import time
+from functools import partial
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
+    parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
         "--data-path",
         default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
@@ -80,6 +82,7 @@ def main():
     )
     driver.verify_connectivity()
     print("Connected to Neo4j successfully!\n")
+    execute_query = partial(driver.execute_query, database_=args.neo4j_database)
 
     # ══════════════════════════════════════════════════════════════════════════
     # STAGE 1: Clear + Run SimpleKGPipeline
@@ -94,7 +97,7 @@ def main():
     print("Clearing existing enrichment data...")
     for idx_name in [VECTOR_INDEX_NAME, FULLTEXT_INDEX_NAME]:
         try:
-            with driver.session() as session:
+            with driver.session(database=args.neo4j_database) as session:
                 result = session.run(f"DROP INDEX {idx_name} IF EXISTS")
                 result.consume()
             print(f"  Dropped index: {idx_name}")
@@ -105,7 +108,7 @@ def main():
     deleted_total = 0
     for label in labels:
         while True:
-            records_del, _, _ = driver.execute_query(
+            records_del, _, _ = execute_query(
                 f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted"
             )
             count = records_del[0]["deleted"]
@@ -137,6 +140,7 @@ def main():
     pipeline_start = time.time()
     run_pipeline(
         driver=driver,
+        neo4j_database=args.neo4j_database,
         llm=llm,
         embedder=embedder,
         text=manual_text,
@@ -158,7 +162,7 @@ def main():
     print("Stage 1 Verification:")
 
     # Check 1: Document node with correct metadata
-    doc_check, _, _ = driver.execute_query("""
+    doc_check, _, _ = execute_query("""
         MATCH (d:Document {documentId: $doc_id})
         RETURN d.type AS type, d.aircraftType AS aircraftType, d.title AS title
     """, doc_id=DOCUMENT_ID)
@@ -167,7 +171,7 @@ def main():
            f"found={len(doc_check)}")
 
     # Check 2: Chunks created with FROM_DOCUMENT
-    chunk_count_check, _, _ = driver.execute_query("""
+    chunk_count_check, _, _ = execute_query("""
         MATCH (c:Chunk)-[:FROM_DOCUMENT]->(d:Document {documentId: $doc_id})
         RETURN count(c) as count
     """, doc_id=DOCUMENT_ID)
@@ -176,7 +180,7 @@ def main():
            f"chunks={chunk_count}")
 
     # Check 3: No orphaned chunks
-    orphan_check, _, _ = driver.execute_query("""
+    orphan_check, _, _ = execute_query("""
         MATCH (c:Chunk)
         WHERE NOT (c)-[:FROM_DOCUMENT]->(:Document)
         RETURN count(c) as orphans
@@ -186,7 +190,7 @@ def main():
            f"orphans={orphan_count}")
 
     # Check 4: NEXT_CHUNK chain exists
-    chain_check, _, _ = driver.execute_query("""
+    chain_check, _, _ = execute_query("""
         MATCH ()-[r:NEXT_CHUNK]->()
         RETURN count(r) as count
     """)
@@ -195,7 +199,7 @@ def main():
            f"relationships={chain_count}")
 
     # Check 5: All chunks have embeddings
-    emb_count_check, _, _ = driver.execute_query("""
+    emb_count_check, _, _ = execute_query("""
         MATCH (c:Chunk) WHERE c.embedding IS NOT NULL
         RETURN count(c) as with_embedding
     """)
@@ -204,7 +208,7 @@ def main():
            f"with_embedding={with_emb}/{chunk_count}")
 
     # Check 6: Embeddings are correct dimensions
-    dim_check, _, _ = driver.execute_query("""
+    dim_check, _, _ = execute_query("""
         MATCH (c:Chunk) WHERE c.embedding IS NOT NULL
         WITH c, size(c.embedding) AS dims
         WHERE dims <> $expected_dims
@@ -215,7 +219,7 @@ def main():
            f"wrong_dims={wrong_dims}")
 
     # Check 7: OperatingLimit entities extracted
-    ol_check, _, _ = driver.execute_query("""
+    ol_check, _, _ = execute_query("""
         MATCH (ol:OperatingLimit)
         RETURN count(ol) as count
     """)
@@ -224,7 +228,7 @@ def main():
            f"entities={ol_count}")
 
     # Check 8: OperatingLimit entities have required properties
-    ol_prop_check, _, _ = driver.execute_query("""
+    ol_prop_check, _, _ = execute_query("""
         MATCH (ol:OperatingLimit)
         WHERE ol.name IS NOT NULL AND ol.parameterName IS NOT NULL AND ol.aircraftType IS NOT NULL
         RETURN count(ol) as valid
@@ -247,6 +251,7 @@ def main():
     try:
         create_vector_index(
             driver=driver,
+            neo4j_database=args.neo4j_database,
             name=VECTOR_INDEX_NAME,
             label="Chunk",
             embedding_property="embedding",
@@ -261,6 +266,7 @@ def main():
     try:
         create_fulltext_index(
             driver=driver,
+            neo4j_database=args.neo4j_database,
             name=FULLTEXT_INDEX_NAME,
             label="Chunk",
             node_properties=["text"],
@@ -274,7 +280,7 @@ def main():
     print("\n  Resolving actual index names for Chunk label:")
     actual_vector_idx = VECTOR_INDEX_NAME
     actual_fulltext_idx = FULLTEXT_INDEX_NAME
-    with driver.session() as session:
+    with driver.session(database=args.neo4j_database) as session:
         result = session.run("""
             SHOW INDEXES
             YIELD name, state, type, labelsOrTypes, properties
@@ -308,7 +314,7 @@ def main():
     first_poll = True
 
     while time.time() - start_time < INDEX_POLL_TIMEOUT:
-        idx_records, _, _ = driver.execute_query("""
+        idx_records, _, _ = execute_query("""
             SHOW INDEXES
             YIELD name, state, type
             RETURN name, state, type
@@ -354,7 +360,7 @@ def main():
     # Vector search — engine vibration query
     query_text = "How do I troubleshoot engine vibration?"
     query_embedding = embedder.embed_query(query_text)
-    search_results, _, _ = driver.execute_query("""
+    search_results, _, _ = execute_query("""
         CALL db.index.vector.queryNodes($index_name, $top_k, $embedding)
         YIELD node, score
         RETURN node.text as text, node.index as idx, score
@@ -369,7 +375,7 @@ def main():
         record("Vector search: score above threshold", False, "no results returned")
 
     # Fulltext search for EGT limits
-    ft_results, _, _ = driver.execute_query("""
+    ft_results, _, _ = execute_query("""
         CALL db.index.fulltext.queryNodes($index_name, $query)
         YIELD node, score
         RETURN node.text as text, score
@@ -395,7 +401,7 @@ def main():
     # -- Create APPLIES_TO -------------------------------------------------
 
     print("Creating Document -[:APPLIES_TO]-> Aircraft relationships...")
-    applies_to, _, _ = driver.execute_query("""
+    applies_to, _, _ = execute_query("""
         MATCH (d:Document) WHERE d.aircraftType IS NOT NULL
         MATCH (a:Aircraft {model: d.aircraftType})
         MERGE (d)-[:APPLIES_TO]->(a)
@@ -407,7 +413,7 @@ def main():
     # -- Create HAS_LIMIT --------------------------------------------------
 
     print("Creating Sensor -[:HAS_LIMIT]-> OperatingLimit relationships...")
-    has_limit, _, _ = driver.execute_query("""
+    has_limit, _, _ = execute_query("""
         MATCH (a:Aircraft)-[:HAS_SYSTEM]->(sys:System)-[:HAS_SENSOR]->(s:Sensor)
         MATCH (ol:OperatingLimit {parameterName: s.type, aircraftType: a.model})
         MERGE (s)-[:HAS_LIMIT]->(ol)
@@ -423,7 +429,7 @@ def main():
     print("\nStage 3 Verification:")
 
     # Check: APPLIES_TO exists
-    applies_check, _, _ = driver.execute_query("""
+    applies_check, _, _ = execute_query("""
         MATCH (d:Document)-[:APPLIES_TO]->(a:Aircraft)
         RETURN count(*) as count
     """)
@@ -432,7 +438,7 @@ def main():
            f"count={applies_count}")
 
     # Check: Full traversal path works
-    traversal_check, _, _ = driver.execute_query("""
+    traversal_check, _, _ = execute_query("""
         MATCH (c:Chunk)-[:FROM_DOCUMENT]->(d:Document)-[:APPLIES_TO]->(a:Aircraft)
         RETURN a.model AS model, count(c) AS chunks
     """)
@@ -441,7 +447,7 @@ def main():
            f"aircraft_models={[r['model'] for r in traversal_check]}")
 
     # Check: HAS_LIMIT (soft check — depends on LLM extraction quality)
-    limit_check, _, _ = driver.execute_query("""
+    limit_check, _, _ = execute_query("""
         MATCH (s:Sensor)-[:HAS_LIMIT]->(ol:OperatingLimit)
         RETURN count(*) as count
     """)

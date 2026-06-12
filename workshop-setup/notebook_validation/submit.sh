@@ -53,6 +53,7 @@ if os.environ.get('NEO4J_URI') and os.environ.get('NEO4J_PASSWORD'):
         '--neo4j-uri', os.environ['NEO4J_URI'],
         '--neo4j-username', os.environ.get('NEO4J_USERNAME', 'neo4j'),
         '--neo4j-password', os.environ['NEO4J_PASSWORD'],
+        '--neo4j-database', os.environ.get('NEO4J_DATABASE', 'neo4j'),
     ]
 data_path = os.environ.get('DATA_PATH', '')
 if data_path:

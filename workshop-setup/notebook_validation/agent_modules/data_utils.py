@@ -218,17 +218,19 @@ def get_llm(model_id: str = DEFAULT_LLM_MODEL) -> DatabricksLLM:
 class Neo4jConnection:
     """Manages Neo4j database connection."""
 
-    def __init__(self, uri: str, username: str, password: str):
+    def __init__(self, uri: str, username: str, password: str, database: str = "neo4j"):
         """Initialize and connect to Neo4j.
 
         Args:
             uri: Neo4j URI (e.g., "neo4j+s://xxxxxxxx.databases.neo4j.io")
             username: Neo4j username (typically "neo4j")
             password: Neo4j password
+            database: Neo4j database name (default "neo4j")
         """
         self.uri = uri
         self.username = username
         self.password = password
+        self.database = database
         self.driver = GraphDatabase.driver(
             self.uri,
             auth=(self.username, self.password)
@@ -251,7 +253,8 @@ class Neo4jConnection:
         for label in labels:
             while True:
                 records, _, _ = self.driver.execute_query(
-                    f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted"
+                    f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted",
+                    database_=self.database,
                 )
                 count = records[0]["deleted"]
                 deleted_total += count
@@ -268,7 +271,7 @@ class Neo4jConnection:
             UNWIND nodeLabels as label
             RETURN label, count(*) as count
             ORDER BY label
-        """)
+        """, database_=self.database)
         print("=== Graph Statistics ===")
         for record in records:
             print(f"  {record['label']}: {record['count']}")
@@ -553,6 +556,7 @@ def run_pipeline(
     document_metadata: Dict[str, str],
     context: str,
     *,
+    neo4j_database: Optional[str] = None,
     chunk_size: int = 800,
     chunk_overlap: int = 100,
 ) -> None:
@@ -570,6 +574,7 @@ def run_pipeline(
         document_metadata: Dict with documentId, aircraftType, title, type.
         context: Context string prepended to every chunk for LLM extraction
                  (e.g. "[DOCUMENT CONTEXT] Aircraft Type: A320-200 | Title: ...").
+        neo4j_database: Neo4j database to write to (defaults to the server default).
         chunk_size: Characters per chunk (default 800).
         chunk_overlap: Overlap between chunks (default 100).
     """
@@ -587,6 +592,7 @@ def run_pipeline(
     pipeline = SimpleKGPipeline(
         llm=llm,
         driver=driver,
+        neo4j_database=neo4j_database,
         embedder=embedder,
         schema=schema,
         text_splitter=splitter,

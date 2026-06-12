@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
+    parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
         "--data-path",
         default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
@@ -50,7 +51,7 @@ def main():
     spark.conf.set("neo4j.url", args.neo4j_uri)
     spark.conf.set("neo4j.authentication.basic.username", args.neo4j_username)
     spark.conf.set("neo4j.authentication.basic.password", args.neo4j_password)
-    spark.conf.set("neo4j.database", "neo4j")
+    spark.conf.set("neo4j.database", args.neo4j_database)
 
     BATCH_SIZE = 20000
     results = []  # (name, passed, detail)
@@ -115,7 +116,7 @@ def main():
         The connector's spark.read sessions are read-only, so DDL and
         deletes cannot go through the connector's script option.
         """
-        with neo4j_driver() as drv, drv.session(database="neo4j") as session:
+        with neo4j_driver() as drv, drv.session(database=args.neo4j_database) as session:
             for statement in script.split(";"):
                 if statement.strip():
                     session.run(statement).consume()
@@ -128,12 +129,13 @@ def main():
         with neo4j_driver() as drv:
             for pass_num in range(1, MAX_CLEAR_PASSES + 1):
                 records, _, _ = drv.execute_query(
-                    "MATCH (n) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) AS c"
+                    "MATCH (n) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) AS c",
+                    database_=args.neo4j_database,
                 )
                 print(f"  Clear pass {pass_num}: deleted {records[0]['c']} nodes")
                 if records[0]["c"] == 0:
                     break
-            records, _, _ = drv.execute_query("MATCH (n) RETURN count(n) AS remaining")
+            records, _, _ = drv.execute_query("MATCH (n) RETURN count(n) AS remaining", database_=args.neo4j_database)
             remaining = records[0]["remaining"]
         record("Clear database", remaining == 0, f"remaining={remaining}")
     else:
@@ -166,7 +168,7 @@ def main():
     # SHOW commands cannot run through the connector's query option,
     # so verify through the driver.
     with neo4j_driver() as drv:
-        records, _, _ = drv.execute_query("SHOW CONSTRAINTS YIELD name RETURN name")
+        records, _, _ = drv.execute_query("SHOW CONSTRAINTS YIELD name RETURN name", database_=args.neo4j_database)
         constraint_count = len(records)
     record(
         "Constraints and indexes",
