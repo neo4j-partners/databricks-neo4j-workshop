@@ -20,6 +20,18 @@ from neo4j import GraphDatabase
 PROJECTION = "fault-network"
 
 
+def _unwrap_projection(row):
+    """The Cypher aggregation form ``RETURN gds.graph.project(...)`` returns a
+    single column keyed by the expression text, whose value is the result map.
+    Unwrap it to that inner map so callers can read nodeCount/relationshipCount.
+    """
+    if len(row) == 1:
+        (value,) = row.values()
+        if isinstance(value, dict) and "nodeCount" in value:
+            return value
+    return row
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Lab 2 Notebook 02: GDS Louvain Community Detection"
@@ -133,6 +145,7 @@ def main():
                 {undirectedRelationshipTypes: ['SHARES_FAULT']}
             )
         """)[0]
+        proj = _unwrap_projection(proj)
         node_count = proj["nodeCount"]
         rel_count = proj["relationshipCount"]
         print(f"  Projection: {node_count} nodes, {rel_count} relationships")

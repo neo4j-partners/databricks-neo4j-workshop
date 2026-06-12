@@ -50,7 +50,8 @@ def get_table_creation_sql(
             sql=f"""
             CREATE TABLE IF NOT EXISTS {target}.aircraft
             {tblprops}
-            AS SELECT * FROM read_files('{volume_path}/nodes_aircraft.csv',
+            AS SELECT `:ID(Aircraft)` AS aircraft_id, * EXCEPT (`:ID(Aircraft)`)
+            FROM read_files('{volume_path}/nodes_aircraft.csv',
                 format => 'csv', header => 'true', inferSchema => 'true')
             """,
         ),
@@ -59,7 +60,8 @@ def get_table_creation_sql(
             sql=f"""
             CREATE TABLE IF NOT EXISTS {target}.systems
             {tblprops}
-            AS SELECT * FROM read_files('{volume_path}/nodes_systems.csv',
+            AS SELECT `:ID(System)` AS system_id, * EXCEPT (`:ID(System)`)
+            FROM read_files('{volume_path}/nodes_systems.csv',
                 format => 'csv', header => 'true', inferSchema => 'true')
             """,
         ),
@@ -68,7 +70,8 @@ def get_table_creation_sql(
             sql=f"""
             CREATE TABLE IF NOT EXISTS {target}.sensors
             {tblprops}
-            AS SELECT * FROM read_files('{volume_path}/nodes_sensors.csv',
+            AS SELECT `:ID(Sensor)` AS sensor_id, * EXCEPT (`:ID(Sensor)`)
+            FROM read_files('{volume_path}/nodes_sensors.csv',
                 format => 'csv', header => 'true', inferSchema => 'true')
             """,
         ),
@@ -107,18 +110,18 @@ def get_comment_sql(volume_config: VolumeConfig) -> list[str]:
     return [
         # Aircraft table
         f"COMMENT ON TABLE {target}.aircraft IS 'Fleet of aircraft with tail numbers, models, and operators'",
-        f"COMMENT ON COLUMN {target}.aircraft.`:ID(Aircraft)` IS 'Unique aircraft identifier'",
+        f"COMMENT ON COLUMN {target}.aircraft.aircraft_id IS 'Unique aircraft identifier'",
         f"COMMENT ON COLUMN {target}.aircraft.tail_number IS 'Aircraft registration/tail number (e.g., N10000)'",
         f"COMMENT ON COLUMN {target}.aircraft.model IS 'Aircraft model (e.g., B737-800, A320-200)'",
         f"COMMENT ON COLUMN {target}.aircraft.operator IS 'Airline operator name'",
         # Systems table
         f"COMMENT ON TABLE {target}.systems IS 'Aircraft systems including engines, avionics, and hydraulics'",
-        f"COMMENT ON COLUMN {target}.systems.`:ID(System)` IS 'Unique system identifier'",
+        f"COMMENT ON COLUMN {target}.systems.system_id IS 'Unique system identifier'",
         f"COMMENT ON COLUMN {target}.systems.type IS 'System type (Engine, Avionics, Hydraulics)'",
         f"COMMENT ON COLUMN {target}.systems.name IS 'Human-readable system name'",
         # Sensors table
         f"COMMENT ON TABLE {target}.sensors IS 'Sensors installed on aircraft systems'",
-        f"COMMENT ON COLUMN {target}.sensors.`:ID(Sensor)` IS 'Unique sensor identifier'",
+        f"COMMENT ON COLUMN {target}.sensors.sensor_id IS 'Unique sensor identifier'",
         f"COMMENT ON COLUMN {target}.sensors.type IS 'Sensor type: EGT (Exhaust Gas Temperature in Celsius), Vibration (ips), N1Speed (RPM), FuelFlow (kg/s)'",
         f"COMMENT ON COLUMN {target}.sensors.unit IS 'Unit of measurement'",
         # Sensor readings table
