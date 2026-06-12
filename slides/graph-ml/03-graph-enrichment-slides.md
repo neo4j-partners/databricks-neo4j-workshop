@@ -33,8 +33,6 @@ Feature Engineering in Unity Catalog + scikit-learn + MLflow
 
 ---
 
----
-
 ## What You'll Learn
 
 - What feature engineering is and why graph structure produces features flat tables cannot

@@ -50,6 +50,15 @@ They just ask questions:
 
 ## The Solution: Agents
 
+An **agent** wraps your retrievers in a reasoning loop:
+
+- Receives any user question
+- Decides which retriever tool fits the question
+- Executes the tool and observes the result
+- Returns a coherent, grounded answer
+
+Users ask naturally. The agent figures out how to answer.
+
 ---
 
 ## What is an Agent?
