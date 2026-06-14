@@ -127,7 +127,6 @@ The 5.4.3 connector is the latest `for_spark_3` build and has been extensively t
 | `pydantic==2.13.4` | PyPI |
 | `langchain-core>=1.4.6` | PyPI |
 | `databricks-langchain>=0.20.0` | PyPI |
-| `dspy>=3.2.1` | PyPI |
 | `neo4j-graphrag>=1.17.0` | PyPI |
 | `beautifulsoup4>=4.15.0` | PyPI |
 | `sentence_transformers` | PyPI |

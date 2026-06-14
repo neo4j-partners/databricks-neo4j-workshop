@@ -65,7 +65,6 @@ class LibraryConfig:
         "pydantic==2.13.4",
         "langchain-core>=1.4.6",
         "databricks-langchain>=0.20.0",
-        "dspy>=3.2.1",
         "neo4j-graphrag>=1.17.0",
         "beautifulsoup4>=4.15.0",
         "sentence_transformers",
