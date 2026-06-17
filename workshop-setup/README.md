@@ -101,7 +101,7 @@ Admins who need a fully populated Neo4j instance outside the lab flow, for examp
 
 ## Alternative Setup Paths
 
-- **CLI automation**: the `databricks-setup` CLI in `auto_scripts/` automates cluster creation, data upload, and table creation from your laptop. See **[docs/automated-setup-guide.md](docs/automated-setup-guide.md)**.
+- **CLI tooling**: the `databricks-setup` CLI in `auto_scripts/` runs from your laptop. Its main jobs are `sync` (upload the lab notebooks, Step 3 above) and `cleanup` (tear the environment down); it can also run full provisioning as an alternative to the notebook. See **[docs/automated-setup-guide.md](docs/automated-setup-guide.md)**.
 - **Full UI walkthrough**: to set everything up through the Databricks UI step by step, see **[docs/MANUAL_SETUP.md](docs/MANUAL_SETUP.md)**.
 
 ---

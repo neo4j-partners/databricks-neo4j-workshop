@@ -2,7 +2,7 @@
 
 **Purpose:** Step-by-step instructions for setting up the entire Databricks workshop environment through the UI, without using the `databricks-setup` CLI.
 
-> **Prefer the automated approach?** Run `uv run databricks-setup` from `workshop-setup/auto_scripts/` instead — it handles Steps 2–5 below in one command. See the [Automated Setup Guide](automated-setup-guide.md) for details.
+> **Prefer not to click through the UI?** The [setup notebook](../workshop_setup.ipynb) provisions Steps 2 through 5 from inside the workspace, and the `databricks-setup` CLI in `workshop-setup/auto_scripts/` does the same from your laptop plus the `sync` and `cleanup` jobs the notebook does not cover. See the [databricks-setup CLI Guide](automated-setup-guide.md).
 
 ---
 
