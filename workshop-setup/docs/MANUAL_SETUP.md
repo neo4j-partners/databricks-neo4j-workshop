@@ -75,9 +75,8 @@ Newer Databricks workspaces use **Default Storage**, which blocks programmatic c
 2. Click **Create compute**
 3. Configure:
    - **Name:** `Small Spark 4.0` (or your preferred name)
-   - **Databricks Runtime:** 17.3 LTS ML (includes Apache Spark 4.0.0, Scala 2.13)
-   - **Photon acceleration:** Enabled
-   - **Node type:** `Standard_D4ds_v5` (16 GB Memory, 4 Cores) or equivalent
+   - **Databricks Runtime:** 17.3 LTS ML (`17.3.x-cpu-ml-scala2.13`, includes Apache Spark 4.0.0, Scala 2.13)
+   - **Node type:** `m5.large` (8 GB Memory, 2 Cores) on AWS, or the equivalent 2-core, 8 GB type on Azure or GCP
    - **Single node:** Enabled (0 workers)
    - **Auto termination:** 30 minutes
 4. Expand **Advanced** options:
@@ -91,9 +90,8 @@ The Neo4j Spark Connector requires **Dedicated (Single User)** access mode — s
 
 | Setting | Value |
 |---------|-------|
-| Runtime | 17.3 LTS ML (Spark 4.0.0, Scala 2.13) |
-| Photon | Enabled |
-| Node type | `Standard_D4ds_v5` (16 GB, 4 cores) |
+| Runtime | 17.3 LTS ML (`17.3.x-cpu-ml-scala2.13`, Spark 4.0.0, Scala 2.13) |
+| Node type | `m5.large` (8 GB, 2 cores) on AWS, or equivalent on Azure/GCP |
 | Workers | 0 (single node) |
 | Access mode | Dedicated (Single User) |
 | Auto-terminate | 30 minutes |
