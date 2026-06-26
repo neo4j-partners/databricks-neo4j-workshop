@@ -4,7 +4,7 @@ Load aircraft data from Databricks into Neo4j using the Spark Connector.
 
 > **Infrastructure:** This lab uses the Vocareum lab environment for the Databricks workspace setup and notebook execution.
 
-**Duration:** ~45 minutes for the core notebooks, plus optional extra time for the Graph Data Science notebooks
+**Duration:** ~45 minutes for the core notebook, plus optional extra time for the Graph Data Science notebook
 
 ---
 
@@ -20,18 +20,15 @@ The core flow is a single notebook:
 
 ---
 
-## Optional: Graph Data Science Notebooks
+## Optional: Graph Data Science Notebook
 
-Four optional, more advanced notebooks apply Neo4j Graph Data Science (GDS) algorithms to the loaded graph. All four require notebook 01 to have been run first, and they require the Neo4j Graph Data Science plugin. Notebooks 02 and 03 include a `gds.version()` check cell you can use to confirm GDS is available on your instance.
+One optional notebook applies a Neo4j Graph Data Science algorithm to the loaded graph. It requires notebook 01 to have been run first and requires the Neo4j Graph Data Science plugin. A `gds.version()` check cell is included so you can confirm GDS is available on your instance.
 
 | Notebook | Algorithm | What It Does |
 |----------|-----------|--------------|
-| [`02_gds_louvain_maintenance.ipynb`](02_gds_louvain_maintenance.ipynb) | Louvain | Community detection on maintenance events, grouping aircraft into risk communities based on shared fault patterns |
-| [`03_gds_knn_aircraft.ipynb`](03_gds_knn_aircraft.ipynb) | kNN | Computes per-aircraft feature vectors from sensor and maintenance data, then writes `SIMILAR_PROFILE` relationships between similar aircraft |
-| [`04_gds_pagerank_airports.ipynb`](04_gds_pagerank_airports.ipynb) | PageRank + Betweenness | Centrality analysis on the airport route network, writing `pagerank_score` and `betweenness_score` to Airport nodes |
-| [`05_gds_node_similarity_aircraft.ipynb`](05_gds_node_similarity_aircraft.ipynb) | Node Similarity | Jaccard similarity over shared fault types, writing `SIMILAR_FAULT_PROFILE` relationships between aircraft |
+| [`02_gds_knn_aircraft.ipynb`](02_gds_knn_aircraft.ipynb) | kNN | Builds per-aircraft feature vectors from both Databricks sensor telemetry and Neo4j maintenance data, then writes `SIMILAR_PROFILE` relationships between the three most similar peer aircraft |
 
-> **Note:** Notebook 05's comparison queries assume notebook 03 has already run.
+> **Going deeper:** Three additional GDS notebooks covering Louvain community detection, PageRank centrality, and Node Similarity are in [Appendix A](../Appendix_A_GDS_Graph_Analytics/).
 
 ---
 
@@ -104,7 +101,7 @@ This lab introduced Unity Catalog Volumes, where the workshop CSV files live, an
 | [SAMPLE_QUERIES.md](SAMPLE_QUERIES.md) | Library of sample Cypher queries covering schema, aircraft topology, sensors, maintenance, flights, removals, and cross-domain analysis, with concept notes for each |
 | [aura-explore.md](aura-explore.md) | Five progressive queries that build a graph visualization story in Aura Explore, from one aircraft out to its peer similarity network |
 | [data-exploring.md](data-exploring.md) | Sample Cypher queries for creating nodes with `MERGE` and exploring the loaded dataset, from schema census to multi-hop patterns |
-| [gds-exploring.md](gds-exploring.md) | Companion queries for the GDS notebooks: inspect projections, re-run individual algorithm steps, and explore the written results |
+| [Appendix A — gds-exploring.md](../Appendix_A_GDS_Graph_Analytics/gds-exploring.md) | Companion queries for GDS notebooks: inspect projections, re-run individual algorithm steps, and explore written results |
 
 ---
 

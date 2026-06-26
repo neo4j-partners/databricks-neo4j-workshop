@@ -1,4 +1,4 @@
-"""Automated version of 03_gds_knn_aircraft.ipynb for cluster execution.
+"""Automated version of 02_gds_knn_aircraft.ipynb for cluster execution.
 
 Engineers sensor + maintenance features in Spark, normalizes them, writes the
 *_norm properties back to Aircraft nodes, projects the feature graph, runs kNN
@@ -28,7 +28,7 @@ FEATURE_COLS = [
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Lab 2 Notebook 03: GDS kNN Aircraft Similarity")
+    parser = argparse.ArgumentParser(description="Lab 2 Notebook 02: GDS kNN Aircraft Similarity")
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
     parser.add_argument("--neo4j-username", default="neo4j", help="Neo4j username")
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
@@ -55,7 +55,7 @@ def main():
     spark = SparkSession.builder.getOrCreate()
 
     print("=" * 60)
-    print("Lab 2 Notebook 03: GDS kNN Aircraft Similarity")
+    print("Lab 2 Notebook 02: GDS kNN Aircraft Similarity")
     print("=" * 60)
     print(f"Neo4j URI:    {args.neo4j_uri}")
     print(f"Catalog:      {args.catalog}.{args.schema}")

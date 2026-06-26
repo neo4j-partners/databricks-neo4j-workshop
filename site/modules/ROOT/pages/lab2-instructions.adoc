@@ -13,7 +13,7 @@ TIP: For concepts and background, see xref:lab2.adoc[Lab 2: Concepts and Referen
 
 == Notebooks
 
-This lab has one required notebook and four optional Graph Data Science notebooks.
+This lab has one required notebook and one optional Graph Data Science notebook.
 
 [cols="2,4,1"]
 |===
@@ -23,24 +23,14 @@ This lab has one required notebook and four optional Graph Data Science notebook
 | Guided Spark Connector walkthrough that loads the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals. Clears the database first (`CLEAR_DATABASE = True`)
 | Labs 3, 4
 
-| `02_gds_louvain_maintenance.ipynb`
-| Optional: Community detection clusters aircraft by shared fault patterns using Louvain algorithm
-| Optional
-
-| `03_gds_knn_aircraft.ipynb`
-| Optional: kNN similarity builds per-aircraft feature vectors from sensor and maintenance data, then finds operationally similar peers
-| Optional
-
-| `04_gds_pagerank_airports.ipynb`
-| Optional: Centrality runs PageRank and betweenness centrality on the airport route network, then correlates with maintenance delays
-| Optional
-
-| `05_gds_node_similarity_aircraft.ipynb`
-| Optional: Node similarity finds aircraft with overlapping fault-type portfolios using Jaccard similarity
+| `02_gds_knn_aircraft.ipynb`
+| Optional: kNN similarity builds per-aircraft feature vectors from both Databricks sensor telemetry and Neo4j maintenance data, then writes `SIMILAR_PROFILE` relationships to the three most operationally similar peer aircraft
 | Optional
 |===
 
-NOTE: Optional notebooks require AuraDB Professional with the Graph Data Science plugin enabled.
+NOTE: The optional notebook requires AuraDB Professional with the Graph Data Science plugin enabled.
+
+TIP: Three additional GDS notebooks covering Louvain community detection, PageRank centrality, and Node Similarity (Jaccard) are available in Appendix A of the workshop materials.
 
 == Instructions
 
