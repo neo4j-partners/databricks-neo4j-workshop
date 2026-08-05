@@ -10,8 +10,13 @@
 # MAGIC | **Bronze** | Raw CSV ingestion (10 node tables, 12 relationship tables) | Schema-on-read, preserve source fidelity |
 # MAGIC | **Silver** | Cleaned + typed entities (aircraft, systems, sensors, readings, flights, maintenance) | Validated, deduplicated, proper types |
 # MAGIC | **Gold** | Analytics-ready views (fleet_readiness, sensor_health, maintenance_summary) | Genie/BI/Agent consumption layer |
+# MAGIC
+# MAGIC Bronze and silver publish to the pipeline default schema (`aircraft_pipeline`).
+# MAGIC Only the 8 gold tables are published into the participant-facing schema (`aircraft`).
 
 # COMMAND ----------
+
+import os
 
 import dlt
 from pyspark.sql.functions import (
@@ -25,7 +30,28 @@ from pyspark.sql.types import DoubleType, IntegerType
 # Configuration
 # ---------------------------------------------------------------------------
 
-VOLUME_PATH = "/Volumes/databricks-neo4j-workshop/aircraft/raw_data"
+def _setting(key: str, default: str) -> str:
+    """Resolve a workshop setting from pipeline configuration, then env vars, then default.
+
+    workshop_data_setup.py reads the same keys from the environment and forwards
+    them into the pipeline configuration, so an override cannot desync the two.
+    """
+    try:
+        value = spark.conf.get(key)
+    except Exception:
+        value = None
+    return value or os.getenv(key, default)
+
+
+CATALOG = _setting("WORKSHOP_CATALOG", "databricks-neo4j-workshop")
+VOLUME_SCHEMA = _setting("WORKSHOP_VOLUME_SCHEMA", "aircraft")
+VOLUME_NAME = _setting("WORKSHOP_VOLUME_NAME", "raw_data")
+VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"
+
+# Bronze + silver land in the pipeline default schema. Only gold is published into
+# the participant-facing schema, so Catalog and Genie show 8 tables instead of 40.
+# The schema-qualified name resolves against the pipeline's default catalog.
+GOLD_SCHEMA = _setting("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
 
 # Enable column mapping for Neo4j CSV headers with special chars like :ID(Aircraft)
 BRONZE_PROPS = {"delta.columnMapping.mode": "name"}
@@ -77,7 +103,7 @@ def bronze_sensors():
 
 @dlt.table(
     name="bronze_readings",
-    comment="Raw sensor telemetry readings (345K+ rows)",
+    comment="Raw sensor telemetry readings (155,520 rows)",
     table_properties=BRONZE_PROPS
 )
 def bronze_readings():
@@ -284,7 +310,7 @@ def silver_sensors():
 
 @dlt.table(
     name="silver_sensor_readings",
-    comment="Hourly sensor readings over 90 days (July-September 2024). 345K+ time-series records.",
+    comment="Sensor readings at 4-hour intervals over 90 days (2024-07-01 to 2024-09-28). 155,520 time-series records (288 sensors x 540 readings).",
     partition_cols=["sensor_id"]
 )
 @dlt.expect_or_drop("valid_reading_id", "reading_id IS NOT NULL")
@@ -390,14 +416,17 @@ def silver_airports():
     comment="Flight delay records with cause and duration"
 )
 def silver_delays():
+    # nodes_delays.csv has no flight_id — derive it from the Flight → Delay relationship.
+    flight_delay = dlt.read("bronze_rel_flight_delay").selectExpr("`:START_ID(Flight)` as flight_id", "`:END_ID(Delay)` as delay_id")
+
     return (
         dlt.read("bronze_delays")
         .selectExpr(
             "`:ID(Delay)` as delay_id",
-            "flight_id",
             "cause as delay_cause",
             "CAST(minutes AS INT) as delay_minutes"
         )
+        .join(flight_delay, "delay_id", "left")
     )
 
 @dlt.table(
@@ -414,7 +443,9 @@ def silver_removals():
             "component_id",
             "aircraft_id",
             "to_timestamp(removal_date) as removal_date",
+            "to_timestamp(installation_date) as installation_date",
             "work_order_number",
+            "technician_id",
             "part_number",
             "serial_number",
             "CAST(time_since_install AS DOUBLE) as hours_since_install",
@@ -423,7 +454,6 @@ def silver_removals():
             "CAST(replacement_required AS BOOLEAN) as replacement_required",
             "CAST(shop_visit_required AS BOOLEAN) as shop_visit_required",
             "warranty_status",
-            "removal_location",
             "removal_priority",
             "CAST(cost_estimate AS DOUBLE) as cost_estimate"
         )
@@ -431,10 +461,13 @@ def silver_removals():
 
 # ---------------------------------------------------------------------------
 # GOLD LAYER — Analytics-ready tables for Genie / BI / Agents
+#
+# Gold tables are schema-qualified into GOLD_SCHEMA so they land in the
+# participant-facing schema while bronze/silver stay in the pipeline schema.
 # ---------------------------------------------------------------------------
 
 @dlt.table(
-    name="aircraft",
+    name=f"{GOLD_SCHEMA}.aircraft",
     comment="Fleet of aircraft with tail numbers, models, and operators. Join key for all fleet queries."
 )
 def gold_aircraft():
@@ -442,7 +475,7 @@ def gold_aircraft():
     return dlt.read("silver_aircraft")
 
 @dlt.table(
-    name="systems",
+    name=f"{GOLD_SCHEMA}.systems",
     comment="Aircraft systems including engines, avionics, and hydraulics. Each system belongs to one aircraft."
 )
 def gold_systems():
@@ -450,11 +483,13 @@ def gold_systems():
     aircraft = dlt.read("silver_aircraft").select("aircraft_id", "tail_number")
     return (
         dlt.read("silver_systems")
+        .withColumnRenamed("system_type", "type")
+        .withColumnRenamed("system_name", "name")
         .join(aircraft, "aircraft_id", "left")
     )
 
 @dlt.table(
-    name="sensors",
+    name=f"{GOLD_SCHEMA}.sensors",
     comment="Sensors installed on aircraft systems. Types: EGT, Vibration, N1Speed, FuelFlow."
 )
 def gold_sensors():
@@ -463,13 +498,15 @@ def gold_sensors():
     aircraft = dlt.read("silver_aircraft").select("aircraft_id", "tail_number")
     return (
         dlt.read("silver_sensors")
+        .withColumnRenamed("sensor_type", "type")
+        .withColumnRenamed("sensor_name", "name")
         .join(systems, "system_id", "left")
         .join(aircraft, "aircraft_id", "left")
     )
 
 @dlt.table(
-    name="sensor_readings",
-    comment="Hourly sensor readings over 90 days (July-September 2024). Partitioned by sensor_id for efficient time-series queries.",
+    name=f"{GOLD_SCHEMA}.sensor_readings",
+    comment="Sensor readings at 4-hour intervals over 90 days (2024-07-01 to 2024-09-28), 155,520 rows. Each sensor has 540 readings spaced 6 per day; there is no hourly granularity, so per-hour buckets are not meaningful. Partitioned by sensor_id for efficient time-series queries.",
     partition_cols=["sensor_id"]
 )
 def gold_sensor_readings():
@@ -477,7 +514,7 @@ def gold_sensor_readings():
     return dlt.read("silver_sensor_readings")
 
 @dlt.table(
-    name="flights",
+    name=f"{GOLD_SCHEMA}.flights",
     comment="Flight operations with aircraft, route, schedule, and total delay minutes."
 )
 def gold_flights():
@@ -502,8 +539,8 @@ def gold_flights():
     )
 
 @dlt.table(
-    name="maintenance_events",
-    comment="Maintenance events enriched with aircraft tail number and system details. Severity: CRITICAL, WARNING, INFO."
+    name=f"{GOLD_SCHEMA}.maintenance_events",
+    comment="Maintenance events enriched with aircraft tail number and system details. Severity: CRITICAL (141 events), MAJOR (77), MINOR (68)."
 )
 def gold_maintenance():
     """Maintenance events with full aircraft + system context."""
@@ -516,8 +553,8 @@ def gold_maintenance():
     )
 
 @dlt.table(
-    name="fleet_readiness",
-    comment="Per-aircraft fleet readiness summary. Includes system count, sensor count, open critical maintenance, recent flights, and readiness status."
+    name=f"{GOLD_SCHEMA}.fleet_readiness",
+    comment="Per-aircraft fleet readiness summary. Includes system count, sensor count, open critical maintenance, recent flights, and readiness status. Across the 36-aircraft fleet: 6 NOT MISSION READY, 12 DEGRADED, 18 MISSION READY."
 )
 def gold_fleet_readiness():
     """Mission-oriented fleet readiness view for command dashboards."""
@@ -583,15 +620,24 @@ def gold_fleet_readiness():
             "critical_events": 0, "total_maintenance_events": 0,
             "total_flights": 0, "total_removals": 0, "replacements_needed": 0
         })
+        # Thresholds tuned against the current dataset (286 maintenance events,
+        # 141 of them CRITICAL, spread over 16 of the 36 aircraft). A simple
+        # "any critical event" rule would mark 16 aircraft NOT MISSION READY and
+        # never produce a DEGRADED aircraft.
         .withColumn("readiness_status",
-            when(col("critical_events") > 0, "NOT MISSION READY")
-            .when(col("total_removals") > 2, "DEGRADED")
+            when(col("critical_events") >= 10, "NOT MISSION READY")
+            .when(
+                (col("critical_events") > 0)
+                | (col("total_maintenance_events") >= 5)
+                | (col("total_removals") >= 3),
+                "DEGRADED"
+            )
             .otherwise("MISSION READY")
         )
     )
 
 @dlt.table(
-    name="sensor_health",
+    name=f"{GOLD_SCHEMA}.sensor_health",
     comment="Per-sensor health summary with latest reading, average value, min/max range, and anomaly flag based on 2-sigma deviation."
 )
 def gold_sensor_health():

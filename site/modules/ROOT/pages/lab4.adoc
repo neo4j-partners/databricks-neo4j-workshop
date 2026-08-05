@@ -8,7 +8,7 @@ TIP: Ready to start? Jump to the xref:lab4-instructions.adoc[Lab 4 Instructions]
 
 * **Agents** use the ReAct pattern (Reason + Act): perceive, reason, call tools, observe results, repeat
 * **Genie space** translates natural language to SQL for sensor telemetry analytics over Delta tables
-* **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get-schema, read-cypher)
+* **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher)
 * **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both
 * One agent per platform prevents idiom mixing (SQL thinks in rows/aggregations, Cypher thinks in paths/patterns)
 
@@ -103,11 +103,10 @@ When a user asks "What is the average EGT temperature for aircraft N95040A?", Ge
 
 The Neo4j agent is purpose-built for connected data: paths, multi-hop traversals, cycle detection, shared-attribute matching. It inspects every node label, relationship type, and property key before querying, so the graph's schema becomes a constraint that guides generation rather than a suggestion to ignore. Every generated query is read-only.
 
-The agent accesses Neo4j through MCP (Model Context Protocol), an open standard that exposes data sources as tools any agent framework can discover and call. Neo4j exposes three MCP tools:
+The agent accesses Neo4j through MCP (Model Context Protocol), an open standard that exposes data sources as tools any agent framework can discover and call. The server used in this lab exposes two MCP tools:
 
-* **`get-schema`** introspects the live database using APOC, returning a token-efficient representation of every node label, relationship type, and property key.
-* **`read-cypher`** executes read-only Cypher queries with parameterized inputs.
-* **`list-gds-procedures`** discovers available graph algorithms (PageRank, community detection, similarity) when GDS is installed.
+* **`get_neo4j_schema`** introspects the live database using APOC, returning a token-efficient representation of every node label, relationship type, and property key.
+* **`read_neo4j_cypher`** executes read-only Cypher queries with parameterized inputs.
 
 Write operations are hidden entirely, so agents can never modify production data.
 
@@ -115,7 +114,7 @@ Write operations are hidden entirely, so agents can never modify production data
 
 A supervisor agent sits above both specialists and routes questions based on their nature.
 
-image::lab-architecture-overview.png[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
+image::lab-architecture-overview.svg[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
 
 The supervisor does not answer questions itself. It reads the question, determines which data shape it targets, and routes to the right specialist. For questions that span both platforms, it decomposes the question into sub-tasks, sends each to the appropriate agent, and synthesizes a single answer.
 

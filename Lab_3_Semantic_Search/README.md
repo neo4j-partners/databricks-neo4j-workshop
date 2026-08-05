@@ -24,7 +24,7 @@ Connect directly to Neo4j Aura using the Python driver and `neo4j-graphrag` libr
 
 The notebooks are numbered 01-03 and build on the aircraft graph you loaded in Lab 2.
 
-### 01_data_and_embeddings.ipynb - Data Preparation (Required for both paths)
+### 01_data_and_embeddings.ipynb - Data Preparation (Required)
 Build the foundation for semantic search over maintenance documentation:
 - Understand the Document -> Chunk graph structure
 - Load the A320-200 Maintenance Manual into Neo4j
@@ -33,7 +33,7 @@ Build the foundation for semantic search over maintenance documentation:
 - Create vector and fulltext indexes in Neo4j
 - Perform similarity search to find relevant maintenance procedures
 
-### 02_graphrag_retrievers.ipynb - Retrieval Strategies (Path A)
+### 02_graphrag_retrievers.ipynb - Retrieval Strategies
 Learn retrieval patterns from simple to graph-enhanced:
 - Set up a VectorRetriever using Neo4j's vector index
 - Use GraphRAG to combine vector search with LLM-generated answers
@@ -41,7 +41,7 @@ Learn retrieval patterns from simple to graph-enhanced:
 - Connect maintenance documentation to your aircraft topology
 - Compare standard vs. graph-enhanced retrieval results
 
-### 03_hybrid_retrievers.ipynb - Hybrid Search (Optional, Path A)
+### 03_hybrid_retrievers.ipynb - Hybrid Search (Optional)
 Combine vector similarity with keyword-based fulltext search for more robust retrieval:
 - Use HybridRetriever and HybridCypherRetriever to blend vector and keyword results
 - Compare hybrid retrieval against pure vector search

@@ -67,7 +67,7 @@ The data is split across two platforms, each chosen for the workload it handles 
 
 A multi-agent supervisor routes questions to the right database automatically.
 
-![Dual Database Architecture](../images/dual-database-architecture.png)
+![Dual Database Architecture](../../images/dual-database-architecture.svg)
 
 ### Workshop Infrastructure
 
@@ -90,7 +90,7 @@ A multi-agent supervisor routes questions to the right database automatically.
 
 Labs using the MCP server (Supervisor Agent) connect to the shared Reference Aura Instance. Labs doing ETL and GraphRAG (Labs 2, 3) load data into your personal instance.
 
-![Workshop Infrastructure](../images/workshop-infrastructure.png)
+![Workshop Infrastructure](../../images/workshop-infrastructure.svg)
 
 ---
 

@@ -110,13 +110,13 @@ Read-only validation that the KG built in Step 6 supports the retriever patterns
 
 ### Step 8: Verify Lab 3 Neo4j MCP server (read-only)
 
-Confirms the Neo4j MCP server is reachable and returns expected data through the **Unity Catalog HTTP connection**, calling the `get_neo4j_schema` and `read_neo4j_cypher` tools with the built-in `http_request()` SQL function over Spark. Mirrors `04_mcp_graph_queries.ipynb` exactly — same transport, same Cypher:
+Confirms the Neo4j MCP server is reachable and returns expected data through the **Unity Catalog HTTP connection**, calling the `get_neo4j_schema` and `read_neo4j_cypher` tools with the built-in `http_request()` SQL function over Spark. This is the same transport Lab 4 Part B uses, so a failure here predicts a Lab 4 failure:
 
 ```bash
 ./submit.sh run_lab3_04_uc.py
 ```
 
-> Requires DBR 16.2+ (for `http_request()`) and the Unity Catalog HTTP connection from [`MCP-MANUAL-SETUP.md`](../MCP-MANUAL-SETUP.md) (`url` ends in `/mcp`, `is_mcp_connection` = `true`). Part 2 and Part 3 checks also require the Document-Chunk structure and indexes from `run_lab3_01.py`. The connection name defaults to `aircraft_mcp_server`; override with `--mcp-connection` if yours differs.
+> Requires DBR 16.2+ (for `http_request()`) and the Unity Catalog HTTP connection from [`MCP-MANUAL-SETUP.md`](../MCP-MANUAL-SETUP.md) (`url` ends in `/mcp`, `is_mcp_connection` = `true`). Part 2 and Part 3 checks also require the Document-Chunk structure and indexes from `run_lab3_01.py`. The connection name defaults to `neo4j_agentcore_mcp`; override with `--mcp-connection` if yours differs.
 
 ## Profiling the Lab 2 Load
 

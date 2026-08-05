@@ -65,7 +65,7 @@ Each under `workshop-setup/` is a standalone Python package with its own `pyproj
 ```
 User Question → Supervisor Agent (Agent Bricks)
   ├→ Genie space → Databricks Lakehouse (natural language → SQL)
-  └→ Neo4j MCP Agent → Neo4j Aura (LangGraph + MCP tools: get-schema, read-cypher)
+  └→ Neo4j MCP Agent → Neo4j Aura (LangGraph + MCP tools: get_neo4j_schema, read_neo4j_cypher)
 ```
 
 The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connection to an external MCP server. Setup: `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`.

@@ -36,6 +36,10 @@ VOLUME_SCHEMA = os.getenv("WORKSHOP_VOLUME_SCHEMA", "aircraft")
 VOLUME_NAME = os.getenv("WORKSHOP_VOLUME_NAME", "raw_data")
 LAKEHOUSE_SCHEMA = os.getenv("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
 
+# Bronze + silver land here so participants only see the 8 gold tables in
+# LAKEHOUSE_SCHEMA when browsing Catalog or picking tables for a Genie space.
+PIPELINE_SCHEMA = os.getenv("WORKSHOP_PIPELINE_SCHEMA", "aircraft_pipeline")
+
 DATA_DIR = os.getenv(
     "WORKSHOP_DATA_DIR",
     "/voc/private/courseware/aircraft_digital_twin_data",
@@ -66,19 +70,25 @@ def get_infrastructure_sql() -> list[tuple[str, str]]:
         ("Granting READ VOLUME", f"GRANT READ_VOLUME ON VOLUME `{CATALOG}`.`{VOLUME_SCHEMA}`.`{VOLUME_NAME}` TO `account users`"),
         ("Creating lakehouse schema", f"CREATE SCHEMA IF NOT EXISTS `{CATALOG}`.`{LAKEHOUSE_SCHEMA}`"),
         ("Granting USE SCHEMA on lakehouse", f"GRANT USE_SCHEMA ON SCHEMA `{CATALOG}`.`{LAKEHOUSE_SCHEMA}` TO `account users`"),
+        ("Creating pipeline schema", f"CREATE SCHEMA IF NOT EXISTS `{CATALOG}`.`{PIPELINE_SCHEMA}`"),
+        ("Granting USE SCHEMA on pipeline schema", f"GRANT USE_SCHEMA ON SCHEMA `{CATALOG}`.`{PIPELINE_SCHEMA}` TO `account users`"),
         ("Granting CREATE CONNECTION", "GRANT CREATE CONNECTION ON METASTORE TO `account users`"),
     ]
 
 
 def get_post_pipeline_sql() -> list[str]:
-    """Return SQL for comments + grants to run after DLT pipeline completes."""
+    """Return SQL for comments + grants to run after DLT pipeline completes.
+
+    Only the 8 gold tables live in LAKEHOUSE_SCHEMA; bronze and silver stay in
+    PIPELINE_SCHEMA and are deliberately left without SELECT grants.
+    """
     target = f"`{CATALOG}`.`{LAKEHOUSE_SCHEMA}`"
     return [
         # Table comments for Genie
         f"COMMENT ON TABLE {target}.aircraft IS 'Fleet of aircraft with tail numbers, models, and operators'",
         f"COMMENT ON TABLE {target}.systems IS 'Aircraft systems including engines, avionics, and hydraulics'",
         f"COMMENT ON TABLE {target}.sensors IS 'Sensors installed on aircraft systems'",
-        f"COMMENT ON TABLE {target}.sensor_readings IS 'Hourly sensor readings over 90 days (July-September 2024)'",
+        f"COMMENT ON TABLE {target}.sensor_readings IS 'Sensor readings at 4-hour intervals over 90 days (2024-07-01 to 2024-09-28), 155,520 rows across 288 sensors'",
         f"COMMENT ON TABLE {target}.flights IS 'Flight operations with aircraft, route, schedule, and total delay minutes'",
         f"COMMENT ON TABLE {target}.maintenance_events IS 'Maintenance events with fault details and severity'",
         f"COMMENT ON TABLE {target}.fleet_readiness IS 'Per-aircraft fleet readiness with mission status'",
@@ -87,10 +97,10 @@ def get_post_pipeline_sql() -> list[str]:
         f"COMMENT ON COLUMN {target}.aircraft.tail_number IS 'Aircraft registration/tail number (e.g., N10000)'",
         f"COMMENT ON COLUMN {target}.aircraft.model IS 'Aircraft model (e.g., B737-800, A320-200)'",
         f"COMMENT ON COLUMN {target}.aircraft.operator IS 'Airline operator name'",
-        f"COMMENT ON COLUMN {target}.systems.system_type IS 'System type (Engine, Avionics, Hydraulics)'",
-        f"COMMENT ON COLUMN {target}.sensors.sensor_type IS 'Sensor type: EGT, Vibration, N1Speed, FuelFlow'",
+        f"COMMENT ON COLUMN {target}.systems.type IS 'System type (Engine, Avionics, Hydraulics)'",
+        f"COMMENT ON COLUMN {target}.sensors.type IS 'Sensor type: EGT, Vibration, N1Speed, FuelFlow'",
         f"COMMENT ON COLUMN {target}.sensor_readings.sensor_id IS 'Foreign key to sensors table'",
-        f"COMMENT ON COLUMN {target}.sensor_readings.timestamp IS 'Reading timestamp (hourly intervals)'",
+        f"COMMENT ON COLUMN {target}.sensor_readings.timestamp IS 'Reading timestamp (4-hour intervals, 6 readings per sensor per day)'",
         f"COMMENT ON COLUMN {target}.sensor_readings.value IS 'Sensor reading value in the sensor unit'",
         f"COMMENT ON COLUMN {target}.fleet_readiness.readiness_status IS 'MISSION READY, DEGRADED, or NOT MISSION READY'",
         f"COMMENT ON COLUMN {target}.sensor_health.health_status IS 'NORMAL, WARNING, or ANOMALY based on 2-sigma deviation'",
@@ -110,24 +120,39 @@ def get_post_pipeline_sql() -> list[str]:
 # Upload logic
 # ---------------------------------------------------------------------------
 
-def upload_csv_files(workspace_client, data_dir: str) -> int:
-    """Upload CSV files from local filesystem to UC volume."""
+def upload_data_files(workspace_client, data_dir: str) -> int:
+    """Upload workshop data files from local filesystem to UC volume.
+
+    Uploads the CSV node/relationship exports consumed by the DLT pipeline and
+    the Markdown maintenance manuals that Lab 3 reads from the volume
+    (data_utils.VolumeDataLoader loads MAINTENANCE_A320.md from here).
+    """
     data_path = Path(data_dir)
     if not data_path.exists():
         logger.error(f"Data directory not found: {data_dir}")
         return 0
 
     csv_files = sorted(data_path.glob("*.csv"))
+    manual_files = sorted(data_path.glob("MAINTENANCE_*.md"))
+    data_files = csv_files + manual_files
+
     if not csv_files:
         logger.error(f"No CSV files found in {data_dir}")
         return 0
+    if not manual_files:
+        logger.warning(
+            f"No MAINTENANCE_*.md manuals found in {data_dir} — Lab 3 notebook 01 will fail"
+        )
 
-    logger.info(f"Uploading {len(csv_files)} CSV files to {VOLUMES_PATH}")
+    logger.info(
+        f"Uploading {len(csv_files)} CSV files and {len(manual_files)} maintenance "
+        f"manuals to {VOLUMES_PATH}"
+    )
     uploaded = 0
 
-    for f in csv_files:
+    for f in data_files:
         target = f"{VOLUMES_PATH}/{f.name}"
-        logger.info(f"  [{uploaded + 1}/{len(csv_files)}] {f.name}")
+        logger.info(f"  [{uploaded + 1}/{len(data_files)}] {f.name}")
         t0 = time.monotonic()
         with open(f, "rb") as fd:
             workspace_client.files.upload(target, fd, overwrite=True)
@@ -185,12 +210,20 @@ def create_dlt_pipeline(workspace_client) -> str:
     for p in workspace_client.pipelines.list_pipelines():
         if p.name == PIPELINE_NAME:
             logger.info(f"Pipeline '{PIPELINE_NAME}' already exists (id={p.pipeline_id})")
+            logger.warning(
+                "  Reusing the existing pipeline. If it was created with the legacy "
+                "'target' field it cannot publish gold tables to a second schema — "
+                "delete it and re-run so it is recreated with the 'schema' field."
+            )
             return p.pipeline_id
 
+    # `schema` (not the deprecated `target`) puts the pipeline in the default
+    # publishing mode, which is what allows the notebook to publish the gold
+    # tables into LAKEHOUSE_SCHEMA while bronze/silver stay in PIPELINE_SCHEMA.
     response = workspace_client.pipelines.create(
         name=PIPELINE_NAME,
         catalog=CATALOG,
-        target=LAKEHOUSE_SCHEMA,
+        schema=PIPELINE_SCHEMA,
         serverless=True,
         continuous=False,
         channel="CURRENT",
@@ -201,6 +234,11 @@ def create_dlt_pipeline(workspace_client) -> str:
         ],
         configuration={
             "pipelines.applyChangesPreviewEnabled": "true",
+            # Forwarded to the notebook so overrides here cannot desync from it.
+            "WORKSHOP_CATALOG": CATALOG,
+            "WORKSHOP_VOLUME_SCHEMA": VOLUME_SCHEMA,
+            "WORKSHOP_VOLUME_NAME": VOLUME_NAME,
+            "WORKSHOP_LAKEHOUSE_SCHEMA": LAKEHOUSE_SCHEMA,
         },
     )
 
@@ -341,14 +379,14 @@ def setup_workshop_data(
         except RuntimeError as e:
             logger.error(f"    FAILED: {e}")
 
-    # Step 2: Upload CSVs
+    # Step 2: Upload CSVs and maintenance manuals
     if not skip_upload:
         logger.info("=" * 60)
-        logger.info("STEP 2: Uploading CSV data files")
+        logger.info("STEP 2: Uploading CSV data files and maintenance manuals")
         logger.info("=" * 60)
-        upload_csv_files(workspace_client, data_dir)
+        upload_data_files(workspace_client, data_dir)
     else:
-        logger.info("Skipping CSV upload (skip_upload=True)")
+        logger.info("Skipping data upload (skip_upload=True)")
 
     # Step 3: Upload DLT notebook and create pipeline
     logger.info("=" * 60)
@@ -382,6 +420,7 @@ def setup_workshop_data(
     logger.info(f"    aircraft, systems, sensors, sensor_readings")
     logger.info(f"    flights, maintenance_events")
     logger.info(f"    fleet_readiness, sensor_health")
+    logger.info(f"  Bronze/silver: {CATALOG}.{PIPELINE_SCHEMA}.* (not granted to participants)")
     logger.info("=" * 60)
 
 

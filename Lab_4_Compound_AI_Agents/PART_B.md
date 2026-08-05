@@ -32,8 +32,11 @@ The Neo4j MCP connection has been **pre-configured** by the workshop administrat
 ### 1.2 Verify MCP Tools Are Available
 
 The Neo4j MCP server provides these tools:
-- `get-schema`: Retrieves the Neo4j graph schema (labels, relationships, properties)
-- `read-cypher`: Executes read-only Cypher queries
+- `get_neo4j_schema`: Retrieves the Neo4j graph schema (labels, relationships, properties)
+- `read_neo4j_cypher`: Executes read-only Cypher queries
+
+The AgentCore Gateway prefixes both names, so in the tool list they appear as
+`neo4j-mcp-server-target___get_neo4j_schema` and `neo4j-mcp-server-target___read_neo4j_cypher`.
 
 You can test these in AI Playground before creating the supervisor:
 1. Navigate to **Playground** in the left navigation

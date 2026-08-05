@@ -3,12 +3,10 @@
 This guide walks through creating the Unity Catalog HTTP connection to the Neo4j
 MCP server in the Databricks UI.
 
-Two notebooks support the process:
-
-- [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb) — use only if the **Is MCP
-  connection** checkbox is missing from the UI (Step 3)
-- [`mcp-validate.ipynb`](./neo4j_mcp_connection/mcp-validate.ipynb) — validates the connection after
-  setup (Step 4)
+One notebook supports the process:
+[`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb) sets the MCP flag in
+Step 3. Use it only if the **Is MCP connection** checkbox is missing from the UI.
+Step 4 validates the finished connection with a SQL query, so it needs no notebook.
 
 ## Prerequisites
 
@@ -53,7 +51,7 @@ click **Create connection**.
 
 | Field | Value |
 |-------|-------|
-| **Connection name** | A name for the connection, for example `neo4j_aircraft_mcp_server`. Prefer underscores over hyphens so the name is easy to reference in SQL. |
+| **Connection name** | `neo4j_agentcore_mcp`. Lab 4 Part B tells participants to look for exactly this name, so use it verbatim. Underscores rather than hyphens keep the name easy to reference in SQL. |
 | **Connection type** | `HTTP` |
 | **Create under a schema** | Optional. Leave it on to list the connection under a catalog and schema in Catalog Explorer, or turn it off to create it at the metastore level. Connections are metastore-scoped objects either way. |
 | **Catalog** / **Schema** | Only shown when "Create under a schema" is on. Pick where the connection appears, for example `databricks-neo4j-workshop` / `aircraft`. |
@@ -142,7 +140,7 @@ path (`@file`), not from stdin, so the body goes through a temp file:
 export CLIENT_SECRET='...'   # client_secret from .mcp-credentials.json
 BODY="$(mktemp).json"
 
-databricks connections get neo4j_aircraft_mcp_server --output json \
+databricks connections get neo4j_agentcore_mcp --output json \
   | jq --arg s "$CLIENT_SECRET" '{
         options: (
           (.options | with_entries(select(.key | IN(
@@ -155,7 +153,7 @@ databricks connections get neo4j_aircraft_mcp_server --output json \
         )
       }' > "$BODY"
 
-databricks connections update neo4j_aircraft_mcp_server --json "@$BODY"
+databricks connections update neo4j_agentcore_mcp --json "@$BODY"
 rm -f "$BODY"   # the body contains the client secret
 ```
 
@@ -163,7 +161,7 @@ Add `--profile <name>` to both commands if you are not using the default
 profile. Then verify:
 
 ```bash
-databricks connections get neo4j_aircraft_mcp_server --output json \
+databricks connections get neo4j_agentcore_mcp --output json \
   | jq '{is_mcp: .options.is_mcp_connection, url}'
 ```
 
@@ -183,14 +181,22 @@ Confirm the `url` ends in `/mcp`. If it does not, edit the connection and set
 
 ## Step 4: Validate the connection
 
-Run **[`mcp-validate.ipynb`](./neo4j_mcp_connection/mcp-validate.ipynb)** on a Databricks cluster.
-The notebook runs three checks in order:
+Run a `tools/list` call through the connection from a Databricks SQL editor or a
+notebook cell. It confirms in one step that the connection is reachable and that
+the MCP flag is active:
 
-1. `tools/list` — confirms the connection is reachable and the MCP flag is active
-2. `get_neo4j_schema` — retrieves node labels, relationship types, and properties
-3. `read_neo4j_cypher` — executes a node-count query and returns results
+```sql
+SELECT http_request(
+  conn => 'neo4j_agentcore_mcp',
+  method => 'POST',
+  path => '',
+  headers => map('Content-Type', 'application/json'),
+  json => '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+) AS response;
+```
 
-Tool names are prefixed by the AgentCore Gateway:
+`http_request()` requires DBR 16.2 or later. The response should list two tools,
+`get_neo4j_schema` and `read_neo4j_cypher`, under their Gateway-prefixed names:
 
 | Tool | Gateway name |
 |------|--------------|
@@ -206,13 +212,12 @@ Tool names are prefixed by the AgentCore Gateway:
 | Connection not listed as MCP | Complete Step 3 and check **Is MCP connection**. If the checkbox is missing, run [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb). |
 | `url` ends in `:443/` not `/mcp` | Set **Base path** to `/mcp`. The UI can default it to `/` on recreate, which misses the Gateway endpoint. |
 | HTTP timeout | Verify the MCP server is running: `cd neo4j-agentcore-mcp-server && ./cloud.sh`. |
-| Tool not found | Use the Gateway-prefixed name, for example `neo4j-mcp-server-target___get-schema`. |
+| Tool not found | Use the Gateway-prefixed name, for example `neo4j-mcp-server-target___get_neo4j_schema`. |
 | Updated credentials not taking effect | Edit the connection and re-enter the changed values. Databricks caches connection options at creation time. |
 
 ## Related documentation
 
 - [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb) — enable the MCP flag when the UI checkbox is missing
-- [`mcp-validate.ipynb`](./neo4j_mcp_connection/mcp-validate.ipynb) — validate the connection after setup
 - [Databricks HTTP Connections](https://docs.databricks.com/aws/en/query-federation/http)
 - [Databricks External MCP](https://docs.databricks.com/aws/en/generative-ai/mcp/external-mcp)
 </content>

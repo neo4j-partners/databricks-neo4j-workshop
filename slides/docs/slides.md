@@ -4,7 +4,7 @@ Sets up the rest of the slide deck by motivating graph feature engineering.
 
 1. **The Dual Architecture for This Use Case** — Databricks holds analytics + documents, Neo4j holds the relationship graph. A graph data pipeline links customers to profiles, enabling GraphRAG search.
 
-2. **Graph-Enriched Retrieval** — How the pipeline works: Spark Connector builds the graph, KG construction adds documents, GraphRAG traverses from text into operational data. Includes graphrag-retrieval-flow.png.
+2. **Graph-Enriched Retrieval** — How the pipeline works: Spark Connector builds the graph, KG construction adds documents, GraphRAG traverses from text into operational data. Includes graphrag-retrieval-flow.svg.
 
 3. **The GraphRAG Gap** — Semantic search finds customers by risk profile, but only 3 of 103 have documents. The other 100 are invisible to retrieval even though the graph holds their structural data.
 

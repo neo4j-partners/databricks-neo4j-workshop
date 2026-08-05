@@ -17,14 +17,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import mlflow.deployments
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, Record
 from neo4j_graphrag.embeddings.base import Embedder
 from neo4j_graphrag.experimental.components.text_splitters.base import TextSplitter
 from neo4j_graphrag.experimental.components.text_splitters.fixed_size_splitter import FixedSizeSplitter
 from neo4j_graphrag.experimental.components.types import TextChunks
 from neo4j_graphrag.llm.base import LLMInterface, LLMInterfaceV2
 from neo4j_graphrag.llm.types import LLMResponse
-from neo4j_graphrag.types import LLMMessage
+from neo4j_graphrag.types import LLMMessage, RetrieverResultItem
 
 
 # =============================================================================
@@ -614,3 +614,44 @@ def run_pipeline(
         ).result()
 
     print("Pipeline complete!")
+
+
+def format_operating_limit_record(record: Record) -> RetrieverResultItem:
+    """Format an operating-limit record into clean, displayable HTML.
+
+    The default VectorCypherRetriever formatter sets ``content`` to ``str(record)``,
+    which prints the raw neo4j Record wrapper with the manual's HTML tags showing
+    literally. This formatter builds well-formed HTML instead, so the operating-limit
+    query results render nicely with ``IPython.display.HTML`` and read cleanly when
+    passed to the LLM as context.
+
+    Expects the record to expose ``aircraft_type``, ``operating_limits`` (a list of
+    dicts with ``sensor``/``parameter``/``max``/``unit``/``regime``), and ``context``.
+    """
+    aircraft = record.get("aircraft_type") or "Unknown"
+    limits = [
+        limit
+        for limit in (record.get("operating_limits") or [])
+        if limit.get("parameter")
+    ]
+    if limits:
+        rows = "".join(
+            f"<li><b>{limit['parameter']}</b> ({limit['sensor']}): "
+            f"max {limit['max']} {limit['unit']} — {limit['regime']}</li>"
+            for limit in limits
+        )
+        limits_html = f"<ul>{rows}</ul>"
+    else:
+        limits_html = "<p><i>No operating limits extracted for this aircraft.</i></p>"
+
+    context = record.get("context") or ""
+    content = (
+        "<div style='border:1px solid #ddd;padding:8px;margin:6px 0'>"
+        f"<h4 style='margin:0'>Aircraft: {aircraft}</h4>"
+        "<p style='margin:4px 0'><b>Operating limits:</b></p>"
+        f"{limits_html}"
+        "<p style='margin:4px 0'><b>Context:</b></p>"
+        f"<div>{context}</div>"
+        "</div>"
+    )
+    return RetrieverResultItem(content=content, metadata={"aircraft_type": aircraft})

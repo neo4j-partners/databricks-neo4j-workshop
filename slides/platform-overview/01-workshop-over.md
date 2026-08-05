@@ -107,7 +107,7 @@ A multi-agent supervisor routes questions to the right database automatically.
 
 ---
 
-![bg contain](../images/dual-database-architecture.png)
+![bg contain](../../images/dual-database-architecture.svg)
 
 ---
 
@@ -144,4 +144,4 @@ Labs doing **ETL and GraphRAG** (Labs 2, 3) load data into your **personal** ins
 
 ---
 
-![bg contain](../images/workshop-infrastructure.png)
+![bg contain](../../images/workshop-infrastructure.svg)

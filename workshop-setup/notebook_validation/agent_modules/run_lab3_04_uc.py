@@ -1,13 +1,13 @@
 """MCP Server verification via the Unity Catalog HTTP connection.
 
 Validates that the Neo4j MCP server is reachable through the Unity Catalog HTTP
-connection (deployed on AWS AgentCore) and returns expected data. Mirrors
-Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb exactly: it calls the MCP
-server with the built-in http_request() SQL function over Spark, discovers
-tools, retrieves the graph schema, and runs the same Cypher queries the
-notebook runs.
+connection (deployed on AWS AgentCore) and returns expected data. It calls the
+MCP server with the built-in http_request() SQL function over Spark, discovers
+tools, retrieves the graph schema, and runs read-only Cypher queries against
+the graph built in Lab 3.
 
-Unlike the notebook there is no driver and no MCP credentials in the script.
+This exercises the same transport Lab 4 uses, so a failure here predicts a
+Lab 4 Part B failure. There is no driver and no MCP credentials in the script.
 The connection name is the only configuration; Unity Catalog handles the OAuth2
 machine-to-machine flow and token refresh.
 
@@ -28,9 +28,8 @@ import json
 import sys
 
 # Name of the Unity Catalog HTTP connection that points at the Neo4j MCP server.
-# Created via workshop-setup/MCP-MANUAL-SETUP.md. Mirrors the MCP_SERVER constant
-# in 04_mcp_graph_queries.ipynb.
-MCP_CONNECTION = "aircraft_mcp_server"
+# Created via workshop-setup/MCP-MANUAL-SETUP.md, which mandates this exact name.
+MCP_CONNECTION = "neo4j_agentcore_mcp"
 
 # The AgentCore Gateway prefixes every tool name with its target id.
 TOOL_GET_SCHEMA = "neo4j-mcp-server-target___get_neo4j_schema"

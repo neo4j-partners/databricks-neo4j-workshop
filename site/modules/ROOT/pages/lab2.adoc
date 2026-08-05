@@ -20,11 +20,11 @@ The mapping from tables to graph follows a few recurring patterns, and the value
 
 The three diagrams below walk through this transformation using the aircraft data from Notebook 01.
 
-image::step1-flat-tables-foreign-keys.png[Flat CSV tables with foreign key columns linking rows across tables]
+image::step1-flat-tables-foreign-keys.svg[Flat CSV tables with foreign key columns linking rows across tables]
 
-image::step2-spark-connector-mapping.png[Spark Connector mapping DataFrame rows to graph nodes and relationship rows to edges]
+image::step2-spark-connector-mapping.svg[Spark Connector mapping DataFrame rows to graph nodes and relationship rows to edges]
 
-image::step3-connected-graph.png[The resulting connected graph with a SQL vs Cypher comparison]
+image::step3-connected-graph.svg[The resulting connected graph with a SQL vs Cypher comparison]
 
 * **Rows become nodes.** A row in the aircraft table becomes an Aircraft node, with columns like `aircraft_id`, `model`, and `status` as node properties.
 * **Foreign keys become relationships.** A column like `system.aircraft_id` pointing to `aircraft.aircraft_id` becomes `(:Aircraft)-[:HAS_SYSTEM]->(:System)`. These are straightforward one-hop lookups that SQL also handles well.

@@ -99,7 +99,7 @@ has a coverage limit, which is where we're headed next.
 
 ---
 
-![bg contain](../databricks-in-depth/graphrag-retrieval-flow.png)
+![bg contain](../databricks-in-depth/graphrag-retrieval-flow.svg)
 
 ---
 

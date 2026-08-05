@@ -20,14 +20,14 @@ The `.dbc` and `.dat` files are byte-identical zip archives containing all noteb
 
 ### 1. Edit the source notebook
 
-Make your change in the repo root (e.g., `Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb`).
+Make your change in the repo root, for example `Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb`.
 
 ### 2. Copy to the vocareum staging directory
 
 ```bash
 # Copy the changed file(s)
-cp Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb \
-   vocareum/courseware/data/Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb
+cp Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb \
+   vocareum/courseware/data/Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb
 ```
 
 Or copy an entire lab directory if multiple files changed:
@@ -41,13 +41,14 @@ cp Lab_3_Semantic_Search/data_utils.py vocareum/courseware/data/Lab_3_Semantic_S
 
 ```bash
 cd vocareum/courseware/data
-zip -r ../neo4j-databricks-workshop.dbc \
-    Lab_2_Databricks_ETL_Neo4j/ \
-    Lab_3_Semantic_Search/
-cp ../neo4j-databricks-workshop.dbc ../neo4j-databricks-workshop.dat
+rm -f ../neo4j-databricks-workshop.dat ../neo4j-databricks-workshop.dbc
+zip -q -r -X ../neo4j-databricks-workshop.dat \
+    Lab_2_Databricks_ETL_Neo4j Lab_3_Semantic_Search \
+    -x '*.DS_Store' -x '*__pycache__*'
+cp ../neo4j-databricks-workshop.dat ../neo4j-databricks-workshop.dbc
 ```
 
-The default `zip` command uses Deflate compression for files and Stored for directories, which matches the existing archive format.
+The default `zip` command uses Deflate compression for files and Stored for directories, which matches the existing archive format. Do not pass `-0`, because storing the entries uncompressed inflates the archive roughly fourfold for no benefit. The `-X` flag strips extra file attributes so the archive is reproducible, and the two `-x` patterns keep macOS metadata and stale bytecode caches out of the bundle.
 
 ### 4. Verify the archive
 
@@ -63,7 +64,7 @@ diff vocareum/courseware/neo4j-databricks-workshop.dbc \
 Check that:
 - All expected files are present (directories use `Stored`, files use `Defl:N`)
 - Only the files you changed have new timestamps and CRC-32 values
-- File count matches (currently 8 files: 1 Lab 2 notebook, 4 Lab 3 notebooks, `data_utils.py`, 2 directory entries)
+- File count matches. The archive currently holds 7 entries: 1 Lab 2 notebook, 3 Lab 3 notebooks, `data_utils.py`, and 2 directory entries.
 
 ### 5. Verify source parity
 
@@ -75,7 +76,6 @@ for f in \
     Lab_3_Semantic_Search/01_data_and_embeddings.ipynb \
     Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb \
     Lab_3_Semantic_Search/03_hybrid_retrievers.ipynb \
-    Lab_3_Semantic_Search/04_mcp_graph_queries.ipynb \
     Lab_3_Semantic_Search/data_utils.py; do
     diff "$f" "vocareum/courseware/data/$f" > /dev/null 2>&1 \
         && echo "MATCH: $f" \
@@ -110,7 +110,7 @@ These files are independent of the lab notebooks and only need updating if their
 
 | File | When to update |
 |------|---------------|
-| `courseware/aircraft_digital_twin_data.zip` | CSV data schema changes |
+| `courseware/aircraft_digital_twin_data.zip` | Anything under `workshop-setup/aircraft_digital_twin_data/` changes, including the CSV schema, row counts, or the `MAINTENANCE_*.md` manuals. See "Rebuilding the Bundle and the Data Zip" in `vocareum/SETUP_GUIDE.md` for the regeneration command and its verification diff. |
 | `courseware/dlt_fleet_etl.py` | DLT pipeline logic changes |
 | `courseware/neo4j-databricks-workshop.cfg` | Cluster config, Spark version, entry notebook, or catalog name changes |
 | `scripts/python/*.py` | Workspace provisioning, user setup, or teardown logic changes |

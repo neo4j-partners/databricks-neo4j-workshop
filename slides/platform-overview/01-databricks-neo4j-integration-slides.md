@@ -63,7 +63,7 @@ Most real-world problems have both: numbers that need crunching **and** relation
 
 ---
 
-![bg contain](../overview-databricks-neo4j/dual-database-architecture.png)
+![bg contain](../../images/dual-database-architecture.svg)
 
 ---
 

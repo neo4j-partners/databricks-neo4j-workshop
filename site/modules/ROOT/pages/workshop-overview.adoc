@@ -28,7 +28,7 @@ The dataset includes:
 
 === How the Data Splits Across Platforms
 
-image::dual-database-architecture.png[Dual Database Architecture,align=center]
+image::dual-database-architecture.svg[Dual Database Architecture,align=center]
 
 The data splits across two platforms, each chosen for the workload it handles best:
 
@@ -50,7 +50,7 @@ The labs build on each other, moving from a single graph database to a full mult
 
 The final architecture is a **Supervisor Agent** built with Databricks Agent Bricks that routes questions to specialized subagents: a **Genie space** for sensor telemetry analytics (natural language to SQL) and a **Neo4j MCP Agent** for graph relationship queries (natural language to Cypher).
 
-image::lab-architecture-overview.png[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
+image::lab-architecture-overview.svg[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
 
 == Labs
 

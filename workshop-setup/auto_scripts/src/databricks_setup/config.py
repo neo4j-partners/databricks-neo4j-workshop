@@ -139,17 +139,27 @@ class NotebookConfig:
     lab_notebooks: tuple[tuple[str, tuple[str, ...], str], ...] = (
         ("Lab_2_Databricks_ETL_Neo4j", (
             "01_aircraft_etl_to_neo4j.ipynb",
+            "02_gds_knn_aircraft.ipynb",
         ), "Lab_2_Databricks_ETL_Neo4j"),
         ("Lab_3_Semantic_Search", (
             "01_data_and_embeddings.ipynb",
             "02_graphrag_retrievers.ipynb",
             "03_hybrid_retrievers.ipynb",
-            "04_mcp_graph_queries.ipynb",
             "data_utils.py",
         ), "Lab_3_Semantic_Search"),
+        # Appendix A keeps its per-topic subdirectories in the workspace so the
+        # folder layout matches the repo (and the appendix README's structure).
+        ("Appendix_A_GDS_Graph_Analytics/centrality", (
+            "04_gds_pagerank_airports.ipynb",
+        ), "Appendix_A_GDS_Graph_Analytics/centrality"),
+        ("Appendix_A_GDS_Graph_Analytics/community_detection", (
+            "02_gds_louvain_maintenance.ipynb",
+        ), "Appendix_A_GDS_Graph_Analytics/community_detection"),
+        ("Appendix_A_GDS_Graph_Analytics/similarity", (
+            "05_gds_node_similarity_aircraft.ipynb",
+        ), "Appendix_A_GDS_Graph_Analytics/similarity"),
         ("workshop-setup/neo4j_mcp_connection", (
             "mcp-set-flag.ipynb",
-            "mcp-validate.ipynb",
         ), "neo4j_mcp_connection"),
     )
 

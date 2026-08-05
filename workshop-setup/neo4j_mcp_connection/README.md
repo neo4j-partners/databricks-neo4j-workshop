@@ -1,17 +1,16 @@
 # Neo4j MCP Connection for Databricks
 
-Notebooks that support connecting Databricks to the Neo4j MCP server via a
+Supporting material for connecting Databricks to the Neo4j MCP server via a
 Unity Catalog HTTP connection with OAuth2 M2M authentication.
 
 ## Setup
 
 Follow **[`MCP-MANUAL-SETUP.md`](../MCP-MANUAL-SETUP.md)** to create the
-connection in the Databricks UI. The two notebooks here cover edge cases:
+connection in the Databricks UI. The one notebook here covers an edge case:
 
 | Notebook | When to use |
 |----------|-------------|
 | [`mcp-set-flag.ipynb`](./mcp-set-flag.ipynb) | The **Is MCP connection** checkbox was missing from the UI during connection creation |
-| [`mcp-validate.ipynb`](./mcp-validate.ipynb) | Confirm the connection is live after setup |
 
 ## Architecture
 
@@ -56,8 +55,20 @@ Tool names are prefixed by the AgentCore Gateway:
 | `get_neo4j_schema` | `neo4j-mcp-server-target___get_neo4j_schema` |
 | `read_neo4j_cypher` | `neo4j-mcp-server-target___read_neo4j_cypher` |
 
-Run `tools/list` (Step 1 of `mcp-validate.ipynb`) to confirm the exact names
-for your deployment.
+To confirm the exact names for your deployment, run a `tools/list` call through
+the connection:
+
+```sql
+SELECT http_request(
+  conn => 'neo4j_agentcore_mcp',
+  method => 'POST',
+  path => '',
+  headers => map('Content-Type', 'application/json'),
+  json => '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+) AS response;
+```
+
+`http_request()` requires DBR 16.2 or later.
 
 ## Troubleshooting
 

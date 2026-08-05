@@ -51,13 +51,13 @@ An LLM reads each chunk and extracts entities: regulations, thresholds, procedur
 
 After completing this lab, the graph combines structured data from Lab 2 with unstructured maintenance documentation. Documents are chunked and embedded for vector search, with entities extracted and linked back to source chunks. The `APPLIES_TO` relationships bridge the two layers, connecting regulatory and procedural entities to the aircraft, systems, and components they govern.
 
-image::lab3-knowledge-graph-structure.png[Knowledge graph combining structured operational data with unstructured maintenance documentation]
+image::lab3-knowledge-graph-structure.svg[Knowledge graph combining structured operational data with unstructured maintenance documentation]
 
 == GraphRAG: Graph-Enriched Retrieval
 
 Vector or fulltext search finds the chunks most relevant to the user's question. That's standard RAG. GraphRAG adds graph traversal from those chunks through the entities and relationships surrounding them.
 
-image::lab3-graphrag-retrieval-flow.png[Aircraft maintenance GraphRAG retrieval flow showing vector/hybrid search through chunk, document, aircraft topology, and operating limit traversal to graph-enriched context]
+image::lab3-graphrag-retrieval-flow.svg[Aircraft maintenance GraphRAG retrieval flow showing vector/hybrid search through chunk, document, aircraft topology, and operating limit traversal to graph-enriched context]
 
 .How GraphRAG retrieval works
 [%collapsible]

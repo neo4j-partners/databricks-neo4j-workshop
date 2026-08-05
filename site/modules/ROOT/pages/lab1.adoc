@@ -30,7 +30,7 @@ Each Component node carries properties like name and type. Each HAS_EVENT relati
 Where relational databases represent connections implicitly through foreign keys and join tables, graphs make them explicit and traversable. Questions that require following chains of connections become single traversal patterns rather than nested JOINs or complex nested joins.
 ====
 
-image::lab1-property-graph.png[Aircraft Digital Twin property graph showing Aircraft, System, and Maintenance nodes connected by typed relationships]
+image::lab1-property-graph.svg[Aircraft Digital Twin property graph showing Aircraft, System, and Maintenance nodes connected by typed relationships]
 
 .Graph Insight: Maintenance Impact Chain
 [%collapsible]
@@ -87,7 +87,7 @@ These entities connect through typed relationships that reflect real-world struc
 
 A question like "Which components caused flight delays for aircraft N95040A?" requires traversing from Aircraft through Flight to Delay, then back through MaintenanceEvent to Component. That multi-hop traversal is what the graph handles natively.
 
-image::dual-database-architecture.png[Dual-database architecture showing Neo4j and Databricks working together for the Aircraft Digital Twin]
+image::dual-database-architecture.svg[Dual-database architecture showing Neo4j and Databricks working together for the Aircraft Digital Twin]
 
 .Dual-database architecture
 [%collapsible]
