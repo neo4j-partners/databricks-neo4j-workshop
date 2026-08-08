@@ -276,7 +276,7 @@ wheels = [
 [[package]]
 name = "dbx-vocareum-tools"
 version = "0.1.0"
-source = { git = "https://github.com/neo4j-partners/dbx-vocareum.git#9402144dc1985d5e08f1e701532f9f47504e8a3e" }
+source = { git = "https://github.com/neo4j-partners/dbx-vocareum.git#68e63a52502627ea3266e8b42d50657cf7814d97" }
 dependencies = [
     { name = "databricks-sdk" },
 ]

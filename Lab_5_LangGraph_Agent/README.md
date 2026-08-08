@@ -153,6 +153,53 @@ bounds are Double on both populations, so nothing needs casting.
 to. A takeoff bound held against cruise readings is a category error rather
 than a comparison, and it reports the whole fleet out of range.
 
+## Measured results
+
+The notebook ships without stored outputs, so the numbers from the last full
+run are recorded here. Every cell executed against a live Aura instance, a live
+Genie space and live Databricks Foundation Model endpoints. Thirty-eight cells,
+zero errors.
+
+### Routing
+
+Twelve questions, four per tool, each scored on the first tool the supervisor
+chose.
+
+| Slice | Accuracy |
+|---|---|
+| Overall | 12/12 (100%) |
+| `genie_node` questions | 4/4 (100%) |
+| `cypher_node` questions | 4/4 (100%) |
+| `graphrag_node` questions | 4/4 (100%) |
+| **`cypher_node` vs `graphrag_node` alone** | **8/8 (100%)** |
+
+The last row is the one that matters. Both tools end in a graph traversal, so
+that pair is where a weak routing prompt fails first.
+
+### The anchor question
+
+"Which engines are showing abnormal EGT readings, what maintenance history do
+those aircraft have, and what does the maintenance manual say to do about high
+EGT?"
+
+Routed `genie_node` to `cypher_node` to `graphrag_node`, all three in one pass.
+The answer named the engines carrying abnormal EGT, CFM56-7B on N10000, N10001
+and N10002, LEAP-1A on N10003 and CF34-10E on N10004; returned maintenance
+history for them from the graph, including a bearing wear fault on N10000 with
+its corrective action; and closed with the manual's guidance for high EGT,
+reviewing trend data for margin degradation, oil spectrographic analysis, fuel
+filter differential pressure and a borescope of the HPT nozzle and blades, with
+corrective actions graded from minor to critical.
+
+### One limitation on these numbers
+
+The test graph had extraction switched off in Lab 3, so it held the twenty
+canonical `OperatingLimit` rows and nothing else. It had no `AircraftModel`,
+`SystemReference`, `ComponentReference`, `Fault` or `MaintenanceProcedure`
+nodes. A participant who runs Lab 3 with extraction on gets those as well, plus
+a second, variable set of operating limits. The routing numbers do not depend
+on those labels, but no claim here has been tested against them.
+
 ## What comes next
 
 Notebook 02 logs this graph as an MLflow model, deploys it to Model Serving, and
