@@ -41,18 +41,48 @@ class EngineSpec:
 #   A321neo      3900       92             97         1.667
 #   E190         7400       96            100         1.333
 #   A220-300     2800       92            100         2.667
+#
+# EGT calibration. Every model's EGT series runs on the Takeoff band its manual
+# gives in section 3.3 or 3.4, which is the band the matching OperatingLimit row
+# carries as minValue and maxValue. Baseline, noise, drift and the warning and
+# critical thresholds were all carried across by one affine map per model,
+# value -> a * value + b. That map commutes with every comparison in
+# maintenance.py and with the spike amplitudes in sensors.py, so the 286
+# maintenance events the old thresholds produced survive unchanged. The A320-200
+# moved by nothing: its manual is written for the V2500-A1, whose Takeoff column
+# reads 620 to 680, and the old baseline already sat inside it.
+#
+#   model      Takeoff band    a      b      baseline  noise  over max
+#   B737-800     900-950      0.800  394.0    920.4    2.80    0.71%
+#   A320-200     620-680      1.000    0.0    645.0    3.00    0.47%
+#   A321neo     980-1040      1.000  371.0   1005.0    2.80    0.52%
+#   E190         870-900      0.400  623.0    879.4    1.28    0.19%
+#   A220-300     855-890      0.600  495.0    870.0    1.50    0.43%
+#
+# FuelFlow calibration. FuelFlow is a plain normal draw with no drift and no
+# spikes, and no threshold in maintenance.py reads it. Each baseline sits at the
+# midpoint of the manual's Takeoff band and the noise is one sixth of that
+# band's width, so three sigma reaches either edge and about one reading in 370
+# falls outside.
+#
+#   model      Takeoff band    baseline  noise   outside band
+#   B737-800    1.20-1.50       1.350    0.0500     0.27%
+#   A320-200    1.20-1.95       1.575    0.1250     0.25%
+#   A321neo     1.50-2.00       1.750    0.0833     0.26%
+#   E190        1.00-1.20       1.100    0.0333     0.14%
+#   A220-300    1.15-1.35       1.250    0.0333     0.19%
 ENGINE_SPECS: dict[str, EngineSpec] = {
     "B737-800": EngineSpec(
         engine_type="CFM56-7B",
-        egt_baseline=658.0, egt_noise_std=3.5,
-        egt_degradation_range=(0.002, 0.014),
-        egt_warning=688.0, egt_critical=696.0,
+        egt_baseline=920.4, egt_noise_std=2.8,
+        egt_degradation_range=(0.0016, 0.0112),
+        egt_warning=944.4, egt_critical=950.8,
         vib_baseline=0.180, vib_noise_std=0.010,
         vib_degradation_range=(0.00004, 0.00018),
         vib_warning=0.38, vib_critical=0.45,
         n1_reference_rpm=5175.0,
         n1_baseline_rpm=4916.25, n1_noise_std_rpm=155.25,
-        fuel_baseline=1.08, fuel_noise_std=0.025,
+        fuel_baseline=1.35, fuel_noise_std=0.05,
     ),
     "A320-200": EngineSpec(
         engine_type="CFM56-5B",
@@ -64,31 +94,31 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
         vib_warning=0.33, vib_critical=0.40,
         n1_reference_rpm=5000.0,
         n1_baseline_rpm=4600.0, n1_noise_std_rpm=200.0,
-        fuel_baseline=0.92, fuel_noise_std=0.020,
+        fuel_baseline=1.575, fuel_noise_std=0.125,
     ),
     "A321neo": EngineSpec(
         engine_type="LEAP-1A",
-        egt_baseline=634.0, egt_noise_std=2.8,
+        egt_baseline=1005.0, egt_noise_std=2.8,
         egt_degradation_range=(0.001, 0.010),
-        egt_warning=663.0, egt_critical=671.0,
+        egt_warning=1034.0, egt_critical=1042.0,
         vib_baseline=0.120, vib_noise_std=0.007,
         vib_degradation_range=(0.00002, 0.00012),
         vib_warning=0.29, vib_critical=0.35,
         n1_reference_rpm=3900.0,
         n1_baseline_rpm=3588.0, n1_noise_std_rpm=65.0,
-        fuel_baseline=1.35, fuel_noise_std=0.030,
+        fuel_baseline=1.75, fuel_noise_std=0.0833,
     ),
     "E190": EngineSpec(
         engine_type="CF34-10E",
-        egt_baseline=641.0, egt_noise_std=3.2,
-        egt_degradation_range=(0.002, 0.013),
-        egt_warning=672.0, egt_critical=680.0,
+        egt_baseline=879.4, egt_noise_std=1.28,
+        egt_degradation_range=(0.0008, 0.0052),
+        egt_warning=891.8, egt_critical=895.0,
         vib_baseline=0.140, vib_noise_std=0.009,
         vib_degradation_range=(0.00003, 0.00016),
         vib_warning=0.34, vib_critical=0.41,
         n1_reference_rpm=7400.0,
         n1_baseline_rpm=7104.0, n1_noise_std_rpm=98.67,
-        fuel_baseline=0.88, fuel_noise_std=0.018,
+        fuel_baseline=1.10, fuel_noise_std=0.0333,
     ),
     # PW1500G geared turbofan: the epicyclic gearbox lets the fan turn far slower
     # than a direct-drive fan, so its 100% reference is ~2800 rpm against 3900 to
@@ -96,15 +126,15 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
     # the point of reporting N1 as a percentage.
     "A220-300": EngineSpec(
         engine_type="PW1500G",
-        egt_baseline=625.0, egt_noise_std=2.5,
-        egt_degradation_range=(0.001, 0.009),
-        egt_warning=652.0, egt_critical=660.0,
+        egt_baseline=870.0, egt_noise_std=1.5,
+        egt_degradation_range=(0.0006, 0.0054),
+        egt_warning=886.2, egt_critical=891.0,
         vib_baseline=0.110, vib_noise_std=0.006,
         vib_degradation_range=(0.00002, 0.00010),
         vib_warning=0.25, vib_critical=0.30,
         n1_reference_rpm=2800.0,
         n1_baseline_rpm=2576.0, n1_noise_std_rpm=74.67,
-        fuel_baseline=1.05, fuel_noise_std=0.022,
+        fuel_baseline=1.25, fuel_noise_std=0.0333,
     ),
 }
 

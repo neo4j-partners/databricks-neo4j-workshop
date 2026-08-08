@@ -28,8 +28,9 @@ from __future__ import annotations
 
 import re
 import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, TypedDict
+from typing import Any, TypedDict
 
 # =============================================================================
 # Locating Lab 3's data_utils
@@ -86,27 +87,34 @@ from data_utils import (  # noqa: E402
 )
 
 __all__ = [
-    "AgentState",
     "CYPHER_GENERATION_PROMPT",
+    "CYPHER_REPAIR_PROMPT",
     "EMBEDDING_MODEL",
     "FULLTEXT_INDEX_NAME",
     "GRAPH_SCHEMA",
+    "MANUAL_CONTEXT_QUERY",
     "MAX_TOOL_CALLS",
+    "MISSING_INDEX_MESSAGE",
     "SUPERVISOR_MODEL",
     "SUPERVISOR_PROMPT",
     "SYNTHESIS_PROMPT",
     "TOOL_NAMES",
     "VECTOR_INDEX_NAME",
+    "AgentState",
+    "Finding",
     "build_cypher_node",
     "build_genie_node",
     "build_graphrag_node",
+    "build_neo4j_driver",
     "build_supervisor_node",
     "build_synthesize_node",
     "ensure_lab3_on_path",
     "format_manual_chunk",
     "get_embedder",
     "get_llm",
+    "open_driver_from_secrets",
     "read_neo4j_secrets",
+    "route_from_supervisor",
     "secret_scope_name",
     "vector_index_exists",
 ]
@@ -168,8 +176,8 @@ class AgentState(TypedDict, total=False):
 
     question: str
     route: str
-    trace: List[str]
-    findings: List[Finding]
+    trace: list[str]
+    findings: list[Finding]
     answer: str
 
 
@@ -187,8 +195,10 @@ Node labels and their properties:
   (:Aircraft)          aircraft_id, tail_number, model, manufacturer,
                        operator, icao24
   (:System)            system_id, aircraft_id, name, type
-                       type is one of Engine, Avionics, Hydraulic, Fuel,
-                       Landing Gear
+                       type is exactly one of 'Engine', 'Avionics',
+                       'Hydraulics'. Note the plural on Hydraulics. There are
+                       no other system types, so a question about fuel or
+                       landing gear has no system to match.
   (:Component)         component_id, system_id, name, type
   (:Sensor)            sensor_id, system_id, name, type, unit
                        type is one of EGT, Vibration, N1Speed, FuelFlow
@@ -198,6 +208,10 @@ Node labels and their properties:
                        origin, destination, scheduled_departure,
                        scheduled_arrival
   (:Delay)             delay_id, cause, minutes
+                       cause is exactly one of 'Weather', 'NAS', 'Maintenance',
+                       'Carrier'. These are the four industry reporting
+                       categories and nothing finer. A delay never names a
+                       component or a fault.
   (:Airport)           airport_id, iata, icao, name, city, country, lat, lon
   (:Removal)           removal_id, aircraft_id, component_id, part_number,
                        serial_number, reason, removal_date, removal_priority,
@@ -231,12 +245,27 @@ Facts that change the query you write:
   - There are no sensor reading values in this graph. No :Reading label, no
     timestamps, no measured values. Sensor nodes are metadata only. A question
     about a measured value cannot be answered here.
-  - OperatingLimit.minValue and OperatingLimit.maxValue are STRINGs. Comparing
-    a number to them returns null and silently drops every row, so wrap them:
-    toFloat(ol.maxValue).
+  - OperatingLimit nodes are extracted from the manuals by a language model,
+    so the set is small and differs between graphs, and it can be empty. Never
+    assume a limit exists for a given sensor, parameter or aircraft type.
+  - Wrap the bounds in toFloat() before comparing: toFloat(ol.maxValue). It
+    costs nothing on a number and it saves the comparison when a bound arrived
+    as text.
+  - minValue is often absent, because some limits are a ceiling with no floor.
+    Check ol.minValue IS NOT NULL before comparing against it, or the row
+    drops out with no error.
+  - OperatingLimit.regime says which phase of flight a limit applies to. A
+    limit is only meaningful against readings from that same regime, so return
+    the regime alongside any limit you report.
   - Severity values are upper case, for example 'CRITICAL'.
   - Dates are ISO 8601 STRINGs, so compare them as strings or parse with
     date() and datetime().
+  - Nothing in this graph attributes a delay to a fault. No relationship joins
+    a MaintenanceEvent to a Flight, and Delay.cause is one of four broad
+    categories that never names a component. A question asking which failure
+    caused which delay cannot be answered here. Say so rather than walking
+    MaintenanceEvent to Flight through the shared Aircraft, which pairs every
+    event on that aircraft with every delayed flight it ever flew.
 """
 
 
@@ -351,6 +380,16 @@ next. A typical order:
   2. cypher_node   returns that aircraft's maintenance and component history
   3. graphrag_node returns the procedure the manuals give for it
 
+## Rules for choosing
+
+  1. Call each tool at most once. A tool that has already run has given you
+     everything it has, and calling it again returns the same thing.
+  2. Choose synthesize as soon as every part of the question has a finding
+     against it, even a partial finding. A partial answer beats another call
+     that returns the same rows.
+  3. Choose synthesize when the only part left is one no tool can answer.
+  4. A question with one part needs one tool, then synthesize.
+
 ## What to answer with
 
 Reply with exactly one line, in this form:
@@ -358,14 +397,14 @@ Reply with exactly one line, in this form:
 NEXT: <tool>
 
 where <tool> is genie_node, cypher_node, graphrag_node, or synthesize.
-Choose synthesize when the findings already answer every part of the question,
-or when the tool that could answer the rest has already been tried and did not.
-Never name a tool that has already run unless the question needs it for a
-different part of the answer.
 
 ## The question
 
 {question}
+
+## Tools already called
+
+{called}
 
 ## Findings so far
 
@@ -374,11 +413,17 @@ different part of the answer.
 
 
 SYNTHESIS_PROMPT = """\
-Answer the question from the findings below. The findings are the only source;
-do not add facts from your own knowledge.
+Answer the question from the findings below. The findings are the only source,
+so do not add facts from your own knowledge.
 
-Say which tool each part of the answer came from, using the tool's name.
-If a part of the question went unanswered, say so plainly rather than guessing.
+Write the answer first, in prose, using every number and name the findings give
+you. Quote the actual values. Then, on a final line beginning 'Sources:', list
+which tool supplied which part.
+
+If a finding answers a question that is close to the one asked but not exactly
+it, use the finding and say what it actually covers. Only say something is
+unanswered when no finding bears on it at all.
+
 Be concise. No preamble.
 
 Question: {question}
@@ -402,7 +447,7 @@ def _format_findings(findings: Sequence[Finding]) -> str:
     )
 
 
-def _record(state: AgentState, tool: str, content: str) -> Dict[str, Any]:
+def _record(state: AgentState, tool: str, content: str) -> dict[str, Any]:
     """Build the state update a tool node returns."""
     return {
         "trace": [*state.get("trace", []), tool],
@@ -410,7 +455,7 @@ def _record(state: AgentState, tool: str, content: str) -> Dict[str, Any]:
     }
 
 
-def _rows_to_text(rows: Sequence[Dict[str, Any]], max_rows: int) -> str:
+def _rows_to_text(rows: Sequence[dict[str, Any]], max_rows: int) -> str:
     """Render Neo4j records as one line per row, truncated."""
     if not rows:
         return "(no rows)"
@@ -468,7 +513,7 @@ def build_genie_node(
     workspace_client: Any,
     *,
     max_rows: int = 20,
-) -> Callable[[AgentState], Dict[str, Any]]:
+) -> Callable[[AgentState], dict[str, Any]]:
     """Build the node that asks a Genie space a question.
 
     Genie answers in two pieces. A text response, and zero or more attachments
@@ -486,7 +531,7 @@ def build_genie_node(
         A LangGraph node.
     """
 
-    def genie_node(state: AgentState) -> Dict[str, Any]:
+    def genie_node(state: AgentState) -> dict[str, Any]:
         question = state["question"]
         try:
             message = workspace_client.genie.start_conversation_and_wait(
@@ -499,7 +544,7 @@ def build_genie_node(
                 f"Genie space {space_id} could not be reached: {error}",
             )
 
-        parts: List[str] = []
+        parts: list[str] = []
         for attachment in message.attachments or []:
             if attachment.text is not None and attachment.text.content:
                 parts.append(attachment.text.content)
@@ -507,19 +552,29 @@ def build_genie_node(
                 continue
             if attachment.query.query:
                 parts.append(f"SQL:\n{attachment.query.query}")
-            result = workspace_client.genie.get_message_attachment_query_result(
-                space_id=space_id,
-                conversation_id=message.conversation_id,
-                message_id=message.message_id,
-                attachment_id=attachment.attachment_id,
-            )
-            parts.append(_format_genie_result(result, max_rows))
+            try:
+                result = workspace_client.genie.get_message_attachment_query_result(
+                    space_id=space_id,
+                    conversation_id=message.conversation_id,
+                    message_id=message.message_id,
+                    attachment_id=attachment.attachment_id,
+                )
+            except Exception as error:  # noqa: BLE001 - reported, not raised
+                parts.append(f"The SQL ran but its rows could not be read: {error}")
+            else:
+                parts.append(_format_genie_result(result, max_rows))
 
-        if not parts and message.content:
-            parts.append(message.content)
-        return _record(
-            state, "genie_node", "\n\n".join(parts) or "Genie returned no answer."
-        )
+        # GenieMessage.content is the question that was sent, not the reply, so
+        # there is nothing to fall back to. Report the failure instead of
+        # handing the supervisor its own question back as a finding.
+        if not parts:
+            detail = getattr(getattr(message, "error", None), "error", None)
+            parts.append(
+                f"Genie returned no answer. {detail}"
+                if detail
+                else "Genie returned no answer and no SQL for this question."
+            )
+        return _record(state, "genie_node", "\n\n".join(parts))
 
     return genie_node
 
@@ -552,7 +607,7 @@ def build_cypher_node(
     schema: str = GRAPH_SCHEMA,
     max_rows: int = 25,
     repair_attempts: int = 1,
-) -> Callable[[AgentState], Dict[str, Any]]:
+) -> Callable[[AgentState], dict[str, Any]]:
     """Build the node that writes and runs Cypher against the participant's Aura.
 
     The query runs in a read transaction, so Aura rejects a write even if the
@@ -586,7 +641,7 @@ def build_cypher_node(
         )
         return _strip_code_fence(llm.invoke(prompt).content)
 
-    def cypher_node(state: AgentState) -> Dict[str, Any]:
+    def cypher_node(state: AgentState) -> dict[str, Any]:
         question = state["question"]
         query = _generate(question)
         last_error = ""
@@ -725,7 +780,7 @@ def build_graphrag_node(
     index_name: str = VECTOR_INDEX_NAME,
     retrieval_query: str = MANUAL_CONTEXT_QUERY,
     top_k: int = 3,
-) -> Callable[[AgentState], Dict[str, Any]]:
+) -> Callable[[AgentState], dict[str, Any]]:
     """Build the node that answers from the maintenance manuals.
 
     A participant who skipped Lab 3 notebook 01 has no vector index, and
@@ -750,7 +805,7 @@ def build_graphrag_node(
     if not vector_index_exists(driver, index_name, database):
         message = MISSING_INDEX_MESSAGE.format(index=index_name)
 
-        def graphrag_node_unavailable(state: AgentState) -> Dict[str, Any]:
+        def graphrag_node_unavailable(state: AgentState) -> dict[str, Any]:
             return _record(state, "graphrag_node", message)
 
         graphrag_node_unavailable.available = False  # type: ignore[attr-defined]
@@ -769,26 +824,31 @@ def build_graphrag_node(
     )
     rag = GraphRAG(llm=llm, retriever=retriever)
 
-    def graphrag_node(state: AgentState) -> Dict[str, Any]:
-        response = rag.search(
-            state["question"],
-            retriever_config={"top_k": top_k},
-            return_context=True,
-            response_fallback="No relevant maintenance procedures found.",
-        )
-        sources = ", ".join(
-            sorted(
-                {
-                    str(item.metadata.get("aircraft_type"))
-                    for item in response.retriever_result.items
-                }
+    def graphrag_node(state: AgentState) -> dict[str, Any]:
+        try:
+            response = rag.search(
+                state["question"],
+                retriever_config={"top_k": top_k},
+                return_context=True,
+                response_fallback="No relevant maintenance procedures found.",
             )
+        except Exception as error:  # noqa: BLE001 - reported, not raised
+            return _record(
+                state,
+                "graphrag_node",
+                f"Manual retrieval failed: {error}",
+            )
+        # retriever_result is absent when nothing cleared the similarity floor
+        # and the fallback answered instead.
+        items = getattr(response.retriever_result, "items", []) or []
+        sources = ", ".join(
+            sorted({str(item.metadata.get("aircraft_type")) for item in items})
         )
         return _record(
             state,
             "graphrag_node",
-            f"{response.answer}\n\n(from {len(response.retriever_result.items)} "
-            f"manual passages, aircraft types: {sources or 'unknown'})",
+            f"{response.answer}\n\n(from {len(items)} manual passages, "
+            f"aircraft types: {sources or 'unknown'})",
         )
 
     graphrag_node.available = True  # type: ignore[attr-defined]
@@ -806,7 +866,7 @@ def build_supervisor_node(
     available_tools: Sequence[str] = TOOL_NAMES,
     max_tool_calls: int = MAX_TOOL_CALLS,
     prompt: str = SUPERVISOR_PROMPT,
-) -> Callable[[AgentState], Dict[str, Any]]:
+) -> Callable[[AgentState], dict[str, Any]]:
     """Build the routing node.
 
     Args:
@@ -821,13 +881,14 @@ def build_supervisor_node(
         A LangGraph node that sets ``route``.
     """
 
-    def supervisor_node(state: AgentState) -> Dict[str, Any]:
+    def supervisor_node(state: AgentState) -> dict[str, Any]:
         trace = state.get("trace", [])
         if len(trace) >= max_tool_calls:
             return {"route": "synthesize"}
 
         rendered = prompt.format(
             question=state["question"],
+            called=", ".join(trace) or "(none yet)",
             findings=_format_findings(state.get("findings", [])),
         )
         decision = llm.invoke(rendered).content
@@ -850,7 +911,7 @@ def build_supervisor_node(
 
 def build_synthesize_node(
     llm: Any, *, prompt: str = SYNTHESIS_PROMPT
-) -> Callable[[AgentState], Dict[str, Any]]:
+) -> Callable[[AgentState], dict[str, Any]]:
     """Build the node that writes the final answer.
 
     Args:
@@ -861,7 +922,7 @@ def build_synthesize_node(
         A LangGraph node that sets ``answer``.
     """
 
-    def synthesize_node(state: AgentState) -> Dict[str, Any]:
+    def synthesize_node(state: AgentState) -> dict[str, Any]:
         findings = state.get("findings", [])
         if not findings:
             return {"answer": "No tool returned anything for this question."}
@@ -907,7 +968,7 @@ def build_neo4j_driver(uri: str, username: str, password: str) -> Any:
 
 
 def open_driver_from_secrets(
-    dbutils: Any, scope: Optional[str] = None, *, spark: Any = None
+    dbutils: Any, scope: str | None = None, *, spark: Any = None
 ) -> Any:
     """Open a Neo4j driver from the participant's secret scope.
 

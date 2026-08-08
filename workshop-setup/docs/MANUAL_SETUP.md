@@ -130,10 +130,16 @@ to detect.
 
 | Sensor type | Unit | Description | Typical range |
 |-------------|------|-------------|---------------|
-| EGT | °C | Exhaust gas temperature | 615-735 |
+| EGT | °C | Exhaust gas temperature | 636-1073 |
 | Vibration | ips | Engine vibration | 0.1-2.0 |
 | N1Speed | % RPM | Engine fan speed | 75-107 |
-| FuelFlow | kg/s | Fuel consumption rate | 0.5-2.0 |
+| FuelFlow | kg/s | Fuel consumption rate | 1.00-2.09 |
+
+EGT and FuelFlow are calibrated per engine model against that model's takeoff
+limits in its maintenance manual, so the ranges above span the whole fleet and no
+single aircraft covers them. EGT runs 620-680 on the A320-200 and 980-1040 on the
+A321neo. `nodes_operating_limits.csv` carries the band for every model and
+parameter, with the manual line each figure came from.
 
 ### Maintenance manuals, Lab 3
 

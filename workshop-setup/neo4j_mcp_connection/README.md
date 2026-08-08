@@ -8,10 +8,20 @@ else the workshop needs is built by `lab/workshop.py` from
 `lab/workspace_init.sh`. This connection carries an OAuth client secret issued
 by an AWS AgentCore deployment outside this repository, so a hook has nothing to
 read it from, and the `Is MCP connection` flag is a UI affordance some
-workspaces do not surface at all. The one thing that is automated is the
-privilege: `workshop.provision_infrastructure` grants
-`CREATE CONNECTION ON METASTORE` to `account users`, as the one statement in
-that stage allowed to be refused rather than fatal.
+workspaces do not surface at all.
+
+The privilege is manual too. `workshop.provision_infrastructure` used to grant
+`CREATE CONNECTION ON METASTORE` to `account users`; that was removed on
+2026-08-08, because it gave thirty participants a metastore-wide create
+privilege for a step only an administrator performs. Every grant `workshop.py`
+makes is now a read.
+
+The administrator does not hold `CREATE CONNECTION` by signing in, and account
+admin does not confer it: the metastore is owned by the `vocareum-sp` service
+principal, which is what Vocareum's automation created it with. So it is granted
+once per account, out of band. **Step 0 of
+[`MCP-MANUAL-SETUP.md`](../MCP-MANUAL-SETUP.md)** has the statement and the
+principals it names. Do not put that grant back into `workshop.py`.
 
 Needed for Lab 4 Part B only, which is optional.
 

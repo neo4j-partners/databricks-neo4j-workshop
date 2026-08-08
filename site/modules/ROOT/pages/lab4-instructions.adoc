@@ -71,10 +71,10 @@ Navigate to **Configure** > **Instructions** and add domain knowledge about sens
 # Aircraft Sensor Analytics Domain Knowledge
 
 ## Sensor Types and Normal Ranges
-- EGT (Exhaust Gas Temperature): Normal range 640-700 degrees Celsius, measured in C
+- EGT (Exhaust Gas Temperature): measured in C. The normal range is per model, taken from each maintenance manual's takeoff limits: A320-200 620-680, A220-300 855-890, E190 870-900, B737-800 900-950, A321neo 980-1040. Always filter or group by model before comparing EGT across aircraft.
 - Vibration: Normal range 0.05-0.50 inches per second, measured in ips
 - N1Speed (Fan Speed N1): Normal range 85-100, unit column value % RPM
-- FuelFlow: Normal range 0.85-1.95 kg/s, measured in kg/s
+- FuelFlow: measured in kg/s. The normal range is per model: E190 1.00-1.20, A220-300 1.15-1.35, B737-800 1.20-1.50, A320-200 1.20-1.95, A321neo 1.50-2.00.
 
 ## Fleet Information
 - Fleet of aircraft across 4 operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
@@ -156,7 +156,7 @@ Want to add more sample questions to your Genie space or test further? Here are 
 
 **Anomaly Detection:**
 
-* "Show all EGT readings above 690 degrees Celsius"
+* "Show all EGT readings above 950 degrees Celsius for B737-800 aircraft"
 * "Which engines have N1 speed readings outside the normal range of 85-100% RPM?"
 
 **Trend Analysis:**
@@ -288,7 +288,7 @@ BEST FOR:
 - Statistical analysis: "Show sensors above the 95th percentile"
 - Trend detection: "Show daily vibration trends for Engine 1"
 - Fleet comparisons: "Compare fuel flow between Boeing and Airbus"
-- Anomaly detection: "Find EGT readings above 690 degrees"
+- Anomaly detection: "Find B737-800 EGT readings above 950 degrees"
 - Aggregations: "What was the maximum N1 speed recorded?"
 
 DATA AVAILABLE:
@@ -298,10 +298,10 @@ DATA AVAILABLE:
 - aircraft: Fleet metadata (model, operator)
 
 SENSOR TYPES:
-- EGT: Exhaust Gas Temperature (640-700 C)
+- EGT: Exhaust Gas Temperature, per model: A320-200 620-680 C, A220-300 855-890 C, E190 870-900 C, B737-800 900-950 C, A321neo 980-1040 C
 - Vibration: Engine vibration (0.05-0.50 ips)
 - N1Speed: Fan speed (85-100, unit column value % RPM)
-- FuelFlow: Fuel consumption (0.85-1.95 kg/s)
+- FuelFlow: Fuel consumption, per model: E190 1.00-1.20 kg/s, A220-300 1.15-1.35 kg/s, B737-800 1.20-1.50 kg/s, A320-200 1.20-1.95 kg/s, A321neo 1.50-2.00 kg/s
 
 DO NOT USE FOR:
 - Relationship queries (use mcp-neo4j-agentcore-mcp)
@@ -430,7 +430,7 @@ Verify: Returns grouped statistics by manufacturer.
 
 ==== Test 5: Combined Query
 ----
-Find aircraft with EGT readings above 680 degrees and show their maintenance history
+Find B737-800 aircraft with EGT readings above 950 degrees and show their maintenance history
 ----
 Expected behavior:
 

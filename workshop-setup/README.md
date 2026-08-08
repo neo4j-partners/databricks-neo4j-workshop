@@ -89,11 +89,19 @@ secret issued by an AWS AgentCore deployment that lives outside this repository,
 and because the `Is MCP connection` flag is a UI affordance some workspaces do
 not surface at all.
 
-`workshop.py` does grant `CREATE CONNECTION ON METASTORE` to `account users`,
-and that grant is the one statement in `provision_infrastructure` allowed to be
-refused, because it needs metastore admin and whether the Vocareum service
-principal holds it has not been measured. A run without it still builds every
-table.
+The privilege is manual too. `workshop.py` used to grant
+`CREATE CONNECTION ON METASTORE` to `account users`; that was removed on
+2026-08-08, because it gave every participant a metastore-wide create privilege
+for a step only an administrator performs. Part B has participants verify a
+connection an administrator already made, so they never needed it. Every grant
+`provision_infrastructure` makes is now a read.
+
+The administrator does not get `CREATE CONNECTION` by signing in, and being an
+account admin does not confer it, because the metastore is owned by the
+`vocareum-sp` service principal rather than by a person. It is granted once per
+account, and **Step 0 of [MCP-MANUAL-SETUP.md](MCP-MANUAL-SETUP.md)** is where
+that statement lives. The grant is on the metastore, an account-level object, so
+it survives the workspaces being torn down between cohorts.
 
 Lab 4 Part B is optional. The required labs, including the Lab 5 LangGraph
 agent, reach Neo4j with the Python driver against each participant's own

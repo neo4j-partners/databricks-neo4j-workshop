@@ -398,6 +398,64 @@ def main():
     print("STAGE 3: Cross-Links to Aircraft Topology")
     print("=" * 70)
 
+    # -- Coerce OperatingLimit numeric bounds ------------------------------
+    #
+    # The LLM returns every extracted property as text and neo4j-graphrag does
+    # not convert it, so minValue and maxValue land as strings. A string bound
+    # makes r.value > ol.maxValue evaluate to null rather than raise, and a
+    # limit-exceedance query then returns zero rows and reads as a clean
+    # answer. Coerce before anything links to these nodes.
+
+    classify_bound = """
+        MATCH (ol:OperatingLimit)
+        WITH ol.{bound} AS raw
+        WITH raw, CASE
+            WHEN raw IS NULL THEN 'null or absent'
+            WHEN NOT (valueType(raw) STARTS WITH 'STRING') THEN 'already numeric'
+            WHEN toFloatOrNull(raw) IS NOT NULL THEN 'parses as a number'
+            ELSE 'could not parse'
+        END AS status
+        RETURN status, count(*) AS nodes, collect(DISTINCT raw)[..10] AS samples
+    """
+
+    # A value that does not parse is left exactly as it is: a visible wrong
+    # type beats silent data loss.
+    coerce_bound = """
+        MATCH (ol:OperatingLimit)
+        WHERE ol.{bound} IS NOT NULL
+          AND valueType(ol.{bound}) STARTS WITH 'STRING'
+          AND toFloatOrNull(ol.{bound}) IS NOT NULL
+        SET ol.{bound} = toFloatOrNull(ol.{bound})
+        RETURN count(*) AS coerced
+    """
+
+    print("Coercing OperatingLimit numeric bounds to float...")
+    limit_totals, _, _ = execute_query(
+        "MATCH (ol:OperatingLimit) RETURN count(*) AS nodes"
+    )
+    limit_nodes = limit_totals[0]["nodes"]
+    print(f"  OperatingLimit nodes: {limit_nodes}")
+    if limit_nodes == 0:
+        print("  Nothing to coerce: the pipeline extracted no OperatingLimit nodes.")
+
+    for bound in ("minValue", "maxValue"):
+        if limit_nodes == 0:
+            break
+        found, _, _ = execute_query(classify_bound.format(bound=bound))
+        counts = {r["status"]: r["nodes"] for r in found}
+        samples = next(
+            (r["samples"] for r in found if r["status"] == "could not parse"), []
+        )
+        written, _, _ = execute_query(coerce_bound.format(bound=bound))
+        print(
+            f"  {bound}: coerced={written[0]['coerced']}, "
+            f"already numeric={counts.get('already numeric', 0)}, "
+            f"null or absent={counts.get('null or absent', 0)}, "
+            f"could not parse={counts.get('could not parse', 0)}"
+        )
+        if samples:
+            print(f"    left as text: {samples}")
+
     # -- Create APPLIES_TO -------------------------------------------------
 
     print("Creating Document -[:APPLIES_TO]-> Aircraft relationships...")
@@ -455,6 +513,21 @@ def main():
     # This is a soft check — HAS_LIMIT depends on which entities were extracted
     record("HAS_LIMIT relationships created (soft)", limit_count >= 0,
            f"count={limit_count} (0 is acceptable if LLM didn't extract matching params)")
+
+    # Check: no bound that parses as a number is still stored as a string.
+    # A bound the model wrote as a range or with a unit attached stays text on
+    # purpose, so this counts only the ones coercion should have converted.
+    residual_check, _, _ = execute_query("""
+        MATCH (ol:OperatingLimit)
+        WHERE (valueType(ol.minValue) STARTS WITH 'STRING'
+               AND toFloatOrNull(ol.minValue) IS NOT NULL)
+           OR (valueType(ol.maxValue) STARTS WITH 'STRING'
+               AND toFloatOrNull(ol.maxValue) IS NOT NULL)
+        RETURN count(*) as count
+    """)
+    residual_count = residual_check[0]["count"]
+    record("OperatingLimit numeric bounds coerced to float", residual_count == 0,
+           f"still stored as text and parseable={residual_count}")
 
     # ══════════════════════════════════════════════════════════════════════════
     # SUMMARY

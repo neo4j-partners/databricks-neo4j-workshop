@@ -77,37 +77,13 @@ voc_log "resource tags: ${VOC_RESOURCE_TAGS:-none}"
 credential="$(voc_detect_credential)"
 voc_log "reachable credentials and tools: ${credential:-none}"
 
-# TEMPORARY, and safe to delete: a measurement, not a step. It builds nothing.
-#
-# voc_detect_credential above says which credential variables are set. It cannot
-# say whether VOC_DB_API_TOKEN authenticates, whose identity it carries, or what
-# it may do, and those three have been open since the beacon printed the
-# variable's name without its value. token-probe makes eight read-only GETs and
-# reports a verdict for each.
-#
-# It is here rather than anywhere else in this hook for two reasons. The answer
-# is about the credential, so it belongs beside the line that detects one. And it
-# runs before the first billable call, so a dead token shows up as one legible
-# block rather than as three provisioning steps failing for reasons that each
-# look like their own bug.
-#
-# Guarded rather than bare, and never voc_fail. This hook runs under set -e and
-# builds the whole workspace; taking a class down over an optional question would
-# be worse than the question staying open. The else branch is the case that will
-# actually happen first: a /voc/scripts uploaded before this subcommand existed
-# answers argparse's exit 2, and that is worth naming rather than swallowing.
-#
-# Read it in the Init Exit Status transcript on the admin Workspaces page.
-# voccustomdata.txt does not surface on a Databricks part; that transcript does.
-# Delete this block once the answers are in docs/permissions.md.
-if voc_voclab token-probe; then
-    voc_log "token-probe: credential from ${voclab_token_probe_source}, set: ${voclab_token_probe_credentials_set}"
-    voc_log "token-probe: identity ${voclab_token_probe_identity_name} id=${voclab_token_probe_identity_id} (${voclab_token_probe_identity})"
-    voc_log "token-probe: clusters=${voclab_token_probe_clusters_list} pools=${voclab_token_probe_instance_pools_list} warehouses=${voclab_token_probe_warehouses_list}"
-    voc_log "token-probe: catalogs=${voclab_token_probe_catalogs_list} workspace=${voclab_token_probe_workspace_list} groups=${voclab_token_probe_groups_list} tokens=${voclab_token_probe_tokens_list}"
-else
-    voc_log "token-probe did not run, so nothing about the credential was measured; the deployed voclab.py probably predates the subcommand"
-fi
+# A voclab.py token-probe call sat here between 2026-08-08 20:31 and 21:05 UTC,
+# to find out whether VOC_DB_API_TOKEN authenticates and whose identity it
+# carries. It does, and it is the service principal. The verdicts are in
+# dbx-vocareum's docs/permissions.md, which is the only place a permission result
+# is allowed to live, and the subcommand is still in voclab.py for anyone who
+# needs to ask again. Do not put the call back on the critical path: it is eight
+# GETs on every workspace init in exchange for an answer already written down.
 
 # The SQL warehouse, when the course asks for one. One per workspace rather than
 # one per student, which is why it is created here: the Statement Execution API

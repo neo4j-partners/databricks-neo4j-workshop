@@ -157,7 +157,7 @@ BEST FOR:
 - Statistical analysis: "Show sensors above the 95th percentile"
 - Trend detection: "Show daily vibration trends for Engine 1"
 - Fleet comparisons: "Compare fuel flow between Boeing and Airbus"
-- Anomaly detection: "Find EGT readings above 690 degrees"
+- Anomaly detection: "Find B737-800 EGT readings above 950 degrees"
 - Aggregations: "What was the maximum N1 speed recorded?"
 
 DATA AVAILABLE:
@@ -167,10 +167,10 @@ DATA AVAILABLE:
 - aircraft: Fleet metadata (model, operator)
 
 SENSOR TYPES:
-- EGT: Exhaust Gas Temperature (640-700, unit column value °C)
+- EGT: Exhaust Gas Temperature (unit column value °C). Per model: A320-200 620-680, A220-300 855-890, E190 870-900, B737-800 900-950, A321neo 980-1040
 - Vibration: Engine vibration (0.05-0.50, unit column value ips)
 - N1Speed: Fan speed (85-100, unit column value % RPM)
-- FuelFlow: Fuel consumption (0.85-1.95, unit column value kg/s)
+- FuelFlow: Fuel consumption (unit column value kg/s). Per model: E190 1.00-1.20, A220-300 1.15-1.35, B737-800 1.20-1.50, A320-200 1.20-1.95, A321neo 1.50-2.00
 
 DO NOT USE FOR:
 - Relationship queries (use mcp-neo4j-agentcore-mcp)
@@ -317,7 +317,7 @@ Verify: Returns grouped statistics by manufacturer
 
 **Test 5: Combined Query**
 ```
-Find aircraft with EGT readings above 680 degrees and show their maintenance history
+Find B737-800 aircraft with EGT readings above 950 degrees and show their maintenance history
 ```
 Expected behavior:
 1. Supervisor routes to sensor_data_agent for high EGT aircraft

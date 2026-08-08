@@ -16,13 +16,16 @@ so a hook has nothing to read it from. And the **Is MCP connection** flag is a U
 affordance some workspaces do not surface at all, which is what Step 3's fallback
 exists for.
 
-What is automated is the privilege the connection needs.
-`workshop.provision_infrastructure` runs
-`GRANT CREATE CONNECTION ON METASTORE TO account users`, and it is the one
-statement in that stage allowed to be refused rather than fatal: it needs
-metastore admin, whether the Vocareum service principal holds it has not been
-measured, and a run without it still builds every table. A `CREATE CONNECTION`
-denial here is that grant not having landed.
+The privilege is not automated either, and that is deliberate.
+`workshop.provision_infrastructure` used to run
+`GRANT CREATE CONNECTION ON METASTORE TO account users` so that whoever
+performed this procedure could do it without metastore admin. That grant was
+removed on 2026-08-08: it handed thirty participants a metastore-wide create
+privilege for a step only an administrator performs, and everything
+`workshop.py` grants now is a read.
+
+So the administrator doing this needs `CREATE CONNECTION` in their own right,
+and does not get it by signing in. Step 0 below is how it is obtained, once.
 
 Lab 4 Part B is optional. The required labs, including the Lab 5 LangGraph
 agent, reach Neo4j with the Python driver against each participant's own
@@ -32,9 +35,58 @@ instance and need none of this.
 
 - **Neo4j MCP server deployed** to AWS AgentCore (`neo4j-agentcore-mcp-server/`)
 - **Unity Catalog** enabled on your workspace
-- **`CREATE CONNECTION` privilege** on the metastore (or a catalog/schema if you
-  create it under a schema)
+- **`CREATE CONNECTION` privilege** on the metastore, from Step 0. `workshop.py`
+  does not grant it, and participants do not have it
 - **OAuth2 credentials** from the deployment
+
+## Step 0: grant yourself `CREATE CONNECTION`, once per account
+
+Skip this if a previous cohort already did it. The grant is on the metastore,
+which is an account-level object that outlives every Vocareum workspace, so it
+is done once and not once per class.
+
+### Who holds what, measured 2026-08-08 against account `4013d5ca-…2339`
+
+| Principal | Id | What it is |
+|-----------|----|------------|
+| `vocareum-sp` | `7435c3bf-…258b` | Service principal, **owner of metastore `metastore_aws_us_west_2`**, and the identity `lab/workshop.py` runs as |
+| `adminuser4914932@vocareum.com` | `77582061470846` | Account admin. Display name `ryan.knight@neo4j.com (Admin)`. The identity Vocareum SSO signs you in as when you open the workspace URL, and therefore the one clicking through the UI in Step 1 |
+| `ryan.knight@neo4j.com` | `76699569954594` | Account admin. A separate principal from the one above |
+
+The metastore reads `created_by: System user`, `updated_by: databricks@vocareum.com`,
+`storage_root: None`. Vocareum's automation created it, using the service
+principal, which is why the service principal and not a human owns it. Owning a
+securable is what carries the right to grant on it, and **account admin does not
+imply metastore admin**, so neither human identity above can create a connection
+until told it may.
+
+### The grant
+
+Run this **as `vocareum-sp`**, the metastore owner. Its OAuth client id and
+secret are the ones `dbx-vocareum/.env` already holds as `DATABRICKS_CLIENT_ID`
+and `DATABRICKS_CLIENT_SECRET`, against any SQL warehouse in the workspace.
+
+```sql
+GRANT CREATE CONNECTION ON METASTORE TO `adminuser4914932@vocareum.com`
+```
+
+Change the grantee if a different person runs the setup. Grant to the SSO
+identity they actually sign in as, not to their corporate email, because those
+are two principals and the UI session uses the first. Confirm which one with a
+`SELECT current_user()` in a workspace notebook before granting.
+
+Verify it landed:
+
+```sql
+SHOW GRANTS `adminuser4914932@vocareum.com` ON METASTORE
+```
+
+A `CREATE CONNECTION` denial in Step 1 means this step has not been done, or was
+done for a different principal than the one signed in.
+
+> There is a second route, since both human identities hold `account_admin`: an
+> account admin can reassign metastore ownership and then grant as owner. It is
+> a larger and more permanent change than one grant, so prefer the grant.
 
 ## Where the field values come from
 

@@ -161,8 +161,6 @@ Each LEAP-1A engine is equipped with comprehensive monitoring sensors:
 
 **Sensor Sampling Rate:** Continuous (1 Hz flight data, 50 Hz vibration analysis)
 
-**Digital Twin Monitoring Note:** The Digital Twin Monitoring System records hourly trend-averaged EGT values on a normalized scale calibrated for long-term degradation detection. These trend values (nominal baseline ~634°C, warning threshold ~663°C) differ from the instantaneous ECAM EGT readings shown in Section 3.4 and Appendix 10.1, which reflect peak values during takeoff and high-power operations (typically 950–1,040°C for the LEAP-1A). The trend-monitoring scale detects gradual EGT margin deterioration over weeks and months rather than acute exceedances; the absolute limits in this manual refer to instantaneous FADEC-monitored readings.
-
 **Engine Monitoring Unit (EMU):** The LEAP-1A features an enhanced EMU providing:
 - Real-time trend monitoring
 - Automated fault detection and isolation

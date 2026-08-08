@@ -257,15 +257,30 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     decoration. The version this replaces logged every failure and carried on,
     which is how a run reports success against a catalog that was never created
     and thirty students arrive to an empty Catalog browser. So everything a
-    later step reads is required, and the one statement that can legitimately be
-    refused is not.
+    later step reads is required, and every statement here is read by a later
+    step. The tuple keeps its third field because ``run_statements`` is shared
+    with ``genie_statements``, not because anything below may be refused.
 
-    ``GRANT CREATE CONNECTION ON METASTORE`` is that one. It needs metastore
-    admin, a different privilege from anything else here, and whether the
-    Vocareum service principal holds it is unmeasured. Lab 2 needs it to create
-    the Neo4j connection; a run without it still builds every table. So it is
-    recorded rather than fatal, and ``docs/permissions.md`` in dbx-vocareum is
-    where the answer belongs once a real run has produced one.
+    Every grant here is a read. ``USE_CATALOG``, ``USE_SCHEMA``, ``READ_VOLUME``,
+    and the ``SELECT`` grants in ``genie_statements``, and nothing else. No lab
+    writes to this catalog: Labs 2 and 3 read the volume and the gold tables and
+    write their results to the participant's own Aura instance, and Lab 4 Part A
+    builds a Genie space, which needs ``SELECT`` and no more. Keep it that way.
+    A ``GRANT CREATE CONNECTION ON METASTORE TO account users`` used to sit at
+    the end of this list, so that whoever built the Lab 4 Part B MCP connection
+    by hand could do it without metastore admin. It was removed on 2026-08-08:
+    thirty students held a metastore-wide create privilege for a step none of
+    them perform, since Part B verifies a connection an administrator already
+    made.
+
+    Do not put it back. That privilege is now granted once per account to the
+    one administrator who needs it, by Step 0 of
+    ``workshop-setup/MCP-MANUAL-SETUP.md``, which also records who owns the
+    metastore and why. It belongs there rather than here for two reasons: a
+    grant on the metastore outlives every workspace this hook builds, so running
+    it per workspace init only repeats it; and this function runs as
+    ``vocareum-sp``, which owns the metastore, so anything it grants on the
+    metastore succeeds regardless of whether it should.
     """
     catalog = f"`{CATALOG}`"
     volume = f"{catalog}.`{VOLUME_SCHEMA}`.`{VOLUME_NAME}`"
@@ -324,11 +339,6 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
             "grant use agent schema",
             f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{AGENT_SCHEMA}` TO {GRANTEE}",
             True,
-        ),
-        (
-            "grant create connection",
-            f"GRANT CREATE CONNECTION ON METASTORE TO {GRANTEE}",
-            False,
         ),
     ]
 
@@ -744,13 +754,16 @@ def resolve_warehouse_id(workspace, args: argparse.Namespace) -> str:
 
 def provision_infrastructure(workspace, warehouse_id: str) -> dict:
     voclab.log("creating the catalog, the four schemas and the volume")
-    skipped = run_statements(
+    # The return value is discarded because every statement in this stage is
+    # required, so a refusal raises rather than lands in the list. The stage used
+    # to report an ``infrastructure_refused`` field for the one optional grant;
+    # that grant is gone and no reader ever consumed the field.
+    run_statements(
         workspace, warehouse_id, infrastructure_statements(), "infrastructure"
     )
     return {
         "catalog": CATALOG,
         "volume_path": VOLUME_PATH,
-        "infrastructure_refused": ", ".join(skipped) if skipped else "none",
     }
 
 

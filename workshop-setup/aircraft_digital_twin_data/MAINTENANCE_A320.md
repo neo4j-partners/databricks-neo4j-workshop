@@ -143,7 +143,7 @@ Each V2500 engine is equipped with four primary monitoring sensors:
 
 **Sensor Sampling Rate:** Continuous (1 Hz during flight, recorded hourly for trend analysis)
 
-**Digital Twin Monitoring Note:** The Digital Twin Monitoring System records hourly trend-averaged EGT values on a normalized scale calibrated for long-term degradation detection. These trend values (nominal baseline ~645°C, warning threshold ~674°C) differ from the instantaneous ECAM EGT readings shown in Section 3.3 and Appendix 10.1, which reflect peak values during takeoff and high-power operations. The trend-monitoring scale is used to detect gradual EGT margin deterioration over weeks and months rather than acute exceedances. Note: the digital twin dataset models this A320-200 variant as equipped with CFM56-5B engines; procedure steps in this manual reference the IAE V2500-A1 alternative powerplant.
+**Digital Twin Monitoring Note:** The digital twin dataset models this A320-200 variant as equipped with CFM56-5B engines; procedure steps in this manual reference the IAE V2500-A1 alternative powerplant.
 
 ### 2.3 Component Identification Schema
 

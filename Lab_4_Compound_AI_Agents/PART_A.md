@@ -95,14 +95,14 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 # Aircraft Sensor Analytics Domain Knowledge
 
 ## Sensor Types and Normal Ranges
-- EGT (Exhaust Gas Temperature): Normal range 640-700 degrees Celsius, unit column value °C
+- EGT (Exhaust Gas Temperature): unit column value °C. The normal range is per model, taken from each maintenance manual's takeoff limits: A320-200 620-680, A220-300 855-890, E190 870-900, B737-800 900-950, A321neo 980-1040. Always filter or group by model before comparing EGT across aircraft.
 - Vibration: Normal range 0.05-0.50 inches per second, unit column value ips
 - N1Speed (Fan Speed N1): Normal range 85-100, unit column value % RPM
-- FuelFlow: Normal range 0.85-1.95 kg/s, unit column value kg/s
+- FuelFlow: unit column value kg/s. The normal range is per model: E190 1.00-1.20, A220-300 1.15-1.35, B737-800 1.20-1.50, A320-200 1.20-1.95, A321neo 1.50-2.00.
 
 ## Fleet Information
 - Operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
-- Models: B737-800 (Boeing), A320-200 (Airbus), A321neo (Airbus), E190 (Embraer)
+- Models: B737-800 by Boeing, A320-200 by Airbus, A321neo by Airbus, E190 by Embraer, A220-300 by Airbus
 
 ## Sensor Configuration
 - Each aircraft has 2 engines
@@ -120,10 +120,12 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 - SN01=EGT, SN02=Vibration, SN03=N1Speed, SN04=FuelFlow
 
 ## Engine Names by Model
-- B737-800: CFM56-7B engines
-- A320-200: V2500-A1 engines
-- A321neo: PW1100G engines
-- E190: CF34-10E engines
+The `systems` table stores each engine as a system named after its engine model, so these are the exact strings to match on.
+- B737-800: CFM56-7B
+- A320-200: CFM56-5B
+- A321neo: LEAP-1A
+- E190: CF34-10E
+- A220-300: PW1500G
 
 ## Query Conventions
 - When asked about "Engine 1", filter by systems where name contains "#1"
@@ -149,7 +151,7 @@ Try these progressively complex queries:
 ```
 What is the average EGT temperature across all sensors?
 ```
-Expected: A single number around 650-680 degrees Celsius
+Expected: A single number around 865 degrees Celsius. The fleet mixes models whose EGT bands run from 620-680 on the A320-200 up to 980-1040 on the A321neo, so a fleet-wide average sits between them and is not meaningful on its own.
 
 **Query 2: Filtering by Aircraft**
 ```
@@ -247,7 +249,7 @@ Show fuel flow rates by operator
 **Anomaly Detection**
 
 ```
-Show all EGT readings above 690 degrees Celsius
+Show all EGT readings above 950 degrees Celsius for B737-800 aircraft
 ```
 
 ```
