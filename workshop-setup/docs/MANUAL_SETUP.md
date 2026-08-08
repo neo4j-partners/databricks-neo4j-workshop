@@ -1,8 +1,8 @@
 # Manual Setup Guide (UI Alternative)
 
-**Purpose:** Step-by-step instructions for setting up the entire Databricks workshop environment through the UI, without using the `databricks-setup` CLI.
+**Purpose:** Step-by-step instructions for setting up the entire Databricks workshop environment through the UI, without running anything from your laptop.
 
-> **Prefer not to click through the UI?** The [setup notebook](../workshop_setup.ipynb) provisions Steps 2 through 5 from inside the workspace, and the `databricks-setup` CLI in `workshop-setup/auto_scripts/` does the same from your laptop plus the `sync` and `cleanup` jobs the notebook does not cover. See the [databricks-setup CLI Guide](automated-setup-guide.md).
+> **Prefer not to click through the UI?** The [setup notebook](../workshop_setup.ipynb) provisions Steps 2 through 5 from inside the workspace. The two admin scripts in `workshop-setup/auto_scripts/` cover the two jobs the notebook does not: publishing the lab notebooks to `/Shared`, and tearing the environment back down. See the [admin scripts README](../auto_scripts/README.md).
 
 ---
 
@@ -239,14 +239,7 @@ The volume should contain 25 files (22 CSV + 3 Markdown):
 
 ## Step 5: Create Lakehouse Tables
 
-Create the Delta Lake tables needed for Databricks Genie (Lab 4) using the Python CLI:
-
-```bash
-cd workshop-setup/auto_scripts
-uv run databricks-setup setup
-```
-
-This uploads data files and creates the lakehouse tables via the SQL Warehouse's Statement Execution API.
+Create the Delta Lake tables needed for Databricks Genie (Lab 4) by running the [setup notebook](../workshop_setup.ipynb) in the workspace. It uploads the data files and creates the lakehouse tables via the SQL Warehouse's Statement Execution API.
 
 ### Expected lakehouse table row counts
 

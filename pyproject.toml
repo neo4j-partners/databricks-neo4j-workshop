@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "databricks-neo4j-workshop"
+version = "0.1.0"
+description = "Neo4j on Databricks workshop: labs, data, and its Vocareum lab provisioning"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+# The Vocareum tooling is a dependency rather than a copy. voclib.sh and
+# voclab.py live inside it and are injected into the archive by
+# dbx-vocareum-upload, so this course holds four hooks and a course.env and no
+# runtime at all. Upgrading the runtime is a version bump here; vendoring it
+# would mean this course silently deploying whatever it was scaffolded with.
+#
+# A dev dependency rather than a runtime one because nothing in the workshop
+# imports it. It is the deployer's toolchain: init, upload, diagnose, session.
+[dependency-groups]
+dev = [
+    "dbx-vocareum-tools @ git+https://github.com/neo4j-partners/dbx-vocareum.git",
+]
+
+[tool.hatch.build.targets.wheel]
+# Nothing here is importable. The package metadata exists so the tooling above
+# has somewhere to be declared and so `uv run` resolves in this directory.
+bypass-selection = true

@@ -22,13 +22,21 @@ uv run populate-aircraft-db clean          # Delete all data
 uv run populate-aircraft-db samples        # Run showcase Cypher queries
 ```
 
-### databricks_setup (Admin workspace provisioning CLI)
+### Databricks provisioning
+`lab/workshop.py` is the one definition of this course's Databricks objects: the
+catalog, the three schemas, the volume, the courseware, the `Fleet Digital Twin
+ETL` pipeline and the comments a Genie space reads. Vocareum's
+`workspace_init.sh` calls it, and so does anything else that needs those names.
 ```bash
-cd workshop-setup/auto_scripts
-uv sync
-uv run databricks-setup setup             # Full setup (cluster, data, tables)
-uv run databricks-setup cleanup            # Tear down
-uv run databricks-setup sync               # Upload/sync workshop notebooks
+uv run python lab/workshop.py provision   # or infrastructure | upload-data | pipeline | genie
+```
+
+### Admin scripts (non-Vocareum workspaces)
+The two jobs `workshop.py` and `voclab.py` do not cover. Both read every object
+name from `lab/workshop.py`; neither defines anything.
+```bash
+uv run python workshop-setup/auto_scripts/sync_notebooks.py   # lab notebooks -> /Shared
+uv run python workshop-setup/auto_scripts/teardown.py --yes   # delete the catalog and all of it
 ```
 
 ### verify_labs (Neo4j verification CLI)
@@ -40,21 +48,17 @@ uv run verify-labs lab2                    # All Lab 2 verification queries
 uv run verify-labs lab2 --notebook 01      # Notebook 1 only
 ```
 
-### Linting (auto_scripts only)
-```bash
-cd workshop-setup/auto_scripts
-uv run ruff check .                        # Lint (rules: E, W, F, I, B, C4, UP, SIM)
-uv run mypy src/                           # Type checking (strict mode)
-```
-
 ## Architecture
 
-### Three Independent CLI Tools
+### Two Independent CLI Tools
 Each under `workshop-setup/` is a standalone Python package with its own `pyproject.toml`, `.env`, and Typer CLI:
 
 - **`populate_aircraft_db/`** — Loads aircraft CSV data into Neo4j Aura, runs GraphRAG enrichment (doc chunking, embeddings via BGE-large, entity extraction via SimpleKGPipeline)
-- **`auto_scripts/`** (databricks_setup) — Automates Databricks workspace provisioning: cluster creation, Spark Connector install, Delta table creation
 - **`verify_labs/`** — Verifies Neo4j data loaded correctly in Lab 2
+
+`workshop-setup/auto_scripts/` is not one of them. It is two plain scripts with no
+package and no dependencies of its own, run from the repository root's
+environment. See `workshop-setup/auto_scripts/README.md`.
 
 ### Dual-Database Strategy
 - **Neo4j**: `(Aircraft)-[:HAS_SYSTEM]->(System)-[:HAS_COMPONENT]->(Component)`, plus Sensors, Flights, Delays, MaintenanceEvents
@@ -87,11 +91,12 @@ All config uses Pydantic `BaseSettings` with `SecretStr` for passwords.
 - **Typer** for all CLIs with **Rich** for colored output/tables
 - Batch processing with `BATCH_SIZE=1000` for Neo4j data loading
 - Context managers for Neo4j driver lifecycle
-- Full type hints; `mypy --strict` enforced in auto_scripts
+- Full type hints on public signatures
 - Ruff linting with rules: E, W, F, I, B, C4, UP, SIM
+- `lab/workshop.py` is standard library only, against Python 3.9: it runs on the Vocareum host, where no `pip install` belongs on a hook's critical path. `workshop-setup/auto_scripts/` follows the same rule so it can import it
 
 ## Key Reference Files
 
 - `workshop-setup/README.md` — Main admin setup guide with troubleshooting
 - `workshop-setup/populate_aircraft_db/DATA_GENERATOR.md` — Data generator guide and complete schema reference (all 22 CSVs, dual-DB strategy, query patterns)
-- `workshop-setup/auto_scripts/README.md` — Databricks CLI reference with all config options
+- `workshop-setup/auto_scripts/README.md` — the two admin scripts, and what took over every job the retired `databricks-setup` CLI did

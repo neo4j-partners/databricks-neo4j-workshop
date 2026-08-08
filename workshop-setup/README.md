@@ -64,12 +64,12 @@ All cells are idempotent, so the notebook is safe to re-run.
 
 The setup notebook does not upload the lab notebooks that participants run. Get them into the workspace with either:
 
-- **`databricks-setup sync`**: uploads the Lab 2, Lab 3, and MCP notebooks to `/Shared/databricks-neo4j-workshop/`. Requires the CLI environment described in the [Automated Setup Guide](docs/automated-setup-guide.md):
+- **`sync_notebooks.py`**: uploads the Lab 2, Lab 3, and MCP notebooks to `/Shared/databricks-neo4j-workshop/`. See the [admin scripts README](auto_scripts/README.md):
 
   ```bash
-  cd workshop-setup/auto_scripts
-  uv sync
-  uv run databricks-setup sync
+  export DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
+  export DATABRICKS_TOKEN=dapi...
+  uv run python workshop-setup/auto_scripts/sync_notebooks.py
   ```
 
 - **Git folder**: clone the workshop repo as a Git folder in the workspace. Participants open the notebooks from `Lab_2_Databricks_ETL_Neo4j/` and `Lab_3_Semantic_Search/` directly.
@@ -101,7 +101,7 @@ Admins who need a fully populated Neo4j instance outside the lab flow, for examp
 
 ## Alternative Setup Paths
 
-- **CLI tooling**: the `databricks-setup` CLI in `auto_scripts/` runs from your laptop. Its main jobs are `sync` (upload the lab notebooks, Step 3 above) and `cleanup` (tear the environment down); it can also run full provisioning as an alternative to the notebook. See **[docs/automated-setup-guide.md](docs/automated-setup-guide.md)**.
+- **Admin scripts**: two programs in `auto_scripts/` run from your laptop. `sync_notebooks.py` uploads the lab notebooks (Step 3 above) and `teardown.py` deletes the catalog, schemas, volume, DLT pipeline and shared notebooks. Both read every object name from `lab/workshop.py`, which is the course's one definition of them. See **[auto_scripts/README.md](auto_scripts/README.md)**.
 - **Full UI walkthrough**: to set everything up through the Databricks UI step by step, see **[docs/MANUAL_SETUP.md](docs/MANUAL_SETUP.md)**.
 
 ---

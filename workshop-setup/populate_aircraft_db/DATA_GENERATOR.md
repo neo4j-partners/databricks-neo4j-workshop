@@ -180,7 +180,7 @@ ORDER BY avg_egt_before_event DESC
 
 ## Databricks Delta Lake schema
 
-`databricks-setup` (auto_scripts) uploads the CSVs and manuals to a Unity Catalog volume and creates four Delta tables:
+`lab/workshop.py` uploads the CSVs and manuals to a Unity Catalog volume and creates the `Fleet Digital Twin ETL` pipeline, which publishes the gold tables Genie reads. Four of them carry the join chain below:
 
 | Table | Source CSV | Rows | Purpose |
 |-------|------------|------|---------|

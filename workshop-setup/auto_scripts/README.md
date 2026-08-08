@@ -1,143 +1,72 @@
-# Databricks Setup CLI
+# Admin scripts
 
-A modular Python CLI tool for setting up and cleaning up Databricks environments for the Neo4j workshop.
+Two programs, for the case where this workshop runs in a Databricks workspace an
+instructor provisioned by hand rather than one Vocareum created.
 
-For full usage instructions, configuration options, and examples, see the [Automated Setup Guide](../docs/automated-setup-guide.md).
+They define nothing. Every catalog, schema, volume, table and pipeline name they
+touch is read from `lab/workshop.py`, which is this course's one definition of
+its Databricks objects.
 
-## Quick Start
+| Script | What it does |
+| --- | --- |
+| `sync_notebooks.py` | Publishes the lab notebooks into `/Shared/databricks-neo4j-workshop` so participants can browse and clone them. |
+| `teardown.py` | Deletes the catalog, its schemas, the volume, the `Fleet Digital Twin ETL` pipeline and the shared notebook tree. |
+| `workshop_module.py` | Not a command. The seam that puts `lab/workshop.py` on the import path for the two above. |
 
-```bash
-cd workshop-setup/auto_scripts
-uv sync
+## Running them
 
-# Set up environment
-uv run databricks-setup setup
-
-# Tear down everything except the compute cluster
-uv run databricks-setup cleanup
-```
-
-## Commands
-
-### `setup`
-
-Runs two tracks sequentially:
-
-```
-databricks-setup setup
-├── Track A: Admin Cluster + Libraries
-│   ├── Create or reuse dedicated admin Spark cluster
-│   ├── Wait for cluster to reach RUNNING state
-│   └── Install Neo4j Spark Connector + Python packages
-│
-├── Track B: Data + Lakehouse Tables
-│   ├── Find SQL Warehouse
-│   ├── Upload CSV files to Unity Catalog volume
-│   ├── Upload workshop notebooks to shared workspace folder
-│   ├── Verify upload
-│   └── Create Delta Lake tables via Statement Execution API
-│
-└── Report results
-```
+Run from the repository root, so `uv` resolves `dbx-vocareum-tools`, which is
+where `voclab.py` and therefore the HTTP layer come from.
 
 ```bash
-uv run databricks-setup setup
+export DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
+export DATABRICKS_TOKEN=dapi...
+
+uv run python workshop-setup/auto_scripts/sync_notebooks.py
+uv run python workshop-setup/auto_scripts/teardown.py           # prompts
+uv run python workshop-setup/auto_scripts/teardown.py --yes     # does not
 ```
 
-All configuration is loaded from `workshop-setup/.env` — see [Configuration](#configuration) below.
+Both accept `--host` and `--token` instead of the environment variables. There
+is no `.databrickscfg` profile support: the credential resolves in one place,
+`voclab.build_workspace`, the same one the Vocareum hooks use.
 
-### `cleanup`
+Narration goes to stderr. Results come back on stdout as `key=value` lines, the
+same output contract `lab/workshop.py` and `voclab.py` use. Exit `0` ok, `1` a
+failure carrying an `error_code`, and for `teardown.py` `3` means it was refused
+and deleted nothing.
 
-Deletes notebooks, lakehouse tables, volume, schemas, and catalog.
+`teardown.py` refuses rather than proceeds when `--yes` is absent and stdin is
+not a terminal, so a scripted call that forgot the flag cannot delete a live
+class's catalog.
 
-```bash
-# Interactive confirmation prompt
-uv run databricks-setup cleanup
+## What used to be here
 
-# Skip confirmation
-uv run databricks-setup cleanup --yes
-```
+This directory held a `databricks-setup` Typer CLI with its own
+`databricks-sdk`, `typer`, `rich` and `python-dotenv` stack. Almost all of it
+was a second copy of something that now has exactly one owner.
 
-## Configuration
+| Retired | Who owns that job now |
+| --- | --- |
+| `lakehouse_tables.py`, `load_lakehouse_data.py` | `lab/workshop.py`. The four tables it built are eight gold tables published by the `Fleet Digital Twin ETL` DLT pipeline, and the eighteen `COMMENT` statements a Genie space reads are `workshop.genie_statements()`. |
+| `data_upload.py` | `workshop.provision_data`, which uploads the courseware out of the same hash-verified archive the hooks travel in. |
+| `cluster.py` | `voclab.py cluster-ensure`, called from `lab_setup.sh` and `user_setup.sh`. |
+| `libraries.py` | `voclab.py cluster-ensure`, from `VOC_COURSE_LIBRARIES` in `lab/course.env`. |
+| `warehouse.py` | `voclab.py warehouse-ensure` for the warehouse, `workshop.execute_sql` for statements. |
+| `config.py` volume, cluster, library and warehouse settings | `lab/course.env` and `lab/workshop.py`. |
+| `main.py setup` | `workshop.py provision`, run by `workspace_init.sh`. |
+| `models.py`, `log.py`, `utils.py` | Nothing. They existed to serve the modules above. |
+| `cleanup.py` | `teardown.py` here, rewritten to read its names from `workshop.py` and to reclaim the `aircraft_pipeline` schema and the DLT pipeline, neither of which it knew about. |
+| `notebooks.py` | `sync_notebooks.py` here. |
 
-Copy the example environment file and customize:
+The two that survived are the two nothing else covers. `voclab.py`'s
+`notebook-import` is not a substitute for `sync_notebooks.py`: it targets
+`/Users/<email>`, imports the one notebook `VOC_COURSE_NOTEBOOKS` names, and
+skips a file that is already there so a student's edits survive a `stop`. This
+targets `/Shared`, imports the whole lab set, and overwrites.
 
-```bash
-cp workshop-setup/.env.example workshop-setup/.env
-```
-
-Edit `.env` and set at minimum:
-
-```bash
-# Databricks CLI profile (optional - uses default if empty)
-DATABRICKS_PROFILE=""
-```
-
-### All options
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `CATALOG_NAME` | Unity Catalog name | `databricks-neo4j-workshop` |
-| `VOLUME_SCHEMA` | Schema for the data volume | `aircraft` |
-| `VOLUME_NAME` | Volume name for CSV data upload | `raw_data` |
-| `LAKEHOUSE_SCHEMA` | Schema for lakehouse Delta tables | `aircraft` |
-| `WAREHOUSE_NAME` | SQL Warehouse name (for lakehouse tables) | `Starter Warehouse` |
-| `WAREHOUSE_TIMEOUT` | SQL statement timeout (seconds) | `600` |
-| `DATABRICKS_PROFILE` | CLI profile from ~/.databrickscfg | Default |
-| `CLUSTER_NAME` | Cluster name to create or reuse | `Small Spark 4.0` |
-| `USER_EMAIL` | Cluster owner email | Auto-detected |
-| `SPARK_VERSION` | Databricks Runtime version | `17.3.x-cpu-ml-scala2.13` |
-| `AUTOTERMINATION_MINUTES` | Cluster auto-shutdown | `30` |
-| `RUNTIME_ENGINE` | `STANDARD` or `PHOTON` | `STANDARD` |
-| `NODE_TYPE` | Instance type for cluster nodes | `m5.large` |
-
-### Cluster defaults
-
-| Setting | Value |
-|---------|-------|
-| Runtime | 17.3 LTS ML (Spark 4.0.0, Scala 2.13) |
-| Photon | Disabled (workshop data is small; Photon only benefits >100GB workloads) |
-| Node type | `m5.large` (8 GB, 2 cores). Override via `NODE_TYPE` env var. |
-| Workers | 0 (single node) |
-| Access mode | Dedicated (Single User) |
-| Auto-terminate | 30 minutes |
-
-To change defaults, edit `.env`.
-
-## Project Structure
-
-```
-auto_scripts/
-├── pyproject.toml              # Project config, dependencies
-├── uv.lock                     # Locked dependencies
-├── README.md
-└── src/databricks_setup/
-    ├── __init__.py
-    ├── main.py                 # Typer CLI entry point (setup + cleanup)
-    ├── config.py               # Configuration dataclasses
-    ├── models.py               # Shared domain models (SqlStep, SqlResult, etc.)
-    ├── log.py                  # Dual-output logging (terminal + timestamped log file)
-    ├── utils.py                # Polling, client helpers
-    ├── cluster.py              # Cluster creation/management
-    ├── libraries.py            # Library installation
-    ├── data_upload.py          # Volume file upload
-    ├── warehouse.py            # SQL Warehouse management + SQL execution
-    ├── lakehouse_tables.py     # Lakehouse SQL definitions + creation
-    └── cleanup.py              # Teardown logic (schemas, volume, catalog)
-```
-
-## Development
-
-```bash
-# Install with dev dependencies
-uv sync
-
-# Run linter
-uv run ruff check src/
-
-# Run type checker
-uv run mypy src/
-
-# Auto-fix linting issues
-uv run ruff check --fix src/
-```
+Why one definition rather than two: the gold `systems` and `sensors` tables were
+once renamed to match the copy in this directory, and the symptom of the two
+copies having drifted was a Genie space answering plausibly rather than
+correctly. That is the hardest class of workshop failure to notice in a room of
+thirty people.
