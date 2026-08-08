@@ -242,25 +242,46 @@ class Neo4jConnection:
         print("Connected to Neo4j successfully!")
         return self
 
-    def clear_chunks(self):
-        """Remove all enrichment nodes: Document, Chunk, OperatingLimit, and pipeline internals.
+    def clear_enrichment(self):
+        """Remove what this lab created: Document, Chunk, and extracted entities.
 
-        Preserves the aircraft operational graph from Lab 2.
+        A rerun guard. SimpleKGPipeline creates chunks with no dedup key, so a
+        second run of notebook 01 doubles the chunk count, puts duplicate
+        embeddings in every vector search result, and doubles the node budget.
+
+        Preserves the operational graph from Lab 2, including the canonical
+        OperatingLimit nodes it loads from ``nodes_operating_limits.csv``. Those
+        carry ``limit_id``; the ones extraction produces do not, which is what
+        the predicate below selects on.
+
         Uses batched deletes to avoid transaction timeouts on large graphs.
         """
-        labels = ["Chunk", "Document", "OperatingLimit", "__Entity__", "__KGBuilder__"]
+        matches = [
+            "MATCH (n:Chunk)",
+            "MATCH (n:Document)",
+            # Extraction output only. Lab 2 owns the OperatingLimit nodes that
+            # have a limit_id, and this lab does not delete what Lab 2 loaded.
+            "MATCH (n:OperatingLimit) WHERE n.limit_id IS NULL",
+            "MATCH (n:__Entity__)",
+            "MATCH (n:__KGBuilder__)",
+        ]
         deleted_total = 0
-        for label in labels:
+        for match_clause in matches:
             while True:
                 records, _, _ = self.driver.execute_query(
-                    f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted",
+                    f"{match_clause} WITH n LIMIT 500 DETACH DELETE n "
+                    "RETURN count(*) AS deleted",
                     database_=self.database,
                 )
                 count = records[0]["deleted"]
                 deleted_total += count
                 if count == 0:
                     break
-        print(f"Cleared {deleted_total} enrichment nodes (Document, Chunk, OperatingLimit)")
+        print(
+            f"Cleared {deleted_total} enrichment nodes "
+            "(Document, Chunk, extracted entities)"
+        )
+        print("Kept the aircraft graph and the operating limits loaded in Lab 2.")
         return self
 
     def get_graph_stats(self):

@@ -72,12 +72,18 @@ provide.
 
 ## File inventory
 
-27 files travel from `workshop-setup/aircraft_digital_twin_data/` into the
+28 files travel from `workshop-setup/aircraft_digital_twin_data/` into the
 volume. `lab/courseware/` symlinks that directory, `dbx-vocareum-upload` follows
 the link into the hash-verified archive, and `workshop.provision_data` uploads
 each file. A missing manual is a failure rather than a warning, because a run
-that uploaded 22 CSVs and no manual provisions cleanly and breaks two labs
+that uploaded 23 CSVs and no manual provisions cleanly and breaks two labs
 later.
+
+A twenty-ninth file reaches the same volume from a different directory:
+`lab/courseware/wheels/` carries the `neo4j-agent-memory` wheel Lab 6 installs.
+It is not in the inventory below because it is a build artifact rather than
+data, and it lives outside `aircraft_digital_twin_data/` so the data generator
+cannot write over it.
 
 ### Core data, Lab 2 notebook 01
 

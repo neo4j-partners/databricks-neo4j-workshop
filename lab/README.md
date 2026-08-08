@@ -19,18 +19,25 @@ This file is never uploaded. `dbx-vocareum-upload` skips `README.md` by name.
 | `workshop.py` | this course | yes |
 | `00_cluster_smoke_test.ipynb` | this course | yes |
 | `courseware/dlt_fleet_etl.py` | this course | yes |
+| `courseware/wheels/*.whl` | built from a pinned fork, committed | no, rebuild and replace |
 | `courseware/aircraft_digital_twin_data` | `workshop-setup/`, through a symlink | no, edit the real directory |
 
 ## The courseware, and why it is a symlink
 
 `courseware/` travels in the same hash-verified archive as the hooks and lands
-at `/voc/scripts/courseware/`. `workshop.py` reads exactly those two paths and
+at `/voc/scripts/courseware/`. `workshop.py` reads exactly those three paths and
 searches nowhere else:
 
 ```
-/voc/scripts/courseware/aircraft_digital_twin_data/   22 CSVs, 5 maintenance manuals
+/voc/scripts/courseware/aircraft_digital_twin_data/   23 CSVs, 5 maintenance manuals
+/voc/scripts/courseware/wheels/                       the wheels the labs install
 /voc/scripts/courseware/dlt_fleet_etl.py              the pipeline body
 ```
+
+`aircraft_digital_twin_data/` is a symlink to the data generator's committed
+output and `wheels/` is not, which is why they are two directories rather than
+one. A build artifact in a generated directory is one
+`populate-aircraft-db generate` away from being confusing or gone.
 
 Nesting is measured, not assumed. `docs/vocareum-api.md` in `dbx-vocareum`,
 "Nesting, measured 2026-08-07": an archive member carrying a directory prefix
@@ -41,7 +48,7 @@ directory measured to exist on the machine a hook actually runs on.
 `courseware/aircraft_digital_twin_data` is a symlink to
 `../../workshop-setup/aircraft_digital_twin_data`, which the upload follows. The
 data generator writes there, the public setup notebook downloads from there, and
-the Vocareum archive reads from there. A copy would be a second owner of 27
+the Vocareum archive reads from there. A copy would be a second owner of 28
 files, and the last time two copies of this workshop's definitions diverged the
 symptom was a Genie space answering questions wrong. Regenerating the data
 changes what the next upload sends, with nothing to remember to copy.

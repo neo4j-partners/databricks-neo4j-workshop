@@ -104,12 +104,23 @@ def main():
         except Exception as e:
             print(f"  Index {idx_name} drop note: {e}")
 
-    labels = ["Chunk", "Document", "OperatingLimit", "__Entity__", "__KGBuilder__"]
+    # Mirrors Neo4jConnection.clear_enrichment in data_utils.py. The
+    # OperatingLimit case is a predicate, not a bare label: Lab 2 loads the 20
+    # canonical limits from CSV and those carry limit_id, while extraction
+    # output does not.
+    matches = [
+        "MATCH (n:Chunk)",
+        "MATCH (n:Document)",
+        "MATCH (n:OperatingLimit) WHERE n.limit_id IS NULL",
+        "MATCH (n:__Entity__)",
+        "MATCH (n:__KGBuilder__)",
+    ]
     deleted_total = 0
-    for label in labels:
+    for match_clause in matches:
         while True:
             records_del, _, _ = execute_query(
-                f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted"
+                f"{match_clause} WITH n LIMIT 500 DETACH DELETE n "
+                "RETURN count(*) AS deleted"
             )
             count = records_del[0]["deleted"]
             deleted_total += count

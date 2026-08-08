@@ -25,7 +25,7 @@ disagree with the notebooks the participants are running.
 |--------|-----------|-------------|
 | SQL warehouse `shared_warehouse` | `voclab.py warehouse-ensure` | `lab/workspace_init.sh` |
 | Catalog `databricks-neo4j-workshop`, the `aircraft`, `aircraft_pipeline` and `agents` schemas, the `raw_data` volume, and the ten grants that reach them | `workshop.provision_infrastructure` | `lab/workspace_init.sh`, through `voc_python workshop.py provision` |
-| The 27 courseware files in the volume, 22 CSVs and 5 maintenance manuals | `workshop.provision_data` | same |
+| The 29 courseware files in the volume, 23 CSVs, 5 maintenance manuals and the `neo4j-agent-memory` wheel Lab 6 installs | `workshop.provision_data` | same |
 | `/Shared/workshop/dlt_fleet_etl` and the `Fleet Digital Twin ETL` pipeline, run to completion | `workshop.provision_pipeline` | same |
 | The eight gold tables in `aircraft` | published by that pipeline | same |
 | 8 table comments, 10 column comments and 8 `SELECT` grants | `workshop.provision_genie` | same |
@@ -248,7 +248,7 @@ browse run alongside a live update sees them absent.
 
 | Path | What it is |
 |------|-----------|
-| `aircraft_digital_twin_data/` | The dataset, 22 CSVs and 5 maintenance manuals. Live data: `lab/courseware/` symlinks it and the upload follows the link, so it ships to Vocareum from here. |
+| `aircraft_digital_twin_data/` | The dataset, 23 CSVs and 5 maintenance manuals. Live data: `lab/courseware/` symlinks it and the upload follows the link, so it ships to Vocareum from here. |
 | `auto_scripts/` | `sync_notebooks.py` and `teardown.py`, the two jobs nothing else covers, plus the import seam that reaches `lab/workshop.py`. |
 | `populate_aircraft_db/` | The Neo4j loader and the generator that produced the dataset. Manual, for the reasons above. |
 | `neo4j_mcp_connection/` | Supporting notebook for the Lab 4 Part B MCP connection. Manual. |

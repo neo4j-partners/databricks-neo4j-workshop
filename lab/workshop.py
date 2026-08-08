@@ -213,6 +213,18 @@ DLT_NOTEBOOK_VAR = "WORKSHOP_DLT_NOTEBOOK"
 # and breaks two labs in, so their absence is a failure rather than a warning.
 DATA_GLOBS = ("*.csv", "MAINTENANCE_*.md")
 
+# Wheels the labs install out of the volume, in their own directory rather than
+# alongside the CSVs, and the reason is ownership. aircraft_digital_twin_data is
+# the data generator's committed output: it is _DEFAULT_OUTPUT in
+# workshop-setup/populate_aircraft_db/src/populate_aircraft_db/generator/cli.py
+# and DATA_GENERATOR.md documents it as generated. A build artifact parked there
+# is one `populate-aircraft-db generate` away from being confusing or gone, and
+# neither failure names itself. wheels/ is the course's, like dlt_fleet_etl.py
+# beside it, and nothing regenerates it.
+WHEELS_DIR = f"{COURSEWARE_DIR}/wheels"
+WHEELS_DIR_VAR = "WORKSHOP_WHEELS_DIR"
+WHEEL_GLOB = "*.whl"
+
 STATEMENT_WAIT = "50s"
 STATEMENT_POLL_SECONDS = 5
 STATEMENT_TIMEOUT_SECONDS = 300
@@ -699,11 +711,51 @@ def resolve_dlt_notebook() -> Path:
     )
 
 
+def resolve_wheels_dir() -> Path:
+    """Return the courseware wheels directory, on the same reasoning as the data.
+
+    One path, an override for a laptop run, and no fallback. A search that found
+    an empty directory and carried on would provision a volume with no wheel and
+    report success, and the first thing to notice would be thirty clusters
+    failing their library install.
+    """
+    override = (os.environ.get(WHEELS_DIR_VAR) or "").strip()
+    path = Path(override or WHEELS_DIR)
+    if path.is_dir():
+        return path
+    raise voclab.VoclabError(
+        "MISSING_COURSEWARE",
+        f"{path} is not there. The wheels travel in the lab archive as "
+        f"courseware/wheels, so re-run dbx-vocareum-upload, or set "
+        f"{WHEELS_DIR_VAR} to point elsewhere.",
+    )
+
+
+def wheel_files(wheels_dir: Path) -> list[Path]:
+    """Every wheel the volume has to hold.
+
+    Fatal rather than a warning, for a harder reason than the manuals above.
+    VOC_COURSE_LIBRARIES names a wheel by its exact volume path and
+    ``voclab.py cluster-ensure`` posts that path to /api/2.0/libraries/install
+    for every participant cluster. So a volume missing its wheel does not break
+    one lab, it breaks the library install on every cluster in the class, and it
+    does so at cluster start where the student is the one waiting.
+    """
+    found = sorted(wheels_dir.glob(WHEEL_GLOB))
+    if not found:
+        raise voclab.VoclabError(
+            "MISSING_COURSEWARE",
+            f"{wheels_dir} holds no {WHEEL_GLOB}, so the volume would come up "
+            f"without the wheel every participant cluster installs by path.",
+        )
+    return found
+
+
 def data_files(data_dir: Path) -> list[Path]:
     """Everything the volume has to hold: the CSVs, then the manuals.
 
     A missing manual is a failure rather than the warning it used to be. Lab 3
-    loads them out of the volume by name, so a run that uploaded 22 CSVs and no
+    loads them out of the volume by name, so a run that uploaded 23 CSVs and no
     manual provisions cleanly and breaks two labs later.
     """
     found = []
@@ -768,14 +820,38 @@ def provision_infrastructure(workspace, warehouse_id: str) -> dict:
 
 
 def provision_data(workspace) -> dict:
+    """Upload the courseware data and the wheels into one flat volume.
+
+    Both sources land side by side at :data:`VOLUME_PATH` with no subdirectory,
+    because that is the path VOC_COURSE_LIBRARIES already names for the wheel
+    and a volume layout is not worth a second statement of it.
+
+    Both directories are resolved before the first PUT rather than one at a
+    time. A missing wheels/ found halfway through leaves a volume holding 27
+    files and no wheel, which is a state the record has to describe and nothing
+    cleans up; found first, it costs nothing and the volume is untouched.
+
+    ``data_files_uploaded`` stays the count of everything written, which is what
+    workspace_init.sh prints and records. ``wheels_uploaded`` is the breakdown,
+    so the record can still say whether the wheel went up.
+    """
     data_dir = resolve_data_dir()
     files = data_files(data_dir)
-    total = len(files)
-    voclab.log(f"uploading {total} files from {data_dir} to {VOLUME_PATH}")
-    for index, path in enumerate(files, start=1):
+    wheels_dir = resolve_wheels_dir()
+    wheels = wheel_files(wheels_dir)
+    uploads = files + wheels
+    total = len(uploads)
+    voclab.log(f"uploading {total} files to {VOLUME_PATH}")
+    voclab.log(f"  {len(files)} from {data_dir}, {len(wheels)} from {wheels_dir}")
+    for index, path in enumerate(uploads, start=1):
         voclab.log(f"  {index}/{total}: {path.name}")
         put_file(workspace, f"{VOLUME_PATH}/{path.name}", path.read_bytes())
-    return {"data_dir": str(data_dir), "data_files_uploaded": total}
+    return {
+        "data_dir": str(data_dir),
+        "data_files_uploaded": total,
+        "wheels_dir": str(wheels_dir),
+        "wheels_uploaded": len(wheels),
+    }
 
 
 def grant_pipeline_view(workspace, pipeline_id: str) -> str:

@@ -113,5 +113,5 @@ All config uses Pydantic `BaseSettings` with `SecretStr` for passwords.
 ## Key Reference Files
 
 - `workshop-setup/README.md` — Main admin setup guide with troubleshooting
-- `workshop-setup/populate_aircraft_db/DATA_GENERATOR.md` — Data generator guide and complete schema reference (all 22 CSVs, dual-DB strategy, query patterns)
+- `workshop-setup/populate_aircraft_db/DATA_GENERATOR.md` — Data generator guide and complete schema reference (all 23 CSVs, dual-DB strategy, query patterns)
 - `workshop-setup/auto_scripts/README.md` — the two admin scripts, and what took over every job the retired `databricks-setup` CLI did
