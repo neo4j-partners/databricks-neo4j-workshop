@@ -10,4 +10,8 @@
 
 * **GraphRAG and Graph-Enriched Search**: Integration of vector embeddings with graph traversal enables multi-hop queries by combining semantic similarity with graph structure.
 
-* **Agentic GraphRAG: Combining Genie and Neo4j**: A Supervisor Agent that combines Genie for SQL analytics and Neo4j via MCP for graph traversal, showing how to unify Lakehouse and graph data in a single agent system.
+* **Agentic GraphRAG: Combining Genie and Neo4j**: A supervisor that routes across Genie for SQL analytics, Cypher for graph traversal, and GraphRAG for documentation, unifying Lakehouse and graph data in one agent. Built in LangGraph against the participant's own graph, and with no code using Agent Bricks and a governed MCP connection.
+
+* **Deploying the Agent**: Logging the agent to Unity Catalog and serving it as an endpoint that authenticates as a service principal rather than as the notebook user. The step that separates a notebook demo from a product.
+
+* **Agent Memory as a Graph**: Storing what the agent learns in the same database as the domain data, so a single traversal can cross from conversation history into fleet maintenance history and answer questions neither graph could answer alone.

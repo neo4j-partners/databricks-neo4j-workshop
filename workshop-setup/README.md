@@ -95,7 +95,16 @@ Skip this step if each participant uses their own workspace or Free Edition acco
 
 The Databricks side is now ready. The Neo4j graph side is populated during the labs themselves: participants create a free Aura instance in Lab 1, load the aircraft graph with the Lab 2 ETL notebooks, and build the Document-Chunk structure with embeddings in Lab 3.
 
-Admins who need a fully populated Neo4j instance outside the lab flow, for example to back the Neo4j MCP server or a demo, can use the `populate_aircraft_db` CLI in `workshop-setup/populate_aircraft_db/`. It loads the CSV data and runs the full GraphRAG enrichment in one command.
+Admins who need a fully populated Neo4j instance outside the lab flow, for example to back a demo or to give a participant who fell behind a working graph, can use the `populate_aircraft_db` CLI in `workshop-setup/populate_aircraft_db/`. It loads the CSV data and runs the full GraphRAG enrichment in one command.
+
+Two options there matter for the catch-up case:
+
+- `--skip-extraction` chunks, embeds, and indexes the maintenance manual without an extractor LLM, so no OpenAI or Anthropic key is needed. It does not create the `OperatingLimit` nodes that the `limit_retriever` cell in Lab 3 notebook 02 queries.
+- `EMBEDDING_PROVIDER=databricks` calls the same `databricks-bge-large-en` endpoint Lab 3 calls, so vectors written by the loader and vectors written by the notebooks come from one model. Install it with `uv sync --extra databricks`.
+
+### Neo4j MCP Connection (Lab 4 Part B only)
+
+The Unity Catalog HTTP connection to the external Neo4j MCP server, in `workshop-setup/neo4j_mcp_connection/` and [MCP-MANUAL-SETUP.md](MCP-MANUAL-SETUP.md), is needed **only for Lab 4 Part B**, which is optional. It backs the no-code Agent Bricks supervisor and points at the shared Reference Aura Instance. The required labs, including the Lab 5 LangGraph agent, connect to Neo4j with the Python driver against each participant's own instance and need none of this. Skip it if you are not running Part B.
 
 ---
 

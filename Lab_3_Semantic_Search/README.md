@@ -24,6 +24,8 @@ Connect directly to Neo4j Aura using the Python driver and `neo4j-graphrag` libr
 
 The notebooks are numbered 01-03 and build on the aircraft graph you loaded in Lab 2.
 
+> **Notebook 01 is required, not just foundational.** It creates the `maintenanceChunkEmbeddings` vector index, and Lab 5's `graphrag_node` queries that index by name. Skip notebook 01 and the Lab 5 agent drops to two tools. Notebook 03 stays optional: Lab 5 uses vector retrieval only, and hybrid retrieval is an exercise there rather than a dependency.
+
 ### 01_data_and_embeddings.ipynb - Data Preparation (Required)
 Build the foundation for semantic search over maintenance documentation:
 - Understand the Document -> Chunk graph structure
@@ -91,4 +93,4 @@ Copy and paste queries from the [Sample Queries](SAMPLE_QUERIES.md) page to expl
 
 > **Note:** Vector similarity search is not included in the sample queries because it requires embedding the query text with the same model used to generate the stored embeddings (Databricks BGE-large). The notebooks handle this automatically via the Databricks Foundation Model APIs. See notebooks 02 and 03 for hands-on semantic search examples.
 
-When you're ready, continue to [Lab 4 - Compound AI Agents](../Lab_4_Compound_AI_Agents) to build a Supervisor Agent that routes questions between a Genie space and Neo4j MCP.
+When you're ready, continue to [Lab 4 Part A](../Lab_4_Compound_AI_Agents/PART_A.md) to build the Genie space over sensor telemetry. The retrievers you just built become the `graphrag_node` tool in [Lab 5](../Lab_5_LangGraph_Agent), where a supervisor routes between them, Genie, and direct Cypher.

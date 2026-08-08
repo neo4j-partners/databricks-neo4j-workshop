@@ -93,7 +93,7 @@ Settings are loaded from a `.env` file in the project root or from environment v
 | `DATA_DIR` | no | `../aircraft_digital_twin_data` | CSV directory for operational graph loading |
 | `DOCUMENT_DIR` | no | `../aircraft_digital_twin_data` | Maintenance manual directory for enrichment (same directory; CSVs and manuals live together) |
 | `LLM_PROVIDER` | no | `openai` | LLM provider for entity extraction: `openai` or `anthropic` |
-| `EMBEDDING_PROVIDER` | no | `bge` | Chunk embedding provider: `bge` (local sentence-transformers, no API key) or `openai` |
+| `EMBEDDING_PROVIDER` | no | `bge` | Chunk embedding provider: `bge` (local sentence-transformers, no API key), `openai`, or `databricks` |
 | `BGE_EMBEDDING_MODEL` | no | `BAAI/bge-large-en-v1.5` | BGE embedding model (used when `EMBEDDING_PROVIDER=bge`) |
 | `BGE_EMBEDDING_DIMENSIONS` | no | `1024` | BGE embedding dimensions — matches the Lab 3 `maintenanceChunkEmbeddings` index |
 | `OPENAI_API_KEY` | for setup (openai) | - | OpenAI API key. Required for extraction when `LLM_PROVIDER=openai` and for embeddings when `EMBEDDING_PROVIDER=openai` |
@@ -104,6 +104,11 @@ Settings are loaded from a `.env` file in the project root or from environment v
 | `ANTHROPIC_API_KEY` | for setup (anthropic) | - | Anthropic API key |
 | `ANTHROPIC_EXTRACTION_MODEL` | no | `claude-sonnet-4-6` | Chat model for entity extraction (Anthropic) |
 | `ANTHROPIC_EXTRACTION_MAX_TOKENS` | no | `8000` | Anthropic extraction output budget |
+| `DATABRICKS_EMBEDDING_MODEL` | no | `databricks-bge-large-en` | Serving endpoint used when `EMBEDDING_PROVIDER=databricks` |
+| `DATABRICKS_EMBEDDING_DIMENSIONS` | no | `1024` | Dimensions of that endpoint. Matches the Lab 3 index |
+| `DATABRICKS_CONFIG_PROFILE` | no | - | Profile in `~/.databrickscfg` to authenticate with |
+| `DATABRICKS_HOST` | no | - | Workspace URL, if not using a profile |
+| `DATABRICKS_TOKEN` | no | - | Personal access token, if not using a profile |
 | `CHUNK_SIZE` | no | `800` | Characters per chunk (setup) |
 | `CHUNK_OVERLAP` | no | `100` | Overlap between chunks (setup) |
 | `ENRICH_SAMPLE_SIZE` | no | `0` | Max chunks per document during setup (`0` = no limit) |
@@ -128,7 +133,26 @@ EMBEDDING_PROVIDER=openai
 OPENAI_API_KEY=sk-your-openai-key
 ```
 
+To embed through the same Databricks Foundation Model endpoint the Lab 3 notebooks call, so the vectors this loader writes and the vectors a participant writes come from one model:
+
+```dotenv
+EMBEDDING_PROVIDER=databricks
+DATABRICKS_CONFIG_PROFILE=DEFAULT
+```
+
+Install the extra it needs with `uv sync --extra databricks`. Inside a Databricks notebook, leave the host, token, and profile unset: authentication is already in the environment.
+
 If `LLM_PROVIDER=openai` and you see repeated `LLM response has improper format` messages, keep `OPENAI_EXTRACTION_MAX_COMPLETION_TOKENS` at `8000` or higher. GPT-5-family models can spend part of that budget on structured-output reasoning before emitting the JSON graph.
+
+### Loading without an extractor LLM
+
+`setup` and `enrich` both accept `--skip-extraction`. It chunks the maintenance manuals, embeds the chunks, writes the Document and Chunk nodes, creates the `maintenanceChunkEmbeddings` vector index, and cross-links to the operational graph, all without calling an extractor. No OpenAI or Anthropic key is needed on this path.
+
+```bash
+uv run populate-aircraft-db setup --skip-extraction
+```
+
+The Document and Chunk nodes it writes are the same nodes the full path writes. What is missing is the extracted entities: no `OperatingLimit` nodes and no `HAS_LIMIT` relationships, so the `limit_retriever` cell in Lab 3 notebook 02 has nothing to return. Everything else in Lab 3, and all three tools in Lab 5, work against a graph loaded this way.
 
 ### Testing extractor settings
 

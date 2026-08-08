@@ -144,6 +144,42 @@ GOLD_TABLES = (
     "sensor_health",
 )
 
+# Lab 5 names. Stated here for the same reason every other name is: the notebook
+# that logs the agent, the notebook that queries the endpoint, and any admin
+# script that cleans up after a cohort all have to agree, and a name written
+# three times drifts. Nothing in this file creates these. Lab 5 runs in a
+# participant's notebook and creates them there, reading the names from here.
+#
+# Registered under the workshop catalog so a teardown of the catalog takes the
+# model with it, in the pipeline schema's sibling rather than the gold schema so
+# a participant browsing gold tables for a Genie space still sees eight.
+AGENT_SCHEMA = os.environ.get("WORKSHOP_AGENT_SCHEMA", "agents")
+AGENT_MODEL_NAME = "fleet_ops_assistant"
+AGENT_MODEL_FULL_NAME = f"{CATALOG}.{AGENT_SCHEMA}.{AGENT_MODEL_NAME}"
+
+# Serving endpoint names are account-unique, not catalog-scoped, so a shared
+# workspace needs one per participant. Lab 5 suffixes this with the participant's
+# identifier rather than using it bare.
+AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
+
+# Where Lab 5 puts the Neo4j password so the deployed endpoint, which runs as a
+# service principal and not as the notebook user, can read it. Same per-
+# participant caveat as the endpoint: scope names are workspace-unique.
+AGENT_SECRET_SCOPE_PREFIX = "fleet-ops"
+AGENT_SECRET_KEY_NEO4J_URI = "neo4j-uri"
+AGENT_SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
+AGENT_SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
+
+# The model behind the supervisor's routing decision, and behind GraphRAG answer
+# generation in Lab 3. One name so the two cannot diverge.
+SUPERVISOR_LLM_ENDPOINT = "databricks-meta-llama-3-3-70b-instruct"
+
+# The embedding endpoint Lab 3 writes maintenanceChunkEmbeddings with and Lab 5
+# reads it back with. Changing this invalidates every stored vector, because a
+# 1024-dimension index says nothing about which model produced the numbers in it.
+EMBEDDING_ENDPOINT = "databricks-bge-large-en"
+EMBEDDING_DIMENSIONS = 1024
+
 # Where the courseware is, singular. This used to be two lists of candidate
 # paths, written while it was still an open question whether the upload could
 # address anything but a flat folder. It is no longer open. Measured 2026-08-07

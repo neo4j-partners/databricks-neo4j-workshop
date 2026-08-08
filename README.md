@@ -4,14 +4,17 @@
 
 ## What You Will Build
 
-By the end of this workshop you will have a working AI system that answers natural language questions about a commercial aviation fleet. Ask it a question and a Supervisor Agent decides which of two specialized backends can best answer it: Neo4j for relationship questions and Databricks for sensor trend questions.
+By the end of this workshop you will have a working AI system that answers natural language questions about a commercial aviation fleet, deployed as an endpoint and remembering what it has been asked before. Ask it a question and a supervisor decides which specialized backend can best answer it.
 
-The system answers two fundamentally different kinds of questions:
+The system answers three fundamentally different kinds of questions:
 
-- **Relationship questions** such as "Which components have had critical failures, and which flights did those failures delay?" are best answered by traversing a graph.
 - **Time-series analytics questions** such as "How have engine temperature readings trended over the last 90 days?" are best answered by running SQL over columnar data.
+- **Relationship questions** such as "Which components have had critical failures, and which flights did those failures delay?" are best answered by traversing a graph.
+- **Documentation questions** such as "What does the manual say about EGT exceedance?" are best answered by semantic similarity over text, then traversal from what matched.
 
-A single database handles one kind well but not both. This workshop shows how to pair Neo4j and Databricks so each handles the workload it is built for, then connect them through a shared AI layer.
+A single database handles one of these well. This workshop pairs Neo4j and Databricks so each handles the workload it is built for, connects them through an agent that routes between them, and then puts the agent's memory in the graph next to the fleet data so the two can be queried together.
+
+The question the whole workshop builds toward needs all three at once: *which engines show abnormal EGT, what is their maintenance history, and what is the relevant procedure?*
 
 The dataset is an Aircraft Digital Twin: a simulated aviation fleet with real structure. Aircraft have systems and components. Components generate sensor readings and accumulate maintenance events. Aircraft operate flights between airports, and those flights can have delays tied to specific component failures. The combination gives you a realistic, richly connected dataset that exercises both the graph and the analytics platform.
 
@@ -21,11 +24,14 @@ The dataset is an Aircraft Digital Twin: a simulated aviation fleet with real st
 
 The end-to-end architecture routes each user question to the backend best suited to answer it:
 
-- **Supervisor Agent** (Databricks Agent Bricks): receives user questions and decides which specialized agent to call
-- **Genie Agent**: handles sensor telemetry analytics using natural language SQL over Unity Catalog tables
-- **Neo4j MCP Agent**: handles graph-powered queries over the knowledge graph using the Model Context Protocol
-- **Neo4j Aura**: the graph database storing aircraft relationships, maintenance history, and flight operations
-- **Databricks**: provides notebooks, model serving, and vector search
+- **Supervisor**: receives user questions and decides which specialized tool to call. Built in LangGraph in Lab 5, and with no code in Lab 4 Part B
+- **Genie tool**: handles sensor telemetry analytics using natural language SQL over Unity Catalog tables
+- **Cypher tool**: handles graph traversal over aircraft topology, maintenance history, and flight operations
+- **GraphRAG tool**: handles maintenance documentation using vector search over manual chunks, then traversal from the chunks that match
+- **Neo4j Aura**: the graph database holding all three of relationships, documentation, and the agent's own memory
+- **Databricks**: provides notebooks, Foundation Model APIs, and Model Serving
+
+Lab 4 Part B builds the same routing over the **Model Context Protocol**, which is the pattern for centrally-governed agent access to Neo4j and where this integration is heading. It is optional and advanced.
 
 ![Workshop Architecture Overview](images/lab-architecture-overview.png)
 
@@ -69,10 +75,13 @@ Together the dataset includes:
 | **Neo4j Aura** | Graph database for storing aircraft relationships |
 | **Databricks** | Notebooks, Unity Catalog |
 | **AI/BI Genie** | Natural language analytics over Unity Catalog tables |
-| **Agent Bricks: Supervisor Agent** | No-code multi-agent supervisor combining multiple data sources |
+| **LangGraph** | Code-first supervisor routing across Genie, Cypher, and GraphRAG tools |
 | **GraphRAG** | Graph-enhanced retrieval combining vector search with graph traversal |
 | **Neo4j Spark Connector** | ETL from Databricks to Neo4j |
-| **Model Context Protocol (MCP)** | Standard for connecting AI models to data sources |
+| **Model Serving** | Deploying the agent as an endpoint that authenticates as a service principal |
+| **Neo4j Agent Memory** | Conversation memory stored as a graph alongside the domain data |
+| **Agent Bricks: Supervisor Agent** | No-code multi-agent supervisor. Lab 4 Part B, optional |
+| **Model Context Protocol (MCP)** | Standard for connecting AI models to data sources. The pattern for centrally-governed agent access to Neo4j, covered in Lab 4 Part B |
 
 ---
 
@@ -101,11 +110,37 @@ Together the dataset includes:
 
 ### Phase 3: Multi-Agent Analytics
 
-*Build a multi-agent supervisor that combines the Databricks Lakehouse with the Neo4j knowledge graph.*
+*Build a multi-agent supervisor that combines the Databricks Lakehouse with the Neo4j knowledge graph, then give it memory.*
 
 | Lab | Description | Time |
 |-----|-------------|------|
-| [Lab 4 - Compound AI Agents](./Lab_4_Compound_AI_Agents) | Build a Supervisor Agent combining Genie space (sensor analytics) + Neo4j MCP (graph queries) | 75 min |
+| [Lab 4 Part A - Genie Space](./Lab_4_Compound_AI_Agents/PART_A.md) | Natural language SQL over sensor telemetry in Unity Catalog | 30 min |
+| [Lab 5 - LangGraph Agent](./Lab_5_LangGraph_Agent) | A supervisor routing across Genie, Cypher, and GraphRAG, deployed to Model Serving | 90 min |
+| [Lab 6 - Agent Memory](./Lab_6_Agent_Memory) | Memory that lives in the same graph as the fleet data, so both can be traversed together | 75 min |
+
+---
+
+### Optional and Advanced
+
+*Take-home material. Neither is required to finish the workshop.*
+
+| Lab | Description | Time |
+|-----|-------------|------|
+| [Lab 4 Part B - No-Code Supervisor](./Lab_4_Compound_AI_Agents/PART_B.md) | The same routing built with no code, using Agent Bricks and a governed Neo4j MCP connection over Unity Catalog. Queries the shared Reference Aura Instance | 45 min |
+| [Appendix A - GDS Graph Analytics](./Appendix_A_GDS_Graph_Analytics) | Centrality, community detection, and similarity over the fleet graph | 45 min |
+
+---
+
+## Which Aura Instance Each Lab Uses
+
+Every required lab reads and writes the **one Aura instance you create in Lab 1**, and each lab's output is the next lab's input. Lab 2 loads the fleet, Lab 3 adds documentation and vector indexes to it, Lab 5 builds an agent that queries both, and Lab 6 writes the agent's memory back into it.
+
+| Lab | Neo4j target |
+|-----|--------------|
+| Lab 1, 2, 3 | Yours |
+| Lab 4 Part A | None. Genie queries Unity Catalog |
+| Lab 4 Part B *(optional)* | Shared Reference Aura Instance |
+| Lab 5, 6 | Yours |
 
 ---
 
@@ -139,7 +174,9 @@ The knowledge graph models a commercial aviation fleet as a connected network of
 | Embeddings | Databricks BGE-large (databricks-bge-large-en) |
 | LLM | Databricks Llama 3.3 70B |
 | Vector Search | Neo4j Vector Index |
-| Multi-Agent | Databricks Agent Bricks: Supervisor Agent |
+| Multi-Agent | LangGraph. Databricks Agent Bricks in Lab 4 Part B |
+| Agent Memory | neo4j-agent-memory on the participant's own Aura instance |
+| Deployment | Databricks Model Serving |
 | ETL | Neo4j Spark Connector |
 
 ## Configuration
