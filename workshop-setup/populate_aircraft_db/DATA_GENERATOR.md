@@ -143,7 +143,9 @@ Fleet composition: 35 B737-800, 25 A320-200, 20 A321neo, 10 A220-300, 10 E190, s
 | `MaintenanceEvent` | `nodes_maintenance.csv` | `event_id`, `component_id`, `fault`, `severity` (MINOR, MAJOR, CRITICAL), `reported_at`, `corrective_action` |
 | `Removal` | `nodes_removals.csv` | `removal_id`, part/serial, work order, technician, warranty, cost, shop-visit fields |
 
-The Lab 3 enrichment adds further node types from the manuals: `Document`, `Chunk`, `AircraftModel`, `SystemReference`, `ComponentReference`, `Fault`, `MaintenanceProcedure`, `OperatingLimit`.
+`OperatingLimit` also loads from CSV, from `nodes_operating_limits.csv`: 20 documented takeoff thresholds, keyed on `limit_id`, four parameters for each of the five aircraft models.
+
+The Lab 3 enrichment adds further node types from the manuals: `Document`, `Chunk`, `AircraftModel`, `SystemReference`, `ComponentReference`, `Fault`, `MaintenanceProcedure`, `ExtractedLimit`. Limits the extractor reads out of the manual text land on `ExtractedLimit` rather than `OperatingLimit`, so the label means the 20 canonical CSV rows and nothing else.
 
 ### Relationship types (13)
 

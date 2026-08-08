@@ -78,7 +78,7 @@ Returns flight operations, routes, and delay information.
 
 ## 5. Sensor Operating Limits with Source (Cypher Template)
 
-Returns sensor operating limits with full provenance: OperatingLimit -> source Chunk -> Document -> Aircraft.
+Returns sensor operating limits. A sensor reaches its threshold through `Sensor -> HAS_LIMIT -> OperatingLimit`, the 20 canonical limits loaded from CSV. Provenance back to the manual runs through the extracted copies instead: `ExtractedLimit -> source Chunk -> Document -> Aircraft`.
 
 - "What are the sensor operating limits for N10001?"
 - "What is the maximum EGT allowed for the A320-200?"

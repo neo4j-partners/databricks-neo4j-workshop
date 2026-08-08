@@ -32,7 +32,7 @@
 # What still belongs here is pre-warm work not named after a student: an instance
 # pool, a dataset staged into a volume, a catalog. The cost the deleted path was
 # aimed at is real and still unpaid. Measured the same day, a cluster takes about
-# 10 minutes to reach RUNNING and its eleven libraries another 6 to reach
+# 10 minutes to reach RUNNING and its libraries another 6 to reach
 # INSTALLED, so a student waits about 16 minutes for a usable cluster and the
 # cluster reports RUNNING for the last 6 of them.
 #

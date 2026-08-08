@@ -689,7 +689,7 @@ def process_all_documents_lexical_only(
 
 def link_to_existing_graph(driver: Driver, database: str) -> None:
     """Create relationships between enrichment data and the operational graph."""
-    execute_query = partial(execute_query, database_=database)
+    execute_query = partial(driver.execute_query, database_=database)
 
     # Document -[:APPLIES_TO]-> Aircraft (via document metadata aircraftType)
     records, _, _ = execute_query("""
@@ -762,7 +762,7 @@ def link_to_existing_graph(driver: Driver, database: str) -> None:
 
 def clear_enrichment_data(driver: Driver, database: str) -> None:
     """Delete all Document, Chunk, and extracted entity nodes (preserves operational graph)."""
-    execute_query = partial(execute_query, database_=database)
+    execute_query = partial(driver.execute_query, database_=database)
     labels_to_clear = ["Document", "Chunk"] + EXTRACTED_LABELS
     deleted_total = 0
 

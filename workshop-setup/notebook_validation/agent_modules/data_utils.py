@@ -250,18 +250,18 @@ class Neo4jConnection:
         embeddings in every vector search result, and doubles the node budget.
 
         Preserves the operational graph from Lab 2, including the canonical
-        OperatingLimit nodes it loads from ``nodes_operating_limits.csv``. Those
-        carry ``limit_id``; the ones extraction produces do not, which is what
-        the predicate below selects on.
+        OperatingLimit nodes it loads from ``nodes_operating_limits.csv``. What
+        extraction produces carries the ``ExtractedLimit`` label instead, so
+        clearing by label reaches this lab's output and nothing else.
 
         Uses batched deletes to avoid transaction timeouts on large graphs.
         """
         matches = [
             "MATCH (n:Chunk)",
             "MATCH (n:Document)",
-            # Extraction output only. Lab 2 owns the OperatingLimit nodes that
-            # have a limit_id, and this lab does not delete what Lab 2 loaded.
-            "MATCH (n:OperatingLimit) WHERE n.limit_id IS NULL",
+            # Extraction output only. Lab 2 owns the OperatingLimit label and
+            # this lab does not delete what Lab 2 loaded.
+            "MATCH (n:ExtractedLimit)",
             "MATCH (n:__Entity__)",
             "MATCH (n:__KGBuilder__)",
         ]
@@ -459,10 +459,12 @@ class ContextPrependingSplitter(TextSplitter):
 def build_extraction_schema():
     """Build a GraphSchema for SimpleKGPipeline entity extraction.
 
-    Extracts OperatingLimit entities -- aircraft operating parameter thresholds
-    (EGT limits, vibration thresholds, etc.). Entity names are qualified with
-    aircraft type (e.g. "EGT - A320-200") so entity resolution does not merge
-    limits from different aircraft.
+    Extracts ExtractedLimit entities -- aircraft operating parameter thresholds
+    (EGT limits, vibration thresholds, etc.) as stated in the manual text. The
+    label is deliberately not OperatingLimit: that one means the 20 canonical
+    rows Lab 2 loads from CSV. Entity names are qualified with aircraft type
+    (e.g. "EGT - A320-200") so entity resolution does not merge limits from
+    different aircraft.
     """
     from neo4j_graphrag.experimental.components.schema import (
         GraphSchema,
@@ -472,8 +474,10 @@ def build_extraction_schema():
 
     node_types = [
         NodeType(
-            label="OperatingLimit",
-            description="An operating parameter limit for an aircraft system.",
+            label="ExtractedLimit",
+            description=(
+                "An operating parameter limit stated in a maintenance manual."
+            ),
             properties=[
                 PropertyType(
                     name="name",
@@ -517,7 +521,7 @@ Your task: extract entities (nodes) and relationships from the input text \
 according to the schema below.
 
 Return result as JSON using this format:
-{{"nodes": [{{"id": "0", "label": "OperatingLimit", "properties": {{"name": "EGT - A320-200", "parameterName": "EGT", "aircraftType": "A320-200", "unit": "\u00b0C", "maxValue": "695"}}}}],
+{{"nodes": [{{"id": "0", "label": "ExtractedLimit", "properties": {{"name": "EGT - A320-200", "parameterName": "EGT", "aircraftType": "A320-200", "unit": "\u00b0C", "maxValue": "695"}}}}],
 "relationships": []}}
 
 Use only the following node and relationship types:

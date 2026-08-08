@@ -29,7 +29,7 @@ disagree with the notebooks the participants are running.
 | `/Shared/workshop/dlt_fleet_etl` and the `Fleet Digital Twin ETL` pipeline, run to completion | `workshop.provision_pipeline` | same |
 | The eight gold tables in `aircraft` | published by that pipeline | same |
 | 8 table comments, 10 column comments and 8 `SELECT` grants | `workshop.provision_genie` | same |
-| The per-student cluster and its eleven libraries | `voclab.py cluster-ensure` | `lab/lab_setup.sh` to pre-warm, `lab/user_setup.sh` to guarantee |
+| The per-student cluster and its thirteen libraries | `voclab.py cluster-ensure` | `lab/lab_setup.sh` to pre-warm, `lab/user_setup.sh` to guarantee |
 | The lab notebooks in the student's own workspace folder | `voclab.py notebook-import` | `lab/user_setup.sh`, from `VOC_COURSE_NOTEBOOKS` in `lab/course.env` |
 | Reclaiming anything billable when a session ends | `lab/lab_end.sh` | Vocareum, on stop or terminate |
 
@@ -49,6 +49,14 @@ Exit `0` means every object in `expected.json` is present. Exit `3` names the
 ones that are not. Run it after the DLT pipeline finishes rather than during: the
 eight gold tables are the pipeline's output, so a gate run against a live update
 reports a failure that resolves itself.
+
+**The gate checks that objects exist, not what is inside them.** `expected.json`
+names the volume; nothing asserts the volume's 29 files. So a workspace whose
+volume holds no CSVs and no wheel still exits `0`. The gate is a check on
+provisioning having run, not on it having finished correctly. Until that
+changes, confirm the volume contents by hand, or trust
+`workshop.provision_data`, which does fail loudly on a missing file. The wheel
+is the sharpest case, and it has its own section below.
 
 ---
 
@@ -73,8 +81,10 @@ Two administrator cases need an instance loaded ahead of time, and both use the
   no matter how far they got in Lab 2.
 - **A participant who fell behind.** `--skip-extraction` chunks, embeds and
   indexes the maintenance manual without an extractor LLM, so no OpenAI or
-  Anthropic key is needed. It does not create the `OperatingLimit` nodes that the
-  `limit_retriever` cell in Lab 3 notebook 02 queries.
+  Anthropic key is needed. It creates no `ExtractedLimit` nodes and none of the
+  other extracted entities. The 20 canonical `OperatingLimit` nodes load from CSV
+  either way, so the `limit_retriever` cell in Lab 3 notebook 02 still has a
+  chain to traverse.
 
 `EMBEDDING_PROVIDER=databricks` calls the same `databricks-bge-large-en`
 endpoint Lab 3 calls, so vectors written by the loader and vectors written by the
@@ -136,6 +146,94 @@ not re-run `workspace_init.sh`, which Vocareum fires once per workspace; the
 `Rerun Init` button on the Vocareum admin Workspaces page is the only way to
 trigger it again. Admin-side instructions live in
 [`vocareum/SETUP_GUIDE.md`](../vocareum/SETUP_GUIDE.md).
+
+**The runtime is injected from the installed package, not from this
+repository.** `dbx-vocareum-upload` puts its own `voclab.py` and `voclib.sh`
+into every archive, and `uv.lock` pins which version that is. So a fix made in
+`dbx-vocareum` does not arrive by pulling this repository. Resync first, or the
+upload ships the old runtime and hash-verifies it cleanly:
+
+```bash
+uv lock --upgrade-package dbx-vocareum-tools && uv sync
+```
+
+`pyproject.toml` names the dependency as `git+https://...` with no tag and no
+rev, so it tracks the branch and the lock is the only pin. There is no version
+to bump.
+
+---
+
+### The `neo4j-agent-memory` wheel
+
+Lab 6 needs a build of `neo4j-agent-memory` that does not exist on PyPI, so the
+course ships one. This is the only build artifact the repository carries, and
+the only piece of the courseware that is not either data or a notebook.
+
+| | |
+|---|---|
+| Committed at | `lab/courseware/wheels/neo4j_agent_memory-0.5.1.dev0+mentions-py3-none-any.whl` |
+| Reaches the volume by | `workshop.provision_data`, called from `lab/workspace_init.sh` |
+| Lands at | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
+| Installed on the cluster by | `VOC_COURSE_LIBRARIES` in `lab/course.env`, as `whl:` plus a separate `pypi:httpx>=0.27.0` |
+| Built from | the `mentions` branch of [`neo4j-partners/agent-memory`](https://github.com/neo4j-partners/agent-memory), `uv build --wheel` |
+
+**Why a fork.** Released `0.5.0` silently drops `MENTIONS` edges on the
+automatic extraction path, which is the edge Lab 6's headline query walks. The
+fix exists on that branch and nowhere else yet. The branch bumps the version to
+`0.5.1.dev0+mentions`, so `pip list` tells a patched install from an unpatched
+one at a glance.
+
+**Why a wheel rather than `git+https`.** It is byte-identical for every
+participant, installs with no clone and no build at cluster start, and is the
+same artifact Lab 6 hands to Model Serving. The `git+` form would make every
+cluster in the class clone and build the package while a student waits.
+
+**Why `httpx` is a separate entry.** A wheel carries no extras. The library's
+`[nams]` extra contains exactly one thing, `httpx>=0.27.0`, and the bolt path
+imports it transitively, so without it `MemoryClient.connect()` fails with
+`ModuleNotFoundError: No module named 'httpx'` at connect time rather than at
+import time, in front of the participant.
+
+**Why `wheels/` is its own directory.** `courseware/aircraft_digital_twin_data/`
+is a symlink to the data generator's committed output. A build artifact parked
+there is one `populate-aircraft-db generate` away from being clobbered, and that
+failure would not name itself. `wheels/` is the course's, like
+`dlt_fleet_etl.py` beside it, and nothing regenerates it.
+
+**Rebuilding it.** Manual, and rare. Build from the branch, drop the new file
+in, delete the old one, and update the path in `VOC_COURSE_LIBRARIES`. The
+filename carries the version, so the two must move together:
+
+```bash
+cd <checkout of neo4j-partners/agent-memory>   # branch: mentions
+uv build --wheel
+cp dist/neo4j_agent_memory-*.whl <this repo>/lab/courseware/wheels/
+```
+
+`workshop.provision_data` uploads every `*.whl` it finds and fails the whole
+provision if the directory is missing or empty, rather than warning. A volume
+without the wheel does not break one lab: it breaks the library install on
+every cluster in the class, at cluster start, with the student waiting.
+
+**One trap for Lab 6, and it is unmeasured.** `0.5.1.dev0+mentions` is a PEP 440
+local version segment and resolves from nowhere. MLflow's inferred requirements
+will emit `neo4j-agent-memory==0.5.1.dev0+mentions` into the logged model, which
+the serving build container cannot install. So the logged model cannot be left
+to inference here.
+
+The option to try first is `mlflow.models.utils.add_libraries_to_model(<model-uri>)`,
+which copies the wheel into the model artifact, so the build container installs
+from the artifact and never resolves the name at all.
+
+Naming the volume path in `pip_requirements` looks like the simpler fix and
+probably is not one: the serving build container does not mount `/Volumes`, so
+a `/Volumes/...` requirement has nothing to read. That is reasoning, not a
+measurement. **Whoever reaches this first should record what actually happened
+here**, because it is the least-verified claim in the memory documentation and
+it sits on the critical path for the Lab 6 endpoint.
+
+The measurements behind all of the above are in
+[`../worklog/memory-spike.md`](../worklog/memory-spike.md).
 
 ---
 
@@ -208,9 +306,12 @@ shared folder, enter their Neo4j credentials from Lab 1, and run the notebooks.
 **"Spark Connector not found"**
 The cluster has to be in Dedicated (single user) access mode; shared modes are
 not supported by the connector. Check the library status on the cluster, and
-restart it after adding the library. The eleven libraries take about six minutes
-to reach `INSTALLED` after the cluster reaches `RUNNING`, which is what
-`lab_setup.sh` pre-warming buys back.
+restart it after adding the library. The libraries take about six minutes to
+reach `INSTALLED` after the cluster reaches `RUNNING`, which is what
+`lab_setup.sh` pre-warming buys back. That figure was measured when the list
+held eleven entries and now holds thirteen; the two added are a local wheel and
+a small pure-Python package, so treat six minutes as a floor rather than a
+number to quote at a student.
 
 **"Connection refused" to Neo4j**
 Aura is TLS only, so the URI is `neo4j+s://`, and `bolt://` fails in the
@@ -256,6 +357,10 @@ browse run alongside a live update sees them absent.
 | `notebook_validation/` | Upload-and-submit harness that runs the lab notebooks as Databricks jobs. Development tooling. |
 | `docs/` | Reference material. `MANUAL_SETUP.md` is the file inventory and expected counts. `EXAMPLE_QUERIES.md` is the Aura Agent question set. |
 | `MCP-MANUAL-SETUP.md` | The one Databricks-side procedure still done by hand. |
+
+The wheel is the exception to "live data lives here". It is committed under
+`lab/courseware/wheels/` rather than in this directory, for the reason given in
+[The `neo4j-agent-memory` wheel](#the-neo4j-agent-memory-wheel) above.
 
 ---
 

@@ -32,7 +32,7 @@ uv run populate-aircraft-db setup
 | `clean` | Delete all nodes and relationships |
 | `enrich` | Re-run manual GraphRAG enrichment against an already-loaded operational graph |
 | `load-operational` | Load only CSV operational data and relink existing enrichment. No LLM calls |
-| `clean-enrichment` | Delete enrichment data (Documents, Chunks, OperatingLimits) while preserving the operational graph |
+| `clean-enrichment` | Delete enrichment data (Documents, Chunks, extracted entities) while preserving the operational graph |
 
 All loading configuration is via `.env` — no command-line flags needed. The `generate` command takes flags instead (it reads nothing from `.env`).
 
@@ -154,7 +154,7 @@ If `LLM_PROVIDER=openai` and you see repeated `LLM response has improper format`
 uv run populate-aircraft-db setup --skip-extraction
 ```
 
-The Document and Chunk nodes it writes are the same nodes the full path writes. What is missing is the extracted entities: no `OperatingLimit` nodes and no `HAS_LIMIT` relationships, so the `limit_retriever` cell in Lab 3 notebook 02 has nothing to return. Everything else in Lab 3, and all three tools in Lab 5, work against a graph loaded this way.
+The Document and Chunk nodes it writes are the same nodes the full path writes. What is missing is the extracted entities: no `ExtractedLimit` nodes, no `Fault` nodes, and none of their relationships. The 20 canonical `OperatingLimit` nodes load from CSV on this path too, and `link_to_existing_graph` still wires them to Sensors, so the `limit_retriever` cell in Lab 3 notebook 02 has a chain to traverse. Everything else in Lab 3, and all three tools in Lab 5, work against a graph loaded this way.
 
 ### Testing extractor settings
 
@@ -206,13 +206,13 @@ Uses `neo4j-graphrag`'s `SimpleKGPipeline` to process maintenance manuals from
 
 1. **Chunking**: Splits text into ~800-character chunks with overlap
 2. **Embedding**: Generates BGE-large embeddings (local sentence-transformers, 1024 dimensions) stored on Chunk nodes
-3. **Entity extraction**: Uses the configured extractor LLM to extract **AircraftModel**, **SystemReference**, **ComponentReference**, **Fault**, **MaintenanceProcedure**, and **OperatingLimit** entities
+3. **Entity extraction**: Uses the configured extractor LLM to extract **AircraftModel**, **SystemReference**, **ComponentReference**, **Fault**, **MaintenanceProcedure**, and **ExtractedLimit** entities. Limits read out of the manuals get their own label so they never mix with the canonical **OperatingLimit** rows loaded from `nodes_operating_limits.csv`
 4. **Entity resolution**: Deduplicates entities with matching `name` property (via APOC)
 5. **Cross-linking**:
    - **Document → Aircraft** (APPLIES_TO) — links each manual to fleet aircraft by model
    - **AircraftModel → Aircraft** (DESCRIBES_MODEL) — links extracted model-level manual entities to fleet aircraft
    - **SystemReference/ComponentReference → System/Component** — links extracted manual references to matching operational graph nodes where names or types align
-   - **Sensor → OperatingLimit** (HAS_LIMIT) — matches sensors to extracted operating limits by parameter name and aircraft type
+   - **Sensor → OperatingLimit** (HAS_LIMIT) — matches sensors to the canonical CSV operating limits by parameter name and aircraft type
 
 Creates indexes:
 - **Vector index:** `maintenanceChunkEmbeddings` on `Chunk.embedding`

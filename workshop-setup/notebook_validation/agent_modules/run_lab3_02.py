@@ -328,9 +328,11 @@ RETURN
     record("Operating limits retriever returns results", has_results,
            f"items={len(response.retriever_result.items)}")
 
-    # Soft check — operating limits depend on LLM extraction quality
+    # The limits this traversal reaches are the canonical OperatingLimit nodes
+    # Lab 2 loaded from CSV, not extraction output, so they are present on every
+    # graph. What still varies is which chunks vector search returns.
     record("Operating limits query executed (soft)", True,
-           "full chain query ran (limits may be empty depending on extraction)")
+           "full chain query ran")
 
     record("Operating limits GraphRAG returns answer",
            len(response.answer) > 50,

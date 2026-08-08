@@ -155,6 +155,7 @@ def main():
         "CREATE CONSTRAINT IF NOT EXISTS FOR (n:Delay) REQUIRE n.delay_id IS UNIQUE",
         "CREATE CONSTRAINT IF NOT EXISTS FOR (n:MaintenanceEvent) REQUIRE n.event_id IS UNIQUE",
         "CREATE CONSTRAINT IF NOT EXISTS FOR (n:Removal) REQUIRE n.removal_id IS UNIQUE",
+        "CREATE CONSTRAINT IF NOT EXISTS FOR (n:OperatingLimit) REQUIRE n.limit_id IS UNIQUE",
     ]
 
     indexes = [
@@ -227,6 +228,18 @@ def main():
         .withColumn("tsn", col("tsn").cast("double"))
         .withColumn("csn", col("csn").cast("integer")))
     expected_nodes["Removal"] = write_nodes(df, "Removal", "removal_id")
+
+    # OperatingLimit — the 20 canonical takeoff thresholds. Reference data, not
+    # telemetry, so it crosses into the graph while nodes_readings.csv stays in
+    # Delta. A blank minValue casts to null rather than 0.0, which is what the
+    # ten ceiling-only rows should hold. sourceRef is provenance for whoever
+    # built the CSV, so it is not written.
+    df = (read_csv("nodes_operating_limits.csv")
+        .withColumnRenamed(":ID(OperatingLimit)", "limit_id")
+        .withColumn("minValue", col("minValue").cast("double"))
+        .withColumn("maxValue", col("maxValue").cast("double"))
+        .drop("sourceRef"))
+    expected_nodes["OperatingLimit"] = write_nodes(df, "OperatingLimit", "limit_id")
 
     # ── Section 4: Load Relationships ────────────────────────────────────────
 
@@ -345,6 +358,8 @@ def main():
             MATCH (n:MaintenanceEvent) RETURN 'MaintenanceEvent' AS label, count(n) AS count
             UNION ALL
             MATCH (n:Removal) RETURN 'Removal' AS label, count(n) AS count
+            UNION ALL
+            MATCH (n:OperatingLimit) RETURN 'OperatingLimit' AS label, count(n) AS count
         }
         RETURN label, count
         ORDER BY count DESC

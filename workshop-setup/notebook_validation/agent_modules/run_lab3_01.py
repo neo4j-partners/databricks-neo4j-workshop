@@ -104,14 +104,14 @@ def main():
         except Exception as e:
             print(f"  Index {idx_name} drop note: {e}")
 
-    # Mirrors Neo4jConnection.clear_enrichment in data_utils.py. The
-    # OperatingLimit case is a predicate, not a bare label: Lab 2 loads the 20
-    # canonical limits from CSV and those carry limit_id, while extraction
-    # output does not.
+    # Mirrors Neo4jConnection.clear_enrichment in data_utils.py. Extraction
+    # output carries the ExtractedLimit label, so clearing it by label is safe:
+    # the 20 canonical OperatingLimit nodes Lab 2 loads from CSV are a separate
+    # label and survive a re-run of Lab 3.
     matches = [
         "MATCH (n:Chunk)",
         "MATCH (n:Document)",
-        "MATCH (n:OperatingLimit) WHERE n.limit_id IS NULL",
+        "MATCH (n:ExtractedLimit)",
         "MATCH (n:__Entity__)",
         "MATCH (n:__KGBuilder__)",
     ]
@@ -229,23 +229,23 @@ def main():
     record(f"All embeddings are {EMBEDDING_DIMENSIONS} dimensions", wrong_dims == 0,
            f"wrong_dims={wrong_dims}")
 
-    # Check 7: OperatingLimit entities extracted
+    # Check 7: ExtractedLimit entities extracted
     ol_check, _, _ = execute_query("""
-        MATCH (ol:OperatingLimit)
-        RETURN count(ol) as count
+        MATCH (el:ExtractedLimit)
+        RETURN count(el) as count
     """)
     ol_count = ol_check[0]["count"]
-    record("OperatingLimit entities extracted", ol_count > 0,
+    record("ExtractedLimit entities extracted", ol_count > 0,
            f"entities={ol_count}")
 
-    # Check 8: OperatingLimit entities have required properties
+    # Check 8: ExtractedLimit entities have required properties
     ol_prop_check, _, _ = execute_query("""
-        MATCH (ol:OperatingLimit)
-        WHERE ol.name IS NOT NULL AND ol.parameterName IS NOT NULL AND ol.aircraftType IS NOT NULL
-        RETURN count(ol) as valid
+        MATCH (el:ExtractedLimit)
+        WHERE el.name IS NOT NULL AND el.parameterName IS NOT NULL AND el.aircraftType IS NOT NULL
+        RETURN count(el) as valid
     """)
     ol_valid = ol_prop_check[0]["valid"]
-    record("OperatingLimit entities have required properties", ol_valid == ol_count,
+    record("ExtractedLimit entities have required properties", ol_valid == ol_count,
            f"valid={ol_valid}/{ol_count}")
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -409,17 +409,19 @@ def main():
     print("STAGE 3: Cross-Links to Aircraft Topology")
     print("=" * 70)
 
-    # -- Coerce OperatingLimit numeric bounds ------------------------------
+    # -- Coerce ExtractedLimit numeric bounds ------------------------------
     #
     # The LLM returns every extracted property as text and neo4j-graphrag does
     # not convert it, so minValue and maxValue land as strings. A string bound
-    # makes r.value > ol.maxValue evaluate to null rather than raise, and a
+    # makes r.value > el.maxValue evaluate to null rather than raise, and a
     # limit-exceedance query then returns zero rows and reads as a clean
-    # answer. Coerce before anything links to these nodes.
+    # answer. Coerce before anything links to these nodes. Only ExtractedLimit
+    # needs this: Lab 2 casts the canonical OperatingLimit bounds to double on
+    # the way in.
 
     classify_bound = """
-        MATCH (ol:OperatingLimit)
-        WITH ol.{bound} AS raw
+        MATCH (el:ExtractedLimit)
+        WITH el.{bound} AS raw
         WITH raw, CASE
             WHEN raw IS NULL THEN 'null or absent'
             WHEN NOT (valueType(raw) STARTS WITH 'STRING') THEN 'already numeric'
@@ -432,22 +434,22 @@ def main():
     # A value that does not parse is left exactly as it is: a visible wrong
     # type beats silent data loss.
     coerce_bound = """
-        MATCH (ol:OperatingLimit)
-        WHERE ol.{bound} IS NOT NULL
-          AND valueType(ol.{bound}) STARTS WITH 'STRING'
-          AND toFloatOrNull(ol.{bound}) IS NOT NULL
-        SET ol.{bound} = toFloatOrNull(ol.{bound})
+        MATCH (el:ExtractedLimit)
+        WHERE el.{bound} IS NOT NULL
+          AND valueType(el.{bound}) STARTS WITH 'STRING'
+          AND toFloatOrNull(el.{bound}) IS NOT NULL
+        SET el.{bound} = toFloatOrNull(el.{bound})
         RETURN count(*) AS coerced
     """
 
-    print("Coercing OperatingLimit numeric bounds to float...")
+    print("Coercing ExtractedLimit numeric bounds to float...")
     limit_totals, _, _ = execute_query(
-        "MATCH (ol:OperatingLimit) RETURN count(*) AS nodes"
+        "MATCH (el:ExtractedLimit) RETURN count(*) AS nodes"
     )
     limit_nodes = limit_totals[0]["nodes"]
-    print(f"  OperatingLimit nodes: {limit_nodes}")
+    print(f"  ExtractedLimit nodes: {limit_nodes}")
     if limit_nodes == 0:
-        print("  Nothing to coerce: the pipeline extracted no OperatingLimit nodes.")
+        print("  Nothing to coerce: the pipeline extracted no ExtractedLimit nodes.")
 
     for bound in ("minValue", "maxValue"):
         if limit_nodes == 0:
@@ -491,7 +493,7 @@ def main():
     for r in has_limit:
         print(f"  {r['sensor']} -> {r['limit']}")
     if not has_limit:
-        print("  (No matches — depends on which limits the LLM extracted)")
+        print("  (No matches — check that Lab 2 loaded nodes_operating_limits.csv)")
 
     # -- Stage 3 Verification ----------------------------------------------
 
@@ -515,29 +517,29 @@ def main():
     record("Chunk -> Document -> Aircraft traversal works", traversal_ok,
            f"aircraft_models={[r['model'] for r in traversal_check]}")
 
-    # Check: HAS_LIMIT (soft check — depends on LLM extraction quality)
+    # Check: HAS_LIMIT. These link to the canonical OperatingLimit nodes Lab 2
+    # loaded from CSV, so this no longer rides on extraction quality.
     limit_check, _, _ = execute_query("""
         MATCH (s:Sensor)-[:HAS_LIMIT]->(ol:OperatingLimit)
         RETURN count(*) as count
     """)
     limit_count = limit_check[0]["count"]
-    # This is a soft check — HAS_LIMIT depends on which entities were extracted
-    record("HAS_LIMIT relationships created (soft)", limit_count >= 0,
-           f"count={limit_count} (0 is acceptable if LLM didn't extract matching params)")
+    record("HAS_LIMIT relationships created", limit_count > 0,
+           f"count={limit_count}")
 
     # Check: no bound that parses as a number is still stored as a string.
     # A bound the model wrote as a range or with a unit attached stays text on
     # purpose, so this counts only the ones coercion should have converted.
     residual_check, _, _ = execute_query("""
-        MATCH (ol:OperatingLimit)
-        WHERE (valueType(ol.minValue) STARTS WITH 'STRING'
-               AND toFloatOrNull(ol.minValue) IS NOT NULL)
-           OR (valueType(ol.maxValue) STARTS WITH 'STRING'
-               AND toFloatOrNull(ol.maxValue) IS NOT NULL)
+        MATCH (el:ExtractedLimit)
+        WHERE (valueType(el.minValue) STARTS WITH 'STRING'
+               AND toFloatOrNull(el.minValue) IS NOT NULL)
+           OR (valueType(el.maxValue) STARTS WITH 'STRING'
+               AND toFloatOrNull(el.maxValue) IS NOT NULL)
         RETURN count(*) as count
     """)
     residual_count = residual_check[0]["count"]
-    record("OperatingLimit numeric bounds coerced to float", residual_count == 0,
+    record("ExtractedLimit numeric bounds coerced to float", residual_count == 0,
            f"still stored as text and parseable={residual_count}")
 
     # ══════════════════════════════════════════════════════════════════════════

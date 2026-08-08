@@ -316,9 +316,10 @@ def main() -> None:
     except Exception as e:  # noqa: BLE001
         record("Example 3: topology traversal (Chunk->Doc->Aircraft->System)", False, str(e))
 
-    # Operating limits depend on what the LLM extracted in notebook 01, so this
-    # is a soft check: it passes when the full-chain query executes, even if the
-    # operating_limits collection comes back empty.
+    # The limits here are the canonical OperatingLimit nodes Lab 2 loaded from
+    # CSV, wired to Sensors by notebook 01. This stays a soft check because the
+    # chunks fulltext search returns still vary, so the operating_limits
+    # collection can come back empty on a given hit.
     try:
         read_cypher("""
         CALL db.index.fulltext.queryNodes('maintenanceChunkText', 'EGT temperature limits')
@@ -340,7 +341,7 @@ def main() -> None:
         LIMIT 3
 """)
         record("Example 4: operating limits chain (soft)", True,
-               "full-chain query executed (limits may be empty depending on extraction)")
+               "full-chain query executed")
     except Exception as e:  # noqa: BLE001
         record("Example 4: operating limits chain (soft)", False, str(e))
 

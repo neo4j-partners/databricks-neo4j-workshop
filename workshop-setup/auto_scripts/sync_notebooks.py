@@ -83,6 +83,11 @@ NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
         "Lab_3_Semantic_Search",
     ),
     (
+        "Lab_5_LangGraph_Agent",
+        ("01_langgraph_agent.ipynb", "tools.py"),
+        "Lab_5_LangGraph_Agent",
+    ),
+    (
         "Appendix_A_GDS_Graph_Analytics/centrality",
         ("04_gds_pagerank_airports.ipynb",),
         "Appendix_A_GDS_Graph_Analytics/centrality",
