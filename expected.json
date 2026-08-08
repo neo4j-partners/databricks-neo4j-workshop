@@ -1,0 +1,30 @@
+{
+  "catalogs": [
+    "databricks-neo4j-workshop"
+  ],
+  "schemas": [
+    "databricks-neo4j-workshop.aircraft"
+  ],
+  "volumes": [
+    "databricks-neo4j-workshop.aircraft.raw_data"
+  ],
+  "tables": [
+    "databricks-neo4j-workshop.aircraft.aircraft",
+    "databricks-neo4j-workshop.aircraft.systems",
+    "databricks-neo4j-workshop.aircraft.sensors",
+    "databricks-neo4j-workshop.aircraft.sensor_readings",
+    "databricks-neo4j-workshop.aircraft.flights",
+    "databricks-neo4j-workshop.aircraft.maintenance_events",
+    "databricks-neo4j-workshop.aircraft.fleet_readiness",
+    "databricks-neo4j-workshop.aircraft.sensor_health"
+  ],
+  "warehouses": [
+    "shared_warehouse"
+  ],
+  "pipelines": [
+    "Fleet Digital Twin ETL"
+  ],
+  "workspace_paths": [
+    "/Shared/workshop/dlt_fleet_etl"
+  ]
+}
