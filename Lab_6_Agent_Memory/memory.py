@@ -122,6 +122,7 @@ __all__ = [
     "DESTRUCTIVE_ADOPTION_LABELS",
     "EMBEDDING_DIMENSIONS",
     "EMBEDDING_MODEL",
+    "ENV_CREDENTIAL_NAMES",
     "FLEET_ONLY_QUERY",
     "HEADLINE_QUERY",
     "HTTPX_REQUIREMENT",
@@ -201,6 +202,12 @@ MEMORY_LLM_MODEL = DEFAULT_LLM_MODEL
 # endpoint therefore means dropping the vector indexes, not just editing a
 # constant.
 EMBEDDING_DIMENSIONS = 1024
+
+# The three variables Lab 5's agent.py binds to secret references when it
+# deploys. Repeated here rather than imported, because importing agent.py runs
+# its mlflow.models.set_model() call, and a notebook that imports memory.py
+# should not be declaring itself a model.
+ENV_CREDENTIAL_NAMES = ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
 
 # How many past messages the recall node pulls in. Each one is a vector search
 # hit, and the whole search costs 3.4 to 5.0 seconds regardless of limit, so
@@ -633,6 +640,50 @@ class MemorySession:
             loop.close()
             raise
         return cls(client, loop)
+
+    @classmethod
+    def open_from_env(
+        cls,
+        *,
+        database: str = "neo4j",
+        expected_uri_prefix: str | None = None,
+    ) -> MemorySession:
+        """Connect using the three environment variables serving provides.
+
+        A Model Serving container has no ``dbutils`` and no notebook user, so
+        Lab 5's ``agent.py`` deploys the endpoint with ``NEO4J_URI``,
+        ``NEO4J_USERNAME`` and ``NEO4J_PASSWORD`` bound to
+        ``{{secrets/<scope>/<key>}}`` references. Memory reads the same three
+        rather than opening a second connection path, so the redeployed
+        endpoint needs no new secrets and no new environment block.
+
+        Args:
+            database: Neo4j database name.
+            expected_uri_prefix: Passed to :func:`guard_write_target`.
+
+        Returns:
+            An open :class:`MemorySession`.
+
+        Raises:
+            RuntimeError: One of the three variables is missing or empty.
+        """
+        import os
+
+        missing = [name for name in ENV_CREDENTIAL_NAMES if not os.environ.get(name)]
+        if missing:
+            raise RuntimeError(
+                f"Missing environment variables: {', '.join(missing)}. The "
+                "endpoint deploys these as secret references; see "
+                "agent.serving_environment_vars in Lab 5."
+            )
+        uri, username, password = (os.environ[name] for name in ENV_CREDENTIAL_NAMES)
+        return cls.open(
+            uri,
+            username,
+            password,
+            database=database,
+            expected_uri_prefix=expected_uri_prefix,
+        )
 
     @classmethod
     def open_from_secrets(
