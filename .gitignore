@@ -3,6 +3,8 @@
 .env.*
 *.env
 
+worklog/
+
 # lab/course.env is the exception, and it has to be. It carries no secret: it is
 # the catalog name, the runtime, and the library list, and it is what tells the
 # Vocareum hooks which course they are provisioning. Uploaded to /voc/scripts

@@ -85,9 +85,22 @@ Three tools rather than two makes the routing lesson much better than Lab 4 Part
 | "What does the manual say about EGT exceedance" | GraphRAG | Semantic similarity over manual chunks |
 | "Engines with abnormal EGT, their maintenance history, and the relevant procedure" | All three | The anchor question, finally answerable end to end |
 
-**Connection approach.** The `cypher_node` and `graphrag_node` use the Neo4j Python driver and `neo4j-graphrag` directly, with the same three credentials from the Lab 1 configuration cell. The `graphrag_node` is close to a straight lift of the `VectorCypherRetriever` already built in Lab 3 notebook 02, so it costs almost no new code and it finally connects Lab 3 to the agent.
+**Connection approach.** The `cypher_node` and `graphrag_node` use the Neo4j Python driver and `neo4j-graphrag` directly, with the same three credentials from the Lab 1 configuration cell. The `graphrag_node` is close to a straight lift of the `VectorCypherRetriever` already built in Lab 3 notebook 02, so it costs almost no new code and it finally connects Lab 3 to the agent. It reads the `maintenanceChunkEmbeddings` vector index and must embed queries with `databricks-bge-large-en`, matching `Lab_3_Semantic_Search/data_utils.py`.
 
-**Deployment.** Log the graph as an MLflow `ResponsesAgent`, then deploy to Model Serving with the Aura password supplied from a Databricks secret scope rather than a notebook literal. Credential handling for a deployed agent is a lesson worth 10 minutes of an advanced workshop, and it is the natural answer to the question participants will ask anyway.
+Lab 3 notebook 03 builds hybrid retrieval over the `maintenanceChunkText` fulltext index and is marked optional. The `graphrag_node` therefore uses vector retrieval only. Hybrid becomes an exercise inside Lab 5 for anyone who ran notebook 03, never a dependency.
+
+**Supervisor model.** Use `databricks-meta-llama-3-3-70b-instruct`, already the `DEFAULT_LLM_MODEL` in `Lab_3_Semantic_Search/data_utils.py`. One model endpoint across Labs 3 and 5 means one thing to check for availability in a new workspace. The endpoint name belongs in `lab/workshop.py` alongside the other object names.
+
+**Deployment and auth.** Two credentials, not one, and they fail in different ways:
+
+| Credential | Mechanism | Risk |
+|---|---|---|
+| Aura password for `cypher_node` and `graphrag_node` | Databricks secret scope, injected as an environment variable at deploy time | Low. Fails loudly at connection time |
+| Genie space and model endpoint access for `genie_node` | Resources declared at log time so deployment provisions a short-lived credential for the serving principal | Higher. The endpoint deploys fine and Genie calls fail at request time with an authorization error |
+
+The Genie path is the more likely deployment failure, because the notebook runs as the participant while the endpoint runs as a service principal, and Genie also requires access to the underlying Unity Catalog tables rather than to the space alone. Phase 2 verifies this by calling the deployed endpoint, not by checking that deployment succeeded.
+
+Credential handling for a deployed agent is worth 10 minutes of an advanced workshop and is the natural answer to the question participants ask anyway.
 
 **Structure.** Split into two notebooks so the halfway point is a working agent:
 
@@ -96,7 +109,7 @@ Three tools rather than two makes the routing lesson much better than Lab 4 Part
 
 ## Lab 6: Agent Memory
 
-Unchanged from the previous draft in intent, and considerably simpler to build now. The infrastructure constraint that dominated the earlier proposal disappears: memory writes go to the participant's Aura instance, which is where their domain graph already lives.
+Memory writes go to the participant's Aura instance, which is where their domain graph already lives. That single fact is what makes this lab worth building, because memory nodes and fleet nodes end up in one database and can be traversed together.
 
 Use [`neo4j-agent-memory`](https://github.com/neo4j-labs/agent-memory) on the self-hosted bolt path. `client.schema.adopt_existing_graph(...)` adopts the fleet graph as long-term memory, so remembered entities resolve to the real `Aircraft` and `Component` nodes from Lab 2 rather than creating parallel copies. Add `recall` and `remember` nodes on either side of the Lab 5 supervisor.
 
@@ -140,7 +153,15 @@ Under the current structure, Lab 4 Part B is a safety net. A participant who nev
 
 Three mitigations, in order of importance:
 
-**A catch-up cell at the top of Lab 5.** One cell that loads the complete fleet graph from the Unity Catalog volume into the participant's Aura instance, idempotently. It reuses the Spark Connector path from Lab 2 and should run in a couple of minutes. Anyone behind runs it and continues. This is the single most important item in the whole proposal to get right, because without it the restructure trades a narrative problem for a completion problem.
+**A catch-up cell at the top of Lab 5.** One cell that brings the participant's Aura instance to the state Labs 2 and 3 would have left it in, idempotently. Anyone behind runs it and continues. This is the single most important item in the whole proposal to get right, because without it the restructure trades a narrative problem for a completion problem.
+
+Reuse `workshop-setup/populate_aircraft_db` rather than writing a new loader. `uv run populate-aircraft-db setup` already loads the CSVs, chunks the manual, generates embeddings, and creates the indexes, and `loader.py` already checks for the index named `maintenanceChunkEmbeddings`, which is the same name Lab 3 notebook 01 creates. The tool targets Lab 3's schema today. Rebuilding would mean reproducing that schema by hand and maintaining two loaders that must agree forever.
+
+Two changes are required before it can be reused:
+
+**Add a `databricks` embedding provider.** `config.py` currently offers `bge`, which runs `BAAI/bge-large-en-v1.5` locally through sentence-transformers, and `openai`. Lab 3 uses the `databricks-bge-large-en` Foundation Model endpoint. Same model, same 1024 dimensions, two different serving paths. Vectors from the two paths should be close, and "should be close" is not good enough for a vector index that `graphrag_node` queries. Adding a third provider that calls the same endpoint Lab 3 uses removes the question entirely and drops the sentence-transformers dependency from the serverless path.
+
+**Add a flag to skip entity extraction.** The `setup` command also runs `SimpleKGPipeline` entity extraction, which needs an LLM API key and is not something Lab 5 depends on. The catch-up path needs CSVs, chunks, embeddings, and indexes. Nothing else.
 
 **A documented fallback to the reference instance.** Keep the reference instance credentials available as an override for anyone whose Aura instance is broken or expired. Changing three variables in a configuration cell restores the old behavior. Cheap insurance that costs one paragraph of documentation.
 
@@ -160,17 +181,17 @@ Three mitigations, in order of importance:
 | Lecture: GraphRAG, vector search plus traversal | 25 min |
 | Lab 3: Semantic search and GraphRAG | 45 min |
 | Lunch | 45 min |
-| Lab 4: Genie space | 30 min |
-| Lecture: agent architectures and the supervisor pattern | 25 min |
+| Lab 4 Part A: Genie space | 30 min |
+| Lecture: agent architectures and the supervisor pattern, including MCP | 25 min |
 | Lab 5: LangGraph agent | 90 min |
 | Break | 15 min |
 | Lecture: agent memory, and why it is a graph problem | 20 min |
 | Lab 6: Agent memory | 75 min |
 | Close: what to build next, call to action | 20 min |
 
-About seven and a half hours including breaks. Appendix A and Appendix B are take-home.
+About seven and a half hours including breaks. Lab 4 Part B and Appendix A are take-home, with a 10 minute instructor demo of Part B folded into the agent architectures lecture so the no-code path and the MCP pattern both get airtime.
 
-For audiences that cannot commit to a full day, the same material splits cleanly: Labs 1 through 4 as a half-day foundation, Labs 5 and 6 as a half-day advanced session for participants who completed the first.
+For audiences that cannot commit to a full day, the same material splits cleanly: Labs 1 through 4 as a half-day foundation, where Part B is a reasonable ending on its own, and Labs 5 and 6 as a half-day advanced session for participants who completed the first.
 
 ---
 
@@ -197,33 +218,157 @@ Lab_6_Agent_Memory/
 
 **Moved**
 
-- `Lab_4_Compound_AI_Agents/PART_B.md` becomes `Appendix_B_Agent_Bricks/README.md`, with the reference instance and MCP connection notes intact.
+Nothing. `Lab_4_Compound_AI_Agents/` keeps its name, both parts, and all MCP material.
 
 **Edited**
 
-- `Lab_4_Compound_AI_Agents/` renamed to `Lab_4_Genie_Space`, `PART_A.md` folded into `README.md`, closing section rewritten to hand off to Lab 5.
-- `README.md` and `agenda.md`: new lab list and the extended-day framing.
-- `Lab_3_Semantic_Search/README.md`: note that notebook 01 is now required rather than foundational, since Lab 5 depends on the vector index.
-- `lab/workshop.py`: names for the Lab 5 model, serving endpoint, and secret scope.
-- `workshop-setup/README.md`: external MCP setup moves to an optional section.
-- `images/lab-architecture-overview.*`: redraw against the participant's own Aura, and add the third tool.
+- `Lab_4_Compound_AI_Agents/README.md`: mark Part B optional and advanced, note that it queries the Reference Aura Instance, and offer Lab 5 as the other continuation.
+- `Lab_4_Compound_AI_Agents/PART_A.md`: rewrite the closing handoff to point at both Lab 5 and Part B.
+- `Lab_4_Compound_AI_Agents/PART_B.md`: add an optional-section banner at the top. No content changes.
+- `README.md` and `agenda.md`: new lab list, the extended-day framing, and MCP described as the advanced and forward-looking integration pattern rather than the required one.
+- `Lab_3_Semantic_Search/README.md`: note that notebook 01 is now required rather than foundational, since Lab 5 depends on the `maintenanceChunkEmbeddings` index. Notebook 03 stays optional.
+- `workshop-setup/populate_aircraft_db/src/populate_aircraft_db/config.py`: add a `databricks` embedding provider calling `databricks-bge-large-en`.
+- `workshop-setup/populate_aircraft_db/src/populate_aircraft_db/main.py`: add a flag to skip entity extraction for the catch-up path.
+- `lab/workshop.py`: names for the Lab 5 model, serving endpoint, secret scope, and the `databricks-meta-llama-3-3-70b-instruct` supervisor endpoint.
+- `lab/workspace_init.sh` and `lab/lab_end.sh`: create and clean up the per-participant secret scope, following the pattern already used for the MCP credentials.
+- `workshop-setup/README.md`: mark external MCP provisioning as required only for Lab 4 Part B.
+- `images/lab-architecture-overview.*`: add a Lab 5 variant drawn against the participant's own Aura with three tools. Keep the existing diagram for Part B.
 
 ---
 
 ## Open Decisions
 
-1. Whether the catch-up loader targets the Spark Connector path from Lab 2 or a lighter direct-driver load. The Spark path reuses code participants have seen; a driver load starts faster on serverless.
-2. Whether Lab 5 deployment to Model Serving is required or optional. It is the right lesson and it is also the most likely place for a room of 30 people to hit a workspace limit.
-3. Whether the local MCP section in Lab 5 ships in the first version or waits. It is the cleanest way to keep MCP in the story, and it is also the part most likely to behave differently on serverless compute.
-4. Whether Appendix B stays maintained. Keeping it means keeping the AgentCore server and reference instance alive, which is exactly the operational cost this restructure was meant to shed.
+1. Whether provisioning creates one secret scope per participant or the workshop shares one scope with per-user keys. Shared is less to provision and leaks every participant's Aura password to every participant.
+2. Whether Lab 5 deployment to Model Serving is required or optional. It is the right lesson and it is also the most likely place for a room of 30 people to hit a workspace limit. If optional, the in-notebook path still needs the Genie credential to work as the participant, which it does.
+3. When the local MCP section lands in Lab 5. Proposed as a future section rather than first release, since it is the part most likely to behave differently on serverless compute and Lab 5 should ship without waiting on it.
+4. How long Part B stays maintained. It is optional now, so a break is survivable, but it still requires a live AgentCore server, valid OAuth2 M2M credentials, and a loaded reference instance. Worth setting a review date rather than deciding today.
 
 ---
 
-## Recommendation
+## Implementation Plan
 
-Do it, and sequence it in this order:
+### Goal
 
-1. Write the catch-up loader and prove it takes a broken or empty Aura instance to a complete fleet graph in under three minutes. Everything else depends on this working.
-2. Build the Lab 5 `cypher_node` and `graphrag_node` against a personal Aura instance and confirm the anchor question answers end to end across all three tools. That is the proof the restructure delivers what Part B never did.
-3. Split Lab 4, move Part B to Appendix B, and ship Labs 4 and 5 as the new baseline.
-4. Add Lab 6 once Lab 5 is stable, starting with the headline memory demo. If a single Cypher query joining conversation memory to maintenance history returns a good answer, the lab is worth building. If it does not, hold Lab 6 and ship the four-lab restructure on its own, which is already a large improvement.
+A participant can finish Lab 6 having used only the Aura instance they created in Lab 1, with Lab 4 Part B and all MCP material intact and marked optional.
+
+### Assumptions
+
+- The Unity Catalog volume holds everything the catch-up loader needs, including the maintenance manual that Lab 3 notebook 01 chunks.
+- Aura Free capacity covers the fleet graph, the manual chunks with embeddings, and one participant's memory graph together. To be measured in Phase 0, not assumed past it.
+- Databricks serverless notebooks can open a bolt connection to Aura. Lab 2 already relies on this, so it is established rather than assumed.
+- Whether `neo4j-agent-memory` accepts Databricks Foundation Model endpoints for its embedding and LLM providers is a hypothesis, not a fact. Phase 0 settles it.
+- Whether a `uv` package installs and runs from a serverless notebook cell is unverified. If it does not, the fallback is to call `populate_aircraft_db` as a job on classic compute, or to vendor its loader module into the notebook. The embedding provider fix matters either way.
+- Vocareum participants may lack permission to create their own secret scope. `lab/lab_end.sh` and `vocareum/SETUP_GUIDE.md` show scopes being created by provisioning rather than by users, so plan for provisioning to create one scope per participant.
+
+### Locked Decisions
+
+| Decision | Reasoning | Dropped |
+|---|---|---|
+| LangGraph for Lab 5 | Genie, MCP, and MLflow integrations already exist on Databricks, and the supervisor pattern maps onto what participants configured in Part B | OpenAI Agents SDK, Pydantic AI, bare `ResponsesAgent` tool loop |
+| Direct bolt driver for the Lab 5 Neo4j tools | Same three credentials as Labs 1 through 3, no per-participant server to host | Per-participant MCP server, shared MCP for the required path |
+| `neo4j-agent-memory` on the self-hosted bolt path | Memory lands in the participant's own graph, so `adopt_existing_graph` can link memory to real fleet nodes | Hosted NAMS backend, which stores memory outside their Aura and breaks the headline demo |
+| Part B and all MCP material stay in place | Part B is a genuine Databricks selling point and a working safety net; MCP is where the integration is heading | Deleting Part B, moving it to an appendix, removing MCP references |
+| Reuse `populate_aircraft_db` as the catch-up loader | It already produces Lab 3's schema and index names, so one code path stays correct instead of two agreeing by luck | Writing a fresh Spark Connector loader |
+| One embedding path, `databricks-bge-large-en` | The loader and Lab 3 must write vectors the same way or `graphrag_node` returns nonsense against the shared index | Leaving the loader on local sentence-transformers and hoping the vectors match |
+| `databricks-meta-llama-3-3-70b-instruct` as the supervisor model | Already the Lab 3 default, so one endpoint to verify per workspace | GPT OSS 120B from the Part B Playground steps, a second endpoint to depend on |
+
+### Deliberately Not Doing
+
+- Rewriting Labs 1, 2, or 3. Lab 3's README gets one note about notebook 01 becoming required. Nothing else changes.
+- Building the local `mcp-neo4j-cypher` section in Lab 5. Sketched as a future section so Lab 5 ships without waiting on serverless subprocess behavior.
+- Hardening memory for production. Multi-tenancy, PII handling, and retention policy each get a callout in Lab 6, not an exercise.
+- Redesigning the Genie space. Part A is already good and is not part of this work.
+- Touching Vocareum provisioning beyond adding the new object names to `lab/workshop.py`.
+
+### Phases
+
+**Phase 0: Prove the risky parts.** Status: Pending
+
+The two items that can invalidate the plan. Everything after this is known-feasible engineering.
+
+- [ ] Add a `databricks` embedding provider to `populate_aircraft_db/config.py` calling `databricks-bge-large-en`
+- [ ] Add a flag to skip `SimpleKGPipeline` entity extraction
+- [ ] Confirm `populate_aircraft_db` installs and runs from a serverless notebook cell, or pick the job or vendored fallback
+- [ ] Loader takes an empty Aura instance to a complete fleet graph plus Document and Chunk nodes, embeddings, and the `maintenanceChunkEmbeddings` index
+- [ ] Prove no embedder drift: embed the same chunk text through the loader path and through `Lab_3_Semantic_Search/data_utils.py`, compare cosine similarity
+- [ ] Query the vector index with a `data_utils.py` query embedding against loader-written vectors and confirm the top hits are relevant
+- [ ] Measure loader wall-clock time and Aura Free storage after a full load
+- [ ] Spike the headline memory demo standalone: write memory against a loaded instance, run one Cypher joining conversation memory to maintenance history, judge the answer
+- [ ] Confirm which embedding and LLM providers `neo4j-agent-memory` accepts on Databricks
+- [ ] Confirm whether Vocareum participants can create a secret scope, or whether provisioning must create one per user
+
+Completion criteria: the loader runs twice in a row without duplicating data, cross-path cosine similarity is high enough that retrieval quality is unchanged, and the memory spike either returns a good answer or is recorded as a no-go for Lab 6.
+
+Note: generating embeddings for the manual chunks is the slow part and may push the loader past a comfortable in-lab runtime. If it does, pre-generate embeddings into the Unity Catalog volume and have the loader write them rather than compute them.
+
+**Phase 1: Lab 5 core agent.** Status: Pending
+
+- [ ] `genie_node` bound to the Part A Genie space
+- [ ] `cypher_node` against a personal Aura instance over bolt
+- [ ] `graphrag_node` lifted from the Lab 3 `VectorCypherRetriever` work, embedding queries with `databricks-bge-large-en`, vector retrieval only
+- [ ] Supervisor node on `databricks-meta-llama-3-3-70b-instruct`, routing across all three, with the Part B routing prompt as the starting point
+- [ ] `graphrag_node` degrades to a clear message rather than failing at import when the vector index is absent
+- [ ] Optional hybrid retrieval exercise for participants who ran Lab 3 notebook 03
+- [ ] `01_langgraph_agent.ipynb` runs the anchor question end to end across all three tools
+
+Completion criteria: the anchor question about abnormal EGT, maintenance history, and the relevant manual procedure returns a correct answer in-notebook, and each of the four routing cases lands on the expected tool.
+
+**Phase 2: Lab 5 ships.** Status: Pending
+
+- [ ] `ResponsesAgent` wrapper with MLflow autologging
+- [ ] Aura password sourced from a Databricks secret scope rather than a notebook literal
+- [ ] Genie space and model endpoint declared as resources at log time so the serving principal gets a credential
+- [ ] Serving principal confirmed to have access to the Unity Catalog tables behind the Genie space, not just to the space
+- [ ] Logged to Unity Catalog and deployed to Model Serving
+- [ ] MLflow evaluation against the fixed question set
+- [ ] `02_deploy_and_evaluate.ipynb` and `Lab_5_LangGraph_Agent/README.md` complete
+
+Completion criteria: the deployed endpoint answers one question per tool when called as the serving principal rather than as the notebook user, and the evaluation run produces a baseline the Lab 6 memory comparison can be measured against. A successful deploy is not the criterion. A successful Genie call through the endpoint is.
+
+**Phase 3: Lab 6 memory.** Status: Pending, gated on the Phase 0 spike
+
+- [ ] Memory client configured against the participant's Aura, with `adopt_existing_graph` resolving to real fleet nodes
+- [ ] `recall` and `remember` nodes added around the Lab 5 supervisor
+- [ ] The five required demos: fleet-joined traversal, reasoning reuse, correction with invalidation, cross-session continuity, learned preferences
+- [ ] Memory off versus on evaluation harness reusing the Phase 2 baseline
+- [ ] The two recommended demos, shift handoff and routing memory, if time allows
+
+Completion criteria: the headline traversal returns a good answer, and the memory comparison shows a measurable difference in tool calls, tokens, or accuracy.
+
+**Phase 4: Delivery readiness.** Status: Pending
+
+- [ ] Full dry run of Labs 1 through 6 on a fresh Aura instance and a fresh workspace user
+- [ ] Catch-up loader exercised from a deliberately incomplete Lab 2 state
+- [ ] Reference instance fallback verified as a three-variable override
+- [ ] Part B still works, with its optional banner in place
+- [ ] Timings recorded against the suggested day structure
+
+Completion criteria: one person completes the required path start to finish without the instructor intervening.
+
+### What Runs in Parallel
+
+Three tracks. Track C is independent of all code and can start immediately.
+
+| Track | Phase 0 | Phase 1 | Phase 2 | Phase 3 | Phase 4 |
+|---|---|---|---|---|---|
+| **A. Engineering** | Catch-up loader | Three tools plus supervisor | Deploy and evaluate | Memory nodes and demos | Dry run |
+| **B. Memory research** | Headline demo spike, provider check | idle | idle | joins Track A | Dry run |
+| **C. Content and infra** | Lab 4 banners and Part A handoff | Repo docs, `agenda.md`, `lab/workshop.py` | Lab 5 architecture diagram, eval question set | Lab 6 README | Timing capture |
+
+What actually blocks what:
+
+- The catch-up loader does not block building the Lab 5 tools. Build the tools against an already-loaded instance. The loader is a prerequisite for participants, not for development.
+- The memory spike does not block Lab 5 at all. It needs a loaded graph and nothing else, so it runs alongside the entire Lab 5 build and delivers its go/no-go before Lab 6 starts.
+- The whole of Track C is documentation and naming. None of it waits on code.
+- The Lab 5 eval question set can be written on day one. It is a list of questions and expected routes.
+- Only Phase 3 has a hard dependency on Phase 1, because the memory nodes attach to the Lab 5 supervisor.
+
+Parallelism caveat: Tracks A and B both write to Aura, and the memory spike puts memory nodes into a graph the loader tests are trying to keep clean. Give each track its own Aura instance. With one person doing all three tracks, the tracks collapse to sequential and Phase 0 is still the right starting point.
+
+### If Phase 0 Fails
+
+- Loader too slow: pre-generate embeddings into the volume, or split the loader so the fleet graph loads in-lab and the Lab 3 artifacts load only for participants who skipped Lab 3.
+- Embedder drift confirmed between the two paths: rebuild the vector index from the loader's own embeddings so one writer owns the index, and have `graphrag_node` embed through the same provider. One writer, one reader, one model.
+- `populate_aircraft_db` will not run on serverless: vendor its loader module into the catch-up notebook. The embedding provider fix carries over unchanged, and the schema and index names stay identical.
+- Aura Free too small: move memory to a second free instance and accept losing the fleet-joined traversal demo, or drop Lab 6 to the take-home path.
+- Memory spike returns a weak answer: hold Lab 6 and ship Labs 4 and 5 alone. That is already a large improvement, and it is the majority of the value in this proposal.

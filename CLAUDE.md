@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+
+## Response style
+
+- **Condensed:** No preamble, no throat clearing. Only what is necessary.
+- **Bullets:** Use `**term:** description` form.
+- **Small words, short sentences, short paragraphs.** If a big word is unavoidable, define it right after.
+- **Report shape:** what you did, whether it worked, what to do now.
+- **Decisions:** 2 options max, the context needed to pick fast, and which one you would take.
+- **Exactness:** Keep paths and commands verbatim.
+- 
 ## Project Overview
 
 A hands-on workshop teaching production-ready AI agents combining **Neo4j graph databases** with **Databricks AI/ML**. Demonstrates a dual-database architecture for aircraft digital twins where Neo4j handles relationship-rich data (topology, maintenance, flights) and Databricks Lakehouse handles high-volume time-series sensor telemetry.
