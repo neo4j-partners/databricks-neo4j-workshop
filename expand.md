@@ -1,5 +1,9 @@
 # Proposal: Restructure Labs 4 through 6 for an Extended Advanced Workshop
 
+> **Superseded 2026-08-08 by [`expand-v2.md`](expand-v2.md), which owns the plan and the status.**
+>
+> Read this document for the reasoning: the defect write-ups, the runner-up options and why each lost, and the raw measurements. Do not read it for what is done. Its status blocks were written when decisions were made rather than when code landed, so several items listed here as "in flight" are on disk. `expand-v2.md` section 2 was checked against the repository.
+
 A proposal to make Lab 4 Part B optional, add a LangGraph lab that connects the Genie space to the participant's own Aura instance, and add a memory lab. The result is a longer workshop where every required lab builds on the graph the participant loaded themselves.
 
 **This document supersedes `proposed-outline.md` and `workshop-improve.md`.** Both of those propose restructures that end at Lab 4, and both predate the decision to add Labs 5 and 6. Where they conflict with this document, this document wins. Their still-valid parts, the "lead with the why" opening and the live demo of the finished agent before Lab 1, are carried into the Suggested Day Structure below. Each gets a superseded banner rather than deletion, since the reasoning in them is worth keeping.

@@ -13,12 +13,13 @@ Full lab instructions live on the workshop site:
 
 | Lab | Topic | Where you work | Instructions |
 |-----|-------|----------------|--------------|
-| **Lab 1** | Neo4j Aura Setup | Browser (Aura console) | [Lab 1](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab1.html) |
+| **Lab 1** | Neo4j Aura Setup | Aura console, guided by a notebook | [Lab 1](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab1.html) |
 | **Lab 2** | Databricks ETL to Neo4j | Notebook in this workspace | [Lab 2](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab2.html) |
 | **Lab 3** | Semantic Search / GraphRAG | Notebooks in this workspace | [Lab 3](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab3.html) |
-| **Lab 4** | Compound AI Agents | Databricks UI (Genie + Agent Bricks) | [Lab 4](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab4.html) |
+| **Lab 4** | Compound AI Agents | Genie and Agent Bricks, guided by a notebook | [Lab 4](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab4.html) |
+| **Lab 5** | LangGraph Agent | Notebook in this workspace | [Lab 5](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html) |
 
-Labs 1 and 4 are browser and UI work, so they have no notebooks. Follow the links above for those.
+Every lab has a notebook in your workspace, including Labs 1 and 4. Those two are browser work, so their notebooks carry the click-through steps as text beside the few cells you run. Work from the notebooks. The links above are the same instructions on the web.
 
 ---
 
@@ -40,26 +41,33 @@ Labs 1 and 4 are browser and UI work, so they have no notebooks. Follow the link
 Your Databricks home folder contains:
 
 ```
+00_cluster_smoke_test.ipynb          <- start here
+Lab_1_Aura_Setup/
+  01_aura_setup.ipynb
 Lab_2_Databricks_ETL_Neo4j/
-  01_aircraft_etl_to_neo4j.ipynb     <- start here
+  01_aircraft_etl_to_neo4j.ipynb
 Lab_3_Semantic_Search/
   01_data_and_embeddings.ipynb
   02_graphrag_retrievers.ipynb
   03_hybrid_retrievers.ipynb
   data_utils.py
+Lab_4_Compound_AI_Agents/
+  04_genie_agent.ipynb
+Lab_5_LangGraph_Agent/
+  01_langgraph_agent.ipynb
+  tools.py
 ```
 
-Run them in order. Lab 3 depends on the graph that Lab 2 loads.
+Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 needs the graph Lab 2 loads, and Lab 5 needs the Genie space you create in Lab 4.
 
 ---
 
 ## Getting Started
 
 1. Open the Databricks workspace (left pane)
-2. Complete [Lab 1](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab1.html) to create your Neo4j Aura instance and save your credentials
-3. Navigate to **Lab_2_Databricks_ETL_Neo4j** → `01_aircraft_etl_to_neo4j`
-4. Attach to your assigned cluster
-5. Follow the notebook instructions
+2. Open `00_cluster_smoke_test` and attach it to your assigned cluster, to confirm your compute and catalog are there
+3. Open **Lab_1_Aura_Setup** → `01_aura_setup` and work through it to create your Neo4j Aura instance and save your credentials
+4. Continue lab by lab, attaching each notebook to the same cluster
 
 ## Neo4j Credentials
 
@@ -71,7 +79,7 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "your_password_here"
 ```
 
-Lab 4 does not use your personal Aura instance. It queries a shared reference instance through the Neo4j MCP connection that the instructor has already configured.
+Lab 4 Part A does not use Neo4j at all. You build a Genie space over the lakehouse sensor tables. Part B is an instructor demo you watch rather than run, against the instructor's own workspace and Neo4j MCP connection, so there is nothing for you to configure there. Lab 5 goes back to your own Aura instance, the one you loaded in Lab 2.
 
 ## Shared Lakehouse Data
 

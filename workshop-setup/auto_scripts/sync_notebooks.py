@@ -16,9 +16,13 @@ of running it. Two different objects with two different rules, not two copies of
 one.
 
 Why the file list lives here. ``VOC_COURSE_NOTEBOOKS`` in ``lab/course.env``
-names what each *student* gets on their own cluster, which is the smoke test and
-nothing else. The instructor-facing ``/Shared`` tree is a different set with a
-different folder layout, so stating it here duplicates no definition.
+names what each *student* gets in their own workspace folder, and it deliberately
+leaves out everything Graph Data Science touches, because Vocareum students are
+on AuraDB Free and GDS is not. The instructor-facing ``/Shared`` tree ships those
+anyway, along with the MCP flag notebook no student ever sees. Two sets with two
+audiences and two folder layouts, so stating this one here duplicates no
+definition. Both lists carry the same lab notebooks where the audiences overlap,
+and adding a lab notebook means adding it in both places.
 
 The output contract is ``lab/workshop.py``'s, which is ``voclab.py``'s:
 narration to **stderr**, ``key=value`` lines on **stdout**.
@@ -68,6 +72,11 @@ SHARED_FOLDER = os.environ.get(
 # appendix README that describes it.
 NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     (
+        "Lab_1_Aura_Setup",
+        ("01_aura_setup.ipynb",),
+        "Lab_1_Aura_Setup",
+    ),
+    (
         "Lab_2_Databricks_ETL_Neo4j",
         ("01_aircraft_etl_to_neo4j.ipynb", "02_gds_knn_aircraft.ipynb"),
         "Lab_2_Databricks_ETL_Neo4j",
@@ -81,6 +90,11 @@ NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
             "data_utils.py",
         ),
         "Lab_3_Semantic_Search",
+    ),
+    (
+        "Lab_4_Compound_AI_Agents",
+        ("04_genie_agent.ipynb",),
+        "Lab_4_Compound_AI_Agents",
     ),
     (
         "Lab_5_LangGraph_Agent",
