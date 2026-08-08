@@ -32,14 +32,34 @@ class Settings(BaseSettings):
     data_dir: DirectoryPath = _DATA_DIR  # type: ignore[assignment]
     document_dir: DirectoryPath = _DOCUMENT_DIR  # type: ignore[assignment]
 
-    # Embedding provider selection — "bge" (local sentence-transformers, default)
-    # or "openai" (OpenAI embeddings API).
-    embedding_provider: Literal["bge", "openai"] = "bge"
+    # Embedding provider selection — "bge" (local sentence-transformers, default),
+    # "openai" (OpenAI embeddings API), or "databricks" (Foundation Model endpoint).
+    embedding_provider: Literal["bge", "openai", "databricks"] = "bge"
 
     # BGE embeddings — default. Runs locally via sentence-transformers and
     # matches the 1024-dim maintenanceChunkEmbeddings index used in Lab 3.
     bge_embedding_model: str = "BAAI/bge-large-en-v1.5"
     bge_embedding_dimensions: int = 1024
+
+    # Databricks Foundation Model endpoint. Same model as "bge" and the same
+    # 1024 dimensions, reached over the serving endpoint instead of local
+    # weights. This is the serving path Lab 3 uses in
+    # Lab_3_Semantic_Search/data_utils.py, so it is the provider to pick when
+    # this loader and Lab 3 both write vectors into the one
+    # maintenanceChunkEmbeddings index. Two paths to the same model ought to
+    # agree; an index that is queried through one and written through the other
+    # needs better than ought.
+    databricks_embedding_model: str = "databricks-bge-large-en"
+    databricks_embedding_dimensions: int = 1024
+
+    # Databricks credentials for the "databricks" embedding provider, all
+    # optional. Leave them unset and the MLflow deployments client reads the
+    # ambient environment, which is what already exists inside a Databricks
+    # notebook. Set them to run this loader from a laptop against a workspace.
+    # Setting databricks_config_profile alone names a ~/.databrickscfg profile.
+    databricks_host: str | None = None
+    databricks_token: SecretStr | None = None
+    databricks_config_profile: str | None = None
 
     # OpenAI — API key required for extraction when llm_provider is "openai"
     # and for embeddings when embedding_provider is "openai".
@@ -74,6 +94,8 @@ class Settings(BaseSettings):
         """Embedding model name for the selected embedding provider."""
         if self.embedding_provider == "bge":
             return self.bge_embedding_model
+        if self.embedding_provider == "databricks":
+            return self.databricks_embedding_model
         return self.openai_embedding_model
 
     @property
@@ -81,6 +103,8 @@ class Settings(BaseSettings):
         """Embedding dimensions for the selected embedding provider."""
         if self.embedding_provider == "bge":
             return self.bge_embedding_dimensions
+        if self.embedding_provider == "databricks":
+            return self.databricks_embedding_dimensions
         return self.openai_embedding_dimensions
 
     @model_validator(mode="after")

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from neo4j import Driver
+from neo4j_graphrag.embeddings.base import Embedder
 from neo4j_graphrag.embeddings.openai import OpenAIEmbeddings
 from neo4j_graphrag.experimental.components.text_splitters.base import TextSplitter
 from neo4j_graphrag.experimental.components.types import TextChunks
@@ -127,17 +128,56 @@ class DimensionAwareOpenAIEmbeddings(OpenAIEmbeddings):
         return super().embed_query(text, dimensions=self._dimensions, **kwargs)
 
 
+class DatabricksEmbeddings(Embedder):
+    """Embeddings from a Databricks Foundation Model serving endpoint.
+
+    Deliberately the same call as ``DatabricksEmbeddings`` in
+    ``Lab_3_Semantic_Search/data_utils.py``: same MLflow deployments client,
+    same endpoint name, same request body.  Lab 3 and this loader both write
+    into the single ``maintenanceChunkEmbeddings`` vector index, and a vector
+    index cannot represent the difference between two ways of producing a
+    vector.  It just retrieves slightly worse.  Copying the call is the point,
+    not an accident waiting to be refactored away.
+
+    Requires the ``databricks`` extra (``mlflow-skinny``).
+    """
+
+    def __init__(self, model_id: str) -> None:
+        super().__init__()
+        import mlflow.deployments
+
+        self.model_id = model_id
+        self._client = mlflow.deployments.get_deploy_client("databricks")
+
+    def embed_query(self, text: str) -> list[float]:
+        response = self._client.predict(
+            endpoint=self.model_id,
+            inputs={"input": [text]},
+        )
+        return response["data"][0]["embedding"]
+
+    async def async_embed_query(self, text: str) -> list[float]:
+        # The base class implementation awaits the blocking call directly, so
+        # the concurrency semaphore in TextChunkEmbedder buys nothing and every
+        # chunk waits on the one before it.  Handing the request to a thread
+        # makes that semaphore real.  Five manuals chunk into the hundreds, and
+        # one HTTP round trip each, in series, is the difference between a load
+        # that fits in a lab and one that does not.
+        return await asyncio.to_thread(self.embed_query, text)
+
+
 def create_embedder(
     *,
     embedding_provider: str,
     embedding_model: str,
     embedding_dimensions: int,
     openai_api_key: str | None,
-):
+) -> Embedder:
     """Create the embedder for Chunk embeddings.
 
     "bge" (default) runs the model locally via sentence-transformers, so no
-    API key is needed. "openai" calls the OpenAI embeddings API.
+    API key is needed. "openai" calls the OpenAI embeddings API. "databricks"
+    calls a Foundation Model serving endpoint, which is the path Lab 3 uses.
     """
     if embedding_provider == "bge":
         from neo4j_graphrag.embeddings.sentence_transformers import (
@@ -151,6 +191,8 @@ def create_embedder(
             model=embedding_model,
             api_key=openai_api_key,
         )
+    if embedding_provider == "databricks":
+        return DatabricksEmbeddings(model_id=embedding_model)
     raise ValueError(f"Unknown embedding provider: {embedding_provider!r}")
 
 
@@ -427,6 +469,61 @@ def debug_extract_chunks(
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Per-document helpers
+#
+# Shared by both document paths below.  The extraction-free path has to produce
+# Document and Chunk nodes that are indistinguishable from the ones the
+# SimpleKGPipeline path produces, right down to the context header prepended to
+# every chunk, because the two write into the same vector index and Lab 3 reads
+# whichever it finds.  Sharing the code is how that stays true.
+# ---------------------------------------------------------------------------
+
+
+def _max_chars(chunk_size: int, chunk_overlap: int, enrich_sample_size: int) -> int:
+    """Text length that yields roughly *enrich_sample_size* chunks. 0 = unlimited.
+
+    Each chunk beyond the first advances by (chunk_size - chunk_overlap) chars.
+    """
+    if enrich_sample_size <= 0:
+        return 0
+    return chunk_size + (enrich_sample_size - 1) * (chunk_size - chunk_overlap)
+
+
+def _read_document(
+    document_dir: Path,
+    meta: DocumentMeta,
+    max_chars: int,
+    enrich_sample_size: int,
+) -> str:
+    """Read a manual off disk, truncating it when a sample size is in force."""
+    text = (document_dir / meta.filename).read_text(encoding="utf-8").strip()
+    print(f"  Read {len(text):,} characters.")
+    if max_chars and len(text) > max_chars:
+        text = text[:max_chars]
+        print(f"  Truncated to {max_chars:,} chars (~{enrich_sample_size} chunks).")
+    return text
+
+
+def _chunk_context(meta: DocumentMeta) -> str:
+    """The header ``ContextPrependingSplitter`` puts in front of every chunk."""
+    return (
+        f"[DOCUMENT CONTEXT] Aircraft Type: {meta.aircraft_type} | "
+        f"Title: {meta.title}\n\n"
+    )
+
+
+def _document_metadata(meta: DocumentMeta) -> dict[str, str]:
+    """Properties that land on the ``Document`` node."""
+    return {
+        "documentId": meta.document_id,
+        "aircraftType": meta.aircraft_type,
+        "title": meta.title,
+        "type": "maintenance_manual",
+        "path": meta.filename,
+    }
+
+
 def process_all_documents(
     driver: Driver,
     document_dir: Path,
@@ -463,43 +560,117 @@ def process_all_documents(
         chunk_overlap=chunk_overlap,
     )
 
-    # Pre-compute max text length when sample size is set.
-    # Each chunk beyond the first advances by (chunk_size - chunk_overlap) chars.
-    if enrich_sample_size > 0:
-        max_chars = chunk_size + (enrich_sample_size - 1) * (chunk_size - chunk_overlap)
-    else:
-        max_chars = 0  # 0 = unlimited
+    max_chars = _max_chars(chunk_size, chunk_overlap, enrich_sample_size)
 
     async def _run_all():
         for meta in DOCUMENTS:
             print(f"\nProcessing: {meta.filename}")
-            filepath = document_dir / meta.filename
-            text = filepath.read_text(encoding="utf-8").strip()
-            print(f"  Read {len(text):,} characters.")
-
-            if max_chars and len(text) > max_chars:
-                text = text[:max_chars]
-                print(f"  Truncated to {max_chars:,} chars (~{enrich_sample_size} chunks).")
+            text = _read_document(document_dir, meta, max_chars, enrich_sample_size)
 
             # Update the splitter's context so every chunk the LLM sees starts
             # with the aircraft type.  The custom EXTRACTION_PROMPT instructs
             # the LLM to read this header.
-            splitter.context = (
-                f"[DOCUMENT CONTEXT] Aircraft Type: {meta.aircraft_type} | "
-                f"Title: {meta.title}\n\n"
-            )
+            splitter.context = _chunk_context(meta)
 
             await pipeline.run_async(
                 text=text,
-                document_metadata={
-                    "documentId": meta.document_id,
-                    "aircraftType": meta.aircraft_type,
-                    "title": meta.title,
-                    "type": "maintenance_manual",
-                    "path": meta.filename,
-                },
+                document_metadata=_document_metadata(meta),
             )
             print(f"  [OK] Pipeline complete for {meta.document_id}")
+
+    asyncio.run(_run_all())
+
+
+def process_all_documents_lexical_only(
+    driver: Driver,
+    document_dir: Path,
+    *,
+    embedding_provider: str,
+    embedding_model: str,
+    embedding_dimensions: int,
+    chunk_size: int,
+    chunk_overlap: int,
+    openai_api_key: str | None = None,
+    enrich_sample_size: int = 0,
+) -> None:
+    """Chunk and embed every maintenance manual, without entity extraction.
+
+    Produces exactly the Document and Chunk half of what
+    :func:`process_all_documents` produces, and none of the ``OperatingLimit``,
+    ``Fault``, or other extracted entities.  This is the catch-up path: it is
+    what Lab 5's ``graphrag_node`` needs and needs no LLM API key, which the
+    extraction path does.
+
+    It is not a flag on ``SimpleKGPipeline``.  That pipeline chunks, embeds, and
+    extracts as one unit with no seam between the second step and the third.
+    So this assembles the same three components ``SimpleKGPipeline`` assembles
+    internally, minus the extractor: the same splitter wrapped in the same
+    context-prepending shim, the same ``TextChunkEmbedder``, the same
+    ``LexicalGraphBuilder`` on its default config, and the same ``Neo4jWriter``.
+    Reusing the library's own components rather than hand-rolling Cypher is what
+    keeps the two paths writing identical nodes as the library moves.
+
+    What a caller gives up: no extracted entities means
+    ``link_to_existing_graph`` creates the ``Document -[:APPLIES_TO]-> Aircraft``
+    links and none of the entity links, and Lab 3 notebook 02's operating-limit
+    retriever has nothing to traverse to.  Everything vector search touches is
+    present.
+    """
+    from neo4j_graphrag.experimental.components.embedder import TextChunkEmbedder
+    from neo4j_graphrag.experimental.components.kg_writer import Neo4jWriter
+    from neo4j_graphrag.experimental.components.lexical_graph import (
+        LexicalGraphBuilder,
+    )
+    from neo4j_graphrag.experimental.components.text_splitters.fixed_size_splitter import (
+        FixedSizeSplitter,
+    )
+    from neo4j_graphrag.experimental.components.types import DocumentInfo, DocumentType
+
+    embedder = create_embedder(
+        embedding_provider=embedding_provider,
+        embedding_model=embedding_model,
+        embedding_dimensions=embedding_dimensions,
+        openai_api_key=openai_api_key,
+    )
+    splitter = ContextPrependingSplitter(
+        FixedSizeSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            approximate=True,
+        )
+    )
+    chunk_embedder = TextChunkEmbedder(embedder=embedder)
+    lexical_graph_builder = LexicalGraphBuilder()
+    writer = Neo4jWriter(driver=driver)
+
+    max_chars = _max_chars(chunk_size, chunk_overlap, enrich_sample_size)
+
+    async def _run_all():
+        for meta in DOCUMENTS:
+            print(f"\nProcessing: {meta.filename}")
+            text = _read_document(document_dir, meta, max_chars, enrich_sample_size)
+
+            splitter.context = _chunk_context(meta)
+            chunks = await splitter.run(text)
+            print(f"  Split into {len(chunks.chunks)} chunks.")
+
+            embedded = await chunk_embedder.run(chunks)
+            print(f"  Embedded {len(embedded.chunks)} chunks ({embedding_model}).")
+
+            # "document.txt" and INLINE_TEXT are what SimpleKGPipeline passes
+            # when from_file is False and no file_path is given.  The metadata
+            # dict overwrites `path` with the real filename on the way onto the
+            # node, in both paths.
+            result = await lexical_graph_builder.run(
+                embedded,
+                document_info=DocumentInfo(
+                    path="document.txt",
+                    metadata=_document_metadata(meta),
+                    document_type=DocumentType.INLINE_TEXT,
+                ),
+            )
+            await writer.run(result.graph)
+            print(f"  [OK] Lexical graph written for {meta.document_id}")
 
     asyncio.run(_run_all())
 

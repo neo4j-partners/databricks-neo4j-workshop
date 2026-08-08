@@ -108,6 +108,26 @@ PIPELINE_SCHEMA = os.environ.get("WORKSHOP_PIPELINE_SCHEMA", "aircraft_pipeline"
 
 VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"
 
+# Where the catalog's managed tables physically go, and the one value here read
+# under its course.env name rather than a WORKSHOP_ one. It is a property of the
+# account the course is deployed into, not of the workshop, so it belongs beside
+# the other per-deployment values a course states rather than in this file.
+#
+# Measured 2026-08-08 and the reason this exists at all: the account this course
+# runs on has Databricks Default Storage enabled, which leaves the metastore with
+# no storage_root, and a bare CREATE CATALOG there fails with
+# "[INVALID_STATE] Metastore storage root URL does not exist". Naming a location
+# inside an external location the metastore holds succeeds. Naming one inside
+# Databricks-managed storage does not, and refuses with "Please use the UI",
+# which a hook can never satisfy.
+#
+# Empty rather than unset when absent, because the value is spliced into SQL and
+# the statement without it has to be exactly the statement that was there before.
+# An account whose metastore does carry a storage_root needs no value here.
+CATALOG_MANAGED_LOCATION = os.environ.get(
+    "VOC_COURSE_CATALOG_MANAGED_LOCATION", ""
+).strip()
+
 PIPELINE_NAME = "Fleet Digital Twin ETL"
 DLT_NOTEBOOK_WORKSPACE_PATH = "/Shared/workshop/dlt_fleet_etl"
 
@@ -200,8 +220,11 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     """
     catalog = f"`{CATALOG}`"
     volume = f"{catalog}.`{VOLUME_SCHEMA}`.`{VOLUME_NAME}`"
+    create_catalog = f"CREATE CATALOG IF NOT EXISTS {catalog}"
+    if CATALOG_MANAGED_LOCATION:
+        create_catalog += f" MANAGED LOCATION '{CATALOG_MANAGED_LOCATION}'"
     return [
-        ("catalog", f"CREATE CATALOG IF NOT EXISTS {catalog}", True),
+        ("catalog", create_catalog, True),
         (
             "grant use catalog",
             f"GRANT USE_CATALOG ON CATALOG {catalog} TO {GRANTEE}",

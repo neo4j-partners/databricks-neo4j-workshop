@@ -2,6 +2,8 @@
 
 A proposal to make Lab 4 Part B optional, add a LangGraph lab that connects the Genie space to the participant's own Aura instance, and add a memory lab. The result is a longer workshop where every required lab builds on the graph the participant loaded themselves.
 
+**This document supersedes `proposed-outline.md` and `workshop-improve.md`.** Both of those propose restructures that end at Lab 4, and both predate the decision to add Labs 5 and 6. Where they conflict with this document, this document wins. Their still-valid parts, the "lead with the why" opening and the live demo of the finished agent before Lab 1, are carried into the Suggested Day Structure below. Each gets a superseded banner rather than deletion, since the reasoning in them is worth keeping.
+
 ---
 
 ## The Problem
@@ -89,9 +91,11 @@ Three tools rather than two makes the routing lesson much better than Lab 4 Part
 
 Lab 3 notebook 03 builds hybrid retrieval over the `maintenanceChunkText` fulltext index and is marked optional. The `graphrag_node` therefore uses vector retrieval only. Hybrid becomes an exercise inside Lab 5 for anyone who ran notebook 03, never a dependency.
 
-**Supervisor model.** Use `databricks-meta-llama-3-3-70b-instruct`, already the `DEFAULT_LLM_MODEL` in `Lab_3_Semantic_Search/data_utils.py`. One model endpoint across Labs 3 and 5 means one thing to check for availability in a new workspace. The endpoint name belongs in `lab/workshop.py` alongside the other object names.
+**Supervisor model.** Use `databricks-meta-llama-3-3-70b-instruct`, already the `DEFAULT_LLM_MODEL` in `Lab_3_Semantic_Search/data_utils.py:35`. One model endpoint across Labs 3 and 5 means one thing to check for availability in a new workspace. The endpoint name belongs in `lab/workshop.py` alongside the other object names.
 
-**Deployment and auth.** Two credentials, not one, and they fail in different ways:
+Routing across three tools is a harder job than anything Lab 3 asks of this model, so treat the choice as provisional rather than locked. Declare it as one named constant in `agent.py` and never inline it. Phase 1 measures routing accuracy on the eval set; if the model misroutes the anchor question or confuses the Cypher and GraphRAG tools, swap the constant to a stronger tool-calling endpoint such as `databricks-claude-sonnet-4-5` and record the second endpoint as a workspace prerequisite. Start with one endpoint, keep the escape hatch to two.
+
+**Deployment and auth.** Required, not optional. Deploying an agent that authenticates as a service principal is the lesson that separates a notebook demo from a product, and it is the question participants ask anyway. Two credentials, not one, and they fail in different ways:
 
 | Credential | Mechanism | Risk |
 |---|---|---|
@@ -100,7 +104,7 @@ Lab 3 notebook 03 builds hybrid retrieval over the `maintenanceChunkText` fullte
 
 The Genie path is the more likely deployment failure, because the notebook runs as the participant while the endpoint runs as a service principal, and Genie also requires access to the underlying Unity Catalog tables rather than to the space alone. Phase 2 verifies this by calling the deployed endpoint, not by checking that deployment succeeded.
 
-Credential handling for a deployed agent is worth 10 minutes of an advanced workshop and is the natural answer to the question participants ask anyway.
+Budget 10 minutes of Lab 5 for credential handling, and budget wait time for the deploy itself. Phase 2 measures how long a cold deploy takes so the lab can name the number instead of leaving participants watching a spinner.
 
 **Structure.** Split into two notebooks so the halfway point is a working agent:
 
@@ -113,19 +117,21 @@ Memory writes go to the participant's Aura instance, which is where their domain
 
 Use [`neo4j-agent-memory`](https://github.com/neo4j-labs/agent-memory) on the self-hosted bolt path. `client.schema.adopt_existing_graph(...)` adopts the fleet graph as long-term memory, so remembered entities resolve to the real `Aircraft` and `Component` nodes from Lab 2 rather than creating parallel copies. Add `recall` and `remember` nodes on either side of the Lab 5 supervisor.
 
-Demonstrations, in order of how well each answers "why does this need a graph":
+Demonstrations, in order of how well each answers "why does this need a graph". **Hands-on** means the participant writes and runs it. **Demo** means the notebook ships it complete and the participant runs the cell and reads the output, with the instructor talking over it.
 
 | Demo | What it shows | Include |
 |---|---|---|
-| Memory joined to fleet data in one traversal | Which components three or more technicians asked about this week, and whether those are the ones actually failing. One Cypher across the conversation graph and the fleet graph | Required, headline |
-| Reasoning reuse, measured | Successful Cypher and SQL replayed as few-shot exemplars. Run the eval set with memory off then on, compare tool calls, retries, tokens, latency, accuracy | Required |
-| Correction with temporal invalidation | Correct an EGT redline, then traverse to what the agent used to believe and when it stopped | Required |
-| Cross-session continuity | "Any vibration trends on that aircraft?" resolves after a restart | Required |
-| Learned preferences | Role and fleet scope stored once, applied silently to later sessions including the generated SQL | Required |
-| Shift handoff | Investigation findings attach to the component and a different technician picks them up | Recommended |
-| Routing memory | The supervisor learns which tool answered similar questions, improving on the static prompt from Lab 5 | Recommended |
+| Memory joined to fleet data in one traversal | Which components three or more technicians asked about this week, and whether those are the ones actually failing. One Cypher across the conversation graph and the fleet graph | Hands-on, headline |
+| Reasoning reuse, measured | Successful Cypher and SQL replayed as few-shot exemplars. Run the eval set with memory off then on, compare tool calls, retries, tokens, latency, accuracy | Hands-on |
+| Cross-session continuity | "Any vibration trends on that aircraft?" resolves after a restart | Hands-on |
+| Correction with temporal invalidation | Correct an EGT redline, then traverse to what the agent used to believe and when it stopped | Demo |
+| Learned preferences | Role and fleet scope stored once, applied silently to later sessions including the generated SQL | Demo |
+| Shift handoff | Investigation findings attach to the component and a different technician picks them up | Demo |
+| Routing memory | The supervisor learns which tool answered similar questions, improving on the static prompt from Lab 5 | Demo |
 | Proactive briefing | Remembered interests joined to fresh telemetry on session start | Optional |
 | GDS over the memory graph | Attention hotspots across the organization, written back to Delta. Ties in Appendix A | Stretch |
+
+Three hands-on demos in 75 minutes leaves roughly 20 minutes each including setup, which is honest. Nine hands-on demos in 75 minutes was not. The four marked Demo still get built and still get airtime; they cost the participant a cell run rather than a build, so they are cheap to keep and cheap to skip when the room is running late.
 
 The headline demo is the reason to do this in Neo4j rather than any memory product, and it only works because memory and fleet data are in one database. Under the old structure they were in two.
 
@@ -191,7 +197,9 @@ Two changes are required before it can be reused:
 
 About seven and a half hours including breaks. Lab 4 Part B and Appendix A are take-home, with a 10 minute instructor demo of Part B folded into the agent architectures lecture so the no-code path and the MCP pattern both get airtime.
 
-For audiences that cannot commit to a full day, the same material splits cleanly: Labs 1 through 4 as a half-day foundation, where Part B is a reasonable ending on its own, and Labs 5 and 6 as a half-day advanced session for participants who completed the first.
+For audiences that cannot commit to a full day, the same material splits: Labs 1 through 4 as a half-day foundation, where Part B is a reasonable ending on its own, and Labs 5 and 6 as a half-day advanced session for participants who completed the first.
+
+The split is not free. A half-day advanced session is a different room on a different day, and Aura Free instances pause after three days of inactivity and are deleted after 30. Whatever a participant loaded in the foundation session may be gone, paused, or forgotten by the time the advanced session starts, and the Lab 5 catch-up cell only helps someone who reaches Lab 5 in the same workspace with the same credentials. Making the split actually work needs a second catch-up path at the top of Lab 6, plus a way for a returning participant to get back to a running instance with the right data. That is real work and it is not the first work. It lands as **Phase 5**, after the full-day path is proven. Until Phase 5 ships, the full day is the supported format and the split is best effort.
 
 ---
 
@@ -233,13 +241,14 @@ Nothing. `Lab_4_Compound_AI_Agents/` keeps its name, both parts, and all MCP mat
 - `lab/workspace_init.sh` and `lab/lab_end.sh`: create and clean up the per-participant secret scope, following the pattern already used for the MCP credentials.
 - `workshop-setup/README.md`: mark external MCP provisioning as required only for Lab 4 Part B.
 - `images/lab-architecture-overview.*`: add a Lab 5 variant drawn against the participant's own Aura with three tools. Keep the existing diagram for Part B.
+- `proposed-outline.md` and `workshop-improve.md`: add a superseded banner at the top of each pointing here. No content changes, since the reasoning is still worth reading.
 
 ---
 
 ## Open Decisions
 
 1. Whether provisioning creates one secret scope per participant or the workshop shares one scope with per-user keys. Shared is less to provision and leaks every participant's Aura password to every participant.
-2. Whether Lab 5 deployment to Model Serving is required or optional. It is the right lesson and it is also the most likely place for a room of 30 people to hit a workspace limit. If optional, the in-notebook path still needs the Genie credential to work as the participant, which it does.
+2. Whether `databricks-meta-llama-3-3-70b-instruct` routes three tools well enough. Phase 1 decides it on measured routing accuracy, not on preference. The fallback is a second endpoint.
 3. When the local MCP section lands in Lab 5. Proposed as a future section rather than first release, since it is the part most likely to behave differently on serverless compute and Lab 5 should ship without waiting on it.
 4. How long Part B stays maintained. It is optional now, so a break is survivable, but it still requires a live AgentCore server, valid OAuth2 M2M credentials, and a loaded reference instance. Worth setting a review date rather than deciding today.
 
@@ -259,6 +268,8 @@ A participant can finish Lab 6 having used only the Aura instance they created i
 - Whether `neo4j-agent-memory` accepts Databricks Foundation Model endpoints for its embedding and LLM providers is a hypothesis, not a fact. Phase 0 settles it.
 - Whether a `uv` package installs and runs from a serverless notebook cell is unverified. If it does not, the fallback is to call `populate_aircraft_db` as a job on classic compute, or to vendor its loader module into the notebook. The embedding provider fix matters either way.
 - Vocareum participants may lack permission to create their own secret scope. `lab/lab_end.sh` and `vocareum/SETUP_GUIDE.md` show scopes being created by provisioning rather than by users, so plan for provisioning to create one scope per participant.
+- A workspace can host one Model Serving endpoint per participant at class size. Deployment is required, so this stops being a nice-to-have and becomes a hard prerequisite. Phase 0 checks the quota, Phase 4 proves it at scale.
+- `neo4j-agent-memory` is a `neo4j-labs` project with a pre-1.0 API surface. Assume it moves under us.
 
 ### Locked Decisions
 
@@ -270,7 +281,9 @@ A participant can finish Lab 6 having used only the Aura instance they created i
 | Part B and all MCP material stay in place | Part B is a genuine Databricks selling point and a working safety net; MCP is where the integration is heading | Deleting Part B, moving it to an appendix, removing MCP references |
 | Reuse `populate_aircraft_db` as the catch-up loader | It already produces Lab 3's schema and index names, so one code path stays correct instead of two agreeing by luck | Writing a fresh Spark Connector loader |
 | One embedding path, `databricks-bge-large-en` | The loader and Lab 3 must write vectors the same way or `graphrag_node` returns nonsense against the shared index | Leaving the loader on local sentence-transformers and hoping the vectors match |
-| `databricks-meta-llama-3-3-70b-instruct` as the supervisor model | Already the Lab 3 default, so one endpoint to verify per workspace | GPT OSS 120B from the Part B Playground steps, a second endpoint to depend on |
+| `databricks-meta-llama-3-3-70b-instruct` as the supervisor model | Already the Lab 3 default, so one endpoint to verify per workspace. Declared as one constant so Phase 1 can swap it on measured routing accuracy | GPT OSS 120B from the Part B Playground steps, a second endpoint to depend on |
+| Model Serving deployment is required, not optional | Deploying an agent that authenticates as a service principal is the lesson that separates a notebook demo from a product, and it is the question every participant asks. Making it optional means most of the room skips the only part that teaches production auth | Instructor-demo-only deployment, take-home deployment |
+| This document supersedes `proposed-outline.md` and `workshop-improve.md` | Three live planning documents with three different endings drift within a week. One document owns the plan | Keeping all three current, merging all three into one file |
 
 ### Deliberately Not Doing
 
@@ -278,7 +291,7 @@ A participant can finish Lab 6 having used only the Aura instance they created i
 - Building the local `mcp-neo4j-cypher` section in Lab 5. Sketched as a future section so Lab 5 ships without waiting on serverless subprocess behavior.
 - Hardening memory for production. Multi-tenancy, PII handling, and retention policy each get a callout in Lab 6, not an exercise.
 - Redesigning the Genie space. Part A is already good and is not part of this work.
-- Touching Vocareum provisioning beyond adding the new object names to `lab/workshop.py`.
+- Touching Vocareum provisioning beyond the new object names in `lab/workshop.py` and the per-participant secret scope in `lab/workspace_init.sh` and `lab/lab_end.sh`. The scope is unavoidable, because a required deployment needs a credential that is not a notebook literal.
 
 ### Phases
 
@@ -295,11 +308,22 @@ The two items that can invalidate the plan. Everything after this is known-feasi
 - [ ] Measure loader wall-clock time and Aura Free storage after a full load
 - [ ] Spike the headline memory demo standalone: write memory against a loaded instance, run one Cypher joining conversation memory to maintenance history, judge the answer
 - [ ] Confirm which embedding and LLM providers `neo4j-agent-memory` accepts on Databricks
+- [ ] Pin `neo4j-agent-memory` to an exact version and record it (see the research note below)
 - [ ] Confirm whether Vocareum participants can create a secret scope, or whether provisioning must create one per user
+- [ ] Check the workspace Model Serving endpoint quota against the largest expected class size
 
 Completion criteria: the loader runs twice in a row without duplicating data, cross-path cosine similarity is high enough that retrieval quality is unchanged, and the memory spike either returns a good answer or is recorded as a no-go for Lab 6.
 
 Note: generating embeddings for the manual chunks is the slow part and may push the loader past a comfortable in-lab runtime. If it does, pre-generate embeddings into the Unity Catalog volume and have the loader write them rather than compute them.
+
+**Research note: pin `neo4j-agent-memory`.** It is a `neo4j-labs` project, which means a pre-1.0 API and no compatibility promise. A workshop notebook that installs the latest version can break between the dry run and delivery day without a single line of our code changing, and it breaks in a room, live. Before Phase 3 starts, answer four things and write the answers into `Lab_6_Agent_Memory/README.md`:
+
+- **Exact version.** Pin it in the notebook `%pip install` line, not a floor and not a range. Record the resolved version and the commit it came from.
+- **API surface we depend on.** List the specific calls Lab 6 uses, starting with `client.schema.adopt_existing_graph(...)`, and note whether each is documented or read off the source. Undocumented calls are the ones that move.
+- **Neo4j version floor.** Confirm the pinned version works on the Neo4j version Aura Free actually serves, not on the version the README assumes.
+- **Owner and cadence.** Who maintains it, how often it releases, and whether a Neo4j-internal contact can warn us before a breaking change. That contact is worth more than the pin.
+
+If the pinned version cannot be made to work on Aura Free, that is a Phase 0 no-go for Lab 6 and it surfaces here rather than in Phase 3. Set a re-check date at the same time as the Part B review date, so both external dependencies get looked at together rather than each being remembered separately.
 
 **Phase 1: Lab 5 core agent.** Status: Pending
 
@@ -313,47 +337,73 @@ Note: generating embeddings for the manual chunks is the slow part and may push 
 
 Completion criteria: the anchor question about abnormal EGT, maintenance history, and the relevant manual procedure returns a correct answer in-notebook, and each of the four routing cases lands on the expected tool.
 
-**Phase 2: Lab 5 ships.** Status: Pending
+**Phase 2: Lab 5 ships, deployment included.** Status: Pending
+
+Deployment is required, so this phase is not done when the notebook is written. It is done when a deployed endpoint answers questions as a service principal.
 
 - [ ] `ResponsesAgent` wrapper with MLflow autologging
 - [ ] Aura password sourced from a Databricks secret scope rather than a notebook literal
 - [ ] Genie space and model endpoint declared as resources at log time so the serving principal gets a credential
 - [ ] Serving principal confirmed to have access to the Unity Catalog tables behind the Genie space, not just to the space
 - [ ] Logged to Unity Catalog and deployed to Model Serving
-- [ ] MLflow evaluation against the fixed question set
+- [ ] **Call the deployed endpoint with one question per tool** and confirm all three answer. Genie is the one that fails here, not Neo4j
+- [ ] **Call the deployed endpoint with the anchor question** and confirm it routes across all three tools end to end
+- [ ] **Time a cold deploy** from `log_model` to a serving endpoint that answers, so the lab can tell participants how long to wait instead of leaving them guessing
+- [ ] **Deploy a second endpoint as a different workspace user** and confirm both stay healthy. Proves per-participant deployment before Phase 4 proves it at class size
+- [ ] Failure mode documented: what a participant sees when the Genie credential is missing, and the one thing to check
+- [ ] MLflow evaluation against the fixed question set, run against the deployed endpoint rather than the in-notebook graph
 - [ ] `02_deploy_and_evaluate.ipynb` and `Lab_5_LangGraph_Agent/README.md` complete
 
-Completion criteria: the deployed endpoint answers one question per tool when called as the serving principal rather than as the notebook user, and the evaluation run produces a baseline the Lab 6 memory comparison can be measured against. A successful deploy is not the criterion. A successful Genie call through the endpoint is.
+Completion criteria: the deployed endpoint answers one question per tool and the anchor question when called as the serving principal rather than as the notebook user, two endpoints coexist under different users, and the evaluation baseline for Lab 6 comes from the deployed endpoint. A successful deploy is not the criterion. A successful Genie call through the endpoint is.
 
 **Phase 3: Lab 6 memory.** Status: Pending, gated on the Phase 0 spike
 
 - [ ] Memory client configured against the participant's Aura, with `adopt_existing_graph` resolving to real fleet nodes
 - [ ] `recall` and `remember` nodes added around the Lab 5 supervisor
-- [ ] The five required demos: fleet-joined traversal, reasoning reuse, correction with invalidation, cross-session continuity, learned preferences
+- [ ] `neo4j-agent-memory` pinned to the exact version chosen in Phase 0
+- [ ] The three hands-on demos: fleet-joined traversal, reasoning reuse, cross-session continuity
 - [ ] Memory off versus on evaluation harness reusing the Phase 2 baseline
-- [ ] The two recommended demos, shift handoff and routing memory, if time allows
+- [ ] The four instructor demos, shipped complete as runnable cells: correction with invalidation, learned preferences, shift handoff, routing memory
+- [ ] Each hands-on demo timed individually against its share of the 75 minutes
 
-Completion criteria: the headline traversal returns a good answer, and the memory comparison shows a measurable difference in tool calls, tokens, or accuracy.
+Completion criteria: the headline traversal returns a good answer, the memory comparison shows a measurable difference in tool calls, tokens, or accuracy, and the three hands-on demos fit inside 75 minutes measured rather than estimated.
 
-**Phase 4: Delivery readiness.** Status: Pending
+**Phase 4: Delivery readiness.** Status: Pending. Owner: Ryan.
+
+Ryan runs the dry run personally, on a fresh Vocareum-shaped workspace user and a fresh Aura instance. Not a development workspace and not an account with leftover state, because the failures worth catching are the ones that only happen to someone starting clean.
 
 - [ ] Full dry run of Labs 1 through 6 on a fresh Aura instance and a fresh workspace user
 - [ ] Catch-up loader exercised from a deliberately incomplete Lab 2 state
 - [ ] Reference instance fallback verified as a three-variable override
+- [ ] Model Serving deployment exercised at class size, or the quota confirmed sufficient for it
 - [ ] Part B still works, with its optional banner in place
-- [ ] Timings recorded against the suggested day structure
+- [ ] Timings recorded against the suggested day structure, per lab and per Lab 6 demo
 
-Completion criteria: one person completes the required path start to finish without the instructor intervening.
+Completion criteria: Ryan completes the required path start to finish without intervening as the instructor, and the recorded timings either match the suggested day structure or the structure is corrected to match them.
+
+**Phase 5: The half-day split.** Status: Pending, after Phase 4
+
+Everything above assumes one continuous day. This phase makes the two-half-day format supported rather than best effort. It is last because it only matters once the full-day path is proven, and because its main deliverable is a second catch-up path that has no reason to exist until the first one works.
+
+- [ ] Catch-up cell at the top of Lab 6 that brings a returning participant to end-of-Lab-5 state: fleet graph, Lab 3 artifacts, and a working Lab 5 agent. Reuses the Lab 5 catch-up cell and adds the agent
+- [ ] Written guidance for resuming a paused Aura Free instance, and what to do when it was deleted rather than paused
+- [ ] Confirm whether the Lab 5 serving endpoint survives between sessions or must be redeployed, and document whichever it is
+- [ ] Confirm the participant's secret scope and Genie space access survive the gap
+- [ ] A between-sessions note for participants: what to leave running, what will pause, and what to do the morning of the advanced session
+- [ ] Foundation-session ending that stands on its own, since Lab 4 Part B is now the half-day close
+- [ ] Dry run of the advanced half-day alone, starting from a deliberately cold state at least three days old
+
+Completion criteria: someone who did the foundation session, walked away for a week, and let their Aura instance pause can start the advanced session and reach the Lab 6 headline demo without instructor help.
 
 ### What Runs in Parallel
 
 Three tracks. Track C is independent of all code and can start immediately.
 
-| Track | Phase 0 | Phase 1 | Phase 2 | Phase 3 | Phase 4 |
-|---|---|---|---|---|---|
-| **A. Engineering** | Catch-up loader | Three tools plus supervisor | Deploy and evaluate | Memory nodes and demos | Dry run |
-| **B. Memory research** | Headline demo spike, provider check | idle | idle | joins Track A | Dry run |
-| **C. Content and infra** | Lab 4 banners and Part A handoff | Repo docs, `agenda.md`, `lab/workshop.py` | Lab 5 architecture diagram, eval question set | Lab 6 README | Timing capture |
+| Track | Phase 0 | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 |
+|---|---|---|---|---|---|---|
+| **A. Engineering** | Catch-up loader | Three tools plus supervisor | Deploy and evaluate | Memory nodes and demos | Dry run | Lab 6 catch-up cell |
+| **B. Memory research** | Headline demo spike, provider check, version pin | idle | idle | joins Track A | Dry run | idle |
+| **C. Content and infra** | Lab 4 banners, Part A handoff, superseded banners | Repo docs, `agenda.md`, `lab/workshop.py` | Lab 5 architecture diagram, eval question set | Lab 6 README | Timing capture | Between-sessions guidance |
 
 What actually blocks what:
 
@@ -362,6 +412,7 @@ What actually blocks what:
 - The whole of Track C is documentation and naming. None of it waits on code.
 - The Lab 5 eval question set can be written on day one. It is a list of questions and expected routes.
 - Only Phase 3 has a hard dependency on Phase 1, because the memory nodes attach to the Lab 5 supervisor.
+- Phase 5 depends on Phase 4, not on Phase 3. Its catch-up cell has to reproduce a state Phase 4 has confirmed is reachable, so building it earlier means building it against a moving target.
 
 Parallelism caveat: Tracks A and B both write to Aura, and the memory spike puts memory nodes into a graph the loader tests are trying to keep clean. Give each track its own Aura instance. With one person doing all three tracks, the tracks collapse to sequential and Phase 0 is still the right starting point.
 

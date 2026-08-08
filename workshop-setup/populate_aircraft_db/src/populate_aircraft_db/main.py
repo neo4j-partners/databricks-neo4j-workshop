@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 from collections.abc import Generator
@@ -79,26 +80,56 @@ class _LLMCredentials:
     anthropic_key: str | None
     llm_model: str
     llm_max_tokens: int
-    embedding_provider: Literal["bge", "openai"]
+    embedding_provider: Literal["bge", "openai", "databricks"]
     embedding_model: str
     embedding_dims: int
 
 
-def _resolve_llm_credentials(settings: Settings) -> _LLMCredentials:
-    """Validate and resolve LLM credentials from settings. Raises typer.BadParameter on failure."""
+def _export_databricks_env(settings: Settings) -> None:
+    """Publish Databricks credentials from .env into the process environment.
+
+    pydantic-settings reads .env into a Settings object and stops there, but the
+    MLflow deployments client the "databricks" embedding provider uses only
+    reads os.environ. Without this bridge a host and token sitting in .env look
+    configured and are not. Only keys the user actually set are written, so an
+    ambient environment (a Databricks notebook, an already-exported token) still
+    wins when .env is silent.
+    """
+    if settings.embedding_provider != "databricks":
+        return
+    if settings.databricks_host:
+        os.environ["DATABRICKS_HOST"] = settings.databricks_host
+    if settings.databricks_token:
+        os.environ["DATABRICKS_TOKEN"] = settings.databricks_token.get_secret_value()
+    if settings.databricks_config_profile:
+        os.environ["DATABRICKS_CONFIG_PROFILE"] = settings.databricks_config_profile
+
+
+def _resolve_llm_credentials(
+    settings: Settings,
+    *,
+    skip_extraction: bool = False,
+) -> _LLMCredentials:
+    """Validate and resolve LLM credentials from settings. Raises typer.BadParameter on failure.
+
+    With *skip_extraction* set, no LLM runs, so no LLM key is required. That is
+    the point of the flag: the catch-up path needs chunks, embeddings, and an
+    index, and demanding an OpenAI or Anthropic key to produce them would put an
+    external account on the critical path of a lab.
+    """
     provider = settings.llm_provider
     embedding_provider = settings.embedding_provider
     openai_key = None
     anthropic_key = None
 
     # OpenAI is needed for extraction (llm_provider=openai) and/or embeddings
-    # (embedding_provider=openai). The default BGE embedder runs locally and
-    # needs no API key.
-    if provider == "openai" or embedding_provider == "openai":
+    # (embedding_provider=openai). The BGE embedder runs locally and the
+    # Databricks embedder authenticates through the workspace, so neither
+    # needs a key.
+    extraction_needs_openai = provider == "openai" and not skip_extraction
+    if extraction_needs_openai or embedding_provider == "openai":
         if settings.openai_api_key is None:
-            usage = (
-                "extraction" if provider == "openai" else "embeddings"
-            )
+            usage = "extraction" if extraction_needs_openai else "embeddings"
             raise typer.BadParameter(
                 f"OPENAI_API_KEY is required for {usage} when using OpenAI. "
                 "Set it in .env or as an env var."
@@ -109,12 +140,13 @@ def _resolve_llm_credentials(settings: Settings) -> _LLMCredentials:
         llm_model = settings.openai_extraction_model
         llm_max_tokens = settings.openai_extraction_max_completion_tokens
     elif provider == "anthropic":
-        if settings.anthropic_api_key is None:
+        if settings.anthropic_api_key is None and not skip_extraction:
             raise typer.BadParameter(
                 "ANTHROPIC_API_KEY is required when using Anthropic. "
                 "Set it in .env or as an env var."
             )
-        anthropic_key = settings.anthropic_api_key.get_secret_value()
+        if settings.anthropic_api_key is not None:
+            anthropic_key = settings.anthropic_api_key.get_secret_value()
         llm_model = settings.anthropic_extraction_model
         llm_max_tokens = settings.anthropic_extraction_max_tokens
     else:
@@ -139,12 +171,24 @@ def _resolve_llm_credentials(settings: Settings) -> _LLMCredentials:
 # ---------------------------------------------------------------------------
 
 
-def _run_enrich(driver: Driver, settings: Settings, creds: _LLMCredentials) -> None:
-    """Run the enrichment pipeline: chunk, embed, extract entities, and link."""
+def _run_enrich(
+    driver: Driver,
+    settings: Settings,
+    creds: _LLMCredentials,
+    *,
+    skip_extraction: bool = False,
+) -> None:
+    """Run the enrichment pipeline: chunk, embed, extract entities, and link.
+
+    With *skip_extraction* the entity half is left out and only the Document,
+    Chunk, embedding, and index half runs. The extraction constraints are left
+    alone too, since nothing will be written that needs resolving.
+    """
     from .pipeline import (
         clear_enrichment_data,
         link_to_existing_graph,
         process_all_documents,
+        process_all_documents_lexical_only,
         validate_enrichment,
     )
 
@@ -152,40 +196,57 @@ def _run_enrich(driver: Driver, settings: Settings, creds: _LLMCredentials) -> N
     clear_enrichment_data(driver)
     print()
 
-    print("Dropping extraction constraints for pipeline write phase...")
-    drop_extraction_constraints(driver)
-    print()
-
-    if settings.enrich_sample_size:
-        print(
-            f"Running SimpleKGPipeline (LLM: {creds.provider}/{creds.llm_model}, "
-            f"max_tokens={creds.llm_max_tokens}, "
-            f"sample_size={settings.enrich_sample_size} chunks/doc)..."
-        )
-    else:
-        print(
-            f"Running SimpleKGPipeline (LLM: {creds.provider}/{creds.llm_model}, "
-            f"max_tokens={creds.llm_max_tokens})..."
-        )
-
-    process_all_documents(
-        driver,
-        settings.document_dir,
-        provider=creds.provider,
-        openai_api_key=creds.openai_key,
-        anthropic_api_key=creds.anthropic_key,
-        llm_model=creds.llm_model,
-        llm_max_tokens=creds.llm_max_tokens,
-        embedding_provider=creds.embedding_provider,
-        embedding_model=creds.embedding_model,
-        embedding_dimensions=creds.embedding_dims,
-        chunk_size=settings.chunk_size,
-        chunk_overlap=settings.chunk_overlap,
-        enrich_sample_size=settings.enrich_sample_size,
+    sample_note = (
+        f", sample_size={settings.enrich_sample_size} chunks/doc"
+        if settings.enrich_sample_size
+        else ""
     )
 
-    print("\nCreating extraction constraints (post entity-resolution)...")
-    create_extraction_constraints(driver)
+    if skip_extraction:
+        print(
+            f"Chunking and embedding, no entity extraction "
+            f"(embeddings: {creds.embedding_provider}/{creds.embedding_model}"
+            f"{sample_note})..."
+        )
+        process_all_documents_lexical_only(
+            driver,
+            settings.document_dir,
+            embedding_provider=creds.embedding_provider,
+            embedding_model=creds.embedding_model,
+            embedding_dimensions=creds.embedding_dims,
+            chunk_size=settings.chunk_size,
+            chunk_overlap=settings.chunk_overlap,
+            openai_api_key=creds.openai_key,
+            enrich_sample_size=settings.enrich_sample_size,
+        )
+    else:
+        print("Dropping extraction constraints for pipeline write phase...")
+        drop_extraction_constraints(driver)
+        print()
+
+        print(
+            f"Running SimpleKGPipeline (LLM: {creds.provider}/{creds.llm_model}, "
+            f"max_tokens={creds.llm_max_tokens}{sample_note})..."
+        )
+
+        process_all_documents(
+            driver,
+            settings.document_dir,
+            provider=creds.provider,
+            openai_api_key=creds.openai_key,
+            anthropic_api_key=creds.anthropic_key,
+            llm_model=creds.llm_model,
+            llm_max_tokens=creds.llm_max_tokens,
+            embedding_provider=creds.embedding_provider,
+            embedding_model=creds.embedding_model,
+            embedding_dimensions=creds.embedding_dims,
+            chunk_size=settings.chunk_size,
+            chunk_overlap=settings.chunk_overlap,
+            enrich_sample_size=settings.enrich_sample_size,
+        )
+
+        print("\nCreating extraction constraints (post entity-resolution)...")
+        create_extraction_constraints(driver)
 
     print("\nCreating embedding indexes...")
     create_embedding_indexes(driver, creds.embedding_dims)
@@ -201,13 +262,28 @@ def _run_enrich(driver: Driver, settings: Settings, creds: _LLMCredentials) -> N
 # ---------------------------------------------------------------------------
 
 
+_SKIP_EXTRACTION_HELP = (
+    "Chunk and embed the manuals but skip LLM entity extraction. Needs no "
+    "OpenAI or Anthropic key. Leaves out OperatingLimit and the other extracted "
+    "entities, so Lab 3 notebook 02's operating-limit retriever has nothing to "
+    "traverse to. Everything vector search needs is still written."
+)
+
+
 @app.command("setup")
-def setup_cmd() -> None:
+def setup_cmd(
+    skip_extraction: bool = typer.Option(
+        False,
+        "--skip-extraction",
+        help=_SKIP_EXTRACTION_HELP,
+    ),
+) -> None:
     """Load CSV data into Neo4j and run GraphRAG enrichment in a single pass."""
     settings = Settings()  # type: ignore[call-arg]
+    _export_databricks_env(settings)
 
     # Validate LLM credentials early, before any Neo4j work.
-    creds = _resolve_llm_credentials(settings)
+    creds = _resolve_llm_credentials(settings, skip_extraction=skip_extraction)
 
     start = time.monotonic()
 
@@ -227,7 +303,7 @@ def setup_cmd() -> None:
         print()
 
         try:
-            _run_enrich(driver, settings, creds)
+            _run_enrich(driver, settings, creds, skip_extraction=skip_extraction)
         except Exception as exc:
             print(f"\n[FAIL] Enrichment failed: {exc}")
             print("CSV data was loaded successfully. Fix the issue and re-run:")
@@ -326,14 +402,21 @@ def load_operational_cmd() -> None:
 
 
 @app.command("enrich")
-def enrich_cmd() -> None:
+def enrich_cmd(
+    skip_extraction: bool = typer.Option(
+        False,
+        "--skip-extraction",
+        help=_SKIP_EXTRACTION_HELP,
+    ),
+) -> None:
     """Run GraphRAG enrichment against an already-loaded operational graph."""
     settings = Settings()  # type: ignore[call-arg]
-    creds = _resolve_llm_credentials(settings)
+    _export_databricks_env(settings)
+    creds = _resolve_llm_credentials(settings, skip_extraction=skip_extraction)
 
     print(f"Connecting to {settings.neo4j_uri}...")
     with _connect(settings) as driver:
-        _run_enrich(driver, settings, creds)
+        _run_enrich(driver, settings, creds, skip_extraction=skip_extraction)
 
     print("\nDone.")
 

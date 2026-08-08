@@ -1,5 +1,13 @@
 # Part B: Multi-Agent Supervisor for Aircraft Intelligence
 
+> **Optional, advanced.** Part B is not on the required path. It is the no-code route to a multi-agent supervisor, and it queries the shared **Reference Aura Instance** over a governed MCP connection rather than the Aura instance you loaded in Lab 2. Skipping it costs you nothing in Lab 5 or Lab 6.
+>
+> Run it if you want either of these:
+> - **The no-code product.** Agent Bricks Multi-Agent Supervisor reaches a working system through configuration alone, with no Python.
+> - **The production shape.** A Unity Catalog HTTP connection with OAuth2 M2M against a hosted MCP server is how centrally-governed agent access to Neo4j looks in production.
+>
+> **[Lab 5](../Lab_5_LangGraph_Agent)** builds the same routing in code, against your own graph. The two are alternatives, not a sequence. Doing both shows you one architecture from two directions.
+
 In this part, you'll create a multi-agent supervisor that intelligently routes questions to either the **Genie space** (for sensor analytics) or the **Neo4j MCP agent** (for graph relationships). This enables natural language queries that span both data sources.
 
 **Estimated Time:** 45 minutes
