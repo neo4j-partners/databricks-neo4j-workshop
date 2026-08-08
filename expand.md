@@ -20,36 +20,36 @@ Lab 4 Part B is the only place in the workshop that breaks this pattern. It rout
 
 Everything the participant built in Labs 1 through 3 goes unused at the exact moment the workshop is supposed to pay off. They load a fleet graph in Lab 2, build vector indexes and GraphRAG retrievers over it in Lab 3, then watch an agent answer questions against somebody else's database. The GraphRAG work from Lab 3 is never wired into the agent at all.
 
-The external MCP server also carries real operational cost: an AWS AgentCore deployment, OAuth2 M2M credential rotation, a Unity Catalog HTTP connection provisioned per workspace, a reference instance to keep loaded, and a documented failure mode for the missing **Is MCP connection** checkbox.
-
-The fix is straightforward. Point the agent at the graph the participant built.
+The fix is to add a required lab that points an agent at the graph the participant built, and to reposition Part B as the optional no-code path rather than the main line. Part B stays where it is and keeps working. It stops being the only ending the workshop has.
 
 ---
 
 ## Recommended Structure
 
-| Lab | Content | Neo4j target | Time |
-|---|---|---|---|
-| 1 | Aura setup and Cypher basics | Personal | 20 min |
-| 2 | Databricks ETL to Neo4j via Spark Connector | Personal | 45 min |
-| 3 | Semantic search and GraphRAG retrievers | Personal | 45 min |
-| **4** | **Genie space over Lakehouse telemetry** | none | **30 min** |
-| **5** | **LangGraph agent over Genie plus their own Aura** | **Personal** | **90 min** |
-| **6** | **Neo4j agent memory** | **Personal** | **75 min** |
-| App. A | GDS graph analytics | Personal | optional |
-| App. B | Agent Bricks no-code supervisor | Reference | optional |
+| Lab | Content | Neo4j target | Time | Status |
+|---|---|---|---|---|
+| 1 | Aura setup and Cypher basics | Personal | 20 min | Required |
+| 2 | Databricks ETL to Neo4j via Spark Connector | Personal | 45 min | Required |
+| 3 | Semantic search and GraphRAG retrievers | Personal | 45 min | Required |
+| 4 Part A | Genie space over Lakehouse telemetry | none | 30 min | Required |
+| 4 Part B | Agent Bricks no-code supervisor over MCP | Reference | 45 min | **Optional, advanced** |
+| **5** | **LangGraph agent over Genie plus their own Aura** | **Personal** | **90 min** | **Required** |
+| **6** | **Neo4j agent memory** | **Personal** | **75 min** | **Required** |
+| App. A | GDS graph analytics | Personal | optional | Optional |
 
-Roughly five hours of lab time, which supports a full-day advanced format with lecture and breaks.
+Roughly five hours of required lab time, which supports a full-day advanced format with lecture and breaks. Part B adds 45 minutes for audiences that want the no-code path.
 
-The column that matters is the third one. Under this structure every lab from 1 through 6 reads and writes the same database, and each lab's output is the next lab's input. Lab 2 loads the fleet, Lab 3 adds documentation and vector indexes to it, Lab 5 builds an agent that queries both, and Lab 6 writes the agent's memory back into it.
+The column that matters is the third one. On the required path every lab reads and writes the same database, and each lab's output is the next lab's input. Lab 2 loads the fleet, Lab 3 adds documentation and vector indexes to it, Lab 5 builds an agent that queries both, and Lab 6 writes the agent's memory back into it.
 
 ---
 
-## Lab 4: Genie Space Only
+## Lab 4: Part A Required, Part B Optional
 
-Keep `PART_A.md` as-is and promote it to be the whole of Lab 4. It already stands alone: it explores the Unity Catalog tables, creates the Genie space, adds sample questions and domain instructions, and tests natural language to SQL. Nothing in Part A depends on Part B.
+Leave both parts where they are. `Lab_4_Compound_AI_Agents/` keeps its name, its README, `PART_A.md`, and `PART_B.md`. Two edits to the README:
 
-Reframe the closing section. Right now Part A ends by pointing at Part B. It should instead end by naming what Genie cannot do: Genie answers "what was the average EGT" and cannot answer "which component failure delayed which flight," because that question is a traversal. That sets up Lab 5 and it restates the dual-database argument at the moment the participant has just felt one half of it.
+**Mark Part B optional and advanced.** It becomes the no-code path for audiences that want to see Agent Bricks Multi-Agent Supervisor as a product, and the centrally-governed MCP path for audiences asking how this looks in production. Both are real reasons to run it. Neither is a reason to make it the only ending. Add a note that Part B queries the shared Reference Aura Instance rather than the participant's own, so participants understand why it works without their Lab 2 data.
+
+**Reframe the Part A closing.** Right now Part A ends by pointing at Part B. It should end by naming what Genie cannot do: Genie answers "what was the average EGT" and cannot answer "which component failure delayed which flight," because that question is a traversal. Then offer both continuations. Lab 5 for the code path against your own graph, Part B for the no-code path against the reference graph.
 
 ## Lab 5: The LangGraph Agent
 
@@ -120,20 +120,23 @@ The headline demo is the reason to do this in Neo4j rather than any memory produ
 
 ## What Happens to Part B and MCP
 
-**Do not delete Part B. Demote it to Appendix B.** It teaches Agent Bricks Multi-Agent Supervisor as a no-code product, which is a genuine Databricks selling point and takes 45 minutes to reach a working system. As an appendix it keeps the reference instance and the external MCP server, both of which already exist and work. Some audiences want exactly that path, and an instructor can demo it in 10 minutes to make the no-code versus code contrast explicit.
+**Part B stays in place, marked optional.** It teaches Agent Bricks Multi-Agent Supervisor as a no-code product, which is a genuine Databricks selling point and takes 45 minutes to reach a working system. Nothing about it changes except its position on the required path. An instructor can also demo it in 10 minutes to make the no-code versus code contrast explicit without spending the full 45.
 
-**Keep MCP, move it inside the participant's control.** MCP appears in the agenda and in the Key Technologies table, so removing it entirely costs a talking point. Two places to keep it:
+**All MCP material stays, marked advanced and forward-looking.** MCP appears in the agenda, in the Key Technologies table, in the architecture diagrams, and across `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`. None of it needs to move. What changes is how it is framed: MCP is the direction this integration is heading and the pattern for centrally-governed agent access to Neo4j, presented as an advanced section rather than as the mechanism every participant must use to finish the workshop.
 
-1. An optional section in Lab 5 that runs `mcp-neo4j-cypher` as a local process against their own Aura and swaps the `cypher_node` implementation to call it. Same agent, same answers, different transport. This teaches MCP as an abstraction rather than as a hosting problem, and it is a better lesson than the current one.
-2. Appendix B keeps the Unity Catalog HTTP connection as the centrally-governed production pattern.
+Three places it lives:
 
-**Admin setup gets meaningfully lighter.** With the external MCP server on the optional path, `workshop-setup/neo4j_mcp_connection/`, `MCP-MANUAL-SETUP.md`, the AgentCore deployment, the OAuth2 M2M credential rotation, and the reference instance load all move off the critical path for a standard delivery. That is a real reduction in the number of things that can be broken at 9am on workshop day.
+1. **Lab 4 Part B**, unchanged, as the Unity Catalog HTTP connection pattern with OAuth2 M2M against a hosted MCP server. The production shape.
+2. **A future section in Lab 5**, sketched but not required in the first release, that runs `mcp-neo4j-cypher` as a local process against the participant's own Aura and swaps the `cypher_node` implementation to call it. Same agent, same answers, different transport. This is the version that teaches MCP as an abstraction rather than as a hosting problem, and it is worth building once Lab 5 is stable.
+3. **`workshop-setup/`**, unchanged, as the admin path for anyone provisioning the connection.
+
+**Admin setup cost is unchanged for now.** Keeping Part B alive means keeping the AgentCore deployment, the OAuth2 M2M credentials, the Unity Catalog connection, and the loaded reference instance alive with it. That cost was previously on the critical path for every delivery. It now sits behind an optional lab, so a broken MCP connection stops being a workshop-stopping failure at 9am. It becomes a section the instructor skips.
 
 ---
 
 ## The Cost, and How to Cover It
 
-Under the current structure, Lab 4 Part B is a safety net. A participant who never finishes Lab 2 still gets a working agent, because the agent queries somebody else's fully loaded database. This proposal removes that net. Labs 2 and 3 become load-bearing.
+Under the current structure, Lab 4 Part B is a safety net. A participant who never finishes Lab 2 still gets a working agent, because the agent queries somebody else's fully loaded database. Part B survives this proposal and can still play that role, but it is no longer where the workshop ends, so Labs 2 and 3 become load-bearing for Labs 5 and 6.
 
 Three mitigations, in order of importance:
 
