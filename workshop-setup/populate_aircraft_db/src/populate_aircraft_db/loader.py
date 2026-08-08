@@ -442,6 +442,11 @@ def load_relationships(driver: Driver, data_dir: Path) -> None:
         print(f"  [OK] Loaded {len(records)} {rel_type} relationships.")
 
 
+_OPERATING_LIMIT_FILE = "nodes_operating_limits.csv"
+# The two bound columns, converted from CSV text to float before they reach
+# Cypher. Every other column on this node is genuinely text.
+_OPERATING_LIMIT_BOUND_COLUMNS = ("minValue", "maxValue")
+
 _OPERATING_LIMIT_QUERY = """
 UNWIND $batch AS row
 MERGE (ol:OperatingLimit {name: row['name']})
@@ -449,10 +454,49 @@ SET ol.limit_id = row[':ID(OperatingLimit)'],
     ol.parameterName = row['parameterName'],
     ol.unit = row['unit'],
     ol.regime = row['regime'],
-    ol.minValue = CASE row['minValue'] WHEN '' THEN null ELSE row['minValue'] END,
-    ol.maxValue = CASE row['maxValue'] WHEN '' THEN null ELSE row['maxValue'] END,
+    ol.minValue = row['minValue'],
+    ol.maxValue = row['maxValue'],
     ol.aircraftType = row['aircraftType']
 """
+
+
+def _parse_operating_limit_bounds(
+    records: list[dict[str, Any]], filename: str
+) -> list[dict[str, Any]]:
+    """Return *records* with the bound columns converted to float or None.
+
+    ``csv.DictReader`` yields every cell as text. A bound stored as a STRING is
+    worse than a crash: Cypher evaluates ``r.value > ol.maxValue`` across a
+    FLOAT and a STRING to null rather than raising, so a limit-exceedance query
+    returns zero rows and reads as a clean result.
+
+    The conversion happens here rather than with ``toFloat()`` in the query
+    because ``toFloat()`` turns a malformed cell into null, which is the same
+    silent failure in a new place. A bad cell raises here, naming its line and
+    its limit.
+
+    An empty cell stays None. Those rows are single-bound limits, the Vibration
+    and N1Speed rows that have a maximum and no minimum, and writing 0.0 there
+    would make a below-minimum query wrong in a new way.
+    """
+    parsed: list[dict[str, Any]] = []
+    # Line 1 is the header, so the first record is line 2.
+    for line_number, row in enumerate(records, start=2):
+        converted = dict(row)
+        for column in _OPERATING_LIMIT_BOUND_COLUMNS:
+            text = (converted.get(column) or "").strip()
+            if not text:
+                converted[column] = None
+                continue
+            try:
+                converted[column] = float(text)
+            except ValueError as exc:
+                raise ValueError(
+                    f"{filename} line {line_number} ({row.get('name')}): "
+                    f"{column} is not a number: {text!r}"
+                ) from exc
+        parsed.append(converted)
+    return parsed
 
 
 def load_operating_limits(driver: Driver, data_dir: Path) -> None:
@@ -472,9 +516,17 @@ def load_operating_limits(driver: Driver, data_dir: Path) -> None:
     each row was transcribed from.  It is deliberately not written to the graph:
     these nodes must keep the exact property set ``build_extraction_schema``
     declares, so the two paths produce the same shape.
+
+    ``minValue`` and ``maxValue`` are written as floats, not as the text the CSV
+    holds, so that a limit comparison against ``Reading.value`` evaluates. See
+    :func:`_parse_operating_limit_bounds`.
+
+    Raises ``ValueError`` if a bound in the CSV is neither blank nor a number.
     """
     print("Loading OperatingLimit nodes...")
-    records = read_csv(data_dir, "nodes_operating_limits.csv")
+    records = _parse_operating_limit_bounds(
+        read_csv(data_dir, _OPERATING_LIMIT_FILE), _OPERATING_LIMIT_FILE
+    )
     _run_in_batches(driver, records, _OPERATING_LIMIT_QUERY)
     print(f"  [OK] Loaded {len(records)} OperatingLimit nodes.")
 
