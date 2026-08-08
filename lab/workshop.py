@@ -228,11 +228,22 @@ WORKSPACE_IMPORT_PATH = "/api/2.0/workspace/import"
 WORKSPACE_MKDIRS_PATH = "/api/2.0/workspace/mkdirs"
 FILES_PATH = "/api/2.0/fs/files"
 
-# The groups a participant might be in. ``account users`` is the account-level
-# group Vocareum's users land in; ``users`` is the workspace one. Which of the
-# two exists in a given workspace is not something this program should have an
-# opinion about, so the non-fatal grants try both.
-PARTICIPANT_GROUPS = ("users", "account users")
+# Two group names for two APIs, and they are not interchangeable. ``account
+# users`` is the account-level group every Vocareum user lands in; ``users`` is
+# the workspace-local one.
+#
+# Unity Catalog resolves account-level groups, so every GRANT statement below
+# goes to ``account users`` and all of them succeeded, measured 2026-08-08 in
+# workspace 7474646059936391: 11 infrastructure grants and 26 Genie grants, with
+# the required ones fatal, so a failure could not have gone unnoticed.
+#
+# The workspace permissions API does not resolve them. The same run answered
+# ``HTTP 404 RESOURCE_DOES_NOT_EXIST: Principal: GroupName(account users) does
+# not exist`` and fell through to ``users``, which took the grant. Trying both
+# was the earlier hedge against not knowing which one existed. Now it is known,
+# and the hedge only buys a refusal in every transcript from here on, so this
+# list names the one the API accepts.
+PARTICIPANT_GROUPS = ("users",)
 GRANTEE = "`account users`"
 
 

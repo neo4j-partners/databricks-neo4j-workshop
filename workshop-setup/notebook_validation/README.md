@@ -1,6 +1,8 @@
 # notebook_validation
 
-Automated test suite for verifying the Aircraft Digital Twin workshop labs on a Databricks cluster. Replaces `verify_labs` with cluster-native validation that exercises the same code paths participants use.
+Automated test suite for verifying the Aircraft Digital Twin workshop labs on a Databricks cluster. It uploads the lab code and submits it as jobs, so it exercises the same code paths participants use rather than replaying queries beside them. Lab 2 and Lab 3 are covered, and Lab 3 is covered here and nowhere else.
+
+It replaced `lab_setup/verify_labs/`, which was deleted in the restructure that produced `workshop-setup/`. **It does not replace `workshop-setup/verify/`,** which is a different tool with different coverage: `verify/` replays Cypher from a laptop against a loaded Aura instance, over Lab 2, the exploration set and the GDS appendix. Both are current. `workshop-setup/README.md` lists the two side by side.
 
 ## Prerequisites
 
