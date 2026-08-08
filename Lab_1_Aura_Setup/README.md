@@ -8,14 +8,14 @@ In this lab, you will set up your Neo4j Aura database and save your connection c
 
 ## Part 1: Neo4j Aura Signup
 
-Sign up for a Neo4j Aura free trial:
+Sign up for Neo4j Aura and create a free instance:
 
-- Follow the [Neo4j Aura Free Trial Signup](Aura_Free_Trial.md) guide to create your own account
-- This provides a 14-day free trial with an automatically created instance
+- Follow the [Neo4j AuraDB Free Signup](Aura_Free_Trial.md) guide to create your own account
+- This gives you an AuraDB Free instance, which does not expire and needs no credit card. Do not take the 14-day free trial the console offers first. That provisions AuraDB Professional, which expires partway through this course
 
 ### Save Your Credentials
 
-When your instance is created during signup, a dialog appears showing your database credentials (Username and Password). Click **Download to continue** to save the credentials file. If you followed the signup guide above, you have already done this.
+When your instance is created, a dialog appears showing your database credentials. It shows a username and a password. Click **Download to continue** to save the credentials file. If you followed the signup guide above, you have already done this.
 
 > **CRITICAL:** The password is only shown once and will not be available after you close this dialog. Download the credentials file and store it somewhere safe. You will need these credentials in later labs to connect your applications to Neo4j.
 

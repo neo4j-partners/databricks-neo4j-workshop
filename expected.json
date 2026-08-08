@@ -3,7 +3,9 @@
     "databricks-neo4j-workshop"
   ],
   "schemas": [
-    "databricks-neo4j-workshop.aircraft"
+    "databricks-neo4j-workshop.aircraft",
+    "databricks-neo4j-workshop.aircraft_pipeline",
+    "databricks-neo4j-workshop.agents"
   ],
   "volumes": [
     "databricks-neo4j-workshop.aircraft.raw_data"

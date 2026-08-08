@@ -32,7 +32,10 @@ ENRICHMENT_LABELS = [
     "MaintenanceProcedure",
     "OperatingLimit",
 ]
-RELATIONSHIP_TYPES = [
+# The types `load_relationships` writes from CSV, one per entry in
+# `_REL_DEFINITIONS`. Every one of them must exist on every load path, so these
+# are the types verify warns about when their count is zero.
+OPERATIONAL_RELATIONSHIP_TYPES = [
     "HAS_SYSTEM",
     "HAS_COMPONENT",
     "HAS_SENSOR",
@@ -46,13 +49,27 @@ RELATIONSHIP_TYPES = [
     "AFFECTS_AIRCRAFT",
     "HAS_REMOVAL",
     "REMOVED_COMPONENT",
+]
+# The types the enrichment phase writes: the lexical graph from chunking,
+# the cross-links from `link_to_existing_graph`, and the entity relationships
+# `build_extraction_schema` declares. A graph loaded with `load-operational`
+# alone has none of them, and a `--skip-extraction` run has only the lexical
+# graph and the cross-links, so a zero count here is not an error. They are
+# listed to give each one a line in the breakdown even when it is absent.
+ENRICHMENT_RELATIONSHIP_TYPES = [
     "FROM_DOCUMENT",
+    "NEXT_CHUNK",
+    "FROM_CHUNK",
     "APPLIES_TO",
     "DESCRIBES_MODEL",
     "DESCRIBES_SYSTEM",
     "DESCRIBES_COMPONENT",
     "HAS_LIMIT",
+    "HAS_FAULT",
+    "HAS_PROCEDURE",
+    "CORRECTED_BY",
 ]
+RELATIONSHIP_TYPES = OPERATIONAL_RELATIONSHIP_TYPES + ENRICHMENT_RELATIONSHIP_TYPES
 # Labels only LLM entity extraction writes. A run with --skip-extraction leaves
 # them empty on purpose, along with their constraints and their cross-links.
 # OperatingLimit is not one of them: it loads from nodes_operating_limits.csv on
@@ -594,10 +611,15 @@ def verify(
     enrichment_counts = {
         label: label_counts.get(label, 0) for label in ENRICHMENT_LABELS
     }
+    # Start from the declared types so each keeps a line at zero, then fold in
+    # everything the graph actually holds. The second step is what makes the
+    # printed total a total: a type no one declared gets its own line rather
+    # than going missing from a sum labelled "Total".
     rel_counts = {
         rel_type: relationship_counts.get(rel_type, 0)
         for rel_type in RELATIONSHIP_TYPES
     }
+    rel_counts.update(relationship_counts)
 
     print()
     print("=" * 60)
@@ -623,7 +645,7 @@ def verify(
             strict=strict,
         )
 
-    for rel_type in RELATIONSHIP_TYPES[:13]:
+    for rel_type in OPERATIONAL_RELATIONSHIP_TYPES:
         _warn_or_fail(
             failures,
             warnings,

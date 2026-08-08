@@ -72,10 +72,12 @@ class AircraftNode:
     systems: list[SystemNode] = field(default_factory=list)
 
 
+# Unit strings match the maintenance manual limit tables so Sensor.unit and
+# OperatingLimit.unit are the same string for the same physical quantity.
 _SENSOR_TYPES: list[tuple[str, str, str]] = [
-    ("EGT",      "Exhaust Gas Temperature", "C"),
+    ("EGT",      "Exhaust Gas Temperature", "°C"),
     ("Vibration","Engine Vibration",         "ips"),
-    ("N1Speed",  "Fan Speed N1",             "rpm"),
+    ("N1Speed",  "Fan Speed N1",             "% RPM"),
     ("FuelFlow", "Fuel Flow",                "kg/s"),
 ]
 

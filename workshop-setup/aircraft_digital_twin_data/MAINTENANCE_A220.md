@@ -143,7 +143,7 @@ Each PW1500G engine is equipped with four primary monitoring sensors:
 |-------------|-----------|------|----------|
 | EGT | Exhaust Gas Temperature | °C | Turbine exhaust section |
 | Vibration | Engine Vibration | ips (inches/sec) | Fan frame, turbine frame |
-| N1Speed | Fan Speed N1 | rpm | Fan shaft (gearbox output) |
+| N1Speed | Fan Speed N1 | % RPM | Fan shaft (gearbox output) |
 | FuelFlow | Fuel Flow | kg/s | Fuel metering valve |
 
 **Sensor Sampling Rate:** Continuous (1 Hz during flight, recorded hourly for trend analysis)

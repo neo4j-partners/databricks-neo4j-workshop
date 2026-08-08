@@ -18,12 +18,29 @@ class EngineSpec:
     vib_degradation_range: tuple[float, float]  # ips/hour
     vib_warning: float
     vib_critical: float
-    n1_baseline: float
-    n1_noise_std: float
+    # Fan shaft speed that reads 100% N1 for this engine. N1Speed is reported as
+    # a percentage of it, so the reference is what makes the "% RPM" unit on both
+    # Sensor and OperatingLimit mean the same thing.
+    n1_reference_rpm: float
+    n1_baseline_rpm: float
+    n1_noise_std_rpm: float
     fuel_baseline: float
     fuel_noise_std: float
 
 
+# N1Speed calibration. Each engine's baseline sits at the normal operating rating
+# its maintenance manual gives in section 3.3 or 3.4, Max Continuous where the
+# manual has that column and top of cruise for the A320. The noise spread is one
+# third of the gap up to the manual's Takeoff figure, which is the value the
+# matching OperatingLimit row carries as maxValue. Normal running therefore stays
+# inside the band and only a three-sigma excursion crosses the limit.
+#
+#   model      ref rpm  baseline %  takeoff limit %  noise %
+#   B737-800     5175       95            104         3.000
+#   A320-200     5000       92            104         4.000
+#   A321neo      3900       92             97         1.667
+#   E190         7400       96            100         1.333
+#   A220-300     2800       92            100         2.667
 ENGINE_SPECS: dict[str, EngineSpec] = {
     "B737-800": EngineSpec(
         engine_type="CFM56-7B",
@@ -33,7 +50,8 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
         vib_baseline=0.180, vib_noise_std=0.010,
         vib_degradation_range=(0.00004, 0.00018),
         vib_warning=0.38, vib_critical=0.45,
-        n1_baseline=4750.0, n1_noise_std=45.0,
+        n1_reference_rpm=5175.0,
+        n1_baseline_rpm=4916.25, n1_noise_std_rpm=155.25,
         fuel_baseline=1.08, fuel_noise_std=0.025,
     ),
     "A320-200": EngineSpec(
@@ -44,7 +62,8 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
         vib_baseline=0.150, vib_noise_std=0.008,
         vib_degradation_range=(0.00003, 0.00015),
         vib_warning=0.33, vib_critical=0.40,
-        n1_baseline=4820.0, n1_noise_std=50.0,
+        n1_reference_rpm=5000.0,
+        n1_baseline_rpm=4600.0, n1_noise_std_rpm=200.0,
         fuel_baseline=0.92, fuel_noise_std=0.020,
     ),
     "A321neo": EngineSpec(
@@ -55,7 +74,8 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
         vib_baseline=0.120, vib_noise_std=0.007,
         vib_degradation_range=(0.00002, 0.00012),
         vib_warning=0.29, vib_critical=0.35,
-        n1_baseline=5100.0, n1_noise_std=55.0,
+        n1_reference_rpm=3900.0,
+        n1_baseline_rpm=3588.0, n1_noise_std_rpm=65.0,
         fuel_baseline=1.35, fuel_noise_std=0.030,
     ),
     "E190": EngineSpec(
@@ -66,11 +86,14 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
         vib_baseline=0.140, vib_noise_std=0.009,
         vib_degradation_range=(0.00003, 0.00016),
         vib_warning=0.34, vib_critical=0.41,
-        n1_baseline=4680.0, n1_noise_std=42.0,
+        n1_reference_rpm=7400.0,
+        n1_baseline_rpm=7104.0, n1_noise_std_rpm=98.67,
         fuel_baseline=0.88, fuel_noise_std=0.018,
     ),
-    # PW1500G geared turbofan: fan runs ~30% slower than conventional engines due to
-    # epicyclic gearbox, so n1_baseline is ~2600 RPM vs ~4700+ for CFM/LEAP types.
+    # PW1500G geared turbofan: the epicyclic gearbox lets the fan turn far slower
+    # than a direct-drive fan, so its 100% reference is ~2800 rpm against 3900 to
+    # 7400 for the others. The percentages still land in the same band, which is
+    # the point of reporting N1 as a percentage.
     "A220-300": EngineSpec(
         engine_type="PW1500G",
         egt_baseline=625.0, egt_noise_std=2.5,
@@ -79,7 +102,8 @@ ENGINE_SPECS: dict[str, EngineSpec] = {
         vib_baseline=0.110, vib_noise_std=0.006,
         vib_degradation_range=(0.00002, 0.00010),
         vib_warning=0.25, vib_critical=0.30,
-        n1_baseline=2600.0, n1_noise_std=30.0,
+        n1_reference_rpm=2800.0,
+        n1_baseline_rpm=2576.0, n1_noise_std_rpm=74.67,
         fuel_baseline=1.05, fuel_noise_std=0.022,
     ),
 }

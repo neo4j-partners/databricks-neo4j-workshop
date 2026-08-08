@@ -86,7 +86,14 @@ def generate_engine_readings(
             values = base + noise
             values = _add_spikes(values, spec.vib_warning, profile.anomaly_rate, rng)
         elif sensor.type == "N1Speed":
-            values = rng.normal(spec.n1_baseline, spec.n1_noise_std, config.n_hours)
+            # Draw fan speed in rpm, then report it as a percentage of the
+            # engine's 100% reference. Sensor.unit and OperatingLimit.unit are
+            # both "% RPM", so the series has to be a percentage to be
+            # comparable against the manual's limits.
+            rpm = rng.normal(
+                spec.n1_baseline_rpm, spec.n1_noise_std_rpm, config.n_hours
+            )
+            values = rpm / spec.n1_reference_rpm * 100.0
         else:  # FuelFlow
             values = rng.normal(spec.fuel_baseline, spec.fuel_noise_std, config.n_hours)
 

@@ -167,10 +167,10 @@ DATA AVAILABLE:
 - aircraft: Fleet metadata (model, operator)
 
 SENSOR TYPES:
-- EGT: Exhaust Gas Temperature (640-700 C)
-- Vibration: Engine vibration (0.05-0.50 ips)
-- N1Speed: Fan speed (4,300-5,200 rpm)
-- FuelFlow: Fuel consumption (0.85-1.95 kg/s)
+- EGT: Exhaust Gas Temperature (640-700, unit column value °C)
+- Vibration: Engine vibration (0.05-0.50, unit column value ips)
+- N1Speed: Fan speed (85-100, unit column value % RPM)
+- FuelFlow: Fuel consumption (0.85-1.95, unit column value kg/s)
 
 DO NOT USE FOR:
 - Relationship queries (use mcp-neo4j-agentcore-mcp)

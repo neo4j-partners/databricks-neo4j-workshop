@@ -95,10 +95,10 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 # Aircraft Sensor Analytics Domain Knowledge
 
 ## Sensor Types and Normal Ranges
-- EGT (Exhaust Gas Temperature): Normal range 640-700 degrees Celsius, measured in C
-- Vibration: Normal range 0.05-0.50 inches per second, measured in ips
-- N1Speed (Fan Speed N1): Normal range 4,300-5,200 RPM, measured in rpm
-- FuelFlow: Normal range 0.85-1.95 kg/s, measured in kg/s
+- EGT (Exhaust Gas Temperature): Normal range 640-700 degrees Celsius, unit column value °C
+- Vibration: Normal range 0.05-0.50 inches per second, unit column value ips
+- N1Speed (Fan Speed N1): Normal range 85-100, unit column value % RPM
+- FuelFlow: Normal range 0.85-1.95 kg/s, unit column value kg/s
 
 ## Fleet Information
 - Operators: ExampleAir, SkyWays, RegionalCo, NorthernJet
@@ -130,7 +130,7 @@ Navigate to **Configure** > **Instructions**. Instructions provide domain knowle
 - When asked about "Engine 2", filter by systems where name contains "#2"
 - Use tail_number for human-readable aircraft references (e.g., N10000)
 - Use aircraft_id for internal references (e.g., AC1001)
-- Always include units in results (C, ips, rpm, kg/s)
+- Always include units in results (°C, ips, % RPM, kg/s)
 ```
 
 ---
@@ -251,7 +251,7 @@ Show all EGT readings above 690 degrees Celsius
 ```
 
 ```
-Which engines have N1 speed readings outside the normal range of 4500-5000 rpm?
+Which engines have N1 speed readings outside the normal range of 85-100% RPM?
 ```
 
 **Trend Analysis**

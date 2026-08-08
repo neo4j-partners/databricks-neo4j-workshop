@@ -130,9 +130,9 @@ to detect.
 
 | Sensor type | Unit | Description | Typical range |
 |-------------|------|-------------|---------------|
-| EGT | °C | Exhaust gas temperature | 600-750 |
+| EGT | °C | Exhaust gas temperature | 615-735 |
 | Vibration | ips | Engine vibration | 0.1-2.0 |
-| N1Speed | RPM | Engine fan speed | 2000-3500 |
+| N1Speed | % RPM | Engine fan speed | 75-107 |
 | FuelFlow | kg/s | Fuel consumption rate | 0.5-2.0 |
 
 ### Maintenance manuals, Lab 3

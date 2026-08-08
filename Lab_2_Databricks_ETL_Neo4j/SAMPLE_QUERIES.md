@@ -219,7 +219,7 @@ ORDER BY Model
 
 > **Concepts**: `collect(DISTINCT ...)[0]` picks one engine name from the list — useful for surfacing a representative value without returning a full array.
 >
-> **Note — A220-300 N1Speed:** If your dataset includes A220-300 aircraft, their N1Speed sensor readings will cluster around **~2,600 RPM** while every other model sits between **4,600–5,100 RPM**. This is correct, not a data error. The A220-300's PW1500G engine uses an epicyclic reduction gearbox that decouples the fan from the low-pressure compressor shaft, allowing the fan to spin roughly 30% slower than a conventional turbofan of similar thrust. Any cross-fleet N1 analysis or kNN clustering query will naturally separate A220-300 aircraft into their own group based solely on this speed differential.
+> **Note on N1Speed units:** N1Speed readings are a percentage of each engine's own 100% fan speed, which is why `Sensor.unit` and `OperatingLimit.unit` are both `% RPM`. Every model therefore reads in the same **85 to 100** band even though the physical shaft speeds behind those percentages differ widely. The A220-300's PW1500G drives its fan through an epicyclic reduction gearbox at roughly 2,800 rpm at 100% N1, against 3,900 to 7,400 rpm for the direct-drive fans on the other models. Reporting N1 as a percentage is what makes a cross-fleet comparison, or a comparison against the maintenance manuals' limits, meaningful.
 
 ---
 
