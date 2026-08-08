@@ -248,7 +248,6 @@ browse run alongside a live update sees them absent.
 | `notebook_validation/` | Upload-and-submit harness that runs the lab notebooks as Databricks jobs. Development tooling. |
 | `docs/` | Reference material. `MANUAL_SETUP.md` is the file inventory and expected counts. `EXAMPLE_QUERIES.md` is the Aura Agent question set. |
 | `MCP-MANUAL-SETUP.md` | The one Databricks-side procedure still done by hand. |
-| `workshop_setup.ipynb`, `cluster_setup.py`, `docs/vocareum.md` | Superseded, and deletion is proposed for all three. Each says so at the top. Do not run the notebook: its Step 4 replaces four of the eight gold tables with narrower ones read straight off the CSVs, and `CREATE OR REPLACE TABLE` does that without an error to notice. |
 
 ---
 

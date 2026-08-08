@@ -101,6 +101,22 @@ else
     voc_log "this course names no SQL warehouse, so none was created"
 fi
 
+# The warehouse this course did not ask for. Databricks creates a starter
+# warehouse with every workspace, and Vocareum creates a workspace per part, so a
+# size corrected by hand in the console lasts exactly one class. Measured
+# 2026-08-08 in workspace 7474646059936391 it was Small, four times the 2X-Small
+# shared_warehouse above, carrying a users CAN_USE grant, which is every student.
+# A student who opens the SQL editor and takes the default gets the expensive one.
+#
+# Run unconditionally, unlike the block above, because this object exists whether
+# or not the course looked at it. VOC_COURSE_STARTER_WAREHOUSE_SIZE naming no
+# size is what declines it, and voclab.py answers that with skipped.
+if ! voc_voclab starter-warehouse; then
+    voc_fail "${voclab_error_code:-STARTER_WAREHOUSE_FAILED}" \
+        "${voclab_message:-voclab.py starter-warehouse failed without naming a reason.}"
+fi
+voc_log "starter warehouse: ${voclab_starter_warehouse_action}, ${voclab_starter_warehouse_size}"
+
 # This course's own objects: the catalog, the four schemas, the volume, the 27
 # courseware files, the DLT pipeline, and the comments and grants Lab 4's Genie
 # space reads. All of it shared by every student in this workspace, which is why
@@ -123,7 +139,7 @@ voc_log "catalog ${workshop_catalog}, ${workshop_data_files_uploaded} files uplo
 voc_log "pipeline ${workshop_pipeline_id}: ${workshop_pipeline_action}, ${workshop_pipeline_state}"
 
 voc_custom_write "$(
-    printf '%s, %s, %s, %s, %s, %s, %s, %s, %s, %s' \
+    printf '%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s' \
         "$(voc_custom_field ran_at "$(date -u '+%Y-%m-%dT%H:%M:%SZ')")" \
         "$(voc_custom_field script "$VOC_SCRIPT_NAME")" \
         "$(voc_custom_field workspace_id "${workspace_id:-unknown}")" \
@@ -131,6 +147,7 @@ voc_custom_write "$(
         "$(voc_custom_field credentials_found "${credential:-none}")" \
         "$(voc_custom_field warehouse_name "${warehouse_name:-none}")" \
         "$(voc_custom_field warehouse_action "$warehouse_action")" \
+        "$(voc_custom_field starter_warehouse_action "${voclab_starter_warehouse_action}")" \
         "$(voc_custom_field catalog "$workshop_catalog")" \
         "$(voc_custom_field data_files_uploaded "$workshop_data_files_uploaded")" \
         "$(voc_custom_field pipeline_state "$workshop_pipeline_state")"

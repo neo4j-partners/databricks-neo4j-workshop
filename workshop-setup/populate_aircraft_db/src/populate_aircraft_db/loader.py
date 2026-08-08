@@ -450,6 +450,11 @@ def load_operating_limits(driver: Driver, data_dir: Path) -> None:
     entities on, so a run that also extracts updates these nodes instead of
     duplicating them.  Call this before :func:`pipeline.link_to_existing_graph`,
     which creates the ``Sensor -[:HAS_LIMIT]-> OperatingLimit`` cross-links.
+
+    The CSV carries a ``sourceRef`` column naming the manual, section, and line
+    each row was transcribed from.  It is deliberately not written to the graph:
+    these nodes must keep the exact property set ``build_extraction_schema``
+    declares, so the two paths produce the same shape.
     """
     print("Loading OperatingLimit nodes...")
     records = read_csv(data_dir, "nodes_operating_limits.csv")

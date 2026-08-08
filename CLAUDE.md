@@ -49,13 +49,16 @@ uv run python workshop-setup/auto_scripts/sync_notebooks.py   # lab notebooks ->
 uv run python workshop-setup/auto_scripts/teardown.py --yes   # delete the catalog and all of it
 ```
 
-### verify_labs (Neo4j verification CLI)
+### verify (Neo4j verification CLIs)
+One package, `verify-gds`, exposing three commands. Each connects to Aura and
+replays a lab's queries against the graph.
 ```bash
-cd workshop-setup/verify_labs
+cd workshop-setup/verify
 uv sync
-uv run verify-labs check                   # Connectivity test
-uv run verify-labs lab2                    # All Lab 2 verification queries
-uv run verify-labs lab2 --notebook 01      # Notebook 1 only
+uv run verify-lab2                         # Lab 2 verification queries
+uv run verify-data-exploring               # Data exploration queries
+uv run verify-gds                          # GDS queries
+uv run verify-gds --skip-nb04              # Skip feature computation
 ```
 
 ## Architecture
@@ -64,7 +67,7 @@ uv run verify-labs lab2 --notebook 01      # Notebook 1 only
 Each under `workshop-setup/` is a standalone Python package with its own `pyproject.toml`, `.env`, and Typer CLI:
 
 - **`populate_aircraft_db/`** — Loads aircraft CSV data into Neo4j Aura, runs GraphRAG enrichment (doc chunking, embeddings via BGE-large, entity extraction via SimpleKGPipeline)
-- **`verify_labs/`** — Verifies Neo4j data loaded correctly in Lab 2
+- **`verify/`**: Verifies Neo4j data loaded correctly. Distributed as `verify-gds`, with one command per lab: `verify-lab2`, `verify-data-exploring`, `verify-gds`
 
 `workshop-setup/auto_scripts/` is not one of them. It is two plain scripts with no
 package and no dependencies of its own, run from the repository root's
