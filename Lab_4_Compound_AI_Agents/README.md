@@ -1,12 +1,12 @@
 # Lab 4 - Compound AI Agents for Aircraft Analytics
 
-In this lab, you'll build a compound AI agent system using Databricks Agent Bricks that combines a **Genie space** for sensor time-series analytics with **Neo4j MCP** for graph relationship queries. The Supervisor Agent routes each question to the right system and, for complex questions spanning both, queries each sequentially and synthesizes a combined answer.
+Lab 4 combines a **Genie space** for sensor time-series analytics with **Neo4j MCP** for graph relationship queries. A Supervisor Agent routes each question to the right system and, for complex questions spanning both, queries each sequentially and synthesizes a combined answer.
 
-> **Part A is required. Part B is optional and advanced.**
+> **Part A is yours to build. Part B is an instructor demo.**
 >
-> **Part A** builds the Genie space over shared Lakehouse tables in Unity Catalog. Lab 5 uses that Genie space as one of its three tools, so Part A is on the required path.
+> **Part A** builds the Genie space over shared Lakehouse tables in Unity Catalog. Lab 5 uses that Genie space as one of its three tools, so Part A is on the participant path.
 >
-> **Part B** builds the no-code supervisor. Its Neo4j MCP agent queries the shared **Reference Aura Instance**, an administrator-managed graph that is always fully populated, rather than the Aura instance you loaded in Lab 2. You do not need data in your personal Aura instance for Part B, and you do not need Part B for Lab 5 or Lab 6.
+> **Part B** is the no-code supervisor, demonstrated by the instructor from the front of the room. It runs against the instructor's demo Aura instance and the instructor's MCP connection. You need no Aura instance, no MCP connection, and no OAuth credential to watch it. After Part A, continue to Lab 5.
 
 ## Multi-Agent Architecture
 
@@ -14,36 +14,39 @@ In this lab, you'll build a compound AI agent system using Databricks Agent Bric
 
 ## Prerequisites
 
-Before starting, make sure you have:
+For Part A, make sure you have:
 - Running in a **Databricks workspace** with Agent Bricks access
-- Neo4j MCP server connection configured in Unity Catalog
 
-**Recommended:** Complete **Lab 2** before starting this lab. Lab 4 runs against shared workshop infrastructure rather than your personal Aura instance, but Lab 2 gives you familiarity with the data model the agents here query: the aircraft topology, sensor relationships, flights, and maintenance events. Labs 5 and 6 do require your own loaded instance.
+Part B needs nothing from you. The instructor supplies the demo workspace, the MCP connection, and the graph behind it.
+
+**Recommended:** Complete **Lab 2** before starting this lab. Part A runs against shared Lakehouse tables rather than your personal Aura instance, but Lab 2 gives you familiarity with the data model: the aircraft topology, sensor relationships, flights, and maintenance events. Labs 5 and 6 do require your own loaded instance.
 
 ## Lab Overview
 
-This lab is documentation-driven and focuses on **configuration over code**. You'll use the Databricks UI to create intelligent agents that automatically route questions to the right data source.
+This lab is documentation-driven and focuses on **configuration over code**. You use the Databricks UI to create an agent that turns questions into SQL over the Lakehouse.
 
-### Part A: Genie space for Sensor Analytics (~30 min)
+### Part A: Genie space for Sensor Analytics (~30 min, you build it)
 
 Create an AI/BI Genie space that enables natural language queries over sensor telemetry:
 - Connect data sources: `sensor_readings`, `sensors`, `systems`, `aircraft`
-- Add sample questions and domain-specific instructions (sensor types, normal ranges, fleet info)
+- Add sample questions and domain-specific instructions covering sensor types, normal ranges, and fleet info
 - Test natural language to SQL queries for time-series aggregations and anomaly detection
 
-### Part B: Supervisor Agent (~45 min, optional)
+### Part B: Supervisor Agent (instructor demo, watch only)
 
-Build a supervisor agent that coordinates two specialized sub-agents. This runs against the Reference Aura Instance, not your own:
-- Add the **Neo4j MCP subagent** for graph relationship queries (topology, maintenance, flights)
-- Add the **Genie space subagent** for time-series sensor analytics (readings, trends, fleet comparisons)
-- Configure routing rules so the Supervisor Agent directs questions to the right subagent
-- Test single-agent routing and combined multi-agent queries
-- Deploy as a serving endpoint for programmatic access
+The instructor demonstrates a supervisor agent that coordinates two specialized sub-agents, running against the instructor's demo instance:
+- The **Neo4j MCP subagent** for graph relationship queries covering topology, maintenance, and flights
+- The **Genie space subagent** for time-series sensor analytics covering readings, trends, and fleet comparisons
+- Routing rules that send each question to the right subagent
+- Single-agent routing and combined multi-agent queries
+- Deployment as a serving endpoint for programmatic access
+
+The demo makes one point: the same routing architecture as Lab 5, built with no code and with centrally governed access to Neo4j through Unity Catalog.
 
 ## Getting Started
 
-1. **[Part A](PART_A.md)** (~30 min, required): Create and configure the Genie space for sensor analytics
-2. **[Part B](PART_B.md)** (~45 min, optional): Build the no-code Supervisor Agent with Neo4j MCP integration
+1. **[Part A](PART_A.md)** (~30 min): Create and configure the Genie space for sensor analytics
+2. **[Part B](PART_B.md)**: Follow along while the instructor builds the no-code Supervisor Agent over Neo4j MCP
 
 After Part A, continue to **[Lab 5](../Lab_5_LangGraph_Agent)**, which routes across this Genie space, Cypher over your own Aura instance, and the GraphRAG retrievers you built in Lab 3.
 
@@ -53,7 +56,7 @@ After Part A, continue to **[Lab 5](../Lab_5_LangGraph_Agent)**, which routes ac
 |------|-------------|
 | `README.md` | This overview document |
 | `PART_A.md` | Genie space configuration guide |
-| `PART_B.md` | Supervisor Agent setup guide |
+| `PART_B.md` | Supervisor Agent instructor demo, including the build procedure |
 
 ## Next Steps
 

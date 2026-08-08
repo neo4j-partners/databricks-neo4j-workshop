@@ -1,7 +1,8 @@
 # Admin scripts
 
-Three programs, for the case where this workshop runs in a Databricks workspace
-an instructor provisioned by hand rather than one Vocareum created.
+Two programs, for the case where this workshop runs in a Databricks workspace an
+instructor provisioned by hand rather than one Vocareum created. They are the two
+jobs `lab/workshop.py` and `voclab.py` do not cover.
 
 They define nothing. Every catalog, schema, volume, table and pipeline name they
 touch is read from `lab/workshop.py`, which is this course's one definition of
@@ -11,8 +12,7 @@ its Databricks objects.
 | --- | --- |
 | `sync_notebooks.py` | Publishes the lab notebooks into `/Shared/databricks-neo4j-workshop` so participants can browse and clone them. |
 | `teardown.py` | Deletes the catalog, its schemas, the volume, the `Fleet Digital Twin ETL` pipeline and the shared notebook tree. |
-| `build_data_zip.py` | Rebuilds `vocareum/courseware/aircraft_digital_twin_data.zip` from the source directory, for a hand-download of the workshop data. |
-| `workshop_module.py` | Not a command. The seam that puts `lab/workshop.py` on the import path for the three above. |
+| `workshop_module.py` | Not a command. The seam that puts `lab/workshop.py` on the import path for the two above. |
 
 ## Running them
 
@@ -27,35 +27,6 @@ uv run python workshop-setup/auto_scripts/sync_notebooks.py
 uv run python workshop-setup/auto_scripts/teardown.py           # prompts
 uv run python workshop-setup/auto_scripts/teardown.py --yes     # does not
 ```
-
-`build_data_zip.py` needs neither of those variables. It talks to no workspace;
-it reads and writes files only.
-
-```bash
-uv run python workshop-setup/auto_scripts/build_data_zip.py
-```
-
-## The data zip
-
-`build_data_zip.py` is here rather than under `vocareum/` because it obeys the
-same two rules the scripts beside it do: standard library only against Python
-3.9, and no file list of its own. The source directory name and the archive's
-internal prefix are both `Path(workshop.DATA_DIR).name`, and the file set is
-`workshop.data_files`, the same call `provision_data` makes when it uploads the
-volume. So the zip holds exactly what the volume holds, and a glob that matches
-nothing raises `MISSING_COURSEWARE` here for the same reason it does there.
-
-It reaches the source through `lab/courseware/aircraft_digital_twin_data`, the
-symlink `dbx-vocareum-upload` follows, rather than around it, so this script and
-the upload cannot disagree about which directory is the source of truth.
-
-Nothing in this repository reads the zip. The volume gets its files from the
-hash-verified archive, one file at a time, and never from this. That is why the
-zip could go stale without anything failing, and it had: it was missing
-`nodes_operating_limits.csv` entirely and carried pre-recalibration
-`nodes_readings.csv`, `nodes_sensors.csv` and five maintenance manuals. The build
-is deterministic, entries sorted and timestamps fixed, so a rerun on an unchanged
-source produces identical bytes and `git status` after a run is the drift report.
 
 Both accept `--host` and `--token` instead of the environment variables. There
 is no `.databrickscfg` profile support: the credential resolves in one place,
@@ -94,6 +65,15 @@ The two that survived are the two nothing else covers. `voclab.py`'s
 `/Users/<email>`, imports the one notebook `VOC_COURSE_NOTEBOOKS` names, and
 skips a file that is already there so a student's edits survive a `stop`. This
 targets `/Shared`, imports the whole lab set, and overwrites.
+
+A third script, `build_data_zip.py`, was deleted on 2026-08-08 along with the
+`vocareum/courseware/` directory it wrote into. It packed
+`workshop-setup/aircraft_digital_twin_data/` into a zip, and no lab, guide, hook
+or other script ever told anyone to fetch or unpack that zip. It had no consumer
+because it could not have one: the files it packed are tracked in this
+repository, so anyone setting up by hand has them from the clone, and the
+Vocareum path reads the directory through the `lab/courseware/` symlink and never
+sees an archive.
 
 Why one definition rather than two: the gold `systems` and `sensors` tables were
 once renamed to match the copy in this directory, and the symptom of the two

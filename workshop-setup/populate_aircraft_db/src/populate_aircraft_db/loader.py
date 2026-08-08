@@ -31,6 +31,7 @@ ENRICHMENT_LABELS = [
     "Fault",
     "MaintenanceProcedure",
     "OperatingLimit",
+    "ExtractedLimit",
 ]
 # The types `load_relationships` writes from CSV, one per entry in
 # `_REL_DEFINITIONS`. Every one of them must exist on every load path, so these
@@ -73,7 +74,8 @@ RELATIONSHIP_TYPES = OPERATIONAL_RELATIONSHIP_TYPES + ENRICHMENT_RELATIONSHIP_TY
 # Labels only LLM entity extraction writes. A run with --skip-extraction leaves
 # them empty on purpose, along with their constraints and their cross-links.
 # OperatingLimit is not one of them: it loads from nodes_operating_limits.csv on
-# every path, so it is verified on every path.
+# every path, so it is verified on every path. Limits the extractor reads out of
+# the manuals land on ExtractedLimit instead, which is one of them.
 EXTRACTION_LABELS = frozenset(
     {
         "AircraftModel",
@@ -81,6 +83,7 @@ EXTRACTION_LABELS = frozenset(
         "ComponentReference",
         "Fault",
         "MaintenanceProcedure",
+        "ExtractedLimit",
     }
 )
 EXTRACTION_CROSS_LINKS = frozenset(
@@ -105,12 +108,13 @@ REQUIRED_CONSTRAINTS = [
     ("MaintenanceEvent", "event_id"),
     ("Removal", "removal_id"),
     ("Document", "documentId"),
+    ("OperatingLimit", "limit_id"),
     ("AircraftModel", "name"),
     ("SystemReference", "name"),
     ("ComponentReference", "name"),
     ("Fault", "name"),
     ("MaintenanceProcedure", "name"),
-    ("OperatingLimit", "name"),
+    ("ExtractedLimit", "name"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -125,12 +129,14 @@ def read_csv(data_dir: Path, filename: str) -> list[dict[str, Any]]:
         return list(csv.DictReader(f))
 
 
-def _run_in_batches(driver: Driver, records: list[dict], query: str) -> None:
+def _run_in_batches(
+    driver: Driver, database: str, records: list[dict], query: str
+) -> None:
     """Execute a Cypher query over records in batches of BATCH_SIZE."""
     total = len(records)
     for i in range(0, total, BATCH_SIZE):
         batch = records[i : i + BATCH_SIZE]
-        driver.execute_query(query, batch=batch)
+        driver.execute_query(query, batch=batch, database_=database)
         progress = min(i + BATCH_SIZE, total)
         print(f"  Progress: {progress}/{total} ({100 * progress // total}%)", end="\r")
     print()
@@ -424,21 +430,21 @@ _REL_DEFINITIONS: list[tuple[str, str, str]] = [
 # ---------------------------------------------------------------------------
 
 
-def load_nodes(driver: Driver, data_dir: Path) -> None:
+def load_nodes(driver: Driver, database: str, data_dir: Path) -> None:
     """Load all 10 node types from CSV files."""
     for label, filename, query in _NODE_DEFINITIONS:
         print(f"Loading {label} nodes...")
         records = read_csv(data_dir, filename)
-        _run_in_batches(driver, records, query)
+        _run_in_batches(driver, database, records, query)
         print(f"  [OK] Loaded {len(records)} {label} nodes.")
 
 
-def load_relationships(driver: Driver, data_dir: Path) -> None:
+def load_relationships(driver: Driver, database: str, data_dir: Path) -> None:
     """Load all 13 relationship types from CSV files."""
     for rel_type, filename, query in _REL_DEFINITIONS:
         print(f"Loading {rel_type} relationships...")
         records = read_csv(data_dir, filename)
-        _run_in_batches(driver, records, query)
+        _run_in_batches(driver, database, records, query)
         print(f"  [OK] Loaded {len(records)} {rel_type} relationships.")
 
 
@@ -449,8 +455,8 @@ _OPERATING_LIMIT_BOUND_COLUMNS = ("minValue", "maxValue")
 
 _OPERATING_LIMIT_QUERY = """
 UNWIND $batch AS row
-MERGE (ol:OperatingLimit {name: row['name']})
-SET ol.limit_id = row[':ID(OperatingLimit)'],
+MERGE (ol:OperatingLimit {limit_id: row[':ID(OperatingLimit)']})
+SET ol.name = row['name'],
     ol.parameterName = row['parameterName'],
     ol.unit = row['unit'],
     ol.regime = row['regime'],
@@ -499,7 +505,7 @@ def _parse_operating_limit_bounds(
     return parsed
 
 
-def load_operating_limits(driver: Driver, data_dir: Path) -> None:
+def load_operating_limits(driver: Driver, database: str, data_dir: Path) -> None:
     """Load OperatingLimit nodes from CSV.
 
     These are the documented takeoff thresholds transcribed from the maintenance
@@ -507,15 +513,17 @@ def load_operating_limits(driver: Driver, data_dir: Path) -> None:
     too, so Lab 3 notebook 02's operating-limit retriever has something to
     traverse to without an LLM.
 
-    The merge key is ``name``, the same key SimpleKGPipeline resolves extracted
-    entities on, so a run that also extracts updates these nodes instead of
-    duplicating them.  Call this before :func:`pipeline.link_to_existing_graph`,
-    which creates the ``Sensor -[:HAS_LIMIT]-> OperatingLimit`` cross-links.
+    The merge key is ``limit_id``, the column the CSV uses to identify a row and
+    the property the OperatingLimit uniqueness constraint covers. This label
+    holds these 20 rows and nothing else. What the extractor reads out of the
+    manuals goes to ``ExtractedLimit``, so the two populations never meet and
+    merging on the CSV identifier is safe. Call this before
+    :func:`pipeline.link_to_existing_graph`, which creates the
+    ``Sensor -[:HAS_LIMIT]-> OperatingLimit`` cross-links.
 
     The CSV carries a ``sourceRef`` column naming the manual, section, and line
-    each row was transcribed from.  It is deliberately not written to the graph:
-    these nodes must keep the exact property set ``build_extraction_schema``
-    declares, so the two paths produce the same shape.
+    each row was transcribed from.  It is deliberately not written to the graph,
+    which keeps these nodes to the property set the labs query.
 
     ``minValue`` and ``maxValue`` are written as floats, not as the text the CSV
     holds, so that a limit comparison against ``Reading.value`` evaluates. See
@@ -527,17 +535,18 @@ def load_operating_limits(driver: Driver, data_dir: Path) -> None:
     records = _parse_operating_limit_bounds(
         read_csv(data_dir, _OPERATING_LIMIT_FILE), _OPERATING_LIMIT_FILE
     )
-    _run_in_batches(driver, records, _OPERATING_LIMIT_QUERY)
+    _run_in_batches(driver, database, records, _OPERATING_LIMIT_QUERY)
     print(f"  [OK] Loaded {len(records)} OperatingLimit nodes.")
 
 
-def clear_database(driver: Driver) -> None:
+def clear_database(driver: Driver, database: str) -> None:
     """Delete all nodes and relationships in batches."""
     print("Clearing database...")
     deleted_total = 0
     while True:
         records, _, _ = driver.execute_query(
-            "MATCH (n) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted"
+            "MATCH (n) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted",
+            database_=database,
         )
         count = records[0]["deleted"]
         deleted_total += count
@@ -548,23 +557,25 @@ def clear_database(driver: Driver) -> None:
     print(f"\n  [OK] Database cleared ({deleted_total} nodes deleted).")
 
 
-def _get_label_counts(driver: Driver) -> dict[str, int]:
+def _get_label_counts(driver: Driver, database: str) -> dict[str, int]:
     records, _, _ = driver.execute_query(
         """
         MATCH (n)
         UNWIND labels(n) AS label
         RETURN label, count(n) AS count
-        """
+        """,
+        database_=database,
     )
     return {record["label"]: record["count"] for record in records}
 
 
-def _get_relationship_counts(driver: Driver) -> dict[str, int]:
+def _get_relationship_counts(driver: Driver, database: str) -> dict[str, int]:
     records, _, _ = driver.execute_query(
         """
         MATCH ()-[r]->()
         RETURN type(r) AS rel_type, count(r) AS count
-        """
+        """,
+        database_=database,
     )
     return {record["rel_type"]: record["count"] for record in records}
 
@@ -606,6 +617,7 @@ def _warn_or_fail(
 
 def _verify_vector_search(
     driver: Driver,
+    database: str,
     *,
     has_chunk_embeddings: bool,
     has_vector_index: bool,
@@ -616,7 +628,8 @@ def _verify_vector_search(
         return False, "missing maintenanceChunkEmbeddings index"
 
     try:
-        records, _, _ = driver.execute_query("""
+        records, _, _ = driver.execute_query(
+            """
             MATCH (c:Chunk)
             WHERE c.embedding IS NOT NULL
             WITH c.embedding AS embedding
@@ -628,7 +641,9 @@ def _verify_vector_search(
             )
             YIELD node, score
             RETURN count(node) AS count, max(score) AS score
-        """)
+            """,
+            database_=database,
+        )
     except Neo4jError as exc:
         return False, str(exc)
 
@@ -641,6 +656,7 @@ def _verify_vector_search(
 
 def verify(
     driver: Driver,
+    database: str,
     *,
     expected_embedding_dimensions: int = 1024,
     strict: bool = False,
@@ -655,8 +671,8 @@ def verify(
     failures: list[str] = []
     warnings: list[str] = []
 
-    label_counts = _get_label_counts(driver)
-    relationship_counts = _get_relationship_counts(driver)
+    label_counts = _get_label_counts(driver, database)
+    relationship_counts = _get_relationship_counts(driver, database)
     operational_counts = {
         label: label_counts.get(label, 0) for label in OPERATIONAL_LABELS
     }
@@ -725,7 +741,8 @@ def verify(
                    count(c.embedding) AS with_embedding,
                    count(CASE WHEN c.embedding IS NULL THEN 1 END) AS missing_embedding,
                    collect(DISTINCT size(c.embedding)) AS dimensions
-            """
+            """,
+            database_=database,
         )
         embedding_row = embedding_records[0]
         bad_dim_records, _, _ = driver.execute_query(
@@ -736,6 +753,7 @@ def verify(
             RETURN count(c) AS count
             """,
             expected_dimensions=expected_embedding_dimensions,
+            database_=database,
         )
         bad_dimensions = bad_dim_records[0]["count"]
     else:
@@ -777,11 +795,14 @@ def verify(
         strict=strict,
     )
 
-    index_rows, _, _ = driver.execute_query("""
+    index_rows, _, _ = driver.execute_query(
+        """
         SHOW INDEXES
         YIELD name, type, state, labelsOrTypes, properties
         RETURN name, type, state, labelsOrTypes, properties
-    """)
+        """,
+        database_=database,
+    )
     index_by_name = {row["name"]: row for row in index_rows}
 
     print("\nRequired Indexes:")
@@ -806,11 +827,14 @@ def verify(
             strict=strict,
         )
 
-    constraint_rows, _, _ = driver.execute_query("""
+    constraint_rows, _, _ = driver.execute_query(
+        """
         SHOW CONSTRAINTS
         YIELD name, type, labelsOrTypes, properties
         RETURN name, type, labelsOrTypes, properties
-    """)
+        """,
+        database_=database,
+    )
     constraint_dicts = [dict(row) for row in constraint_rows]
 
     print("\nRequired Constraints:")
@@ -830,6 +854,7 @@ def verify(
 
     vector_ok, vector_detail = _verify_vector_search(
         driver,
+        database,
         has_chunk_embeddings=embedding_row["with_embedding"] > 0,
         has_vector_index="maintenanceChunkEmbeddings" in index_by_name,
     )
@@ -906,7 +931,7 @@ def verify(
         if required_labels.issubset(existing_labels) and required_relationships.issubset(
             existing_relationships
         ):
-            records, _, _ = driver.execute_query(query)
+            records, _, _ = driver.execute_query(query, database_=database)
             count = records[0]["count"]
         else:
             count = 0

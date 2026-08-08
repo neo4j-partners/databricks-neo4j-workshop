@@ -1,5 +1,10 @@
 # Neo4j MCP Connection for Databricks
 
+**Instructor preparation only. No participant runs any of this.** The connection
+described here lives in the instructor's demo workspace and backs the Lab 4
+Part B demo, which participants watch. Participants need no MCP connection, no
+OAuth credential, and no access to the graph behind it.
+
 Supporting material for connecting Databricks to the Neo4j MCP server via a
 Unity Catalog HTTP connection with OAuth2 M2M authentication.
 
@@ -23,7 +28,7 @@ once per account, out of band. **Step 0 of
 [`MCP-MANUAL-SETUP.md`](../MCP-MANUAL-SETUP.md)** has the statement and the
 principals it names. Do not put that grant back into `workshop.py`.
 
-Needed for Lab 4 Part B only, which is optional.
+Needed for the Lab 4 Part B instructor demo only.
 
 ## Setup
 

@@ -134,47 +134,50 @@ def upload_files() -> list[tuple[Path, str]]:
 def workspace_name(local_path: Path) -> str:
     """What one file is called in the workspace, extension included or not.
 
-    A ``.py`` keeps its suffix and everything else loses it. The suffix is the
-    whole reason the ``AUTO`` import in ``import_one`` produces a file that
-    ``import data_utils`` can find: a workspace file named ``data_utils`` with no
-    suffix is not a module. ``AUTO`` strips the suffix itself on the files it
-    decides are notebooks, so keeping it costs nothing there.
+    ``voclab.NOTEBOOK_KEEP_EXTENSIONS`` decides, and carries the reason: the
+    suffix is the only thing that tells the ``AUTO`` import in
+    :func:`import_one` a module from a notebook, so a ``.py`` keeps it and a
+    notebook, which is an object that has no extension, does not.
 
-    A notebook loses it because a notebook object does not carry one, and
-    importing to a path ending in ``.ipynb`` produces a notebook whose displayed
-    name is ``01_data_and_embeddings.ipynb``. Same rule, and same reason, as
-    ``voclab.notebook_workspace_path``.
+    This is ``voclab.notebook_workspace_path`` with a different folder in front
+    of it. That function names ``/Users/<email>`` and this tree is ``/Shared``,
+    so the path is built here and only the rule is borrowed.
     """
-    return local_path.name if local_path.suffix == ".py" else local_path.stem
+    keep = local_path.suffix.lower() in voclab.NOTEBOOK_KEEP_EXTENSIONS
+    return local_path.name if keep else local_path.stem
 
 
 def import_one(workspace, local_path: Path, remote_path: str) -> None:
-    """Import one file, choosing the format from its suffix.
+    """Import one file, in whichever format ``voclab.NOTEBOOK_FORMATS`` names.
 
-    ``.ipynb`` goes up as ``JUPYTER``, which carries its own language in the
-    notebook's metadata. A ``.py`` goes up as ``AUTO``, which reads the file
-    rather than the extension: a first line of ``# Databricks notebook source``
-    makes it a notebook and its absence makes it a workspace file.
-
-    ``AUTO`` rather than ``SOURCE`` with ``language`` PYTHON, and that is the
-    defect this function used to carry. ``SOURCE`` produces a notebook for every
-    ``.py``, and Python cannot import a notebook, so Lab 3's
-    ``from data_utils import ...`` failed with ``NotebookImportException`` for
-    anyone whose copy came through here. Measured 2026-08-08: the same
-    header-less file is a NOTEBOOK under SOURCE and a FILE under AUTO. See
+    That map is read rather than restated. It used to be restated here, the two
+    disagreed, and the disagreement was the Lab 3 defect: this file sent
+    ``SOURCE`` with language PYTHON for every ``.py``, ``SOURCE`` produces a
+    notebook, and Python cannot import a notebook, so
+    ``from data_utils import ...`` failed with ``NotebookImportException``. The
+    measurement that settled it and the fix on the Vocareum side are in
     ``lab3-fix.md`` at the repository root.
 
-    ``voclab.NOTEBOOK_FORMATS`` states the same rule for the Vocareum path and
-    is not read here, because it still carries the SOURCE mapping. Delete this
-    branch and read the map from ``voclab`` once that is fixed, so the rule is
-    stated once rather than twice.
+    An extension the map does not name fails here rather than reaching
+    ``workspace/import``. Importing an unknown format succeeds and produces an
+    object nobody can open, which is the same reason ``voclab`` refuses one.
     """
+    suffix = local_path.suffix.lower()
+    if suffix not in voclab.NOTEBOOK_FORMATS:
+        raise voclab.VoclabError(
+            "MISSING_NOTEBOOK",
+            f"{local_path} has no importable extension. Importable: "
+            f"{', '.join(sorted(voclab.NOTEBOOK_FORMATS))}.",
+        )
+    notebook_format, language = voclab.NOTEBOOK_FORMATS[suffix]
     body: dict = {
         "path": remote_path,
         "content": base64.b64encode(local_path.read_bytes()).decode("ascii"),
+        "format": notebook_format,
         "overwrite": True,
     }
-    body["format"] = "JUPYTER" if local_path.suffix == ".ipynb" else "AUTO"
+    if language is not None:
+        body["language"] = language
     workspace.call("POST", WORKSPACE_IMPORT_PATH, body, idempotent=True)
 
 

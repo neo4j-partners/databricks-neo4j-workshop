@@ -2,10 +2,18 @@
 
 from __future__ import annotations
 
-from neo4j import Driver
+from collections.abc import Callable
+from functools import partial
+
+from neo4j import Driver, EagerResult
+
+# A `driver.execute_query` already bound to the target database. The sample
+# helpers take one of these instead of the driver so the database is chosen
+# once, in `run_all_samples`, rather than on every call below.
+QueryRunner = Callable[..., EagerResult]
 
 _W = 70
-_EXTRACTED_LABELS = ["OperatingLimit"]
+_EXTRACTED_LABELS = ["ExtractedLimit"]
 _VECTOR_INDEX = "maintenanceChunkEmbeddings"
 _FULLTEXT_INDEX = "maintenanceChunkText"
 
@@ -77,13 +85,13 @@ RETURN a.tail_number AS tail, a.model AS model,
 ORDER BY a.tail_number"""
 
 
-def _aircraft_fleet(driver: Driver) -> None:
+def _aircraft_fleet(execute_query: QueryRunner) -> None:
     _header(
         "1. Aircraft Fleet Overview",
         "Each aircraft with its model, manufacturer, and system/component counts.",
     )
     _cypher(_FLEET_Q)
-    rows, _, _ = driver.execute_query(_FLEET_Q)
+    rows, _, _ = execute_query(_FLEET_Q)
     _table(
         ["Tail #", "Model", "Manufacturer", "Systems", "Components"],
         [[r["tail"], r["model"], r["mfr"], r["systems"], r["components"]] for r in rows],
@@ -103,13 +111,13 @@ RETURN a.tail_number AS tail, a.model AS model, systems
 LIMIT 1"""
 
 
-def _system_hierarchy(driver: Driver) -> None:
+def _system_hierarchy(execute_query: QueryRunner) -> None:
     _header(
         "2. System \u2192 Component Hierarchy",
         "Full hierarchy for one aircraft showing Systems and their Components.",
     )
     _cypher(_HIERARCHY_Q)
-    rows, _, _ = driver.execute_query(_HIERARCHY_Q)
+    rows, _, _ = execute_query(_HIERARCHY_Q)
     if not rows:
         print("  (no results)\n")
         return
@@ -139,13 +147,13 @@ ORDER BY flights DESC
 LIMIT $limit"""
 
 
-def _flight_operations(driver: Driver, limit: int) -> None:
+def _flight_operations(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "3. Flight Operations \u2014 Top Routes",
         "Most frequent routes by flight count.",
     )
     _cypher(_FLIGHTS_Q)
-    rows, _, _ = driver.execute_query(_FLIGHTS_Q, limit=limit)
+    rows, _, _ = execute_query(_FLIGHTS_Q, limit=limit)
     _table(
         ["Origin", "Dest", "Flights"],
         [[r["origin"], r["dest"], r["flights"]] for r in rows],
@@ -167,13 +175,13 @@ ORDER BY me.reported_at DESC
 LIMIT $limit"""
 
 
-def _maintenance_events(driver: Driver, limit: int) -> None:
+def _maintenance_events(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "4. Maintenance Events",
         "Recent maintenance events with fault codes and affected systems.",
     )
     _cypher(_MAINT_Q)
-    rows, _, _ = driver.execute_query(_MAINT_Q, limit=limit)
+    rows, _, _ = execute_query(_MAINT_Q, limit=limit)
     _table(
         ["Aircraft", "Event ID", "Date", "Severity", "Fault", "System"],
         [
@@ -202,13 +210,13 @@ ORDER BY a.tail_number, sys.name
 LIMIT $limit"""
 
 
-def _sensors(driver: Driver, limit: int) -> None:
+def _sensors(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "5. Sensors",
         "Sensors installed across the fleet with their type and unit.",
     )
     _cypher(_SENSORS_Q)
-    rows, _, _ = driver.execute_query(_SENSORS_Q, limit=limit)
+    rows, _, _ = execute_query(_SENSORS_Q, limit=limit)
     _table(
         ["Aircraft", "System", "Sensor ID", "Type", "Unit"],
         [[r["aircraft"], r["system"], r["sensor"], r["type"], r["unit"]] for r in rows],
@@ -239,13 +247,13 @@ RETURN d.documentId AS doc, c.index AS idx,
        next.index AS next_idx"""
 
 
-def _document_chunks(driver: Driver, limit: int) -> None:
+def _document_chunks(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "6. Document-Chunk Structure",
         "Maintenance manuals loaded as Document \u2192 Chunk graphs with embedding stats.",
     )
     _cypher(_DOCS_Q)
-    rows, _, _ = driver.execute_query(_DOCS_Q)
+    rows, _, _ = execute_query(_DOCS_Q)
     if not rows:
         print("  (no documents \u2014 run 'setup' first)\n")
         return
@@ -256,7 +264,7 @@ def _document_chunks(driver: Driver, limit: int) -> None:
 
     print(f"  Chunk chain (first {limit}):\n")
     _cypher(_CHAIN_Q)
-    rows, _, _ = driver.execute_query(_CHAIN_Q, limit=limit)
+    rows, _, _ = execute_query(_CHAIN_Q, limit=limit)
     for r in rows:
         arrow = f" \u2192 Chunk {r['next_idx']}" if r["next_idx"] is not None else " (end)"
         print(f"    Chunk {r['idx']:>3} \u2502 {r['preview']}\u2026{arrow}")
@@ -277,13 +285,13 @@ CALL (label) {
 RETURN label AS entity_type, collect(name) AS samples"""
 
 
-def _extracted_entities(driver: Driver, limit: int) -> None:
+def _extracted_entities(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "7. Extracted Entities",
         "Entity types extracted from maintenance manuals via SimpleKGPipeline.",
     )
     _cypher(_ENTITIES_Q)
-    rows, _, _ = driver.execute_query(_ENTITIES_Q, labels=_EXTRACTED_LABELS, limit=limit)
+    rows, _, _ = execute_query(_ENTITIES_Q, labels=_EXTRACTED_LABELS, limit=limit)
     if not rows or all(len(r["samples"]) == 0 for r in rows):
         print("  (no extracted entities \u2014 run 'setup' first)\n")
         return
@@ -320,19 +328,19 @@ LIMIT $limit""",
         ["Sensor", "OperatingLimit"],
     ),
     (
-        "Provenance (OperatingLimit \u2192 Chunk \u2192 Document \u2192 Aircraft)",
+        "Provenance (ExtractedLimit \u2192 Chunk \u2192 Document \u2192 Aircraft)",
         """\
-MATCH (ol:OperatingLimit)-[:FROM_CHUNK]->(c:Chunk)-[:FROM_DOCUMENT]->(d:Document)
+MATCH (el:ExtractedLimit)-[:FROM_CHUNK]->(c:Chunk)-[:FROM_DOCUMENT]->(d:Document)
       -[:APPLIES_TO]->(a:Aircraft)
-RETURN ol.name AS source, substring(c.text, 0, 60) AS chunk,
+RETURN el.name AS source, substring(c.text, 0, 60) AS chunk,
        a.tail_number AS target
 LIMIT $limit""",
-        ["OperatingLimit", "Source Chunk", "Aircraft"],
+        ["ExtractedLimit", "Source Chunk", "Aircraft"],
     ),
 ]
 
 
-def _cross_links(driver: Driver, limit: int) -> None:
+def _cross_links(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "8. Cross-Links: Knowledge Graph \u2194 Operational Graph",
         "Relationships connecting extracted entities to the operational aircraft graph.",
@@ -341,7 +349,7 @@ def _cross_links(driver: Driver, limit: int) -> None:
     for title, query, headers in _CROSSLINKS:
         print(f"  {title}:")
         _cypher(query)
-        rows, _, _ = driver.execute_query(query, limit=limit)
+        rows, _, _ = execute_query(query, limit=limit)
         if not rows:
             print("  (none)\n")
             continue
@@ -370,7 +378,7 @@ RETURN substring(seed.text, 0, 100) AS seed_text,
        substring(node.text, 0, 100) AS match_text"""
 
 
-def _vector_similarity(driver: Driver, limit: int) -> None:
+def _vector_similarity(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "9. Vector Similarity Search",
         "Picks a random chunk and finds the most similar chunks using the\n"
@@ -378,7 +386,7 @@ def _vector_similarity(driver: Driver, limit: int) -> None:
     )
     _cypher(_VECTOR_Q)
     try:
-        rows, _, _ = driver.execute_query(_VECTOR_Q, limit=limit, top_k=limit + 1)
+        rows, _, _ = execute_query(_VECTOR_Q, limit=limit, top_k=limit + 1)
     except Exception:
         print("  (vector index not available \u2014 run 'setup' first)\n")
         return
@@ -406,7 +414,7 @@ ORDER BY score DESC
 LIMIT $limit"""
 
 
-def _fulltext_search(driver: Driver, limit: int) -> None:
+def _fulltext_search(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "10. Full-Text Search",
         "Keyword search over maintenance chunks using the fulltext index.\n"
@@ -417,7 +425,7 @@ def _fulltext_search(driver: Driver, limit: int) -> None:
         print(f"  Search: \"{term}\"")
         _cypher(_FULLTEXT_Q)
         try:
-            rows, _, _ = driver.execute_query(
+            rows, _, _ = execute_query(
                 _FULLTEXT_Q, index=_FULLTEXT_INDEX, query=term, limit=limit,
             )
         except Exception:
@@ -454,7 +462,7 @@ RETURN substring(seed.text, 0, 80) AS seed_text,
        substring(node.text, 0, 80) AS match_text"""
 
 
-def _vector_document_context(driver: Driver, limit: int) -> None:
+def _vector_document_context(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "11. Vector Search \u2192 Document Context",
         "Semantic search enriched with source document metadata.\n"
@@ -462,7 +470,7 @@ def _vector_document_context(driver: Driver, limit: int) -> None:
     )
     _cypher(_VECTOR_DOC_Q)
     try:
-        rows, _, _ = driver.execute_query(
+        rows, _, _ = execute_query(
             _VECTOR_DOC_Q, index=_VECTOR_INDEX, limit=limit, top_k=limit + 1,
         )
     except Exception:
@@ -512,7 +520,7 @@ RETURN substring(seed.text, 0, 80) AS seed_text,
        substring(node.text, 0, 80) AS match_text"""
 
 
-def _adjacent_chunks(driver: Driver, limit: int) -> None:
+def _adjacent_chunks(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "12. Adjacent Chunk Retrieval",
         "Vector search with surrounding context via NEXT_CHUNK traversal.\n"
@@ -520,7 +528,7 @@ def _adjacent_chunks(driver: Driver, limit: int) -> None:
     )
     _cypher(_ADJACENT_Q)
     try:
-        rows, _, _ = driver.execute_query(
+        rows, _, _ = execute_query(
             _ADJACENT_Q, index=_VECTOR_INDEX, limit=limit, top_k=limit + 1,
         )
     except Exception:
@@ -573,7 +581,7 @@ RETURN substring(seed.text, 0, 80) AS seed_text,
        substring(node.text, 0, 60) AS match_text"""
 
 
-def _vector_topology(driver: Driver, limit: int) -> None:
+def _vector_topology(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "13. Vector Search \u2192 Aircraft Topology",
         "Semantic search connected to the operational graph (Aircraft \u2192 System).\n"
@@ -581,7 +589,7 @@ def _vector_topology(driver: Driver, limit: int) -> None:
     )
     _cypher(_VECTOR_TOPO_Q)
     try:
-        rows, _, _ = driver.execute_query(
+        rows, _, _ = execute_query(
             _VECTOR_TOPO_Q, index=_VECTOR_INDEX, limit=limit, top_k=limit + 1,
         )
     except Exception:
@@ -647,7 +655,7 @@ RETURN 'fulltext' AS method,
        substring(node.text, 0, 80) AS match_text"""
 
 
-def _hybrid_comparison(driver: Driver, limit: int) -> None:
+def _hybrid_comparison(execute_query: QueryRunner, limit: int) -> None:
     _header(
         "14. Hybrid Search Comparison",
         "Side-by-side vector vs fulltext results for the same seed chunk.\n"
@@ -658,7 +666,7 @@ def _hybrid_comparison(driver: Driver, limit: int) -> None:
     print("  [A] Vector similarity results:")
     _cypher(_HYBRID_VECTOR_Q)
     try:
-        v_rows, _, _ = driver.execute_query(
+        v_rows, _, _ = execute_query(
             _HYBRID_VECTOR_Q, index=_VECTOR_INDEX, limit=limit, top_k=limit + 1,
         )
     except Exception:
@@ -677,7 +685,7 @@ def _hybrid_comparison(driver: Driver, limit: int) -> None:
     print("  [B] Fulltext keyword results:")
     _cypher(_HYBRID_FT_Q)
     try:
-        ft_rows, _, _ = driver.execute_query(
+        ft_rows, _, _ = execute_query(
             _HYBRID_FT_Q, ft_index=_FULLTEXT_INDEX, limit=limit,
         )
     except Exception:
@@ -708,27 +716,29 @@ def _hybrid_comparison(driver: Driver, limit: int) -> None:
 # ---------------------------------------------------------------------------
 
 
-def run_all_samples(driver: Driver, sample_size: int = 10) -> None:
+def run_all_samples(driver: Driver, database: str, sample_size: int = 10) -> None:
     """Run all sample queries with formatted output."""
+    execute_query = partial(driver.execute_query, database_=database)
+
     print(f"\n{'#' * _W}")
     print("  Aircraft Digital Twin \u2014 Sample Queries")
     print(f"{'#' * _W}")
     print(f"\n  Sample size: {sample_size} rows per section\n")
 
-    _aircraft_fleet(driver)
-    _system_hierarchy(driver)
-    _flight_operations(driver, sample_size)
-    _maintenance_events(driver, sample_size)
-    _sensors(driver, sample_size)
-    _document_chunks(driver, sample_size)
-    _extracted_entities(driver, sample_size)
-    _cross_links(driver, sample_size)
-    _vector_similarity(driver, sample_size)
-    _fulltext_search(driver, sample_size)
-    _vector_document_context(driver, sample_size)
-    _adjacent_chunks(driver, sample_size)
-    _vector_topology(driver, sample_size)
-    _hybrid_comparison(driver, sample_size)
+    _aircraft_fleet(execute_query)
+    _system_hierarchy(execute_query)
+    _flight_operations(execute_query, sample_size)
+    _maintenance_events(execute_query, sample_size)
+    _sensors(execute_query, sample_size)
+    _document_chunks(execute_query, sample_size)
+    _extracted_entities(execute_query, sample_size)
+    _cross_links(execute_query, sample_size)
+    _vector_similarity(execute_query, sample_size)
+    _fulltext_search(execute_query, sample_size)
+    _vector_document_context(execute_query, sample_size)
+    _adjacent_chunks(execute_query, sample_size)
+    _vector_topology(execute_query, sample_size)
+    _hybrid_comparison(execute_query, sample_size)
 
     print(f"{'#' * _W}")
     print("  All samples complete.")

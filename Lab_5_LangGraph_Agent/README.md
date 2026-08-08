@@ -132,26 +132,32 @@ You will see this in Section 5, and the supervisor drops to two tools in Section
 
 ## What the operating limits will and will not do
 
-`OperatingLimit` is never empty. Lab 2 loads twenty canonical limits from CSV,
-four per aircraft model, and each one carries a `limit_id`. Three consequences
-follow.
+`OperatingLimit` is exactly the twenty canonical limits Lab 2 loads from CSV,
+four parameters for each of five aircraft models. Never empty, never
+duplicated, no filter needed. Four things follow.
 
-**A name can appear twice.** Lab 3 notebook 01 also extracts operating limits
-from the manual prose, and its prompt mandates the same
-`<parameterName> - <aircraftType>` name the CSV uses. `EGT - A320-200` can
-therefore exist twice with different bounds. Only the canonical copy has a
-`limit_id`, so the schema in `tools.py` tells the model to filter
-`WHERE ol.limit_id IS NOT NULL` when the question asks for the documented or
-official limit.
+**A limit is not a measurement.** `maxValue` is the ceiling a manual sets for
+every aircraft of that model. It is not what any sensor read, so it can never
+answer "what was the average", "which is highest", or anything else about a
+reading. `genie_node` owns those questions. The schema in `tools.py` tells the
+Cypher tool to refuse a reading question outright rather than return the
+nearest number it can find, because the nearest number is a limit and a limit
+is the wrong answer confidently given.
 
 **Ten have no floor.** `minValue` is null on ten of the twenty, the Vibration
 and N1Speed limits for each of the five models, because those are ceilings and
 nothing else. The schema says to check `IS NOT NULL` before comparing. Both
-bounds are Double on both populations, so nothing needs casting.
+bounds are `FLOAT`, so nothing needs casting.
 
 **All belong to a regime.** Each limit carries the phase of flight it applies
 to. A takeoff bound held against cruise readings is a category error rather
 than a comparison, and it reports the whole fleet out of range.
+
+**Extraction writes a different label.** Lab 3 notebook 01 pulls limits out of
+the manual prose under the label `ExtractedLimit`, not `OperatingLimit`. The
+two never mix, so a name means one thing. `ExtractedLimit` records what a
+manual said, its contents vary between graphs, and it is empty on a graph that
+ran Lab 3 without extraction. Treat `OperatingLimit` as the authority.
 
 ## Measured results
 
@@ -196,9 +202,11 @@ corrective actions graded from minor to critical.
 The test graph had extraction switched off in Lab 3, so it held the twenty
 canonical `OperatingLimit` rows and nothing else. It had no `AircraftModel`,
 `SystemReference`, `ComponentReference`, `Fault` or `MaintenanceProcedure`
-nodes. A participant who runs Lab 3 with extraction on gets those as well, plus
-a second, variable set of operating limits. The routing numbers do not depend
-on those labels, but no claim here has been tested against them.
+nodes, and no `ExtractedLimit` nodes. A participant who runs Lab 3 with
+extraction on gets all of those, `ExtractedLimit` sitting alongside
+`OperatingLimit` rather than mixed into it. The run did not exercise that. The
+routing numbers do not depend on those labels, but no claim here has been
+tested against them.
 
 ## What comes next
 

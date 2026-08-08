@@ -270,11 +270,11 @@ Your Genie space answers questions about *how much* and *how often*. Average EGT
 
 Ask it "which component failure delayed which flight" and it has nothing to work with. That question is a traversal: component to maintenance event to flight to delay, following relationships rather than scanning a column. No amount of Genie instruction tuning produces it, because the relationships are in Neo4j and Genie queries Unity Catalog.
 
-Two ways to give an agent both:
+Two ways to give an agent both. You build one, you watch the other.
 
-| Continue with | What you build | Graph it queries |
+| | What it is | Graph it queries |
 |---|---|---|
-| **[Lab 5](../Lab_5_LangGraph_Agent)** | A LangGraph supervisor in Python, routing across Genie, Cypher, and the GraphRAG retrievers from Lab 3, then deployed to Model Serving | **Your own** Aura instance, the one you loaded in Lab 2 and Lab 3 |
-| **[Part B](PART_B.md)** *(optional)* | The same routing idea with no code, using the Agent Bricks Multi-Agent Supervisor and a governed MCP connection | The shared Reference Aura Instance |
+| **[Lab 5](../Lab_5_LangGraph_Agent)**, you build it | A LangGraph supervisor in Python, routing across Genie, Cypher, and the GraphRAG retrievers from Lab 3, then deployed to Model Serving | **Your own** Aura instance, the one you loaded in Lab 2 and Lab 3 |
+| **[Part B](PART_B.md)**, the instructor demonstrates it | The same routing idea with no code, using the Agent Bricks Multi-Agent Supervisor and a governed MCP connection | The instructor's demo instance |
 
-Lab 5 is the main path. Part B is worth 45 minutes if you want to see the no-code product, or if you need the pattern for centrally-governed agent access to Neo4j. Doing both shows you the same architecture from two directions.
+Continue to Lab 5. Part B is the same architecture seen from the other direction: no code, and centrally governed access to Neo4j through Unity Catalog. That contrast is why it is in the workshop. Watching it needs nothing from you, no Aura instance, no MCP connection, and no credentials.

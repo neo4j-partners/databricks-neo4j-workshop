@@ -317,27 +317,25 @@ class Neo4jConnection:
         second run of notebook 01 doubles the chunk count, puts duplicate
         embeddings in every vector search result, and doubles the node budget.
 
-        Preserves the operational graph from Lab 2, including the canonical
-        OperatingLimit nodes it loads from ``nodes_operating_limits.csv``. Those
-        carry ``limit_id``; the ones extraction produces do not, which is what
-        the predicate below selects on.
+        The label list is exactly what this lab writes. ``OperatingLimit`` is
+        not on it: that label means the 20 canonical rows Lab 2 loads from
+        ``nodes_operating_limits.csv`` and nothing else. Extraction writes
+        ``ExtractedLimit`` instead, so the two populations delete separately.
 
         Uses batched deletes to avoid transaction timeouts on large graphs.
         """
-        matches = [
-            "MATCH (n:Chunk)",
-            "MATCH (n:Document)",
-            # Extraction output only. Lab 2 owns the OperatingLimit nodes that
-            # have a limit_id, and this lab does not delete what Lab 2 loaded.
-            "MATCH (n:OperatingLimit) WHERE n.limit_id IS NULL",
-            "MATCH (n:__Entity__)",
-            "MATCH (n:__KGBuilder__)",
+        labels = [
+            "Chunk",
+            "Document",
+            "ExtractedLimit",
+            "__Entity__",
+            "__KGBuilder__",
         ]
         deleted_total = 0
-        for match_clause in matches:
+        for label in labels:
             while True:
                 records, _, _ = self.driver.execute_query(
-                    f"{match_clause} WITH n LIMIT 500 DETACH DELETE n "
+                    f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n "
                     "RETURN count(*) AS deleted",
                     database_=self.database,
                 )
@@ -527,10 +525,16 @@ class ContextPrependingSplitter(TextSplitter):
 def build_extraction_schema():
     """Build a GraphSchema for SimpleKGPipeline entity extraction.
 
-    Extracts OperatingLimit entities -- aircraft operating parameter thresholds
-    (EGT limits, vibration thresholds, etc.). Entity names are qualified with
-    aircraft type (e.g. "EGT - A320-200") so entity resolution does not merge
-    limits from different aircraft.
+    Extracts ExtractedLimit entities -- aircraft operating parameter thresholds
+    (EGT limits, vibration thresholds, etc.) as the LLM read them out of the
+    manuals. Entity names are qualified with aircraft type (e.g.
+    "EGT - A320-200") so entity resolution does not merge limits from different
+    aircraft, and so each one lines up by name with the canonical
+    ``OperatingLimit`` row Lab 2 loaded for the same parameter and aircraft.
+
+    The label is deliberately not ``OperatingLimit``. That label belongs to
+    Lab 2's 20 hand-transcribed rows, and keeping the two populations under
+    separate labels is what makes them comparable.
     """
     from neo4j_graphrag.experimental.components.schema import (
         GraphSchema,
@@ -540,7 +544,7 @@ def build_extraction_schema():
 
     node_types = [
         NodeType(
-            label="OperatingLimit",
+            label="ExtractedLimit",
             description="An operating parameter limit for an aircraft system.",
             properties=[
                 PropertyType(
@@ -585,7 +589,7 @@ Your task: extract entities (nodes) and relationships from the input text \
 according to the schema below.
 
 Return result as JSON using this format:
-{{"nodes": [{{"id": "0", "label": "OperatingLimit", "properties": {{"name": "EGT - A320-200", "parameterName": "EGT", "aircraftType": "A320-200", "unit": "\u00b0C", "maxValue": "695"}}}}],
+{{"nodes": [{{"id": "0", "label": "ExtractedLimit", "properties": {{"name": "EGT - A320-200", "parameterName": "EGT", "aircraftType": "A320-200", "unit": "\u00b0C", "maxValue": "695"}}}}],
 "relationships": []}}
 
 Use only the following node and relationship types:

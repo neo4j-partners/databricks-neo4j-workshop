@@ -130,7 +130,7 @@ View entities extracted from maintenance manuals:
 
 [source,cypher]
 ----
-UNWIND ['OperatingLimit'] AS label
+UNWIND ['ExtractedLimit'] AS label
 CALL (label) {
     MATCH (n) WHERE label IN labels(n)
     RETURN n.name AS name
@@ -139,7 +139,7 @@ CALL (label) {
 RETURN label AS entity_type, collect(name) AS samples
 ----
 
-NOTE: These entities were extracted via SimpleKGPipeline during the enrich step. `UNWIND` expands a list of labels into rows, and the `CALL` subquery scopes a `MATCH` per label.
+NOTE: These entities were extracted via SimpleKGPipeline during the enrich step. `UNWIND` expands a list of labels into rows, and the `CALL` subquery scopes a `MATCH` per label. `ExtractedLimit` is extraction output only. Lab 2's 20 hand-transcribed limits carry the `OperatingLimit` label, which nothing in Lab 3 writes.
 
 == Cross-Links: Knowledge Graph to Operational Graph
 
@@ -152,7 +152,7 @@ RETURN d.title AS source, a.tail_number AS target
 LIMIT 10
 ----
 
-Sensor to OperatingLimit:
+Sensor to OperatingLimit, the canonical thresholds:
 
 [source,cypher]
 ----
@@ -161,18 +161,47 @@ RETURN s.sensor_id AS source, ol.name AS target
 LIMIT 10
 ----
 
-Full provenance chain -- OperatingLimit to Chunk to Document to Aircraft:
+NOTE: `HAS_LIMIT` reaches the 20 limits Lab 2 loaded from `nodes_operating_limits.csv`, transcribed from the manuals by hand. This is the edge to follow when a question asks what a threshold is.
+
+Sensor to ExtractedLimit, what the LLM read:
 
 [source,cypher]
 ----
-MATCH (ol:OperatingLimit)-[:FROM_CHUNK]->(c:Chunk)-[:FROM_DOCUMENT]->(d:Document)
+MATCH (s:Sensor)-[:HAS_EXTRACTED_LIMIT]->(el:ExtractedLimit)
+RETURN s.sensor_id AS source, el.name AS target
+LIMIT 10
+----
+
+NOTE: A parallel edge to a separate label. Same sensor, same parameter, a different source of the number. Keeping the two relationship types apart is what lets a query state which population it wants.
+
+Compare the two populations:
+
+[source,cypher]
+----
+MATCH (s:Sensor)-[:HAS_LIMIT]->(ol:OperatingLimit)
+OPTIONAL MATCH (s)-[:HAS_EXTRACTED_LIMIT]->(el:ExtractedLimit)
+WHERE el.parameterName = ol.parameterName
+RETURN DISTINCT ol.name AS Limit,
+       ol.maxValue AS TranscribedMax,
+       el.maxValue AS ExtractedMax,
+       ol.unit AS Unit
+ORDER BY Limit
+----
+
+NOTE: The `WHERE` belongs to the `OPTIONAL MATCH`, so a limit with no extracted counterpart still returns a row with a null `ExtractedMax`. A null or a mismatch is a measurement of the extraction, not a failure of the query.
+
+Full provenance chain -- ExtractedLimit to Chunk to Document to Aircraft:
+
+[source,cypher]
+----
+MATCH (el:ExtractedLimit)-[:FROM_CHUNK]->(c:Chunk)-[:FROM_DOCUMENT]->(d:Document)
       -[:APPLIES_TO]->(a:Aircraft)
-RETURN ol.name AS source, substring(c.text, 0, 60) AS chunk,
+RETURN el.name AS source, substring(c.text, 0, 60) AS chunk,
        a.tail_number AS target
 LIMIT 10
 ----
 
-NOTE: These cross-links connect the knowledge graph (extracted entities from maintenance manuals) back to the operational aircraft graph. The provenance chain traces an operating limit all the way back through its source chunk, document, and the aircraft it applies to.
+NOTE: These cross-links connect the knowledge graph back to the operational aircraft graph. `FROM_CHUNK` exists on extracted entities alone, since a chunk is where the LLM read them; the canonical `OperatingLimit` rows came from a CSV and have no source chunk. The chain traces an extracted limit back through the chunk it was read from, that chunk's document, and the aircraft the document applies to.
 
 == Fulltext Keyword Search
 

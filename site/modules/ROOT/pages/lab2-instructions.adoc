@@ -20,7 +20,7 @@ This lab has one required notebook and one optional Graph Data Science notebook.
 | Notebook | Description | Required For
 
 | `01_aircraft_etl_to_neo4j.ipynb`
-| Guided Spark Connector walkthrough that loads the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals. Clears the database first (`CLEAR_DATABASE = True`)
+| Guided Spark Connector walkthrough that loads the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, Removals, and the 20 canonical Operating Limits. Clears the database first (`CLEAR_DATABASE = True`)
 | Labs 3, 4
 
 | `02_gds_knn_aircraft.ipynb`
@@ -59,7 +59,7 @@ Use the Vocareum lab setup to complete the Databricks workspace configuration an
 
 **"Path does not exist" for data files** -- Verify the DATA_PATH matches your workshop configuration. Ask your instructor for the correct Volume path.
 
-**Duplicate nodes appearing** -- The notebook uses Overwrite mode. If needed, clear your database: `MATCH (n) DETACH DELETE n`
+**Duplicate nodes, or a constraint violation on re-run** -- The notebook writes nodes in Append mode, a plain `CREATE`, which never replaces a node. That is safe only because Section 4 wipes the database first under `CLEAR_DATABASE = True`. Re-run the whole notebook from the top rather than a single load cell, and if you already did, clear your database and start over: `MATCH (n) DETACH DELETE n`
 
 **Notebook cells failing** -- Run cells in order from top to bottom. Do not skip the configuration cells. Check the error message for specific issues.
 

@@ -1,4 +1,9 @@
-# Manual Setup: Neo4j MCP Server Connection in Databricks
+# Instructor Preparation: Neo4j MCP Server Connection in Databricks
+
+**Instructors only. No participant ever runs any step in this document.** The
+connection it creates exists in the instructor's demo workspace and backs the
+Lab 4 Part B demo, which participants watch rather than build. Participants need
+no MCP connection and no OAuth credential of their own.
 
 This guide walks through creating the Unity Catalog HTTP connection to the Neo4j
 MCP server in the Databricks UI.
@@ -27,17 +32,21 @@ privilege for a step only an administrator performs, and everything
 So the administrator doing this needs `CREATE CONNECTION` in their own right,
 and does not get it by signing in. Step 0 below is how it is obtained, once.
 
-Lab 4 Part B is optional. The required labs, including the Lab 5 LangGraph
-agent, reach Neo4j with the Python driver against each participant's own
-instance and need none of this.
+Lab 4 Part B is an instructor demo. The participant labs, including the Lab 5
+LangGraph agent, reach Neo4j with the Python driver against each participant's
+own instance and need none of this.
 
 ## Prerequisites
 
-- **Neo4j MCP server deployed** to AWS AgentCore (`neo4j-agentcore-mcp-server/`)
-- **Unity Catalog** enabled on your workspace
+- **Neo4j MCP server deployed** to AWS AgentCore, from `neo4j-agentcore-mcp-server/`,
+  pointed at the instructor's demo Aura instance
+- **Instructor's demo Aura instance loaded** ahead of class with
+  `workshop-setup/populate_aircraft_db`
+- **Unity Catalog** enabled on the demo workspace
 - **`CREATE CONNECTION` privilege** on the metastore, from Step 0. `workshop.py`
   does not grant it, and participants do not have it
-- **OAuth2 credentials** from the deployment
+- **OAuth2 credentials** from the deployment. They stay with the instructor and
+  are never distributed
 
 ## Step 0: grant yourself `CREATE CONNECTION`, once per account
 
@@ -123,7 +132,7 @@ click **Create connection**.
 
 | Field | Value |
 |-------|-------|
-| **Connection name** | `neo4j_agentcore_mcp`. Lab 4 Part B tells participants to look for exactly this name, so use it verbatim. Underscores rather than hyphens keep the name easy to reference in SQL. |
+| **Connection name** | `neo4j_agentcore_mcp`. The Lab 4 Part B demo procedure names it verbatim, so use it as written. Underscores rather than hyphens keep the name easy to reference in SQL. |
 | **Connection type** | `HTTP` |
 | **Create under a schema** | Optional. Leave it on to list the connection under a catalog and schema in Catalog Explorer, or turn it off to create it at the metastore level. Connections are metastore-scoped objects either way. |
 | **Catalog** / **Schema** | Only shown when "Create under a schema" is on. Pick where the connection appears, for example `databricks-neo4j-workshop` / `aircraft`. |

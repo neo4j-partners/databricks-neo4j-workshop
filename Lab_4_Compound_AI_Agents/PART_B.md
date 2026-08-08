@@ -1,52 +1,56 @@
-# Part B: Multi-Agent Supervisor for Aircraft Intelligence
+# Part B: Multi-Agent Supervisor for Aircraft Intelligence (Instructor Demo)
 
-> **Optional, advanced.** Part B is not on the required path. It is the no-code route to a multi-agent supervisor, and it queries the shared **Reference Aura Instance** over a governed MCP connection rather than the Aura instance you loaded in Lab 2. Skipping it costs you nothing in Lab 5 or Lab 6.
+> **Watch this one. Do not build it.**
 >
-> Run it if you want either of these:
-> - **The no-code product.** Agent Bricks Multi-Agent Supervisor reaches a working system through configuration alone, with no Python.
-> - **The production shape.** A Unity Catalog HTTP connection with OAuth2 M2M against a hosted MCP server is how centrally-governed agent access to Neo4j looks in production.
+> Part B is a demonstration the instructor runs from the front of the room. Follow along on screen. You do not build the supervisor yourself, and you need nothing from your own account to see it work:
+> - **No Aura instance.** The demo queries the instructor's demo instance, not yours.
+> - **No MCP connection.** The Unity Catalog connection lives in the instructor's workspace.
+> - **No OAuth credential.** The client id and secret belong to the instructor's setup and are never handed out.
 >
-> **[Lab 5](../Lab_5_LangGraph_Agent)** builds the same routing in code, against your own graph. The two are alternatives, not a sequence. Doing both shows you one architecture from two directions.
+> **Why it is in the workshop.** The demo shows the same routing architecture as Lab 5, built with no code and with centrally governed access to Neo4j. Agent Bricks Multi-Agent Supervisor reaches a working system through configuration alone. A Unity Catalog HTTP connection with OAuth2 M2M against a hosted MCP server is how governed agent access to Neo4j looks in production. Seeing one architecture from two directions is the point.
+>
+> **[Lab 5](../Lab_5_LangGraph_Agent)** is your continuation from Part A. It builds the same routing in code, against your own graph.
+>
+> **Instructors:** the full procedure below is the record of how the demo is built. Everything from Prerequisites down is written for the person running it.
 
-In this part, you'll create a multi-agent supervisor that intelligently routes questions to either the **Genie space** (for sensor analytics) or the **Neo4j MCP agent** (for graph relationships). This enables natural language queries that span both data sources.
+The supervisor routes questions to either the **Genie space** for sensor analytics or the **Neo4j MCP agent** for graph relationships. Natural language queries then span both data sources.
 
-**Estimated Time:** 45 minutes
+**Demo runtime:** about 20 minutes on screen. Build it ahead of class.
 
 ---
 
 ## Prerequisites
 
-Before starting, ensure you have:
-- Completed **Part A** (Genie space for sensor analytics)
-- Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft` (tables and volume)
+The instructor running the demo needs:
+- A Genie space built as in **Part A**, in the demo workspace
+- Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft`, meaning tables and volume
+- The `neo4j_agentcore_mcp` Unity Catalog connection, created ahead of time per [`MCP-MANUAL-SETUP.md`](../workshop-setup/MCP-MANUAL-SETUP.md)
 
-> **Note on the Neo4j MCP connection:** This lab uses a **pre-configured Neo4j MCP connection** that has already been set up by the workshop administrators. The MCP server points to the **Reference Aura Instance**, an administrator-managed Neo4j Aura instance, not your individual Aura instance from Lab 1. It contains the **complete dataset**: the full fleet with all systems, components, sensors, maintenance events, flights, and delays. This ensures every participant has access to the full graph regardless of which Lab 2 notebooks they completed.
+> **The graph behind the demo.** The MCP server points at the instructor's demo Aura instance, loaded before class with `workshop-setup/populate_aircraft_db`. It holds the complete dataset: the full fleet with all systems, components, sensors, maintenance events, flights, and delays. Participants never connect to it and never need credentials for it.
 
 ---
 
 ## Step 1: Verify Neo4j MCP Connection
 
-The Neo4j MCP connection has been **pre-configured** by the workshop administrators. In this step you'll verify that it's available and working in your workspace.
+Confirm the connection is present and working in the demo workspace before the session starts.
 
 ### 1.1 Check Unity Catalog Connections
 
 1. In the left navigation pane, click **Catalog**
-2. Click **External connections** (or navigate to the **Connections** tab)
+2. Click **External connections**, or navigate to the **Connections** tab
 3. Locate the Neo4j MCP connection named `neo4j_agentcore_mcp`
 4. Verify the connection status shows as configured
-
-> **Note:** This MCP connection points to the Reference Aura Instance, which contains the full Aircraft Digital Twin dataset. You do not need to configure this yourself — it has been set up ahead of time so that all participants share the same complete graph data.
 
 ### 1.2 Verify MCP Tools Are Available
 
 The Neo4j MCP server provides these tools:
-- `get_neo4j_schema`: Retrieves the Neo4j graph schema (labels, relationships, properties)
+- `get_neo4j_schema`: Retrieves the Neo4j graph schema, meaning labels, relationships, and properties
 - `read_neo4j_cypher`: Executes read-only Cypher queries
 
 The AgentCore Gateway prefixes both names, so in the tool list they appear as
 `neo4j-mcp-server-target___get_neo4j_schema` and `neo4j-mcp-server-target___read_neo4j_cypher`.
 
-You can test these in AI Playground before creating the supervisor:
+Test these in AI Playground before creating the supervisor:
 1. Navigate to **Playground** in the left navigation
 2. Select **GPT OSS 120B**
 3. Click **Add your own tool** > **+ Add tool** > **MCP Servers** > **External MCP Servers** > **neo4j_agentcore_mcp**
@@ -388,7 +392,7 @@ print(response.json())
 
 ## Summary
 
-You've created a multi-agent system that combines two purpose-built data platforms:
+The demo shows a multi-agent system that combines two purpose-built data platforms:
 
 - **Genie + Lakehouse for time-series data** — SQL-powered analytics over sensor telemetry readings, ideal for aggregations, trends, and statistical analysis
 - **Neo4j for rich relational data** — graph-powered traversals across aircraft topology, maintenance events, flights, and delays, ideal for relationship queries and multi-hop navigation
@@ -412,7 +416,7 @@ You've created a multi-agent system that combines two purpose-built data platfor
 - Use the Examples tab to add labeled training questions
 
 ### "Cypher query failed"
-- Check that Neo4j data was loaded correctly (Lab 2)
+- Check that the demo Aura instance was loaded correctly with `workshop-setup/populate_aircraft_db`
 - Verify node labels and relationship types match documentation
 - Review Cypher syntax for errors
 - Test queries directly in Neo4j Aura console first
@@ -462,7 +466,9 @@ Show maintenance events for aircraft with the lowest fuel efficiency
 
 ## Next Steps
 
-Congratulations! You've built a complete multi-agent system for aircraft intelligence. Consider these extensions:
+Participants continue to **[Lab 5](../Lab_5_LangGraph_Agent)**, which builds this same routing in code against their own graph.
+
+Extensions worth showing or mentioning during the demo:
 
 1. **Add Documentation Agent**: Integrate semantic search as a third agent for maintenance procedures
 

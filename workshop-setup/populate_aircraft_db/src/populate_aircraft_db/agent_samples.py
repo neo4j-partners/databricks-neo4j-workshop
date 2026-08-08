@@ -33,7 +33,8 @@ Node labels and properties:
 - ComponentReference {name, componentType, partNumber, aircraftType}
 - Fault {name, faultCode, severity, aircraftType}
 - MaintenanceProcedure {name, procedureType, interval, aircraftType}
-- OperatingLimit {name, parameterName, unit, regime, minValue, maxValue, aircraftType}
+- OperatingLimit {limit_id, name, parameterName, unit, regime, minValue, maxValue, aircraftType}  (the 20 canonical limits loaded from CSV; minValue/maxValue are numbers)
+- ExtractedLimit {name, parameterName, unit, regime, minValue, maxValue, aircraftType}  (limits the extractor read out of the manuals; bounds may be text)
 
 Relationships:
 - (Aircraft)-[:HAS_SYSTEM]->(System)
@@ -59,7 +60,9 @@ Relationships:
 - (SystemReference)-[:HAS_COMPONENT]->(ComponentReference)
 - (ComponentReference)-[:HAS_FAULT]->(Fault)
 - (Fault)-[:CORRECTED_BY]->(MaintenanceProcedure)
-- (OperatingLimit)-[:FROM_CHUNK]->(Chunk)
+- (ExtractedLimit)-[:FROM_CHUNK]->(Chunk)
+- (SystemReference)-[:HAS_LIMIT]->(ExtractedLimit)
+- (ComponentReference)-[:HAS_LIMIT]->(ExtractedLimit)
 - (Sensor)-[:HAS_LIMIT]->(OperatingLimit)
 
 Sample tail numbers: N10000 (B737-800), N10001 (A320-200), N10002 (A321neo).
@@ -330,6 +333,7 @@ _MAX_RETRIES = 2
 
 def _run_text2cypher(
     driver: Driver,
+    database: str,
     chat_fn,
     question: str,
 ) -> None:
@@ -352,7 +356,7 @@ def _run_text2cypher(
     _cypher_block(cypher)
 
     try:
-        records, _, _ = driver.execute_query(cypher)
+        records, _, _ = driver.execute_query(cypher, database_=database)
         rows = [dict(r) for r in records]
         _result_table(rows)
     except Exception as exc:
@@ -361,6 +365,7 @@ def _run_text2cypher(
 
 def _run_similarity_search(
     driver: Driver,
+    database: str,
     chat_fn,
     embed_fn,
     question: str,
@@ -395,7 +400,7 @@ LIMIT $top_k"""
 
     try:
         records, _, _ = driver.execute_query(
-            query, embedding=embedding, top_k=top_k,
+            query, embedding=embedding, top_k=top_k, database_=database,
         )
         rows = [dict(r) for r in records]
         if rows:
@@ -414,6 +419,7 @@ LIMIT $top_k"""
 
 def run_agent_samples(
     driver: Driver,
+    database: str,
     *,
     provider: str,
     openai_key: str | None = None,
@@ -452,9 +458,9 @@ def run_agent_samples(
             _header(f"{i}. [{sq.tool}] {sq.category}", f"Tool: {sq.tool}")
 
         if sq.tool == "text2cypher":
-            _run_text2cypher(driver, chat_fn, sq.question)
+            _run_text2cypher(driver, database, chat_fn, sq.question)
         elif sq.tool == "similarity_search":
-            _run_similarity_search(driver, chat_fn, embed_fn, sq.question)
+            _run_similarity_search(driver, database, chat_fn, embed_fn, sq.question)
 
     print(f"{'#' * _W}")
     print("  Agent simulation complete.")

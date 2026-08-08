@@ -245,19 +245,33 @@ Facts that change the query you write:
   - There are no sensor reading values in this graph. No :Reading label, no
     timestamps, no measured values. Sensor nodes are metadata only. A question
     about a measured value cannot be answered here.
-  - OperatingLimit is never empty. Twenty canonical limits load from CSV in
-    Lab 2 and every one of them carries a limit_id. Lab 3 extraction can add
-    more, under the same name format and with no limit_id, so a name can
-    appear twice with different bounds. When the question asks for the
-    documented or official limit, add WHERE ol.limit_id IS NOT NULL.
+  - Refuse reading questions rather than approximating them. If the question
+    asks what a sensor read, or asks for an average, maximum, minimum, count
+    or trend over readings, do not return a number. Return exactly this and
+    nothing else:
+
+        RETURN 'The graph holds no sensor readings.' AS cannot_answer
+
+    Never substitute a limit, a threshold or a ceiling for a measurement.
+    Answering "which aircraft has the highest average vibration" with
+    maxValue 3.0 from the 'Vibration - B737-800' limit is wrong. 3.0 is the
+    takeoff ceiling every B737-800 shares, transcribed from a manual. It is
+    not a reading, it is not an average, and it is not that aircraft's.
+  - OperatingLimit is exactly the twenty canonical limits loaded in Lab 2,
+    four parameters for each of five aircraft models. It is never empty, never
+    duplicated, and it needs no filter.
   - minValue and maxValue are both FLOAT. Compare them directly.
-  - minValue is null on ten of the twenty canonical limits, because a
-    vibration or speed limit is a ceiling with no floor. Check
-    ol.minValue IS NOT NULL before comparing against it, or the row drops out
-    with no error.
+  - minValue is null on ten of the twenty, because a vibration or speed limit
+    is a ceiling with no floor. Check ol.minValue IS NOT NULL before comparing
+    against it, or the row drops out with no error.
   - OperatingLimit.regime says which phase of flight a limit applies to. A
     limit is only meaningful against readings from that same regime, so return
     the regime alongside any limit you report.
+  - ExtractedLimit is a separate label holding what the Lab 3 language model
+    pulled out of the manual text. It exists only if the participant ran Lab 3
+    with extraction on, its contents vary from one graph to the next, and it
+    can be empty. It records what a manual said, not what the fleet is held
+    to, so never treat it as authoritative. OperatingLimit is the authority.
   - Severity values are upper case, for example 'CRITICAL'.
   - Dates are ISO 8601 STRINGs, so compare them as strings or parse with
     date() and datetime().
@@ -282,6 +296,9 @@ Rules:
   - End with a RETURN that names every column with AS.
   - Add LIMIT {limit} unless the question asks for a count or an aggregate.
   - Use only labels, relationship types and properties from the schema.
+  - A question about a measured value has no answer here. Return
+    RETURN 'The graph holds no sensor readings.' AS cannot_answer rather than
+    a limit, a threshold or any other number standing in for a measurement.
   - Output the query alone. No prose, no explanation, no markdown fence.
 
 Question: {question}
@@ -340,6 +357,10 @@ documented operating limit attached to a sensor.
 Use it for topology, component hierarchy, maintenance and fault history,
 flights, routes, delays, part removals, and the documented limit values stored
 on OperatingLimit nodes.
+
+It cannot see a reading. A documented limit is what the fleet is held to, not
+what a sensor measured, so a question about a measured value goes to
+genie_node even when the graph holds a limit on the same parameter.
 
 ### graphrag_node, the maintenance manuals
 Questions that start from language in a manual rather than from a named node.
@@ -424,6 +445,16 @@ which tool supplied which part.
 If a finding answers a question that is close to the one asked but not exactly
 it, use the finding and say what it actually covers. Only say something is
 unanswered when no finding bears on it at all.
+
+If a finding says its tool could not answer, carry that through. Report that
+the tool could not answer and do not fill the gap with a number from another
+finding that measures something else.
+
+Two findings that describe different quantities are not rival answers, so do
+not present them side by side as though one contradicts the other. A measured
+average and a documented limit are the clearest case: the average is what a
+sensor read, the limit is the ceiling a manual sets for every aircraft of that
+model. Name which is which, and give the measured value as the answer.
 
 Be concise. No preamble.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,7 @@ EXTRACTED_LABELS = [
     "ComponentReference",
     "Fault",
     "MaintenanceProcedure",
-    "OperatingLimit",
+    "ExtractedLimit",
 ]
 
 # ---------------------------------------------------------------------------
@@ -87,7 +88,7 @@ class ContextPrependingSplitter(TextSplitter):
     engine designation (e.g. "LEAP-1A") dominates and the aircraft model
     (e.g. "A321neo") is never mentioned.  Without explicit context, the LLM
     confuses engine types for aircraft types, breaking downstream cross-links
-    that match on ``OperatingLimit.aircraftType == Aircraft.model``.
+    that match on ``SystemReference.aircraftType == Aircraft.model``.
 
     This wrapper solves the problem by delegating splitting to the inner
     splitter, then prepending a short context header to *every* resulting
@@ -217,7 +218,7 @@ Return result as JSON using this format:
 {{"nodes": [
   {{"id": "0", "label": "AircraftModel", "properties": {{"name": "A320-200"}}}},
   {{"id": "1", "label": "ComponentReference", "properties": {{"name": "EGT Sensor - A320-200", "componentType": "EGT Sensor", "aircraftType": "A320-200"}}}},
-  {{"id": "2", "label": "OperatingLimit", "properties": {{"name": "EGT - A320-200", "parameterName": "EGT", "aircraftType": "A320-200", "unit": "°C", "maxValue": "695"}}}}
+  {{"id": "2", "label": "ExtractedLimit", "properties": {{"name": "EGT - A320-200", "parameterName": "EGT", "aircraftType": "A320-200", "unit": "°C", "maxValue": "695"}}}}
 ],
 "relationships": [
   {{"start_node_id": "1", "end_node_id": "2", "type": "HAS_LIMIT", "properties": {{}}}}
@@ -245,12 +246,12 @@ components, faults, procedures, and operating limits when they are explicitly \
 mentioned in the text. Do not invent part numbers, fault codes, intervals, or \
 limits that are not present.
 
-4. PARAMETER NAMES: For OperatingLimit, `parameterName` should use short \
+4. PARAMETER NAMES: For ExtractedLimit, `parameterName` should use short \
 sensor names from monitoring tables (e.g. EGT, Vibration, N1Speed, FuelFlow). \
 Prefer concise sensor-style names over verbose descriptions.
 
 5. ENTITY NAME FORMAT: For SystemReference, ComponentReference, Fault, \
-MaintenanceProcedure, and OperatingLimit, the `name` property must follow \
+MaintenanceProcedure, and ExtractedLimit, the `name` property must follow \
 "<specific name> - <aircraftType>" (e.g. "EGT - A320-200"). AircraftModel \
 uses the aircraft type only (e.g. "A320-200"). This prevents cross-model \
 entity resolution mistakes.
@@ -259,7 +260,7 @@ entity resolution mistakes.
 Prefer the schema patterns: AircraftModel HAS_SYSTEM SystemReference, \
 SystemReference HAS_COMPONENT ComponentReference, ComponentReference HAS_FAULT \
 Fault, Fault CORRECTED_BY MaintenanceProcedure, and component/system HAS_LIMIT \
-OperatingLimit.
+ExtractedLimit.
 
 Assign a unique ID (string) to each node and reuse it for relationships.
 
@@ -317,6 +318,7 @@ def _create_extraction_llm(
 
 def _create_pipeline(
     driver: Driver,
+    database: str,
     *,
     provider: str,
     openai_api_key: str | None,
@@ -368,6 +370,7 @@ def _create_pipeline(
     pipeline = SimpleKGPipeline(
         llm=llm,
         driver=driver,
+        neo4j_database=database,
         embedder=embedder,
         schema=schema,
         text_splitter=splitter,
@@ -526,6 +529,7 @@ def _document_metadata(meta: DocumentMeta) -> dict[str, str]:
 
 def process_all_documents(
     driver: Driver,
+    database: str,
     document_dir: Path,
     *,
     provider: str,
@@ -548,6 +552,7 @@ def process_all_documents(
     """
     pipeline, splitter = _create_pipeline(
         driver,
+        database,
         provider=provider,
         openai_api_key=openai_api_key,
         anthropic_api_key=anthropic_api_key,
@@ -583,6 +588,7 @@ def process_all_documents(
 
 def process_all_documents_lexical_only(
     driver: Driver,
+    database: str,
     document_dir: Path,
     *,
     embedding_provider: str,
@@ -596,7 +602,7 @@ def process_all_documents_lexical_only(
     """Chunk and embed every maintenance manual, without entity extraction.
 
     Produces exactly the Document and Chunk half of what
-    :func:`process_all_documents` produces, and none of the ``OperatingLimit``,
+    :func:`process_all_documents` produces, and none of the ``ExtractedLimit``,
     ``Fault``, or other extracted entities.  This is the catch-up path: it is
     what Lab 5's ``graphrag_node`` needs and needs no LLM API key, which the
     extraction path does.
@@ -642,7 +648,7 @@ def process_all_documents_lexical_only(
     )
     chunk_embedder = TextChunkEmbedder(embedder=embedder)
     lexical_graph_builder = LexicalGraphBuilder()
-    writer = Neo4jWriter(driver=driver)
+    writer = Neo4jWriter(driver=driver, neo4j_database=database)
 
     max_chars = _max_chars(chunk_size, chunk_overlap, enrich_sample_size)
 
@@ -681,11 +687,12 @@ def process_all_documents_lexical_only(
 # ---------------------------------------------------------------------------
 
 
-def link_to_existing_graph(driver: Driver) -> None:
+def link_to_existing_graph(driver: Driver, database: str) -> None:
     """Create relationships between enrichment data and the operational graph."""
+    execute_query = partial(execute_query, database_=database)
 
     # Document -[:APPLIES_TO]-> Aircraft (via document metadata aircraftType)
-    records, _, _ = driver.execute_query("""
+    records, _, _ = execute_query("""
         MATCH (d:Document) WHERE d.aircraftType IS NOT NULL
         MATCH (a:Aircraft {model: d.aircraftType})
         MERGE (d)-[:APPLIES_TO]->(a)
@@ -695,7 +702,7 @@ def link_to_existing_graph(driver: Driver) -> None:
 
     # AircraftModel -[:DESCRIBES_MODEL]-> Aircraft
     # (model-level manual entity to tail-level fleet)
-    records, _, _ = driver.execute_query("""
+    records, _, _ = execute_query("""
         MATCH (am:AircraftModel)
         MATCH (a:Aircraft {model: am.name})
         MERGE (am)-[:DESCRIBES_MODEL]->(a)
@@ -705,7 +712,7 @@ def link_to_existing_graph(driver: Driver) -> None:
 
     # SystemReference -[:DESCRIBES_SYSTEM]-> System
     # (conservative model + system type/name match)
-    records, _, _ = driver.execute_query("""
+    records, _, _ = execute_query("""
         MATCH (sr:SystemReference)
         WHERE sr.aircraftType IS NOT NULL
         WITH sr, toLower(replace(sr.name, ' - ' + sr.aircraftType, '')) AS refName
@@ -719,7 +726,7 @@ def link_to_existing_graph(driver: Driver) -> None:
 
     # ComponentReference -[:DESCRIBES_COMPONENT]-> Component
     # (model + component type/name match)
-    records, _, _ = driver.execute_query("""
+    records, _, _ = execute_query("""
         MATCH (cr:ComponentReference)
         WHERE cr.aircraftType IS NOT NULL
         WITH cr,
@@ -739,7 +746,7 @@ def link_to_existing_graph(driver: Driver) -> None:
     )
 
     # Sensor -[:HAS_LIMIT]-> OperatingLimit (match parameterName + aircraftType)
-    records, _, _ = driver.execute_query("""
+    records, _, _ = execute_query("""
         MATCH (a:Aircraft)-[:HAS_SYSTEM]->(sys:System)-[:HAS_SENSOR]->(s:Sensor)
         MATCH (ol:OperatingLimit {parameterName: s.type, aircraftType: a.model})
         MERGE (s)-[:HAS_LIMIT]->(ol)
@@ -753,15 +760,16 @@ def link_to_existing_graph(driver: Driver) -> None:
 # ---------------------------------------------------------------------------
 
 
-def clear_enrichment_data(driver: Driver) -> None:
+def clear_enrichment_data(driver: Driver, database: str) -> None:
     """Delete all Document, Chunk, and extracted entity nodes (preserves operational graph)."""
+    execute_query = partial(execute_query, database_=database)
     labels_to_clear = ["Document", "Chunk"] + EXTRACTED_LABELS
     deleted_total = 0
 
     print("Clearing enrichment data (Documents, Chunks, extracted entities)...")
     for label in labels_to_clear:
         while True:
-            records, _, _ = driver.execute_query(
+            records, _, _ = execute_query(
                 f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted"
             )
             count = records[0]["deleted"]
@@ -772,7 +780,7 @@ def clear_enrichment_data(driver: Driver) -> None:
     # Clean up __Entity__ and __KGBuilder__ labeled nodes left by the pipeline
     for label in ["__Entity__", "__KGBuilder__"]:
         while True:
-            records, _, _ = driver.execute_query(
+            records, _, _ = execute_query(
                 f"MATCH (n:{label}) WITH n LIMIT 500 DETACH DELETE n RETURN count(*) AS deleted"
             )
             count = records[0]["deleted"]
@@ -790,10 +798,13 @@ def clear_enrichment_data(driver: Driver) -> None:
 _SAMPLE_SIZE = 5
 
 
-def _get_existing_schema_tokens(driver: Driver) -> tuple[set[str], set[str]]:
+def _get_existing_schema_tokens(
+    driver: Driver, database: str
+) -> tuple[set[str], set[str]]:
     """Return labels and relationship types currently present in the graph."""
-    label_rows, _, _ = driver.execute_query("CALL db.labels() YIELD label RETURN label")
-    rel_rows, _, _ = driver.execute_query(
+    execute_query = partial(driver.execute_query, database_=database)
+    label_rows, _, _ = execute_query("CALL db.labels() YIELD label RETURN label")
+    rel_rows, _, _ = execute_query(
         "CALL db.relationshipTypes() YIELD relationshipType RETURN relationshipType"
     )
     return (
@@ -802,12 +813,16 @@ def _get_existing_schema_tokens(driver: Driver) -> tuple[set[str], set[str]]:
     )
 
 
-def validate_enrichment(driver: Driver, *, skip_extraction: bool = False) -> None:
+def validate_enrichment(
+    driver: Driver, database: str, *, skip_extraction: bool = False
+) -> None:
     """Run sample queries to verify embeddings, entities, and cross-links.
 
     With *skip_extraction* the extracted entity counts and the cross-links that
     only extraction can produce are left out, since the run never wrote them.
     """
+
+    execute_query = partial(driver.execute_query, database_=database)
 
     print(f"\nValidation (sample size {_SAMPLE_SIZE}):")
     if skip_extraction:
@@ -815,12 +830,12 @@ def validate_enrichment(driver: Driver, *, skip_extraction: bool = False) -> Non
             "  Extraction checks skipped: this run skipped entity extraction, so "
             "extracted entities and their cross-links were not verified."
         )
-    labels, rel_types = _get_existing_schema_tokens(driver)
+    labels, rel_types = _get_existing_schema_tokens(driver, database)
 
     # 1. Chunks with embeddings linked to documents
     rows = []
     if {"Chunk", "Document"}.issubset(labels) and "FROM_DOCUMENT" in rel_types:
-        rows, _, _ = driver.execute_query(f"""
+        rows, _, _ = execute_query(f"""
             MATCH (c:Chunk)-[:FROM_DOCUMENT]->(d:Document)
             WHERE c.embedding IS NOT NULL
             RETURN DISTINCT d.documentId AS doc, elementId(c) AS chunk_id, size(c.embedding) AS dims
@@ -834,7 +849,7 @@ def validate_enrichment(driver: Driver, *, skip_extraction: bool = False) -> Non
 
     # 2. Extracted manual entities
     if not skip_extraction:
-        rows, _, _ = driver.execute_query(
+        rows, _, _ = execute_query(
             """
             UNWIND $labels AS label
             OPTIONAL MATCH (n)
@@ -913,7 +928,7 @@ def validate_enrichment(driver: Driver, *, skip_extraction: bool = False) -> Non
         }.issubset(labels | rel_types):
             rows = []
         else:
-            rows, _, _ = driver.execute_query(query)
+            rows, _, _ = execute_query(query)
         if rows:
             pairs = ", ".join(f"{r['src']}->{r['tgt']}" for r in rows)
             print(f"    {label}: {pairs}")

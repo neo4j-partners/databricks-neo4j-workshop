@@ -199,7 +199,7 @@ def _run_enrich(
     )
 
     print("Clearing existing enrichment data (safe re-run)...")
-    clear_enrichment_data(driver)
+    clear_enrichment_data(driver, settings.neo4j_database)
     print()
 
     sample_note = (
@@ -216,6 +216,7 @@ def _run_enrich(
         )
         process_all_documents_lexical_only(
             driver,
+            settings.neo4j_database,
             settings.document_dir,
             embedding_provider=creds.embedding_provider,
             embedding_model=creds.embedding_model,
@@ -227,7 +228,7 @@ def _run_enrich(
         )
     else:
         print("Dropping extraction constraints for pipeline write phase...")
-        drop_extraction_constraints(driver)
+        drop_extraction_constraints(driver, settings.neo4j_database)
         print()
 
         print(
@@ -237,6 +238,7 @@ def _run_enrich(
 
         process_all_documents(
             driver,
+            settings.neo4j_database,
             settings.document_dir,
             provider=creds.provider,
             openai_api_key=creds.openai_key,
@@ -252,18 +254,20 @@ def _run_enrich(
         )
 
         print("\nCreating extraction constraints (post entity-resolution)...")
-        create_extraction_constraints(driver)
+        create_extraction_constraints(driver, settings.neo4j_database)
 
     print("\nCreating embedding indexes...")
-    create_embedding_indexes(driver, creds.embedding_dims)
+    create_embedding_indexes(driver, settings.neo4j_database, creds.embedding_dims)
 
     print()
-    load_operating_limits(driver, settings.data_dir)
+    load_operating_limits(driver, settings.neo4j_database, settings.data_dir)
 
     print("\nLinking to existing graph...")
-    link_to_existing_graph(driver)
+    link_to_existing_graph(driver, settings.neo4j_database)
 
-    validate_enrichment(driver, skip_extraction=skip_extraction)
+    validate_enrichment(
+        driver, settings.neo4j_database, skip_extraction=skip_extraction
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -273,9 +277,10 @@ def _run_enrich(
 
 _SKIP_EXTRACTION_HELP = (
     "Chunk and embed the manuals but skip LLM entity extraction. Needs no "
-    "OpenAI or Anthropic key. Leaves out OperatingLimit and the other extracted "
-    "entities, so Lab 3 notebook 02's operating-limit retriever has nothing to "
-    "traverse to. Everything vector search needs is still written."
+    "OpenAI or Anthropic key. Leaves out ExtractedLimit and the other extracted "
+    "entities. The canonical OperatingLimit nodes load from CSV either way, so "
+    "Lab 3 notebook 02's operating-limit retriever still has a chain to "
+    "traverse. Everything vector search needs is still written."
 )
 
 
@@ -299,16 +304,16 @@ def setup_cmd(
     print(f"Connecting to {settings.neo4j_uri}...")
     with _connect(settings) as driver:
         print("Creating constraints...")
-        create_constraints(driver)
+        create_constraints(driver, settings.neo4j_database)
         print("\nCreating indexes...")
-        create_indexes(driver)
+        create_indexes(driver, settings.neo4j_database)
         print("\nCreating fulltext indexes...")
-        create_fulltext_indexes(driver)
+        create_fulltext_indexes(driver, settings.neo4j_database)
         print()
 
-        load_nodes(driver, settings.data_dir)
+        load_nodes(driver, settings.neo4j_database, settings.data_dir)
         print()
-        load_relationships(driver, settings.data_dir)
+        load_relationships(driver, settings.neo4j_database, settings.data_dir)
         print()
 
         try:
@@ -321,6 +326,7 @@ def setup_cmd(
 
         verify(
             driver,
+            settings.neo4j_database,
             expected_embedding_dimensions=settings.embedding_dimensions,
             skip_extraction=skip_extraction,
         )
@@ -344,6 +350,7 @@ def verify_cmd(
     with _connect(settings) as driver:
         passed = verify(
             driver,
+            settings.neo4j_database,
             expected_embedding_dimensions=settings.embedding_dimensions,
             strict=strict,
         )
@@ -359,7 +366,7 @@ def clean_cmd() -> None:
 
     print(f"Connecting to {settings.neo4j_uri}...")
     with _connect(settings) as driver:
-        clear_database(driver)
+        clear_database(driver, settings.neo4j_database)
 
     print("\nDone.")
 
@@ -373,7 +380,7 @@ def clean_enrichment_cmd() -> None:
 
     print(f"Connecting to {settings.neo4j_uri}...")
     with _connect(settings) as driver:
-        clear_enrichment_data(driver)
+        clear_enrichment_data(driver, settings.neo4j_database)
 
     print("\nDone.")
 
@@ -390,24 +397,24 @@ def load_operational_cmd() -> None:
     print(f"Connecting to {settings.neo4j_uri}...")
     with _connect(settings) as driver:
         print("Creating constraints...")
-        create_constraints(driver)
+        create_constraints(driver, settings.neo4j_database)
         print("\nCreating indexes...")
-        create_indexes(driver)
+        create_indexes(driver, settings.neo4j_database)
         print("\nCreating fulltext indexes...")
-        create_fulltext_indexes(driver)
+        create_fulltext_indexes(driver, settings.neo4j_database)
         print()
 
-        load_nodes(driver, settings.data_dir)
+        load_nodes(driver, settings.neo4j_database, settings.data_dir)
         print()
-        load_relationships(driver, settings.data_dir)
+        load_relationships(driver, settings.neo4j_database, settings.data_dir)
         print()
-        load_operating_limits(driver, settings.data_dir)
+        load_operating_limits(driver, settings.neo4j_database, settings.data_dir)
         print()
 
         print("Linking existing enrichment to operational graph...")
-        link_to_existing_graph(driver)
+        link_to_existing_graph(driver, settings.neo4j_database)
 
-        validate_enrichment(driver)
+        validate_enrichment(driver, settings.neo4j_database)
 
     elapsed = time.monotonic() - start
     print(f"\nDone in {_fmt_elapsed(elapsed)}.")
@@ -489,7 +496,9 @@ def samples_cmd() -> None:
 
     print(f"Connecting to {settings.neo4j_uri}...")
     with _connect(settings) as driver:
-        run_all_samples(driver, sample_size=settings.sample_size)
+        run_all_samples(
+            driver, settings.neo4j_database, sample_size=settings.sample_size
+        )
 
 
 @app.command("agent-samples")
@@ -505,6 +514,7 @@ def agent_samples_cmd() -> None:
     with _connect(settings) as driver:
         run_agent_samples(
             driver,
+            settings.neo4j_database,
             provider=creds.provider,
             openai_key=creds.openai_key,
             anthropic_key=creds.anthropic_key,

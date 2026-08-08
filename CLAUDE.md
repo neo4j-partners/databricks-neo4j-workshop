@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A hands-on workshop teaching production-ready AI agents combining **Neo4j graph databases** with **Databricks AI/ML**. Demonstrates a dual-database architecture for aircraft digital twins where Neo4j handles relationship-rich data (topology, maintenance, flights) and Databricks Lakehouse handles high-volume time-series sensor telemetry.
 
-The workshop builds toward a **LangGraph supervisor agent** in Lab 5 that routes questions across three tools: a Genie space for sensor analytics in SQL, Cypher over the participant's own Aura instance, and GraphRAG retrieval over maintenance manuals. Lab 6 then gives that agent memory in Neo4j. Lab 4 Part B is an optional advanced path that builds a no-code Supervisor Agent in Databricks Agent Bricks over Neo4j MCP.
+The workshop builds toward a **LangGraph supervisor agent** in Lab 5 that routes questions across three tools: a Genie space for sensor analytics in SQL, Cypher over the participant's own Aura instance, and GraphRAG retrieval over maintenance manuals. Lab 6 then gives that agent memory in Neo4j. Lab 4 Part B is an instructor demo, not a participant exercise: the instructor builds a no-code Supervisor Agent in Databricks Agent Bricks over Neo4j MCP against their own demo instance, and participants watch.
 
 ## Build & Run Commands
 
@@ -78,17 +78,17 @@ environment. See `workshop-setup/auto_scripts/README.md`.
 - **Databricks**: Delta tables for `sensor_readings` (~155K rows), `sensors`, `systems`, `aircraft`
 - Aircraft/Systems/Sensors exist in **both** databases as join points
 
-### Multi-Agent Architecture (Lab 4 Part B, optional and advanced)
+### Multi-Agent Architecture (Lab 4 Part B, instructor demo)
 ```
 User Question → Supervisor Agent (Agent Bricks)
   ├→ Genie space → Databricks Lakehouse (natural language → SQL)
   └→ Neo4j MCP Agent → Neo4j Aura (LangGraph + MCP tools: get_neo4j_schema, read_neo4j_cypher)
 ```
 
-The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connection to an external MCP server. Setup: `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`.
+The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connection to an external MCP server. It lives only in the instructor's demo workspace, and participants never create or use one. Instructor preparation: `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`.
 
 ### Lab Progression
-Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 Part A (Genie space over lakehouse telemetry, required) and Part B (Neo4j MCP + Agent Bricks Supervisor Agent, optional and advanced) → Lab 5 (LangGraph agent over Genie, the participant's own Aura instance, and the Lab 3 retrievers, deployed to Model Serving) → Lab 6 (Neo4j agent memory)
+Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 Part A (Genie space over lakehouse telemetry, the participant path) with Part B (Neo4j MCP + Agent Bricks Supervisor Agent) shown alongside it as an instructor demo → Lab 5 (LangGraph agent over Genie, the participant's own Aura instance, and the Lab 3 retrievers, deployed to Model Serving) → Lab 6 (Neo4j agent memory)
 
 Labs 5 and 6 are planned and not yet on disk. See `expand.md`.
 

@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     neo4j_uri: str
     neo4j_username: str = "neo4j"
     neo4j_password: SecretStr
+    # The database every session and query runs against. Aura Free serves a
+    # single database named "neo4j", which is why that is the default.
+    neo4j_database: str = "neo4j"
 
     data_dir: DirectoryPath = _DATA_DIR  # type: ignore[assignment]
     document_dir: DirectoryPath = _DOCUMENT_DIR  # type: ignore[assignment]

@@ -219,7 +219,7 @@ ORDER BY Model
 
 > **Concepts**: `collect(DISTINCT ...)[0]` picks one engine name from the list — useful for surfacing a representative value without returning a full array.
 >
-> **Note on N1Speed units:** N1Speed readings are a percentage of each engine's own 100% fan speed, which is why `Sensor.unit` and `OperatingLimit.unit` are both `% RPM`. Every model therefore reads in the same **85 to 100** band even though the physical shaft speeds behind those percentages differ widely. The A220-300's PW1500G drives its fan through an epicyclic reduction gearbox at roughly 2,800 rpm at 100% N1, against 3,900 to 7,400 rpm for the direct-drive fans on the other models. Reporting N1 as a percentage is what makes a cross-fleet comparison, or a comparison against the maintenance manuals' limits, meaningful.
+> **Note on N1Speed units:** N1Speed readings are a percentage of each engine's own 100% fan speed, which is why `Sensor.unit` and `OperatingLimit.unit` are both `% RPM`. Every model therefore reads in the same **85 to 100** band even though the physical shaft speeds behind those percentages differ widely. The A220-300's PW1500G drives its fan through an epicyclic reduction gearbox at roughly 2,800 rpm at 100% N1, against 3,900 to 7,400 rpm for the direct-drive fans on the other models. Reporting N1 as a percentage is what makes a cross-fleet comparison, or a comparison against the maintenance manuals' limits, meaningful. `OperatingLimit` means the 20 canonical limits this lab loaded from `nodes_operating_limits.csv` and nothing else. Lab 3 extracts limits from the manual text under a separate label, `ExtractedLimit`, so the two never mix.
 
 ---
 

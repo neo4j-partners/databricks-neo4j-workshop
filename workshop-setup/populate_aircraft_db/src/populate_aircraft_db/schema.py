@@ -17,10 +17,13 @@ CONSTRAINTS: list[tuple[str, str]] = [
     ("MaintenanceEvent", "event_id"),
     ("Removal", "removal_id"),
     ("Document", "documentId"),
-    # OperatingLimit loads from CSV on every path, so it needs its constraint on
-    # every path. It also stays in EXTRACTION_CONSTRAINTS below, which drops and
-    # recreates it around the SimpleKGPipeline write phase.
-    ("OperatingLimit", "name"),
+    # OperatingLimit means the 20 canonical rows of nodes_operating_limits.csv
+    # and nothing else, so it is keyed on the limit_id that CSV assigns. This is
+    # the same constraint Lab 2's notebook creates. It is absent from
+    # EXTRACTION_CONSTRAINTS below and therefore never dropped: extraction now
+    # writes ExtractedLimit, so it cannot collide with these rows and the
+    # constraint can stay up for the whole run.
+    ("OperatingLimit", "limit_id"),
 ]
 
 # (label, property) pairs — property indexes for common lookups.
@@ -41,14 +44,16 @@ FULLTEXT_INDEXES: list[tuple[str, str, list[str]]] = [
 ]
 
 # Constraints for entity types created by the enrichment phase of `setup`.
-# SimpleKGPipeline deduplicates on the `name` property.
+# SimpleKGPipeline deduplicates on the `name` property. Limits extracted from
+# the manuals land on ExtractedLimit, which keeps them clear of the canonical
+# OperatingLimit rows above.
 EXTRACTION_CONSTRAINTS: list[tuple[str, str]] = [
     ("AircraftModel", "name"),
     ("SystemReference", "name"),
     ("ComponentReference", "name"),
     ("Fault", "name"),
     ("MaintenanceProcedure", "name"),
-    ("OperatingLimit", "name"),
+    ("ExtractedLimit", "name"),
 ]
 
 
@@ -57,51 +62,64 @@ def _quote_identifier(identifier: str) -> str:
     return f"`{identifier.replace('`', '``')}`"
 
 
-def create_constraints(driver: Driver) -> None:
+def create_constraints(driver: Driver, database: str) -> None:
     """Create uniqueness constraints (idempotent)."""
     for label, prop in CONSTRAINTS:
         driver.execute_query(
-            f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{label}) REQUIRE n.{prop} IS UNIQUE"
+            f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{label}) REQUIRE n.{prop} IS UNIQUE",
+            database_=database,
         )
         print(f"  [OK] Constraint: {label}.{prop}")
 
 
-def create_indexes(driver: Driver) -> None:
+def create_indexes(driver: Driver, database: str) -> None:
     """Create property indexes (idempotent)."""
     for label, prop in INDEXES:
         index_name = f"idx_{label.lower()}_{prop.lower()}"
         driver.execute_query(
-            f"CREATE INDEX {index_name} IF NOT EXISTS FOR (n:{label}) ON (n.{prop})"
+            f"CREATE INDEX {index_name} IF NOT EXISTS FOR (n:{label}) ON (n.{prop})",
+            database_=database,
         )
         print(f"  [OK] Index: {label}.{prop}")
 
 
-def create_fulltext_indexes(driver: Driver) -> None:
+def create_fulltext_indexes(driver: Driver, database: str) -> None:
     """Create fulltext indexes for sample demo queries (idempotent)."""
     for name, label, props in FULLTEXT_INDEXES:
         props_clause = ", ".join(f"n.{p}" for p in props)
         driver.execute_query(
             f"CREATE FULLTEXT INDEX {name} IF NOT EXISTS "
-            f"FOR (n:{label}) ON EACH [{props_clause}]"
+            f"FOR (n:{label}) ON EACH [{props_clause}]",
+            database_=database,
         )
         print(f"  [OK] Fulltext index: {name} on {label}({', '.join(props)})")
 
 
-def create_extraction_constraints(driver: Driver) -> None:
+def create_extraction_constraints(driver: Driver, database: str) -> None:
     """Create uniqueness constraints for extracted entity types (idempotent)."""
     for label, prop in EXTRACTION_CONSTRAINTS:
         driver.execute_query(
-            f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{label}) REQUIRE n.{prop} IS UNIQUE"
+            f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{label}) REQUIRE n.{prop} IS UNIQUE",
+            database_=database,
         )
         print(f"  [OK] Constraint: {label}.{prop}")
 
 
-def drop_extraction_constraints(driver: Driver) -> None:
+def drop_extraction_constraints(driver: Driver, database: str) -> None:
     """Drop extracted-entity uniqueness constraints before SimpleKGPipeline runs.
 
-    The pipeline writes duplicate extracted nodes first and performs entity
-    resolution afterward. Uniqueness constraints are therefore valid only after
-    the pipeline has finished.
+    Still required. The pipeline's writer issues `CREATE` for every entity
+    mention it finds, one node per mention, and collapses the duplicates only
+    afterward during entity resolution. A `name` uniqueness constraint would
+    therefore fail partway through the write, before the duplicates are gone.
+
+    EXTRACTION_CONSTRAINTS no longer lists OperatingLimit, so this only touches
+    labels the pipeline actually writes. The canonical OperatingLimit constraint
+    on `limit_id` stays up for the whole run. That is a real guarantee rather
+    than an accident of the extracted nodes lacking `limit_id`: a node property
+    uniqueness constraint is not enforced against nodes that lack the property,
+    so leaving the constraint up would not have caught a collision on `name`.
+    Keeping the two populations under separate labels is what settles it.
     """
     for label, prop in EXTRACTION_CONSTRAINTS:
         records, _, _ = driver.execute_query(
@@ -115,15 +133,17 @@ def drop_extraction_constraints(driver: Driver) -> None:
             """,
             label=label,
             property=prop,
+            database_=database,
         )
         for record in records:
             driver.execute_query(
-                f"DROP CONSTRAINT {_quote_identifier(record['name'])} IF EXISTS"
+                f"DROP CONSTRAINT {_quote_identifier(record['name'])} IF EXISTS",
+                database_=database,
             )
             print(f"  [OK] Dropped constraint: {label}.{prop}")
 
 
-def create_embedding_indexes(driver: Driver, dimensions: int) -> None:
+def create_embedding_indexes(driver: Driver, database: str, dimensions: int) -> None:
     """Create vector and fulltext indexes for Chunk embeddings (idempotent).
 
     Imports neo4j_graphrag lazily so that other commands don't require it.
@@ -137,6 +157,7 @@ def create_embedding_indexes(driver: Driver, dimensions: int) -> None:
         embedding_property="embedding",
         dimensions=dimensions,
         similarity_fn="cosine",
+        neo4j_database=database,
     )
     print("  [OK] Vector index: maintenanceChunkEmbeddings")
 
@@ -145,6 +166,7 @@ def create_embedding_indexes(driver: Driver, dimensions: int) -> None:
         name="maintenanceChunkText",
         label="Chunk",
         node_properties=["text"],
+        neo4j_database=database,
     )
     print("  [OK] Fulltext index: maintenanceChunkText")
 
@@ -291,8 +313,11 @@ def build_extraction_schema():
             additional_properties=False,
         ),
         NodeType(
-            label="OperatingLimit",
-            description="An operating parameter limit for an aircraft system.",
+            label="ExtractedLimit",
+            description=(
+                "An operating parameter limit stated in a maintenance manual. "
+                "Distinct from the canonical OperatingLimit rows loaded from CSV."
+            ),
             properties=[
                 PropertyType(
                     name="name",
@@ -360,11 +385,11 @@ def build_extraction_schema():
             target="MaintenanceProcedure",
         ),
         Pattern(source="Fault", relationship="CORRECTED_BY", target="MaintenanceProcedure"),
-        Pattern(source="SystemReference", relationship="HAS_LIMIT", target="OperatingLimit"),
+        Pattern(source="SystemReference", relationship="HAS_LIMIT", target="ExtractedLimit"),
         Pattern(
             source="ComponentReference",
             relationship="HAS_LIMIT",
-            target="OperatingLimit",
+            target="ExtractedLimit",
         ),
     ]
     constraints = [
@@ -380,7 +405,7 @@ def build_extraction_schema():
             "ComponentReference",
             "Fault",
             "MaintenanceProcedure",
-            "OperatingLimit",
+            "ExtractedLimit",
         )
     ]
 

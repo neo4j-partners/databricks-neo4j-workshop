@@ -4,7 +4,77 @@ Working document. Status as of 2026-08-08:
 
 - **Done.** The legacy site 3 is deleted and its references are scrubbed. See The legacy cleanup.
 - **Done.** B1 is measured. See B1, which is no longer a hypothesis.
-- **Not done.** Neither delivery path is fixed. Sites 1 and 2 still ship a notebook, so a class running today still hits this.
+- **Done.** Site 1 is fixed, scoped to `.py`. See What was fixed, and how.
+- **Not done.** Site 2, `sync_notebooks.py`, still ships a notebook to non-Vocareum workspaces.
+- **Not done here.** The fix reaches students only after a dependency resync and an upload from this repository. See Getting the fix to a student.
+- **Dead.** B2 is not available. The Files API refuses a `/Workspace` path outright. See B2.
+
+## What was fixed, and how
+
+**Site 1, `neo4j-partners/dbx-vocareum`, commit `68e63a5`.** B1, scoped to `.py`. Three files, 109 insertions, and the full test suite green.
+
+Two edits in `src/dbx_vocareum_tools/labruntime/voclab.py`, which is the "two changes, not one" this document already called for:
+
+1. **`NOTEBOOK_FORMATS[".py"]`** from `("SOURCE", "PYTHON")` to `("AUTO", None)`. The other plain-text extensions stay `SOURCE`. Nothing imports a `.sql` or a `.scala`, so a notebook is what a course naming one is asking for, and moving them would silently change what arrives. That answers open question 4.
+2. **A new `NOTEBOOK_KEEP_EXTENSIONS = (".py",)`**, read by `notebook_workspace_path`. `.py` keeps its extension on the target path. Everything else is still stripped.
+
+Neither edit works alone, and the reason is sharper than "two changes". A third measurement, which this document did not have when it recommended B1, is that **AUTO stores anything at an extensionless path as a FILE, whatever the content**. So shipping edit 1 without edit 2 would not merely leave `data_utils` broken. It would turn every `.ipynb` in every course into a workspace file, silently, because `voclab.py` strips the extension before it posts. The scoping to `.py` is what contains that.
+
+The comment blocks on both constants carry the measurements, because `labruntime/README.md` in that repository is the canonical account of what runs in Vocareum and it stated the old rule as fact. Its notebook-delivery section was rewritten in the same commit.
+
+### Tests
+
+Three added to `tests/test_voclab.py`, one fixture corrected:
+
+| Test | What it pins |
+| --- | --- |
+| `test_a_python_module_keeps_its_extension_on_the_way_in` | the path half of the change |
+| `test_a_python_module_is_imported_as_auto_with_no_language` | `format=AUTO`, and no `language` key in the body |
+| `test_a_module_the_student_already_has_is_left_alone` | the check and the write name the same path, so a returning student is not overwritten |
+| `test_every_parent_folder_is_created_before_any_notebook_is_written` | its fixture stubbed `Lab_3/data_utils` and now stubs `Lab_3/data_utils.py`. It failed on the first run of the change, which is the test doing its job |
+
+### A hazard this document did not name
+
+`notebook_import_one` is idempotent by skipping a taken path, and `notebook_exists` decides that by asking `GET /api/2.0/workspace/get-status` for **the path `voclab.py` itself constructed**. If the path written and the path checked ever differ, the check 404s on every run, `user_setup.sh` re-imports on every start including the one after a `stop`, and the student's work is destroyed. That is the same class of mistake the `$VOC_END_LAB_BEHAVIOR` branch in `lab_end.sh` exists to avoid.
+
+So "keep the extension" cannot be a general rule. It is safe for `.py` only because of where the extension survives, which is decided by Databricks and differs by format. **Measured 2026-08-08**, importing into `/Users/<email>/scratch-jupyter-probe` and reading the stored paths back from `workspace list`:
+
+| format | outcome | stored path |
+| --- | --- | --- |
+| `JUPYTER`, path `jup_ext.ipynb` | NOTEBOOK | `jup_ext.ipynb`, **extension kept** |
+| `JUPYTER`, path `jup_noext` | NOTEBOOK | `jup_noext` |
+| `AUTO` deciding FILE | FILE | as written, extension kept |
+| `AUTO` deciding NOTEBOOK | NOTEBOOK | extension stripped by Databricks |
+
+**This corrects a claim made during the fix and confirms line 138 of this document.** An intermediate version of the code comment asserted that Databricks strips the extension off every notebook, so keeping `.ipynb` would 404 the existence check forever. That is false for `JUPYTER`, which is the format `.ipynb` actually uses: it stores at the path as written. Stripping `.ipynb` remains correct for the original cosmetic reason only, that a notebook displayed as `00_cluster_smoke_test.ipynb` reads to a student as a stray file. The 404 hazard is real but reachable only through the fourth row, which no entry in `NOTEBOOK_FORMATS` can reach today. `NOTEBOOK_KEEP_EXTENSIONS` is a list of one rather than a rule so that it stays unreachable.
+
+### Getting the fix to a student
+
+The fix is in a separate repository and does not arrive by editing this one. `dbx-vocareum-upload` injects `voclab.py` **from the installed package**, and this repository pins that package by commit:
+
+```
+uv.lock:279  source = { git = "...dbx-vocareum.git#9402144dc1985d5e08f1e701532f9f47504e8a3e" }
+```
+
+Uploading against that lock ships the defect, verifies it by hash, and reports success. The order is:
+
+```bash
+uv lock --upgrade-package dbx-vocareum-tools && uv sync
+rtk proxy grep -n '".py":' .venv/lib/python3.13/site-packages/dbx_vocareum_tools/labruntime/voclab.py
+# must read ("AUTO", None) before going further
+uv run dbx-vocareum-upload lab/ --dry-run
+uv run dbx-vocareum-upload lab/
+```
+
+No version bump is involved. `pyproject.toml:23` names the dependency as `git+https://...` with no tag and no rev, so it tracks the branch and `uv.lock` is the only pin.
+
+**Rerun Init does not deliver this.** `notebook-import` is called only from `lab/user_setup.sh:126`; `workspace_init.sh` never calls it. Students get the fixed delivery on their **next session start**.
+
+**Returning students get a second object, not a replacement.** The stored path changes from `.../data_utils`, a NOTEBOOK, to `.../data_utils.py`, a FILE. Different paths, so the existence check misses and the import writes the new file **alongside** the stale notebook rather than skipping. Nothing has to be deleted for the import to succeed. Whether the stale extensionless `data_utils` notebook still shadows the new file on `from data_utils import ...` has **not** been measured. Check it on the first returning student. A fresh lab identity is clean either way.
+
+### The notebooks need no change
+
+All four import sites across the three Lab 3 notebooks are bare `from data_utils import ...`, and no Fix A bootstrap cell was ever added to any of them. B1 is the whole fix on the notebook side, and there is nothing to remove in the same pass.
 
 ## What broke
 
@@ -60,9 +130,9 @@ So the object is `/Users/<email>/Lab_3_Semantic_Search/data_utils`. The `.py` in
 
 | # | Site | The line | Reaches | Live? |
 | --- | --- | --- | --- | --- |
-| 1 | `dbx-vocareum/src/dbx_vocareum_tools/labruntime/voclab.py:271` | `NOTEBOOK_FORMATS = {..., ".py": ("SOURCE", "PYTHON"), ...}`, consumed at line 1743, posted at line 1759 | every Vocareum student | yes |
+| 1 | `dbx-vocareum/src/dbx_vocareum_tools/labruntime/voclab.py:271` | `NOTEBOOK_FORMATS = {..., ".py": ("SOURCE", "PYTHON"), ...}`, consumed at line 1743, posted at line 1759 | every Vocareum student | **fixed 2026-08-08**, commit `68e63a5` |
 | 2 | `workshop-setup/auto_scripts/sync_notebooks.py:134-152` (`import_one`) | `body["format"] = "SOURCE"; body["language"] = "PYTHON"` | `/Shared/databricks-neo4j-workshop` on non-Vocareum workspaces | yes |
-| 3 | `vocareum/courseware/neo4j-databricks-workshop.dat` and `.dbc` | zip entry `Lab_3_Semantic_Search/data_utils.py`; a zip archive import makes every entry a notebook | nobody | **deleted 2026-08-08** |
+| 3 | `vocareum/courseware/neo4j-databricks-workshop.dat` and `.dbc` | zip entry `Lab_3_Semantic_Search/data_utils.py`; a zip archive import makes every entry a notebook | nobody | **deleted 2026-08-08**, off disk and untracked |
 
 Site 1 is a **separate repository**, `neo4j-partners/dbx-vocareum`, depended on through `pyproject.toml`. The file list comes from `VOC_COURSE_NOTEBOOKS` in `lab/course.env:113-118`, which names `Lab_3_Semantic_Search/data_utils.py` as its last entry.
 
@@ -135,23 +205,35 @@ AUTO does what the documentation says. A header-less `.py` becomes a file and ke
 
 The first row also reproduces the defect exactly: SOURCE plus PYTHON on a header-less file gives a notebook whose path keeps `.py`, which is what the participant's traceback shows.
 
-**One consequence for the path change.** Databricks strips the extension only on the AUTO-decides-notebook path. JUPYTER does not, which is why `notebook_workspace_path` strips it by hand and why that stripping has to stay for `.ipynb`. So the path change is conditional on format: keep the extension for AUTO, strip it for JUPYTER and SOURCE.
+**One consequence for the path change.** Databricks strips the extension only on the AUTO-decides-notebook path. JUPYTER does not, which is why `notebook_workspace_path` strips it by hand and why that stripping has to stay for `.ipynb`. So the path change is conditional on format: keep the extension for AUTO, strip it for JUPYTER and SOURCE. Confirmed by direct measurement during the fix; see the table in A hazard this document did not name.
 
-B1 is adopted. B2 below is kept only as the fallback that is no longer needed.
+**A third row the table above was missing.** Posting to a path with **no extension at all** gives a FILE under AUTO, whatever the content, including a `.ipynb` payload. That is why edit 1 without edit 2 would have turned every notebook in every course into a workspace file.
 
-### B2: the Files API
+B1 is adopted and shipped, scoped to `.py`.
 
-`PUT /api/2.0/fs/files{path}` with the raw bytes. Deterministic. It creates a workspace file, no header analysis involved. Costs more code than B1: a second endpoint, a second content encoding since it is raw rather than base64, and a branch in `import_one` and in `notebook_import_one`.
+### B2: the Files API, and why it is dead
+
+The proposal was `PUT /api/2.0/fs/files{path}` with the raw bytes: deterministic, a workspace file, no header analysis. **Measured 2026-08-08 and it does not work.** The Files API refuses a workspace path outright:
+
+```json
+{
+  "error_code": "BAD_REQUEST",
+  "message": "Invalid path: unsupported first path component: Workspace",
+  "details": [{"reason": "FILES_API_INVALID_PATH", "domain": "filesystem.databricks.com"}]
+}
+```
+
+It accepts `/Volumes` and not `/Workspace`. B2 is not a fallback, it is not available. Do not reach for it if B1 is ever revisited.
 
 ### Blast radius
 
-Fix B on `voclab.py` touches a shared tool other courses use. `NOTEBOOK_FORMATS` and `notebook_workspace_path` are generic, so any course shipping a `.py` changes behavior. B1 changes it silently. B2 changes it only on an explicit branch, which is the safer shape for a shared tool.
+Fix B on `voclab.py` touches a shared tool other courses use. `NOTEBOOK_FORMATS` and `notebook_workspace_path` are generic, so any course shipping a `.py` changes behavior, and B1 changes it silently. That is the cost that was accepted, and the containment is the scoping: only `.py` moved, and only `.py` keeps its extension. The behavior change another course would notice is a `.py` that used to arrive as a notebook and now arrives as a workspace file. A course that wanted the notebook says so by putting `# Databricks notebook source` on the file's first line, which is the line Databricks' own export writes.
 
 Fix B also fixes Lab 5, because a real workspace file is exactly what `ensure_lab3_on_path` searches for.
 
 ## The legacy cleanup
 
-**Done on 2026-08-08.** `vocareum/courseware/` is deleted, `git rm -r`, and the five references below are rewritten. What was in it, for the record:
+**Done on 2026-08-08.** `vocareum/courseware/` is off disk and no longer tracked, and the references below are rewritten. The deletion ran in two passes: `dlt_fleet_etl.py` and the committed bytecode went first, and the remaining 10 files, 2.3M, went last, which is when the three documents that had already recorded the deletion became true. What was in it, for the record:
 
 | Path | Notes |
 | --- | --- |
@@ -160,39 +242,48 @@ Fix B also fixes Lab 5, because a real workspace file is exactly what `ensure_la
 | `neo4j-databricks-workshop.cfg` | course config: cluster libraries, `shared_warehouse`, default catalog |
 | `data/Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb` | tracked copy |
 | `data/Lab_3_Semantic_Search/` | tracked copies of the 3 notebooks plus `data_utils.py` |
-| `aircraft_digital_twin_data.zip` | 2.1M |
-| `dlt_fleet_etl.py` | 24.3K |
-| `__pycache__/dlt_fleet_etl.cpython-314.pyc`, `data/Lab_3_Semantic_Search/__pycache__/data_utils.cpython-314.pyc` | committed bytecode |
+| `aircraft_digital_twin_data.zip` | 2.1M. Nothing replaces it, see below |
+| `.DS_Store` | untracked, 6.0K |
+| `dlt_fleet_etl.py` | 24.3K, deleted in the first pass |
+| `__pycache__/dlt_fleet_etl.cpython-314.pyc`, `data/Lab_3_Semantic_Search/__pycache__/data_utils.cpython-314.pyc` | committed bytecode, deleted in the first pass |
 
-**The `data/` copies have diverged.** `diff` reports `vocareum/courseware/data/Lab_3_Semantic_Search/data_utils.py` differs from the top-level file. `expand.md:67` names the cause, the 2026-08-08 secret-scope change landing on the top-level copies alone.
+**The zip's build script went with it.** `workshop-setup/auto_scripts/build_data_zip.py` was the only thing that wrote `aircraft_digital_twin_data.zip`, and it is deleted too. The zip had no consumer, and could not have had one: the files it packed are tracked at `workshop-setup/aircraft_digital_twin_data/`, so anyone setting up outside Vocareum has them from the clone, and the Vocareum path reads that directory through the `lab/courseware/` symlink and never sees an archive. Across the whole repository the zip was named only by this document recording its size and by the script's own README entry.
 
-**`dlt_fleet_etl.py` is a byte-identical duplicate.** `diff -q vocareum/courseware/dlt_fleet_etl.py lab/courseware/dlt_fleet_etl.py` reports no difference. Nothing reads the `vocareum/` copy. `lab/workshop.py:204,208` sets `COURSEWARE_DIR = "/voc/scripts/courseware"` and `DLT_NOTEBOOK = f"{COURSEWARE_DIR}/dlt_fleet_etl.py"`, and `lab/courseware/` is what travels in the hook archive. The `vocareum/` copy is dead weight that can drift from the live one.
+The script was well built, which is why keeping it was considered first: it took its file list from `lab/workshop.py`'s `data_files()` so it could not drift from what the volume gets, staged to `.zip.partial` and `os.replace`d, verified with `testzip()` plus a per-entry size check, and fixed every timestamp at 1980 so two runs were byte-identical. None of that gives an artifact nobody fetches a reason to exist. The determinism was also the answer to a drift the tracked zip had already suffered, missing `nodes_operating_limits.csv` and carrying pre-recalibration `nodes_readings.csv`, `nodes_sensors.csv` and five maintenance manuals. Deleting both the artifact and its builder removes the drift and the machinery against it in one move.
+
+**The `data/` copies had diverged.** Before the deletion, `diff` reported `vocareum/courseware/data/Lab_3_Semantic_Search/data_utils.py` differing from the top-level file. `expand.md:67` names the cause, the 2026-08-08 secret-scope change landing on the top-level copies alone.
+
+**`dlt_fleet_etl.py` was a byte-identical duplicate.** `diff -q` against `lab/courseware/dlt_fleet_etl.py` reported no difference, and nothing read the `vocareum/` copy. `lab/workshop.py:204,208` sets `COURSEWARE_DIR = "/voc/scripts/courseware"` and `DLT_NOTEBOOK = f"{COURSEWARE_DIR}/dlt_fleet_etl.py"`, and `lab/courseware/` is what travels in the hook archive. `lab/courseware/dlt_fleet_etl.py` is the surviving copy and is untouched.
 
 References rewritten alongside the directory:
 
-- `vocareum/SETUP_GUIDE.md`, the `courseware/` table row and the sentence that existed to say the directory is not used, both replaced by one paragraph recording what was deleted and why
+- `vocareum/SETUP_GUIDE.md`, the `courseware/` table row and the sentence that existed to say the directory is not used, both replaced by a paragraph recording what was deleted and why, plus a table saying where each deleted thing lives now
 - `expand.md:67`, the "Known state" entry about the diverged copies, now a record of the deletion
 - `expand.md:373` and `expand.md:587`, the deferred resync item and its Phase 4 checklist twin, both reframed. The Vocareum content job for Labs 5 and 6 is now editing `VOC_COURSE_NOTEBOOKS` in `lab/course.env`, which is real work, rather than rebuilding a bundle, which is not
 - Six further "courseware bundle" mentions across `expand.md` (lines 17, 63, 427, 429, 612, 618, 624) renamed to "Vocareum notebook list"
 - `.claude/settings.local.json`, eighteen permission entries for unzipping, copying and rebuilding those archives
 - `lab/course.env`, the paragraph above `VOC_COURSE_NOTEBOOKS` that warned about the mirror, plus the "Unmeasured, and it matters" comment, which is now the measurement
+- `workshop-setup/auto_scripts/README.md`, the `build_data_zip.py` table row and the "The data zip" section, both removed, and the opening count corrected from three programs to two
 
-Deleting the directory closed three open items and removed a third copy of the defect. Nothing pointed at it that was not itself a note explaining that nothing pointed at it.
+Deleting the directory closed three open items and removed a third copy of the defect. Nothing pointed at it that was not itself a note explaining that nothing pointed at it, or the one script that wrote into it, which is deleted too.
 
 ## Recommendation
 
-**Take Fix A now, B1 next.** Revised 2026-08-08, after the measurement and the cleanup landed.
+**B1 is done at site 1.** Revised 2026-08-08, after the fix landed.
 
-Fix A is still the only thing that unblocks a class already running, because B1 needs a `dbx-vocareum` change, a push, a dependency resync here, and a `dbx-vocareum-upload`. None of that reaches a student mid-session.
+Fix A was never written into the notebooks and is now not worth writing. It was the only thing that could unblock a class already running mid-session, and no class is. It also breaks by construction once B1 lands, because the export call it makes has no object to export.
 
-B1 is no longer a gamble. Take it at both sites, as two changes each, format and path, and remove the Fix A cells in the same pass so the export call cannot fail against the new file object.
+What remains:
 
-**One consolidation worth doing with it.** `sync_notebooks.py` already imports `voclab` for `VoclabError`, `ApiError` and `names_error_code`, but restates `voclab.NOTEBOOK_FORMATS` by hand in `import_one`. Read the map from `voclab` instead. Then the format rule is stated once, in the tool, and sites 1 and 2 stop being two sites.
+1. **Resync and upload from this repository.** See Getting the fix to a student. Nothing reaches a student until that happens.
+2. **Site 2, `sync_notebooks.py`.** Same two changes: `import_one` at lines 134-152 and the `local_path.stem` at line 210. Non-Vocareum workspaces still get a notebook.
+3. **The consolidation that makes site 2 stop existing.** `sync_notebooks.py` already imports `voclab` for `VoclabError`, `ApiError` and `names_error_code`, but restates `voclab.NOTEBOOK_FORMATS` by hand in `import_one`. Read the map from `voclab` instead, and take `NOTEBOOK_KEEP_EXTENSIONS` with it for the path half. Then the format rule is stated once, in the tool, and sites 1 and 2 stop being two sites. Doing the consolidation *is* doing item 2.
 
 ## Open questions
 
 1. ~~**Has `format=AUTO` been measured?**~~ Answered 2026-08-08. It has, and it does what B1 needs. See the table in B1.
 2. **Does Lab 5 need the same treatment?** Yes, and more of it. `tools.py` imports `data_utils` and must itself be a workspace file. It is delivered nowhere today, so add it to `VOC_COURSE_NOTEBOOKS` and to `sync_notebooks.py` only after Fix B lands, or it ships broken on arrival.
-3. **Does keeping `.py` on the workspace path break anything else?** `voclab.py` names the first imported notebook as the landing page through `voclab_notebook_path`. A `.py` helper is never first in `VOC_COURSE_NOTEBOOKS`, but confirm no other course puts one there.
-4. **Do the other extensions in `NOTEBOOK_FORMATS` want the same change?** `.sql`, `.scala` and `.r` are almost certainly meant to stay notebooks. Scope Fix B to `.py` unless a course says otherwise.
-5. **Does `dbutils.import_notebook("data_utils")`, which the error message suggests, actually work here?** Untested. It would be a smaller notebook-side change than Fix A, but it binds the labs to a Databricks-only API and would break the plain-Python import path the repository checkout uses. Not recommended, but worth one measurement before Fix A is written into three notebooks.
+3. **Does keeping `.py` on the workspace path break anything else?** Partly answered. The idempotency question is settled: AUTO stores a headerless module at the path as written, so the write and the `get-status` check agree and a returning student is not overwritten, pinned by `test_a_module_the_student_already_has_is_left_alone`. Still open is the landing page. `voclab.py` names the first imported notebook as the landing page through `voclab_notebook_path`, and a `.py` first in `VOC_COURSE_NOTEBOOKS` would now point it at a workspace file. This course never does that. Confirm no other course does.
+4. ~~**Do the other extensions in `NOTEBOOK_FORMATS` want the same change?**~~ Answered 2026-08-08. No. `.sql`, `.scala` and `.r` stayed `SOURCE`, and the fix is scoped to `.py`.
+5. **Does `dbutils.import_notebook("data_utils")`, which the error message suggests, actually work here?** Untested and now moot for Lab 3, since Fix A is not being written. Left on the list because Lab 5 may want it if `tools.py` ever ships before its delivery is fixed.
+6. **Does a stale `data_utils` notebook shadow the new `data_utils.py` file?** Unmeasured, and it is the one thing that could make a returning student's session still fail after the upload. Both objects will sit in the same folder. Check it on the first returning student.

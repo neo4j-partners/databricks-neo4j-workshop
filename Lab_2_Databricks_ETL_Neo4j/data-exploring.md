@@ -344,7 +344,7 @@ ORDER BY a.tail_number, s.type, sn.type
 LIMIT 30
 ```
 
-> **Concepts**: Three-hop traversal from aircraft down to individual sensors. The `unit` property shows what each sensor measures (e.g., `°C` for Celsius on an EGT sensor). These strings match `OperatingLimit.unit`, so a sensor and its documented limit compare on the same unit.
+> **Concepts**: Three-hop traversal from aircraft down to individual sensors. The `unit` property shows what each sensor measures (e.g., `°C` for Celsius on an EGT sensor). These strings match `OperatingLimit.unit`, so a sensor and its documented limit compare on the same unit. `OperatingLimit` here means the 20 canonical limits this lab loaded from `nodes_operating_limits.csv` and nothing else. Lab 3 extracts limits from the manual text under a separate label, `ExtractedLimit`, so the two never mix.
 
 ### Find which aircraft share the same airport as both origin and destination (round-trip routes)
 

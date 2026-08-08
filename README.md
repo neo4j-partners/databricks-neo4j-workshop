@@ -24,14 +24,14 @@ The dataset is an Aircraft Digital Twin: a simulated aviation fleet with real st
 
 The end-to-end architecture routes each user question to the backend best suited to answer it:
 
-- **Supervisor**: receives user questions and decides which specialized tool to call. Built in LangGraph in Lab 5, and with no code in Lab 4 Part B
+- **Supervisor**: receives user questions and decides which specialized tool to call. You build it in LangGraph in Lab 5, and see it built with no code in the Lab 4 Part B demo
 - **Genie tool**: handles sensor telemetry analytics using natural language SQL over Unity Catalog tables
 - **Cypher tool**: handles graph traversal over aircraft topology, maintenance history, and flight operations
 - **GraphRAG tool**: handles maintenance documentation using vector search over manual chunks, then traversal from the chunks that match
 - **Neo4j Aura**: the graph database holding all three of relationships, documentation, and the agent's own memory
 - **Databricks**: provides notebooks, Foundation Model APIs, and Model Serving
 
-Lab 4 Part B builds the same routing over the **Model Context Protocol**, which is the pattern for centrally-governed agent access to Neo4j and where this integration is heading. It is optional and advanced.
+The Lab 4 Part B demo builds the same routing over the **Model Context Protocol**, which is the pattern for centrally-governed agent access to Neo4j and where this integration is heading. The instructor runs it. Participants watch.
 
 ![Workshop Architecture Overview](images/lab-architecture-overview.png)
 
@@ -80,8 +80,8 @@ Together the dataset includes:
 | **Neo4j Spark Connector** | ETL from Databricks to Neo4j |
 | **Model Serving** | Deploying the agent as an endpoint that authenticates as a service principal |
 | **Neo4j Agent Memory** | Conversation memory stored as a graph alongside the domain data |
-| **Agent Bricks: Supervisor Agent** | No-code multi-agent supervisor. Lab 4 Part B, optional |
-| **Model Context Protocol (MCP)** | Standard for connecting AI models to data sources. The pattern for centrally-governed agent access to Neo4j, covered in Lab 4 Part B |
+| **Agent Bricks: Supervisor Agent** | No-code multi-agent supervisor. Demonstrated in Lab 4 Part B |
+| **Model Context Protocol (MCP)** | Standard for connecting AI models to data sources. The pattern for centrally-governed agent access to Neo4j, demonstrated in Lab 4 Part B |
 
 ---
 
@@ -120,13 +120,20 @@ Together the dataset includes:
 
 ---
 
+### Instructor Demo
+
+| | Description |
+|-----|-------------|
+| [Lab 4 Part B - No-Code Supervisor](./Lab_4_Compound_AI_Agents/PART_B.md) | The same routing built with no code, using Agent Bricks and a governed Neo4j MCP connection over Unity Catalog. The instructor runs it against their own demo instance. Participants watch and need no Aura instance, MCP connection, or credential |
+
+---
+
 ### Optional and Advanced
 
-*Take-home material. Neither is required to finish the workshop.*
+*Take-home material. Not required to finish the workshop.*
 
 | Lab | Description | Time |
 |-----|-------------|------|
-| [Lab 4 Part B - No-Code Supervisor](./Lab_4_Compound_AI_Agents/PART_B.md) | The same routing built with no code, using Agent Bricks and a governed Neo4j MCP connection over Unity Catalog. Queries the shared Reference Aura Instance | 45 min |
 | [Appendix A - GDS Graph Analytics](./Appendix_A_GDS_Graph_Analytics) | Centrality, community detection, and similarity over the fleet graph | 45 min |
 
 ---
@@ -139,7 +146,7 @@ Every required lab reads and writes the **one Aura instance you create in Lab 1*
 |-----|--------------|
 | Lab 1, 2, 3 | Yours |
 | Lab 4 Part A | None. Genie queries Unity Catalog |
-| Lab 4 Part B *(optional)* | Shared Reference Aura Instance |
+| Lab 4 Part B | None of yours. The instructor's demo instance, in a demo the instructor runs |
 | Lab 5, 6 | Yours |
 
 ---

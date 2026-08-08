@@ -4,20 +4,21 @@ Follow these steps to build a compound AI agent system using Databricks Agent Br
 
 TIP: For concepts and background, see xref:lab4.adoc[Lab 4: Concepts and Reference].
 
-**Duration:** ~75 minutes (Part A: 30 min, Part B: 45 min)
+**Duration:** ~30 minutes for Part A, which you build. Part B is an instructor demo, about 20 minutes on screen.
 
 == Prerequisites
 
 * Running in a **Databricks workspace** with Agent Bricks access
-* Neo4j MCP server connection configured in Unity Catalog
 
-**Recommended:** Complete **Lab 2** (Databricks ETL) before starting this lab. Lab 4 uses shared workshop infrastructure (not your personal Aura instance), but completing Lab 2 gives you familiarity with the data model -- the aircraft topology, sensor relationships, flights, and maintenance events -- that the agents in this lab query.
+Part B needs nothing from you. The instructor supplies the demo workspace, the Unity Catalog MCP connection, and the graph behind it.
 
-NOTE: This lab uses **shared** workshop resources -- the Genie space queries shared Lakehouse tables in Unity Catalog, and the Neo4j MCP agent queries the **Reference Aura Instance** (the fully populated graph). You do not need data in your personal Aura instance for this lab.
+**Recommended:** Complete **Lab 2**, the Databricks ETL lab, before starting this one. Part A uses shared Lakehouse tables rather than your personal Aura instance, but Lab 2 gives you familiarity with the data model that the agents here query: the aircraft topology, sensor relationships, flights, and maintenance events.
+
+NOTE: Part A uses **shared** Lakehouse tables in Unity Catalog, so you do not need data in your personal Aura instance for it.
 
 == Part A: Genie Space for Sensor Analytics
 
-Create an AI/BI Genie space that enables natural language queries over sensor telemetry.
+Create an AI/BI Genie space that enables natural language queries over sensor telemetry. This is the part you build.
 
 === Explore the Lakehouse Data
 
@@ -185,15 +186,19 @@ ORDER BY avg_vibration DESC
 
 === Save and Note the Genie Space
 
-Click **Save** to preserve your Genie space configuration. Note the exact name of your Genie space (e.g., `Aircraft Sensor Analyst RK`). You will need this in Part B when configuring the multi-agent supervisor.
+Click **Save** to preserve your Genie space configuration. Note the exact name of your Genie space, for example `Aircraft Sensor Analyst RK`. Lab 5 uses it as one of its three tools.
 
-== Part B: Supervisor Agent
+== Part B: Supervisor Agent (Instructor Demo)
 
-Build a supervisor agent that coordinates two specialized sub-agents.
+IMPORTANT: Watch this part. Do not build it. The instructor runs the demo from the front of the room against their own demo Aura instance and their own Unity Catalog MCP connection. You need no Aura instance, no MCP connection, and no OAuth credential to follow along. Your continuation from Part A is Lab 5.
+
+The demo shows the same routing architecture as Lab 5, built with no code and with centrally governed access to Neo4j through Unity Catalog. That contrast is the reason it is in the workshop.
+
+The steps below are the record of how the demo is built. They are written for the instructor running it.
 
 === Verify Neo4j MCP Connection
 
-The Neo4j MCP connection has been pre-configured by workshop administrators.
+Confirm the connection is present in the demo workspace before the session.
 
 1. Click **Catalog** > **External connections**
 2. Locate `neo4j_agentcore_mcp`
@@ -203,7 +208,7 @@ image::lab4-mcp-connection.png[MCP Connection Configuration]
 
 === Test MCP Tools in Playground
 
-You can verify the MCP tools work before building the supervisor:
+Verify the MCP tools work before building the supervisor:
 
 1. Navigate to **Playground** in the left navigation
 2. Select **GPT OSS 120B**
@@ -271,7 +276,7 @@ DO NOT USE FOR:
 
 1. Click **+ Add** again
 2. Select **Genie Space** as the type
-3. Select your Genie space from Part A
+3. Select the demo Genie space built as in Part A
 4. **Agent Name:** `sensor_data_agent` (edit the auto-populated name if needed)
 5. In the **Description** field, paste the following:
 
@@ -506,7 +511,7 @@ For the full routing table showing which question types route to Genie, Neo4j, o
 
 **"Wrong agent selected"** -- Review and enhance agent descriptions with more specific keywords. Add explicit routing patterns in supervisor instructions. Use the Examples tab to add labeled training questions.
 
-**"Cypher query failed"** -- Check that Neo4j data was loaded correctly (Lab 2). Verify node labels and relationship types match documentation. Review Cypher syntax for errors. Test queries directly in Neo4j Aura console first.
+**"Cypher query failed"** -- Check that the demo Aura instance was loaded correctly with `workshop-setup/populate_aircraft_db`. Verify node labels and relationship types match documentation. Review Cypher syntax for errors. Test queries directly in Neo4j Aura console first.
 
 **"SQL query failed"** -- Verify table names in Unity Catalog: `databricks-neo4j-workshop.aircraft`. Check column names match documentation. Ensure Genie space has access to all required tables. Test queries directly in SQL Editor first.
 
@@ -549,4 +554,4 @@ Show maintenance events for aircraft with the lowest fuel efficiency
 
 == Next Steps
 
-You have completed the workshop. The compound AI agent combining Genie (Databricks) and Neo4j MCP is now operational.
+Your Genie space from Part A is the first of three tools in Lab 5, where you build the same routing in code, against your own graph, and deploy it to Model Serving.

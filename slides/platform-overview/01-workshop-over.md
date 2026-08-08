@@ -37,9 +37,11 @@ Build AI Agents and Knowledge Graphs with Neo4j and Databricks
 ## What You'll Build
 
 - **Load** aircraft fleet data into a Neo4j knowledge graph using the Spark Connector
-- **Explore** a pre-deployed agent that queries Neo4j via MCP
-- **Build** a multi-agent supervisor combining Databricks Genie (sensor analytics) with Neo4j MCP (graph queries)
 - **Add** semantic search with vector embeddings and GraphRAG retrievers
+- **Query** sensor telemetry in natural language with a Databricks Genie space
+- **Build** a LangGraph supervisor that routes across Genie, Cypher over your own graph, and GraphRAG
+- **Give** that agent memory stored in the same graph as the fleet data
+- **Watch** the instructor build the same routing with no code in Agent Bricks over a governed Neo4j MCP connection
 - **Create** a no-code Aura Agent with Cypher Templates, Text2Cypher, and Similarity Search
 
 ---
@@ -121,11 +123,10 @@ Shared resources are pre-configured by administrators so participants can focus 
 
 | Resource | Description |
 |----------|-------------|
-| **Reference Aura Instance** | Fully populated Neo4j database with the complete Aircraft Digital Twin — all node types, relationships, embeddings |
-| **Neo4j MCP Server** | External MCP server connected to the Reference Aura Instance |
-| **Sample MCP Agent** | Pre-deployed agent that calls Neo4j MCP for natural language graph queries |
 | **Databricks Data & Tables** | CSV files in Unity Catalog Volume and pre-created Lakehouse tables |
-| **Databricks MCP Connection** | External MCP server registered in Unity Catalog |
+| **Instructor Demo Aura Instance** | Fully populated Neo4j database behind the Lab 4 Part B demo. Participants never connect to it |
+| **Neo4j MCP Server** | External MCP server against the demo instance, used only in the Part B demo |
+| **Databricks MCP Connection** | That MCP server registered in Unity Catalog, in the instructor's workspace |
 
 ---
 
@@ -135,12 +136,12 @@ Each participant gets their own environment to work in:
 
 | Resource | Description |
 |----------|-------------|
-| **Personal Aura Instance** | Your own Neo4j database to load data into during ETL labs and explore independently |
+| **Personal Aura Instance** | Your own Neo4j database, created in Lab 1 and used by every required lab after it |
 | **Databricks Workspace** | Clone notebooks and run them on a shared cluster to build your graph and agents |
 
-Labs using the **MCP server** (Supervisor Agent) connect to the **shared** Reference Aura Instance — so every participant works with the full graph regardless of their personal instance's state.
+**Every required lab uses your own instance.** Lab 2 loads the fleet into it, Lab 3 adds the maintenance manual and vector indexes, Lab 5 queries it, and Lab 6 writes agent memory back to it. A broken load shows up in the next lab, which is the point.
 
-Labs doing **ETL and GraphRAG** (Labs 2, 3) load data into your **personal** instance.
+**Lab 4 Part B is an instructor demo** against a separate instance. You need no credential, no MCP connection, and no setup for it.
 
 ---
 

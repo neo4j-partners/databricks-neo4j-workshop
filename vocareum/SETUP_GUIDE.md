@@ -16,7 +16,16 @@ Links below assume `dbx-vocareum` is checked out beside this repository.
 
 That is all of it. What a student is handed is named in `lab/course.env` at the repository root, and `dbx-vocareum-upload` sends it.
 
-A `courseware/` directory sat here until 2026-08-08 holding the earlier manual upload procedure's assets: a `.dat` and a byte-identical `.dbc` archive, a course `.cfg`, a copy of the aircraft data zip, a second copy of `dlt_fleet_etl.py`, and copies of the Lab 2 and Lab 3 notebooks. Nothing read any of it. It is deleted rather than kept for reference, because a second copy of the notebooks is a second copy that drifts, and that one already had: its `data_utils.py` diverged from the top-level file at the 2026-08-08 secret-scope change. The `.cfg`'s only working content, its library list, lives in `VOC_COURSE_LIBRARIES` in `lab/course.env`.
+A `courseware/` directory sat here until 2026-08-08 holding the earlier manual upload procedure's assets: a `.dat` and a byte-identical `.dbc` archive, a course `.cfg`, a copy of the aircraft data zip, a second copy of `dlt_fleet_etl.py`, and copies of the Lab 2 and Lab 3 notebooks. Nothing read any of it. It was deleted rather than kept for reference, because a second copy of the notebooks is a second copy that drifts, and that one already had: its `data_utils.py` diverged from the top-level file at the 2026-08-08 secret-scope change.
+
+Where each of those things lives now:
+
+| Was in `courseware/` | Where it is now |
+| --- | --- |
+| `neo4j-databricks-workshop.cfg` library list | `VOC_COURSE_LIBRARIES` in `lab/course.env` |
+| The `.dat` and `.dbc` archives, and the notebook copies under `data/` | `VOC_COURSE_NOTEBOOKS` in `lab/course.env` names what ships, and `dbx-vocareum-upload lab/` sends it |
+| `dlt_fleet_etl.py` | `lab/courseware/dlt_fleet_etl.py`, which is the copy `lab/workshop.py` has always pointed at |
+| `aircraft_digital_twin_data.zip` | Nothing replaces it. The files it held are tracked at `workshop-setup/aircraft_digital_twin_data/`, so a clone already has them and there is nothing to download. `workshop.py upload-data` uploads that directory to the volume file by file, and `lab/courseware/aircraft_digital_twin_data` symlinks it for the hook archive. Neither path ever reads a zip. |
 
 ## Where the admin procedure lives
 

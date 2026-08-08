@@ -118,6 +118,8 @@ image::lab-architecture-overview.svg[Multi-agent supervisor routing to Genie and
 
 The supervisor does not answer questions itself. It reads the question, determines which data shape it targets, and routes to the right specialist. For questions that span both platforms, it decomposes the question into sub-tasks, sends each to the appropriate agent, and synthesizes a single answer.
 
+NOTE: You build the Genie space in Part A. The supervisor and its Neo4j MCP agent are Part B, which the instructor demonstrates against their own demo instance and MCP connection. Watching it requires no Aura instance, no MCP connection, and no OAuth credential from you. Lab 5 is where you build this routing yourself, in code, against your own graph.
+
 == Query Routing Strategy
 
 [cols="2,1,3"]
