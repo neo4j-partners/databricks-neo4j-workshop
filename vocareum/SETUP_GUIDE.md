@@ -13,9 +13,10 @@ Links below assume `dbx-vocareum` is checked out beside this repository.
 | Path | What it is |
 | --- | --- |
 | `docs/README.md` | The participant-facing page Vocareum renders in the Readme panel. It links to the published workshop site and tells a student where to start. |
-| `courseware/` | Assets from the earlier manual upload procedure: the notebook archives, the data zip, the DLT notebook, and the course `.cfg`. |
 
-What a student is handed today is not built from `courseware/`. It is named in `lab/course.env` at the repository root, and `dbx-vocareum-upload` sends it.
+That is all of it. What a student is handed is named in `lab/course.env` at the repository root, and `dbx-vocareum-upload` sends it.
+
+A `courseware/` directory sat here until 2026-08-08 holding the earlier manual upload procedure's assets: a `.dat` and a byte-identical `.dbc` archive, a course `.cfg`, a copy of the aircraft data zip, a second copy of `dlt_fleet_etl.py`, and copies of the Lab 2 and Lab 3 notebooks. Nothing read any of it. It is deleted rather than kept for reference, because a second copy of the notebooks is a second copy that drifts, and that one already had: its `data_utils.py` diverged from the top-level file at the 2026-08-08 secret-scope change. The `.cfg`'s only working content, its library list, lives in `VOC_COURSE_LIBRARIES` in `lab/course.env`.
 
 ## Where the admin procedure lives
 

@@ -245,15 +245,16 @@ Facts that change the query you write:
   - There are no sensor reading values in this graph. No :Reading label, no
     timestamps, no measured values. Sensor nodes are metadata only. A question
     about a measured value cannot be answered here.
-  - OperatingLimit nodes are extracted from the manuals by a language model,
-    so the set is small and differs between graphs, and it can be empty. Never
-    assume a limit exists for a given sensor, parameter or aircraft type.
-  - Wrap the bounds in toFloat() before comparing: toFloat(ol.maxValue). It
-    costs nothing on a number and it saves the comparison when a bound arrived
-    as text.
-  - minValue is often absent, because some limits are a ceiling with no floor.
-    Check ol.minValue IS NOT NULL before comparing against it, or the row
-    drops out with no error.
+  - OperatingLimit is never empty. Twenty canonical limits load from CSV in
+    Lab 2 and every one of them carries a limit_id. Lab 3 extraction can add
+    more, under the same name format and with no limit_id, so a name can
+    appear twice with different bounds. When the question asks for the
+    documented or official limit, add WHERE ol.limit_id IS NOT NULL.
+  - minValue and maxValue are both FLOAT. Compare them directly.
+  - minValue is null on ten of the twenty canonical limits, because a
+    vibration or speed limit is a ceiling with no floor. Check
+    ol.minValue IS NOT NULL before comparing against it, or the row drops out
+    with no error.
   - OperatingLimit.regime says which phase of flight a limit applies to. A
     limit is only meaningful against readings from that same regime, so return
     the regime alongside any limit you report.

@@ -1,7 +1,7 @@
 # Admin scripts
 
-Two programs, for the case where this workshop runs in a Databricks workspace an
-instructor provisioned by hand rather than one Vocareum created.
+Three programs, for the case where this workshop runs in a Databricks workspace
+an instructor provisioned by hand rather than one Vocareum created.
 
 They define nothing. Every catalog, schema, volume, table and pipeline name they
 touch is read from `lab/workshop.py`, which is this course's one definition of
@@ -11,7 +11,8 @@ its Databricks objects.
 | --- | --- |
 | `sync_notebooks.py` | Publishes the lab notebooks into `/Shared/databricks-neo4j-workshop` so participants can browse and clone them. |
 | `teardown.py` | Deletes the catalog, its schemas, the volume, the `Fleet Digital Twin ETL` pipeline and the shared notebook tree. |
-| `workshop_module.py` | Not a command. The seam that puts `lab/workshop.py` on the import path for the two above. |
+| `build_data_zip.py` | Rebuilds `vocareum/courseware/aircraft_digital_twin_data.zip` from the source directory, for a hand-download of the workshop data. |
+| `workshop_module.py` | Not a command. The seam that puts `lab/workshop.py` on the import path for the three above. |
 
 ## Running them
 
@@ -26,6 +27,35 @@ uv run python workshop-setup/auto_scripts/sync_notebooks.py
 uv run python workshop-setup/auto_scripts/teardown.py           # prompts
 uv run python workshop-setup/auto_scripts/teardown.py --yes     # does not
 ```
+
+`build_data_zip.py` needs neither of those variables. It talks to no workspace;
+it reads and writes files only.
+
+```bash
+uv run python workshop-setup/auto_scripts/build_data_zip.py
+```
+
+## The data zip
+
+`build_data_zip.py` is here rather than under `vocareum/` because it obeys the
+same two rules the scripts beside it do: standard library only against Python
+3.9, and no file list of its own. The source directory name and the archive's
+internal prefix are both `Path(workshop.DATA_DIR).name`, and the file set is
+`workshop.data_files`, the same call `provision_data` makes when it uploads the
+volume. So the zip holds exactly what the volume holds, and a glob that matches
+nothing raises `MISSING_COURSEWARE` here for the same reason it does there.
+
+It reaches the source through `lab/courseware/aircraft_digital_twin_data`, the
+symlink `dbx-vocareum-upload` follows, rather than around it, so this script and
+the upload cannot disagree about which directory is the source of truth.
+
+Nothing in this repository reads the zip. The volume gets its files from the
+hash-verified archive, one file at a time, and never from this. That is why the
+zip could go stale without anything failing, and it had: it was missing
+`nodes_operating_limits.csv` entirely and carried pre-recalibration
+`nodes_readings.csv`, `nodes_sensors.csv` and five maintenance manuals. The build
+is deterministic, entries sorted and timestamps fixed, so a rerun on an unchanged
+source produces identical bytes and `git status` after a run is the drift report.
 
 Both accept `--host` and `--token` instead of the environment variables. There
 is no `.databrickscfg` profile support: the credential resolves in one place,

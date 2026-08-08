@@ -132,26 +132,26 @@ You will see this in Section 5, and the supervisor drops to two tools in Section
 
 ## What the operating limits will and will not do
 
-Nothing loads `OperatingLimit` from a CSV on a participant graph. A language
-model read those limits out of the manual prose in Lab 3 notebook 01, and three
-consequences follow.
+`OperatingLimit` is never empty. Lab 2 loads twenty canonical limits from CSV,
+four per aircraft model, and each one carries a `limit_id`. Three consequences
+follow.
 
-**They may not be there.** The extracted set is small, it differs between graphs,
-and it can be empty. A question that depends on a limit existing can return
-nothing through no fault of the agent.
+**A name can appear twice.** Lab 3 notebook 01 also extracts operating limits
+from the manual prose, and its prompt mandates the same
+`<parameterName> - <aircraftType>` name the CSV uses. `EGT - A320-200` can
+therefore exist twice with different bounds. Only the canonical copy has a
+`limit_id`, so the schema in `tools.py` tells the model to filter
+`WHERE ol.limit_id IS NOT NULL` when the question asks for the documented or
+official limit.
 
-**The bounds want `toFloat()`.** Extraction returns the type the document had,
-which for a number printed on a page is text. Comparing a number to a string in
-Cypher evaluates to null rather than raising, so every row drops and a fleet with
-twenty exceedances comes back as an empty result that reads like a clean bill of
-health. `toFloat()` costs nothing on a number, so the schema in `tools.py` asks
-for it either way.
+**Ten have no floor.** `minValue` is null on ten of the twenty, the Vibration
+and N1Speed limits for each of the five models, because those are ceilings and
+nothing else. The schema says to check `IS NOT NULL` before comparing. Both
+bounds are Double on both populations, so nothing needs casting.
 
-**Half have no floor, and all belong to a regime.** `minValue` is often absent,
-because a vibration limit is a ceiling and nothing else, so the schema says to
-check `IS NOT NULL` before comparing. And each limit carries the phase of flight
-it applies to. A takeoff bound held against cruise readings is a category error
-rather than a comparison, and it reports the whole fleet out of range.
+**All belong to a regime.** Each limit carries the phase of flight it applies
+to. A takeoff bound held against cruise readings is a category error rather
+than a comparison, and it reports the whole fleet out of range.
 
 ## What comes next
 

@@ -14,7 +14,7 @@ Last updated 2026-08-08.
 |---|---|
 | **A. Engineering** | Phase 0 catch-up loader **done and verified against a live Aura instance.** Phase 1 starting |
 | **B. Memory research** | Phase 0 memory spike **done and measured against a live Aura instance. Verdict: GO, with two hard conditions.** Install `neo4j-agent-memory[nams]` from a commit sha on the `mentions` branch of the `neo4j-partners` fork, and adopt `Aircraft` only. Writing with `extraction_mode="explicit"` stays the recommended write mode. Full report in `worklog/memory-spike.md` |
-| **C. Content and infra** | Repository documentation complete. Two documents that fall out of the AuraDB Free decision are in flight, `Lab_1_Aura_Setup/Aura_Free_Trial.md` and `Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb`. The Lab 5 architecture diagram, the Antora site in `site/`, the slides in `slides/`, and the Vocareum courseware bundle are deferred by decision rather than outstanding |
+| **C. Content and infra** | Repository documentation complete. Two documents that fall out of the AuraDB Free decision are in flight, `Lab_1_Aura_Setup/Aura_Free_Trial.md` and `Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb`. The Lab 5 architecture diagram, the Antora site in `site/`, the slides in `slides/`, and the Vocareum notebook list are deferred by decision rather than outstanding |
 
 **Done**
 
@@ -60,11 +60,11 @@ Two Phase 0 items can still invalidate parts of the plan. Whether the loader run
 
 The nearest thing to that list is the N1Speed magnitude fix in the In flight block above. It does not block Phase 1 either, since no Lab 5 tool compares a reading value against an operating limit, but it does have to land before any lab or demo asks whether a sensor is over its N1Speed limit.
 
-Labs 5 and 6 get written before anything that describes them. The Vocareum courseware bundle, the Antora site in `site/`, and the slides in `slides/` are rewritten afterward, in one pass against what shipped. See Sequencing under the Implementation Plan.
+Labs 5 and 6 get written before anything that describes them. The Vocareum notebook list in `lab/course.env`, the Antora site in `site/`, and the slides in `slides/` are rewritten afterward, in one pass against what shipped. See Sequencing under the Implementation Plan.
 
 **Known state, not bugs**
 
-- `vocareum/courseware/data/Lab_3_Semantic_Search/` holds tracked copies of the three Lab 3 notebooks and `data_utils.py`. They were byte-identical to the top-level `Lab_3_Semantic_Search/` files until the 2026-08-08 secret-scope change, which touched only the top-level copies. The two now diverge. `lab/` uses symlinks to the top-level directories, so that path picks the change up on its own. The `vocareum/courseware/data/` path does not, because it is a copy. `neo4j-databricks-workshop.dbc` and `neo4j-databricks-workshop.dat` are binary bundles of the same files and need rebuilding at the same time. The divergence is deliberate: the bundle gets resynced once, in Phase 4, after the lab content has stopped moving, rather than after every edit.
+- `vocareum/courseware/` was deleted on 2026-08-08. It held the retired manual upload procedure's assets: a `.dat` and a byte-identical `.dbc` archive, a course `.cfg`, a copy of the aircraft data zip, a second copy of `dlt_fleet_etl.py`, and copies of the Lab 2 and Lab 3 notebooks. Nothing read any of it. What a Vocareum student is handed comes from `VOC_COURSE_NOTEBOOKS` in `lab/course.env`, which names the top-level files that `lab/` symlinks. The deleted copies had already drifted, exactly as a second copy does: their `data_utils.py` diverged from the top-level file at the 2026-08-08 secret-scope change. Phase 4's Vocareum work is now editing that one list rather than rebuilding a bundle.
 - The Antora site in `site/` and the slides in `slides/` still end the workshop at Lab 4, and both are deferred to Phase 5 for the same reason. Until that pass lands, a push to `main` publishes a site that contradicts the repository READMEs.
 - Two maintenance manuals contradict themselves on the N1Speed unit and were deliberately left alone during the unit normalization. `MAINTENANCE_A220.md:146` and `MAINTENANCE_E190.md:143` label N1Speed `rpm` in their sensor inventory tables, while their own limit tables at `MAINTENANCE_A220.md:286` and `MAINTENANCE_E190.md:270` say `% RPM` with percentage values. The limit tables win, and the data was normalized to them.
 - Two stale figures in `workshop-setup/docs/MANUAL_SETUP.md` were also left alone. Line 135 gives an N1Speed typical range of 2000-3500 against an actual 2500-5283, and line 133 gives EGT 600-750 against an actual 616-731. The N1Speed row is worth correcting only after the magnitude fix in the In flight block lands, since that fix changes the numbers the row should carry.
@@ -370,7 +370,7 @@ Nothing. `Lab_4_Compound_AI_Agents/` keeps its name, both parts, and all MCP mat
 - `Lab_3_Semantic_Search/01_data_and_embeddings.ipynb`: the one place a participant types Neo4j credentials. It writes them to a per-participant secret scope, then reads them back from that scope for its own connection. Notebooks 02 and 03 read from the scope and carry no plaintext password. See Open Decision 1, now resolved.
 - `workshop-setup/README.md`: mark external MCP provisioning as required only for Lab 4 Part B.
 - `images/lab-architecture-overview.*`: add a Lab 5 variant drawn against the participant's own Aura with three tools. Keep the existing diagram for Part B. **Deferred to Phase 5.** The shipped PNG currently shows the Part B MCP topology, which is now the optional path, and both the root README and the Lab 4 README display it. Drawing it before Lab 5 is built means drawing an architecture nobody has run.
-- `vocareum/courseware/`: resync `data/Lab_3_Semantic_Search/` from the top-level lab directories and rebuild `neo4j-databricks-workshop.dbc` and `neo4j-databricks-workshop.dat`. **Deferred to Phase 4.** These are copies rather than symlinks, so they already diverge from the top-level files after the 2026-08-08 secret-scope change. Resyncing once after the lab content stops moving costs one pass. Resyncing after every edit costs one pass per edit.
+- `lab/course.env`: add the Lab 5 and Lab 6 notebooks to `VOC_COURSE_NOTEBOOKS`, which is the single statement of what a Vocareum student is handed. **Deferred to Phase 4.** A notebook cannot be named there before it exists. This item used to read "resync the Vocareum courseware bundle" and no longer does: `vocareum/courseware/` was deleted on 2026-08-08 and nothing read it, so the whole of the Vocareum content job is now this one list.
 - `site/`: the Antora source tree that `.github/workflows/deploy-antora.yml` builds and publishes on every push to `main`. It carries its own navigation, its own lab tables, and its own copy of the architecture diagram, all of which still end the workshop at Lab 4. Roughly 30 stale lines across 9 `.adoc` files. Two of them are the exact claims this restructure exists to remove: `site/modules/ROOT/pages/lab4-instructions.adoc:16` still says "You do not need data in your personal Aura instance for this lab," and `site/modules/ROOT/pages/lab4-instructions.adoc:552` still says "You have completed the workshop." **Deferred to Phase 5**, rewritten in one pass once Labs 5 and 6 have landed. The risk of waiting, stated plainly: until that pass, a push to `main` publishes a site that contradicts the repository READMEs.
 - `slides/`: `slides/platform-overview/01-workshop-over.md:126-143` still lists the MCP infrastructure as required shared provisioning, and the slides still describe the old shared-versus-personal Aura split. **Deferred to Phase 5** for the same reason as the site, and rewritten in the same pass.
 - `proposed-outline.md` and `workshop-improve.md`: add a superseded banner at the top of each pointing here. No content changes, since the reasoning is still worth reading.
@@ -424,9 +424,9 @@ A participant can finish Lab 6 having used only the Aura instance they created i
 
 ### Sequencing
 
-Write the new labs first. Lab 5, then Lab 6. Only after they land does anything downstream get rewritten: the Vocareum courseware bundle, the Antora site in `site/`, and the slides in `slides/`. Those three surfaces describe the course, so rewriting them before the course exists means writing them twice, once against a proposal and once against what shipped.
+Write the new labs first. Lab 5, then Lab 6. Only after they land does anything downstream get rewritten: the Vocareum notebook list in `lab/course.env`, the Antora site in `site/`, and the slides in `slides/`. Those three surfaces describe the course, so rewriting them before the course exists means writing them twice, once against a proposal and once against what shipped.
 
-Order: Lab 5, then Lab 6, then the courseware bundle in Phase 4, then the site and the slides together in Phase 5.
+Order: Lab 5, then Lab 6, then the Vocareum notebook list in Phase 4, then the site and the slides together in Phase 5.
 
 ### Assumptions
 
@@ -584,7 +584,7 @@ Ryan runs the dry run personally, on a fresh Vocareum-shaped workspace user and 
 - [ ] Reference instance fallback verified as a three-variable override
 - [ ] Model Serving deployment exercised at class size, or the quota confirmed sufficient for it
 - [ ] Part B still works, with its optional banner in place
-- [ ] **Resync the Vocareum courseware bundle.** `vocareum/courseware/data/Lab_3_Semantic_Search/` holds copies, not symlinks, of the three Lab 3 notebooks and `data_utils.py`, and they diverged from the top-level files when the 2026-08-08 secret-scope change landed on the top-level copies alone. `lab/` symlinks the top-level directories and needs nothing. Rebuild `neo4j-databricks-workshop.dbc` and `neo4j-databricks-workshop.dat` in the same pass, since both are binary bundles of the same files. Done once, here, after the lab content has stopped moving
+- [ ] **Name the Lab 5 and Lab 6 notebooks in `VOC_COURSE_NOTEBOOKS`.** `lab/course.env` is the single statement of what a Vocareum student is handed, and `lab/` reaches the notebooks by symlink, so this is one list to edit and no copies to rebuild. Confirm each named `.py` helper lands as a workspace FILE rather than a NOTEBOOK, which is the Lab 3 `data_utils` defect in `lab3-fix.md`. Done once, here, after the lab content has stopped moving
 - [ ] Timings recorded against the suggested day structure, per lab and per Lab 6 demo
 - [ ] **Known oddity, conditional on how the loader is invoked.** During the memory spike, two background `populate-aircraft-db setup` runs exited without writing an exit line and produced empty log files, while loading the data correctly. Not root-caused. It matters only if a Vocareum hook ever runs the loader detached rather than in the foreground. If the dry run keeps the loader in the foreground, close this as not applicable
 
@@ -609,19 +609,19 @@ Completion criteria: someone who did the foundation session, walked away for a w
 
 ### What Runs in Parallel
 
-Three tracks. Track C started immediately and its repository documentation work is done. What is left in Track C is deferred by decision rather than blocked: the courseware bundle in Phase 4, the site, the slides, and the Lab 5 diagram in Phase 5. Each of those describes the course, so each waits until the course has stopped moving.
+Three tracks. Track C started immediately and its repository documentation work is done. What is left in Track C is deferred by decision rather than blocked: the Vocareum notebook list in Phase 4, the site, the slides, and the Lab 5 diagram in Phase 5. Each of those describes the course, so each waits until the course has stopped moving.
 
 | Track | Phase 0 | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 |
 |---|---|---|---|---|---|---|
 | **A. Engineering** | Catch-up loader | Three tools plus supervisor | Deploy and evaluate | Memory nodes and demos | Dry run | Lab 6 catch-up cell |
 | **B. Memory research** | Headline demo spike, provider check, version pin **(done, GO)** | Aura tier check, explicit-mode batch path | idle | joins Track A | Dry run | idle |
-| **C. Content and infra** | Lab 4 banners, Part A handoff, superseded banners **(done)**; sensor unit documentation **(done)**; Lab 1 tier fix and Lab 2 GDS note **(in flight)** | Repo docs, `agenda.md`, `lab/workshop.py` **(done)** | Eval question set | Lab 6 README | Timing capture, Vocareum courseware resync | Lab 5 architecture diagram, Antora site, slides, between-sessions guidance |
+| **C. Content and infra** | Lab 4 banners, Part A handoff, superseded banners **(done)**; sensor unit documentation **(done)**; Lab 1 tier fix and Lab 2 GDS note **(in flight)** | Repo docs, `agenda.md`, `lab/workshop.py` **(done)** | Eval question set | Lab 6 README | Timing capture, Vocareum notebook list | Lab 5 architecture diagram, Antora site, slides, between-sessions guidance |
 
 What actually blocks what:
 
 - The catch-up loader does not block building the Lab 5 tools. Build the tools against an already-loaded instance. The loader is a prerequisite for participants, not for development.
 - The memory spike did not block Lab 5 at all. It needed a loaded graph and nothing else, and it delivered its go/no-go before Lab 6 starts and before Lab 5 finished. **It came back GO with two conditions**, so the "hold Lab 6 and ship Labs 4 and 5 alone" fallback is not needed and stays written down only in case the remaining Aura tier check goes badly.
-- The Track C work that was independent of code is done. What remains waits on the labs rather than on code: the courseware bundle, the site, and the slides all describe the course, so each gets rewritten once, after Labs 5 and 6 land.
+- The Track C work that was independent of code is done. What remains waits on the labs rather than on code: the Vocareum notebook list, the site, and the slides all describe the course, so each gets rewritten once, after Labs 5 and 6 land.
 - The Lab 5 eval question set can be written on day one. It is a list of questions and expected routes.
 - Only Phase 3 has a hard dependency on Phase 1, because the memory nodes attach to the Lab 5 supervisor.
 - Phase 5 depends on Phase 4, not on Phase 3. Its catch-up cell has to reproduce a state Phase 4 has confirmed is reachable, so building it earlier means building it against a moving target.

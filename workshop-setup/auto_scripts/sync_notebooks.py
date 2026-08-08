@@ -131,24 +131,50 @@ def upload_files() -> list[tuple[Path, str]]:
     return found
 
 
+def workspace_name(local_path: Path) -> str:
+    """What one file is called in the workspace, extension included or not.
+
+    A ``.py`` keeps its suffix and everything else loses it. The suffix is the
+    whole reason the ``AUTO`` import in ``import_one`` produces a file that
+    ``import data_utils`` can find: a workspace file named ``data_utils`` with no
+    suffix is not a module. ``AUTO`` strips the suffix itself on the files it
+    decides are notebooks, so keeping it costs nothing there.
+
+    A notebook loses it because a notebook object does not carry one, and
+    importing to a path ending in ``.ipynb`` produces a notebook whose displayed
+    name is ``01_data_and_embeddings.ipynb``. Same rule, and same reason, as
+    ``voclab.notebook_workspace_path``.
+    """
+    return local_path.name if local_path.suffix == ".py" else local_path.stem
+
+
 def import_one(workspace, local_path: Path, remote_path: str) -> None:
     """Import one file, choosing the format from its suffix.
 
-    ``.ipynb`` goes up as ``JUPYTER`` and carries its own language; a ``.py``
-    helper goes up as ``SOURCE``, which requires the language be stated. Sending
-    a notebook as ``SOURCE`` succeeds and produces a workspace file full of JSON,
-    which is why this branches rather than picking one.
+    ``.ipynb`` goes up as ``JUPYTER``, which carries its own language in the
+    notebook's metadata. A ``.py`` goes up as ``AUTO``, which reads the file
+    rather than the extension: a first line of ``# Databricks notebook source``
+    makes it a notebook and its absence makes it a workspace file.
+
+    ``AUTO`` rather than ``SOURCE`` with ``language`` PYTHON, and that is the
+    defect this function used to carry. ``SOURCE`` produces a notebook for every
+    ``.py``, and Python cannot import a notebook, so Lab 3's
+    ``from data_utils import ...`` failed with ``NotebookImportException`` for
+    anyone whose copy came through here. Measured 2026-08-08: the same
+    header-less file is a NOTEBOOK under SOURCE and a FILE under AUTO. See
+    ``lab3-fix.md`` at the repository root.
+
+    ``voclab.NOTEBOOK_FORMATS`` states the same rule for the Vocareum path and
+    is not read here, because it still carries the SOURCE mapping. Delete this
+    branch and read the map from ``voclab`` once that is fixed, so the rule is
+    stated once rather than twice.
     """
     body: dict = {
         "path": remote_path,
         "content": base64.b64encode(local_path.read_bytes()).decode("ascii"),
         "overwrite": True,
     }
-    if local_path.suffix == ".ipynb":
-        body["format"] = "JUPYTER"
-    else:
-        body["format"] = "SOURCE"
-        body["language"] = "PYTHON"
+    body["format"] = "JUPYTER" if local_path.suffix == ".ipynb" else "AUTO"
     workspace.call("POST", WORKSPACE_IMPORT_PATH, body, idempotent=True)
 
 
@@ -208,7 +234,7 @@ def sync(workspace) -> dict:
     total = len(files)
     voclab.log(f"importing {total} files into {SHARED_FOLDER}")
     for index, (local_path, subfolder) in enumerate(files, start=1):
-        remote_path = f"{SHARED_FOLDER}/{subfolder}/{local_path.stem}"
+        remote_path = f"{SHARED_FOLDER}/{subfolder}/{workspace_name(local_path)}"
         voclab.log(f"  {index}/{total}: {subfolder}/{local_path.name}")
         import_one(workspace, local_path, remote_path)
 
