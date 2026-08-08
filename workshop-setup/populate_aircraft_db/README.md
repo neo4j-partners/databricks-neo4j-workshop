@@ -1,6 +1,8 @@
 # populate-aircraft-db
 
-Standalone CLI tool that generates the Aircraft Digital Twin dataset and loads it into a Neo4j Aura instance. The `generate` command produces the synthetic CSV dataset with correlated sensor degradation. The `setup` command handles the full loading pipeline: CSV data loading, maintenance manual chunking, BGE-large embedding generation (local, via sentence-transformers), and independently configured LLM-powered entity extraction (OpenAI or Anthropic) via `neo4j-graphrag`'s `SimpleKGPipeline`.
+Standalone CLI tool that generates the Aircraft Digital Twin dataset and loads it into a Neo4j Aura instance. The `generate` command produces the synthetic CSV dataset with correlated sensor degradation. The `setup` command handles the full loading pipeline: CSV data loading, maintenance manual chunking, BGE-large embedding generation locally via sentence-transformers, and independently configured LLM-powered entity extraction with OpenAI or Anthropic via `neo4j-graphrag`'s `SimpleKGPipeline`.
+
+**This is manual, and nothing automates it.** The Vocareum hooks in `lab/` build the Databricks side and reach nothing outside the workspace. Neo4j runs in Aura and the labs connect out to it over Bolt, so no workspace resource hosts a database, `workspace_init.sh` has nothing to create, and `lab_end.sh` has nothing to tear down. `dbx-vocareum/docs/neo4j-aura.md` records that decision and what follows from it. Participants load their own instance during Labs 2 and 3; this tool is for the two administrator cases, the shared Lab 4 reference instance and a participant who fell behind. See `workshop-setup/README.md` for when each applies.
 
 ## Quick Start
 

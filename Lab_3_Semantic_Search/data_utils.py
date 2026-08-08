@@ -13,6 +13,7 @@ the MLflow deployments client when running in Databricks.
 
 import asyncio
 import concurrent.futures
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -209,6 +210,73 @@ def get_llm(model_id: str = DEFAULT_LLM_MODEL) -> DatabricksLLM:
         DatabricksLLM configured for the specified model
     """
     return DatabricksLLM(model_id=model_id)
+
+
+# =============================================================================
+# Databricks Secret Scope
+# =============================================================================
+
+# These strings mirror AGENT_SECRET_SCOPE_PREFIX and AGENT_SECRET_KEY_* in
+# lab/workshop.py. Lab 5 reads the same scope with the same key names, so the
+# two files have to agree exactly.
+SECRET_SCOPE_PREFIX = "fleet-ops"
+SECRET_KEY_NEO4J_URI = "neo4j-uri"
+SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
+SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
+
+# Databricks caps a scope name at 128 characters. The prefix plus its separator
+# take 10, leaving this much for the user slug.
+MAX_SCOPE_SLUG_LENGTH = 118
+
+
+def secret_scope_name(spark: Any) -> str:
+    """Build this participant's secret scope name from the current user.
+
+    Scope names are unique per workspace rather than per user, so a shared
+    workshop workspace with many participants needs one scope each. The current
+    user's identity supplies the distinguishing part.
+
+    Args:
+        spark: Active SparkSession, used to resolve current_user().
+
+    Returns:
+        Scope name of the form fleet-ops-<user slug>.
+    """
+    user = spark.sql("SELECT current_user()").collect()[0][0]
+    slug = re.sub(r"[^a-z0-9]+", "-", user.lower()).strip("-")[:MAX_SCOPE_SLUG_LENGTH]
+    return f"{SECRET_SCOPE_PREFIX}-{slug}"
+
+
+def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
+    """Read the Neo4j connection values stored by notebook 01.
+
+    Databricks redacts secret values in notebook output, so printing any of
+    these prints [REDACTED]. The value itself is intact in Python.
+
+    Args:
+        dbutils: The notebook's dbutils handle.
+        scope: Scope name from secret_scope_name().
+
+    Returns:
+        Dict with uri, username, and password keys.
+
+    Raises:
+        RuntimeError: The scope or one of its keys is missing.
+    """
+    try:
+        return {
+            "uri": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_URI),
+            "username": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_USERNAME),
+            "password": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_PASSWORD),
+        }
+    except Exception as error:
+        # dbutils reports a missing scope or key through a Py4J-wrapped Java
+        # exception, a type this module cannot import to catch by name.
+        raise RuntimeError(
+            f"Could not read Neo4j credentials from secret scope '{scope}'. "
+            "Run 01_data_and_embeddings.ipynb first: it creates the scope and "
+            "stores the credentials there."
+        ) from error
 
 
 # =============================================================================

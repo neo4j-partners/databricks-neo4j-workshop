@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A hands-on workshop teaching production-ready AI agents combining **Neo4j graph databases** with **Databricks AI/ML**. Demonstrates a dual-database architecture for aircraft digital twins where Neo4j handles relationship-rich data (topology, maintenance, flights) and Databricks Lakehouse handles high-volume time-series sensor telemetry.
 
-The workshop culminates in a **Supervisor Agent** (Databricks Agent Bricks) that routes questions to specialized agents: a Genie space (sensor analytics via SQL) and Neo4j MCP (graph relationships via Cypher).
+The workshop builds toward a **LangGraph supervisor agent** in Lab 5 that routes questions across three tools: a Genie space for sensor analytics in SQL, Cypher over the participant's own Aura instance, and GraphRAG retrieval over maintenance manuals. Lab 6 then gives that agent memory in Neo4j. Lab 4 Part B is an optional advanced path that builds a no-code Supervisor Agent in Databricks Agent Bricks over Neo4j MCP.
 
 ## Build & Run Commands
 
@@ -34,7 +34,7 @@ uv run populate-aircraft-db samples        # Run showcase Cypher queries
 
 ### Databricks provisioning
 `lab/workshop.py` is the one definition of this course's Databricks objects: the
-catalog, the three schemas, the volume, the courseware, the `Fleet Digital Twin
+catalog, the four schemas, the volume, the courseware, the `Fleet Digital Twin
 ETL` pipeline and the comments a Genie space reads. Vocareum's
 `workspace_init.sh` calls it, and so does anything else that needs those names.
 ```bash
@@ -75,7 +75,7 @@ environment. See `workshop-setup/auto_scripts/README.md`.
 - **Databricks**: Delta tables for `sensor_readings` (~155K rows), `sensors`, `systems`, `aircraft`
 - Aircraft/Systems/Sensors exist in **both** databases as join points
 
-### Multi-Agent Architecture (Lab 4)
+### Multi-Agent Architecture (Lab 4 Part B, optional and advanced)
 ```
 User Question → Supervisor Agent (Agent Bricks)
   ├→ Genie space → Databricks Lakehouse (natural language → SQL)
@@ -85,7 +85,9 @@ User Question → Supervisor Agent (Agent Bricks)
 The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connection to an external MCP server. Setup: `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`.
 
 ### Lab Progression
-Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 (compound AI agents: Genie space + Supervisor Agent)
+Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 Part A (Genie space over lakehouse telemetry, required) and Part B (Neo4j MCP + Agent Bricks Supervisor Agent, optional and advanced) → Lab 5 (LangGraph agent over Genie, the participant's own Aura instance, and the Lab 3 retrievers, deployed to Model Serving) → Lab 6 (Neo4j agent memory)
+
+Labs 5 and 6 are planned and not yet on disk. See `expand.md`.
 
 ## Configuration
 

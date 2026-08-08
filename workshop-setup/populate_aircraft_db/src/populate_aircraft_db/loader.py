@@ -53,6 +53,25 @@ RELATIONSHIP_TYPES = [
     "DESCRIBES_COMPONENT",
     "HAS_LIMIT",
 ]
+# Labels only LLM entity extraction writes. A run with --skip-extraction leaves
+# them empty on purpose, along with their constraints and their cross-links.
+# OperatingLimit is not one of them: it loads from nodes_operating_limits.csv on
+# every path, so it is verified on every path.
+EXTRACTION_LABELS = frozenset(
+    {
+        "AircraftModel",
+        "SystemReference",
+        "ComponentReference",
+        "Fault",
+        "MaintenanceProcedure",
+    }
+)
+EXTRACTION_CROSS_LINKS = frozenset(
+    {
+        "AircraftModel -> Aircraft",
+        "SystemReference -> System",
+    }
+)
 REQUIRED_INDEXES = [
     "maintenanceChunkEmbeddings",
     "maintenanceChunkText",
@@ -406,6 +425,38 @@ def load_relationships(driver: Driver, data_dir: Path) -> None:
         print(f"  [OK] Loaded {len(records)} {rel_type} relationships.")
 
 
+_OPERATING_LIMIT_QUERY = """
+UNWIND $batch AS row
+MERGE (ol:OperatingLimit {name: row['name']})
+SET ol.limit_id = row[':ID(OperatingLimit)'],
+    ol.parameterName = row['parameterName'],
+    ol.unit = row['unit'],
+    ol.regime = row['regime'],
+    ol.minValue = CASE row['minValue'] WHEN '' THEN null ELSE row['minValue'] END,
+    ol.maxValue = CASE row['maxValue'] WHEN '' THEN null ELSE row['maxValue'] END,
+    ol.aircraftType = row['aircraftType']
+"""
+
+
+def load_operating_limits(driver: Driver, data_dir: Path) -> None:
+    """Load OperatingLimit nodes from CSV.
+
+    These are the documented takeoff thresholds transcribed from the maintenance
+    manuals. Loading them from CSV means the ``--skip-extraction`` path gets them
+    too, so Lab 3 notebook 02's operating-limit retriever has something to
+    traverse to without an LLM.
+
+    The merge key is ``name``, the same key SimpleKGPipeline resolves extracted
+    entities on, so a run that also extracts updates these nodes instead of
+    duplicating them.  Call this before :func:`pipeline.link_to_existing_graph`,
+    which creates the ``Sensor -[:HAS_LIMIT]-> OperatingLimit`` cross-links.
+    """
+    print("Loading OperatingLimit nodes...")
+    records = read_csv(data_dir, "nodes_operating_limits.csv")
+    _run_in_batches(driver, records, _OPERATING_LIMIT_QUERY)
+    print(f"  [OK] Loaded {len(records)} OperatingLimit nodes.")
+
+
 def clear_database(driver: Driver) -> None:
     """Delete all nodes and relationships in batches."""
     print("Clearing database...")
@@ -519,8 +570,14 @@ def verify(
     *,
     expected_embedding_dimensions: int = 1024,
     strict: bool = False,
+    skip_extraction: bool = False,
 ) -> bool:
-    """Print comprehensive graph verification and return whether it passed."""
+    """Print comprehensive graph verification and return whether it passed.
+
+    With *skip_extraction* the checks that only entity extraction can satisfy
+    are left out, so a deliberate no-extraction run does not report warnings
+    for nodes, constraints, and cross-links it was never meant to write.
+    """
     failures: list[str] = []
     warnings: list[str] = []
 
@@ -545,6 +602,13 @@ def verify(
     _print_count_section("Enrichment Node Counts", enrichment_counts)
     _print_count_section("Relationship Counts", rel_counts)
 
+    if skip_extraction:
+        print(
+            "\nExtraction checks skipped: this run skipped entity extraction, so "
+            "extracted entity nodes, their constraints, and their cross-links "
+            "were not verified."
+        )
+
     for label in OPERATIONAL_LABELS:
         _warn_or_fail(
             failures,
@@ -564,6 +628,8 @@ def verify(
         )
 
     for label in ("Document", "Chunk", "AircraftModel", "OperatingLimit"):
+        if skip_extraction and label in EXTRACTION_LABELS:
+            continue
         _warn_or_fail(
             failures,
             warnings,
@@ -670,6 +736,8 @@ def verify(
 
     print("\nRequired Constraints:")
     for label, property_name in REQUIRED_CONSTRAINTS:
+        if skip_extraction and label in EXTRACTION_LABELS:
+            continue
         exists = _has_constraint(constraint_dicts, label, property_name)
         status = "[OK]" if exists else "[MISSING]"
         print(f"  {status} {label}.{property_name}")
@@ -704,6 +772,8 @@ def verify(
     ]
     print("\nCross-Link Checks:")
     for label, count in cross_link_checks:
+        if skip_extraction and label in EXTRACTION_CROSS_LINKS:
+            continue
         print(f"  {label}: {count:,}")
         _warn_or_fail(
             failures,

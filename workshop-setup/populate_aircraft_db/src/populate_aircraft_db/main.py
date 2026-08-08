@@ -17,7 +17,13 @@ from neo4j.exceptions import ServiceUnavailable
 from .config import Settings
 from .generator.cli import generate as generate_cmd
 from .generator.cli import validate as validate_csv_cmd
-from .loader import clear_database, load_nodes, load_relationships, verify
+from .loader import (
+    clear_database,
+    load_nodes,
+    load_operating_limits,
+    load_relationships,
+    verify,
+)
 from .schema import (
     create_constraints,
     create_embedding_indexes,
@@ -251,10 +257,13 @@ def _run_enrich(
     print("\nCreating embedding indexes...")
     create_embedding_indexes(driver, creds.embedding_dims)
 
+    print()
+    load_operating_limits(driver, settings.data_dir)
+
     print("\nLinking to existing graph...")
     link_to_existing_graph(driver)
 
-    validate_enrichment(driver)
+    validate_enrichment(driver, skip_extraction=skip_extraction)
 
 
 # ---------------------------------------------------------------------------
@@ -313,6 +322,7 @@ def setup_cmd(
         verify(
             driver,
             expected_embedding_dimensions=settings.embedding_dimensions,
+            skip_extraction=skip_extraction,
         )
 
     elapsed = time.monotonic() - start
@@ -390,6 +400,8 @@ def load_operational_cmd() -> None:
         load_nodes(driver, settings.data_dir)
         print()
         load_relationships(driver, settings.data_dir)
+        print()
+        load_operating_limits(driver, settings.data_dir)
         print()
 
         print("Linking existing enrichment to operational graph...")

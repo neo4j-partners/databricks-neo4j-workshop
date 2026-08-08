@@ -3,6 +3,12 @@
 .env.*
 *.env
 
+# .env.example is the exception, and it has to be. It carries no secret: it is
+# the blank template every README tells you to copy, and `.env.*` above swept it
+# out of the repo. Without it a fresh clone cannot follow its own setup
+# instructions, because `cp .env.example .env` has nothing to copy.
+!.env.example
+
 worklog/
 
 # lab/course.env is the exception, and it has to be. It carries no secret: it is

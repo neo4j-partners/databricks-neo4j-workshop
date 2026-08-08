@@ -44,12 +44,13 @@ VOLUMES_PATH = "/api/2.1/unity-catalog/volumes"
 WORKSPACE_DELETE_PATH = "/api/2.0/workspace/delete"
 
 # ``aircraft`` is both the volume schema and the gold schema in this course, so
-# the set collapses to two. Reading them from ``workshop`` rather than restating
-# them is what keeps that true if the course ever splits them apart.
+# the set collapses to three. Reading them from ``workshop`` rather than
+# restating them is what keeps that true if the course ever splits them apart.
 SCHEMAS = (
     workshop.PIPELINE_SCHEMA,
     workshop.LAKEHOUSE_SCHEMA,
     workshop.VOLUME_SCHEMA,
+    workshop.AGENT_SCHEMA,
 )
 
 
@@ -108,9 +109,10 @@ def delete_volume(workspace) -> bool:
 def delete_schemas(workspace) -> list[str]:
     """Force-drop each schema, returning the ones that were there.
 
-    ``force`` because a schema holding tables refuses a plain delete, and every
-    table in these three was created by the provisioner this undoes. Deduplicated
-    because the course currently points two of its three names at ``aircraft``.
+    ``force`` because a schema holding tables or a registered model refuses a
+    plain delete, and everything in these was created by the provisioner this
+    undoes or by the lab it sets up. Deduplicated because the course currently
+    points two of its four names at ``aircraft``.
     """
     dropped = []
     for schema in dict.fromkeys(SCHEMAS):

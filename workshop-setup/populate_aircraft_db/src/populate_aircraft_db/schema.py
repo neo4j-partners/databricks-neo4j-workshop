@@ -17,6 +17,10 @@ CONSTRAINTS: list[tuple[str, str]] = [
     ("MaintenanceEvent", "event_id"),
     ("Removal", "removal_id"),
     ("Document", "documentId"),
+    # OperatingLimit loads from CSV on every path, so it needs its constraint on
+    # every path. It also stays in EXTRACTION_CONSTRAINTS below, which drops and
+    # recreates it around the SimpleKGPipeline write phase.
+    ("OperatingLimit", "name"),
 ]
 
 # (label, property) pairs — property indexes for common lookups.

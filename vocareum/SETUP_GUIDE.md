@@ -1,411 +1,178 @@
-# Vocareum Setup Guide: Neo4j + Databricks Workshop
+# Vocareum setup: Neo4j + Databricks workshop
 
-## Prerequisites
+The admin procedure for running this course on Vocareum lives in the `dbx-vocareum` tooling repository. It is not repeated here. A second copy of a procedure drifts, and this one already did: an older copy of the setup code defined 4 gold tables where the current one defines 8.
 
-- Vocareum access (request via http://go/vocareum-lab-development)
-- Access to the appropriate Vocareum org (GenAI for Serverless)
-- Join **#field-driven-labs-vocareum** on Slack for help
+This page says what is in this directory, where to go for the procedure, and what the tooling does not cover.
 
-## Step 1: Clone a Template
+The tooling repository is [neo4j-partners/dbx-vocareum](https://github.com/neo4j-partners/dbx-vocareum). This repository depends on it, declared in `pyproject.toml` as `dbx-vocareum-tools @ git+https://github.com/neo4j-partners/dbx-vocareum.git`.
 
-1. Log into Vocareum (https://labs.vocareum.com)
-2. Find an existing Databricks lab template in **DB Field Driven Enablement Labs**
-3. Click **Clone** → **Clone by Copy**
-4. Set Course Name: `Neo4j + Databricks Workshop`
-5. Select Organization: **GenAI** (for serverless support)
-6. Leave all other fields default, click Clone
+Links below assume `dbx-vocareum` is checked out beside this repository.
 
-## Step 2: Course Settings
+## What is in this directory
 
-On the Vocareum home page → click **Settings** for your course:
+| Path | What it is |
+| --- | --- |
+| `docs/README.md` | The participant-facing page Vocareum renders in the Readme panel. It links to the published workshop site and tells a student where to start. |
+| `courseware/` | Assets from the earlier manual upload procedure: the notebook archives, the data zip, the DLT notebook, and the course `.cfg`. |
 
-| Setting | Value |
-|---------|-------|
-| Course Name | Neo4j + Databricks Workshop |
-| Start Date | Workshop start date |
-| End Date | Workshop end date + 1 day buffer |
-| LTI | **Disabled** (for direct enrollment) |
-| Course Feedback | Enabled |
+What a student is handed today is not built from `courseware/`. It is named in `lab/course.env` at the repository root, and `dbx-vocareum-upload` sends it.
 
-## Step 3: Lab Settings (Assignment/Part)
+## Where the admin procedure lives
 
-Click **Assignments** → click on the Part → configure:
+| I want to | Read |
+| --- | --- |
+| Do any admin task, start to finish | [`dbx-vocareum/README.md`](../../dbx-vocareum/README.md) |
+| Understand the four hooks and what each one is handed | [`dbx-vocareum/docs/databricks-labs.md`](../../dbx-vocareum/docs/databricks-labs.md) |
+| Know what the service principal may do, and what a student may do | [`dbx-vocareum/docs/permissions.md`](../../dbx-vocareum/docs/permissions.md) |
+| Get the lab up to Vocareum | [`dbx-vocareum/docs/deploying.md`](../../dbx-vocareum/docs/deploying.md) |
+| Find out why a lab came up empty | [`dbx-vocareum/docs/diagnosing.md`](../../dbx-vocareum/docs/diagnosing.md) |
+| Cut the wait a student spends on compute | [`dbx-vocareum/docs/pre-warm.md`](../../dbx-vocareum/docs/pre-warm.md) |
+| Call the Vocareum REST API from code | [`dbx-vocareum/docs/vocareum-api.md`](../../dbx-vocareum/docs/vocareum-api.md) |
+| Know where Neo4j runs, and why it is not inside the workspace | [`dbx-vocareum/docs/neo4j-aura.md`](../../dbx-vocareum/docs/neo4j-aura.md) |
 
-| Setting | Value |
-|---------|-------|
-| Part Name | Neo4j Databricks Lab |
-| Lab Type | **Databricks** |
-| Users per workspace | 25 |
-| Session Length | **240** minutes |
-| End Lab Behavior | **Terminate resources** |
-| Timer | **Enabled** |
-| Readme Button | **Enabled** |
+`dbx-vocareum/docs/permissions.md` is the single source of truth for what each principal may do. Do not restate a permission result here.
 
-## Step 4: Upload Files
+## What this course owns
 
-Click **Configure Workspace** → **Files** in the Assignment tab.
+Three things belong to this course rather than to the tooling.
 
-### Complete File Mapping
+### `lab/` at the repository root
 
-Upload from `vocareum/` in this repo to Vocareum filesystem:
+Four hooks, `workshop.py`, and `course.env`. Every value specific to this workshop lives in `course.env`: the cluster runtime and node type, the eleven libraries, the catalog name and its managed location, the notebook list, and the shared warehouse. Change a course value there. Do not change it in a hook, and do not change it in the tooling.
 
-| Local file | Upload to | Purpose |
-|------------|-----------|---------|
-| `courseware/neo4j-databricks-workshop.cfg` | `/voc/private/courseware/` | Course config: cluster spec, entry notebook, default catalog |
-| `courseware/neo4j-databricks-workshop.dat` | `/voc/private/courseware/` | Lab notebooks. The `.dat` extension prevents Vocareum auto-extract |
-| `courseware/aircraft_digital_twin_data.zip` | `/voc/private/courseware/` | Workshop data, 2.1 MB, 27 files. The init script also accepts `.dat` or a pre-extracted folder |
-| `scripts/workspace_init.sh` | `/voc/scripts/` | Shell wrapper |
-| `scripts/user_setup.sh` | `/voc/scripts/` | Shell wrapper |
-| `scripts/lab_setup.sh` | `/voc/scripts/` | Shell wrapper |
-| `scripts/lab_end.sh` | `/voc/scripts/` | Shell wrapper |
-| `scripts/python/workspace_init.py` | `/voc/scripts/python/` | Workspace init logic |
-| `scripts/python/user_setup.py` | `/voc/scripts/python/` | Per-user setup |
-| `scripts/python/lab_setup.py` | `/voc/scripts/python/` | Lab resume |
-| `scripts/python/lab_end.py` | `/voc/scripts/python/` | Resource cleanup |
-| `scripts/python/workshop_data_setup.py` | `/voc/scripts/python/` | Data staging + DLT pipeline setup |
-| `courseware/dlt_fleet_etl.py` | `/voc/private/courseware/` | DLT notebook (bronze → silver → gold) |
-| `docs/README.md` | `/voc/docs/` | Iframe instructions shown to participants |
+Vocareum runs four hooks by name and ignores anything else in `/voc/scripts`. Each one is a shell script this course owns, scaffolded once by `dbx-vocareum-init` and edited from then on.
 
-**Note:** Upload `scripts/python/dbacademy.py` to `/voc/scripts/python/`. This is a patched version that fixes `delta_sharing_recipient_token_lifetime` and adds a `self.w` None guard. If the template already has one, **overwrite it** with ours.
+- **`workspace_init.sh`: the workspace is built here, once.** It runs one time per workspace Vocareum creates, before any student exists. It ensures the SQL warehouse, then hands off to `voc_python workshop.py provision`, which creates the catalog with its managed location, both schemas, the volume, the uploaded data, the DLT pipeline, and the Genie comments and grants. Everything a class shares is built by this hook. Redeploying `/voc/scripts` does not re-run it. `Rerun Init` on the admin Workspaces page does.
+- **`lab_setup.sh`: pre-warm, and it deliberately builds nothing.** It runs when Vocareum warms a lab ahead of a student. It reports the environment and stops there. No cluster is created, because the cluster name is derived from the student identity Vocareum mints at session start, so a cluster warmed here would carry a name the student's own session never looks for.
+- **`user_setup.sh`: the student's session, and the only required hook.** It runs when a student clicks start. It calls `cluster-ensure` to create or restart the per-student cluster, then `notebook-import` to put the course's notebooks in the student's home folder, then writes the landing page into `$VOC_IPC_DATA_FILE`, which is what redirects the student's browser. It is the only hook that writes that file. A lab with no `user_setup.sh` starts successfully and does nothing.
+- **`lab_end.sh`: reclaim whatever is still billing.** It runs on stop and on terminate, and it reads `VOC_END_LAB_BEHAVIOR` before deciding anything. On a stop the student's work is preserved for their next session, so the cluster is terminated and nothing is deleted. On a terminate the environment reverts, so the cluster is deleted outright. Notebooks are left alone in both cases. Anything billable that `user_setup.sh` created has to be reclaimed here, because Vocareum removes only what Vocareum created.
 
-`courseware/neo4j-databricks-workshop.dbc` is the same archive as the `.dat` file. Keep it for direct Databricks import during testing. Vocareum uses the `.dat` copy.
+### `expected.json` at the repository root
 
-### What Is in the Data Zip
+The ship gate manifest. `uv run dbx-vocareum-diagnose --expect expected.json` reads it and fails when a named object is missing. It sits outside `lab/` on purpose, because everything under `lab/` is uploaded to `/voc/scripts` and this file is for whoever deploys rather than for the hooks.
 
-`aircraft_digital_twin_data.zip` contains 27 files under a single `aircraft_digital_twin_data/` folder:
+### The manual pre-workshop steps
 
-- **22 CSVs**: 10 node exports and 12 relationship exports
-- **5 maintenance manuals**: `MAINTENANCE_A220.md`, `MAINTENANCE_A320.md`, `MAINTENANCE_A321neo.md`, `MAINTENANCE_B737.md`, `MAINTENANCE_E190.md`
+The hooks build the Databricks side. They do not build the Neo4j side or the Lab 4 agent wiring, and that is deliberate.
 
-The manuals are required. Lab 3 notebook 01 reads `MAINTENANCE_A320.md` from the Unity Catalog volume, and it fails if the manuals are absent.
+- **Participant Aura instances.** Each participant creates their own Aura Free instance in Lab 1. Nothing to pre-provision.
+- **Reference Aura instance.** Lab 4 queries one administrator-managed instance instead of a participant's. Load it before the workshop with `workshop-setup/populate_aircraft_db`. A shared reference instance means every participant gets the full graph in Lab 4 no matter how far they got in Lab 2.
+- **The `neo4j_agentcore_mcp` Unity Catalog connection.** Lab 4 Part B needs an HTTP connection to a Neo4j MCP server backed by the reference instance. `workshop-setup/MCP-MANUAL-SETUP.md` is the walkthrough. Participants verify and use the connection. They never create it.
+- **Genie spaces.** Each participant creates their own in Lab 4 Part A. Do not pre-create a shared one, because each participant needs to edit their space's instructions.
 
-Dataset volumes:
+## Setting up a new course
 
-| Entity | Rows |
-|--------|------|
-| Aircraft | 36 |
-| Airports | 40 |
-| Systems | 144 |
-| Components | 612 |
-| Sensors | 288 |
-| Flights | 14,543 |
-| Delays | 5,541 |
-| Maintenance events | 286 |
-| Removals | 57 |
-| Sensor readings | 155,520 |
+This workshop is one course. The tooling runs any number of them, and a second course does not copy this one. What follows is the shortest path from an empty repository to a lab a student can start. [`dbx-vocareum/docs/deploying.md`](../../dbx-vocareum/docs/deploying.md) has the same ground in full.
 
-Sensor readings cover July 1, 2024 through September 28, 2024, at 4-hour intervals. That is 540 timestamps across 90 days for each of the 288 sensors.
+### 1. Declare the tooling as a dependency
 
-### What Is in the Notebook Bundle
+In the new course's `pyproject.toml`:
 
-`neo4j-databricks-workshop.dat` contains 5 files:
-
+```toml
+[dependency-groups]
+dev = [
+  "dbx-vocareum-tools @ git+https://github.com/neo4j-partners/dbx-vocareum.git",
+]
 ```
-Lab_2_Databricks_ETL_Neo4j/
-  01_aircraft_etl_to_neo4j.ipynb     <- entry notebook
-Lab_3_Semantic_Search/
-  01_data_and_embeddings.ipynb
-  02_graphrag_retrievers.ipynb
-  03_hybrid_retrievers.ipynb
-  data_utils.py
-```
-
-The Graph Data Science notebooks are deliberately excluded. `Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb` and everything under `Appendix_A_GDS_Graph_Analytics/` require AuraDB Professional, and Vocareum participants use Aura Free.
-
-Labs 1 and 4 have no notebooks. Their instructions live on the published workshop site, which `docs/README.md` links to:
-`https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/`
-
-### Rebuilding the Bundle and the Data Zip
-
-Both uploaded artifacts are generated from the main workshop, not authored by hand. Regenerate them whenever the labs or the dataset change, otherwise Vocareum silently drifts from the workshop that everyone else runs.
-
-`vocareum/courseware/data/` is the staging directory for the bundle. It is a checked-in mirror of the lab notebooks, and it is not uploaded to Vocareum directly.
-
-Run from the repository root:
 
 ```bash
-# 1. Refresh the staged notebooks from the main labs
-cp Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb \
-   vocareum/courseware/data/Lab_2_Databricks_ETL_Neo4j/
-cp Lab_3_Semantic_Search/0[123]_*.ipynb Lab_3_Semantic_Search/data_utils.py \
-   vocareum/courseware/data/Lab_3_Semantic_Search/
-
-# 2. Rebuild the bundle (.dbc is a byte-identical copy of .dat)
-cd vocareum/courseware/data
-rm -f ../neo4j-databricks-workshop.dat ../neo4j-databricks-workshop.dbc
-zip -q -r -X ../neo4j-databricks-workshop.dat \
-    Lab_2_Databricks_ETL_Neo4j Lab_3_Semantic_Search \
-    -x '*.DS_Store' -x '*__pycache__*'
-cp ../neo4j-databricks-workshop.dat ../neo4j-databricks-workshop.dbc
-cd ../../..
-
-# 3. Rebuild the data zip from the canonical dataset
-rm -rf /tmp/vocdata && mkdir -p /tmp/vocdata/aircraft_digital_twin_data
-cp workshop-setup/aircraft_digital_twin_data/*.csv \
-   workshop-setup/aircraft_digital_twin_data/*.md \
-   /tmp/vocdata/aircraft_digital_twin_data/
-(cd /tmp/vocdata && zip -q -r -X aircraft_digital_twin_data.zip aircraft_digital_twin_data)
-cp /tmp/vocdata/aircraft_digital_twin_data.zip vocareum/courseware/
+uv sync --group dev
 ```
 
-Verify before uploading. Both commands should report no differences:
+The dev group, because nothing the course teaches imports it. It is the deployer's toolchain. A dependency rather than a copied folder, because then the shell and Python runtime the hooks call has exactly one owner and an upgrade is a version bump instead of a merge.
+
+No revision is pinned in the declaration, so `uv.lock` holds whichever commit the default branch pointed at when the lock was written. Bump it whenever the tooling changes:
 
 ```bash
-# Bundle matches the main labs
-unzip -q -o vocareum/courseware/neo4j-databricks-workshop.dat -d /tmp/datcheck
-diff -r /tmp/datcheck vocareum/courseware/data
-
-# Data zip matches the canonical dataset
-unzip -q -o vocareum/courseware/aircraft_digital_twin_data.zip -d /tmp/zipcheck
-diff -r /tmp/zipcheck/aircraft_digital_twin_data workshop-setup/aircraft_digital_twin_data
+uv sync --group dev --upgrade-package dbx-vocareum-tools
 ```
 
-`-X` strips extra file attributes so the archive is reproducible. Exclude `__pycache__`, which otherwise ships a stale compiled `data_utils`.
+This matters more than it looks. A fix inside the tooling's runtime changes no file in the course, so a course that redeploys without bumping uploads the old runtime and hash-verifies it successfully.
 
-## What Happens Automatically
-
-### On Workspace Init (`workspace_init.py`)
-1. **dbacademy** creates the metastore, the default catalog `databricks-neo4j-workshop`, and a shared warehouse
-2. The script locates the data, extracting `aircraft_digital_twin_data.dat` or `.zip` if a pre-extracted folder is absent
-3. **workshop_data_setup.py** then:
-   - Creates the catalog, the `aircraft` schema, and the `raw_data` volume
-   - Uploads 22 CSVs and 5 maintenance manuals to `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/`
-   - Uploads the DLT notebook to `/Shared/workshop/dlt_fleet_etl`
-   - Creates and full-refreshes a **serverless DLT pipeline** named `Fleet Digital Twin ETL`:
-     - **Bronze**: raw CSV ingestion, 10 node tables and 12 relationship tables
-     - **Silver**: cleaned, typed, validated entities with DQ expectations
-     - **Gold**: analytics-ready tables enriched with joins and aggregations
-   - Adds Genie-friendly table and column comments
-   - Grants SELECT on the gold tables and USE on the catalog, schema, and volume to `account users`
-   - Grants CREATE CONNECTION on the metastore to `account users`
-
-#### Where the pipeline tables land
-
-Bronze and silver tables publish to a separate schema, `aircraft_pipeline`. Only the 8 gold tables land in `databricks-neo4j-workshop.aircraft`, which keeps the schema participants browse free of intermediate tables.
-
-| Gold table | Used by |
-|------------|---------|
-| `aircraft` | Lab 4 Genie space |
-| `systems` | Lab 4 Genie space |
-| `sensors` | Lab 4 Genie space |
-| `sensor_readings` | Lab 4 Genie space |
-| `flights` | Reference and exploration |
-| `maintenance_events` | Reference and exploration |
-| `fleet_readiness` | Reference and exploration |
-| `sensor_health` | Reference and exploration |
-
-The Lab 4 Genie space needs only the first four. The other four are available for participants who want to explore further.
-
-The gold `systems` and `sensors` tables use the column names `type` and `name`. They previously used `system_type`, `system_name`, `sensor_type`, and `sensor_name`. The current names match the `auto_scripts` tables used outside Vocareum and the Genie instructions in Lab 4 Part A.
-
-### On User Setup (`user_setup.py`)
-- Creates a per-user single-node cluster from the spec in `neo4j-databricks-workshop.cfg`: DBR `17.3.x-cpu-ml-scala2.13`, node type `m5.large`, 120-minute auto-termination
-- Installs the Neo4j Spark Connector plus 10 PyPI packages on that cluster
-- Creates a per-user schema for scratch work
-- Creates a working volume in the ops schema
-- Imports the lab notebooks to the user's home folder
-- Returns a redirect URL to the entry notebook, `Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j`
-
-The PyPI packages are `neo4j==6.2.0`, `databricks-agents>=1.11.0`, `langgraph==1.2.4`, `langchain-openai==1.3.0`, `pydantic==2.13.4`, `langchain-core>=1.4.6`, `databricks-langchain>=0.20.0`, `neo4j-graphrag>=1.17.0`, `beautifulsoup4>=4.15.0`, and `sentence_transformers`. Lab 2 and Lab 3 raise `ImportError` without them, so do not strip the library list when editing the cfg.
-
-### On Lab Resume (`lab_setup.py`)
-- Starts the user's cluster and warehouse if stopped
-- Returns the redirect URL
-
-### On Lab End (`lab_end.py`)
-- Terminates the user's cluster
-- Stops the user's warehouse
-- Drops the user catalog and schema
-- Cleans up metadata
-
-## Manual Pre-Workshop Steps
-
-### A. Neo4j Aura
-
-Two separate Aura instances are involved.
-
-**Participant instances.** Each participant creates their own Aura Free instance during Lab 1 and uses it for Labs 2 and 3. No pre-provisioning needed.
-
-**Reference instance.** Lab 4 does not use participant instances. It queries a single administrator-managed **Reference Aura Instance** through the Neo4j MCP connection. Load it with the complete dataset before the workshop using `workshop-setup/populate_aircraft_db`:
+### 2. Scaffold the hooks
 
 ```bash
-cd workshop-setup/populate_aircraft_db
-uv sync
-uv run populate-aircraft-db setup
-uv run populate-aircraft-db verify
+uv run dbx-vocareum-init lab/
 ```
 
-Point that tool's `.env` at the reference instance, not at a participant instance. Using a shared reference instance means every participant gets the full graph in Lab 4 regardless of how far they got in Lab 2.
+That writes the four hooks, a `course.env` to fill in, and a README naming the rules the hooks depend on. From then on those files belong to the course. `--force` rewrites the hooks and never touches `course.env`, because `course.env` is the one file here holding values a human typed.
 
-### B. Neo4j MCP Server + UC Connection (Lab 4)
+### 3. Fill in `lab/course.env`
 
-Lab 4 Part B needs a Unity Catalog HTTP connection named `neo4j_agentcore_mcp` that points at a Neo4j MCP server backed by the reference Aura instance. Participants only verify and use the connection. They never create it.
+Course values reach the hooks through this file and through nothing else. Every key is optional and every one has a default, so a course that names none of them still runs.
 
-**Step B1: Deploy the Neo4j MCP server**
+| Key | What it sets |
+| --- | --- |
+| `VOC_COURSE_SPARK_VERSION` | The cluster's Databricks runtime |
+| `VOC_COURSE_NODE_TYPE` | The instance type the student's cluster runs on |
+| `VOC_COURSE_AUTOTERMINATION_MINUTES` | How long an idle student cluster bills before it stops itself |
+| `VOC_COURSE_LIBRARIES` | Libraries installed on the cluster, as `pypi:` and `maven:` entries |
+| `VOC_COURSE_CATALOG` | The Unity Catalog catalog the course builds |
+| `VOC_COURSE_NOTEBOOKS` | What the student is handed. A folder name, or a comma-separated list of files |
+| `VOC_COURSE_WAREHOUSE_NAME`, `_SIZE`, `_AUTO_STOP_MINUTES` | The SQL warehouse `workspace_init.sh` ensures |
 
-The MCP server deployment tooling is **not in this repo**. `workshop-setup/neo4j_mcp_connection/` contains only `mcp-set-flag.ipynb` and a README. Earlier versions of this guide told the admin to run `aws-starter neo4j-agentcore-mcp-server` from that directory. There is no such directory and no such script here.
+`VOC_COURSE_NOTEBOOKS` accepts paths, and the folder structure survives into the student's home folder. Naming `Lab_2/01_intro.ipynb` hands the student `Lab_2/01_intro`. The extension comes off, because a Databricks notebook object does not carry one.
 
-Deploy the server from the separate `neo4j-agentcore-mcp-server` project, which runs the MCP server behind an AWS AgentCore Gateway with Cognito M2M auth. Its `./deploy.sh credentials` step writes `.mcp-credentials.json` with the values the connection needs:
+### 4. Put the notebooks where the course names them
 
-| `.mcp-credentials.json` key | Used for |
-|------------------------------|----------|
-| `gateway_url` | Split into **Host** and **Base path** |
-| `client_id` | Client ID |
-| `client_secret` | Client secret |
-| `scope` | OAuth scope |
-| `token_url` | Token endpoint |
+Anything under `lab/` is uploaded, so the notebooks either live there or are symlinked in from the rest of the repository. A symlink keeps one copy of each notebook rather than a second copy that drifts.
 
-Point the server's Neo4j connection settings at the reference Aura instance from Step A.
+### 5. Write `expected.json`
 
-If you do not have access to that deployment project, ask the workshop owner for an existing gateway URL and credential set. The connection can be created against a gateway someone else already runs.
+The ship gate reads it. List what the course builds, by name:
 
-**Step B2: Create the UC HTTP connection**
+```json
+{
+  "catalogs": ["my-course"],
+  "schemas": ["my-course.data"],
+  "volumes": ["my-course.data.raw"],
+  "tables": ["my-course.data.readings"],
+  "warehouses": ["shared_warehouse"],
+  "pipelines": ["My ETL"],
+  "workspace_paths": ["/Shared/my-course/etl"]
+}
+```
 
-Follow `workshop-setup/MCP-MANUAL-SETUP.md`. It is the authoritative walkthrough and covers the UI wizard field by field. The parts that matter for Vocareum:
+The manifest belongs to the course rather than to the tooling. The tooling knows how to ask whether a catalog named X exists. It must never know that X is this course's catalog, or the two have grown back together.
 
-- **Connection name:** `neo4j_agentcore_mcp`. Lab 4 Part B, the published Lab 4 page, and `MCP-MANUAL-SETUP.md` all use exactly this name.
-- **Connection type:** `HTTP`
-- **Auth type:** **OAuth Machine to Machine**
-- **Host:** scheme and domain from `gateway_url`, with no path, starting with `https://`
-- **Base path:** `/mcp`. Leaving this at the default `/` produces a URL ending in `:443/` and every call fails.
+### 6. Add the course's own provisioning, if it needs any
 
-Optionally store the credentials in a Databricks secret scope first and reference them from SQL instead of typing them into the wizard:
+A course that only hands out notebooks needs nothing here. A course that builds a catalog, tables or a pipeline writes its own Python and calls it from a hook:
 
 ```bash
-export DATABRICKS_HOST="https://dbc-xxxxx.cloud.databricks.com"
-export DATABRICKS_TOKEN="dapi..."
-
-databricks secrets create-scope mcp-neo4j-secrets
-
-echo -n "https://<gateway-host>.gateway.bedrock-agentcore.<region>.amazonaws.com" \
-  | databricks secrets put-secret mcp-neo4j-secrets gateway_host
-echo -n "<client_id>"     | databricks secrets put-secret mcp-neo4j-secrets client_id
-echo -n "<client_secret>" | databricks secrets put-secret mcp-neo4j-secrets client_secret
-echo -n "https://<cognito-domain>/oauth2/token" \
-  | databricks secrets put-secret mcp-neo4j-secrets token_endpoint
-echo -n "<scope>"         | databricks secrets put-secret mcp-neo4j-secrets oauth_scope
+voc_python workshop.py provision
 ```
 
-```sql
-CREATE CONNECTION IF NOT EXISTS neo4j_agentcore_mcp TYPE HTTP
-OPTIONS (
-  host secret('mcp-neo4j-secrets', 'gateway_host'),
-  base_path '/mcp',
-  client_id secret('mcp-neo4j-secrets', 'client_id'),
-  client_secret secret('mcp-neo4j-secrets', 'client_secret'),
-  oauth_scope secret('mcp-neo4j-secrets', 'oauth_scope'),
-  token_endpoint secret('mcp-neo4j-secrets', 'token_endpoint')
-);
+The program prints `key=value` lines on stdout and narrates to stderr. Each key comes back to the hook as a shell variable prefixed with the program's name, so `workshop.py` answers as `$workshop_catalog`. Use the Python standard library only, against Python 3.9. There is no `pip install` on a hook's critical path: it is a round trip a student waits through and it fails outright on a locked-down host.
+
+### 7. Deploy
+
+Every call from a course repository needs `--env-file`, because the credentials live in the tooling repository and a course has no `.env` of its own.
+
+```bash
+export VOC_ENV=../dbx-vocareum/.env
+uv run dbx-vocareum-upload lab/ --dry-run
+uv run dbx-vocareum-upload lab/ --env-file "$VOC_ENV"
 ```
 
-**Step B3: Enable the MCP flag**
+`--dry-run` reads no configuration at all, so it proves the archive and says nothing about credentials. Exit `0` means uploaded and hash-verified. **Exit `3` means hash mismatch. Stop, and do not start a lab against it.**
 
-1. Go to **Catalog** > **External Data** > **Connections**
-2. Find `neo4j_agentcore_mcp` and click **Edit**
-3. Check **Is MCP connection**
-4. Click **Update**
+Upload the whole `lab/` directory every time, never the one file that changed. The hooks chain through `VOC_CUSTOM_DATA` and share one runtime, so a partial write leaves a lab built by one version and torn down by another.
 
-Some workspaces do not surface that checkbox. If yours does not, run `workshop-setup/neo4j_mcp_connection/mcp-set-flag.ipynb` on a cluster. Set `CONNECTION_NAME` to `neo4j_agentcore_mcp` and paste the client secret into `CLIENT_SECRET`. The notebook re-sends the existing options with `is_mcp_connection: "true"`.
+### 8. Build the workspace, then check it
 
-**Step B4: Grant access to all participants**
+Uploading does not run `workspace_init.sh`. Press **Rerun Init** on the row for the workspace in the Vocareum admin Workspaces page. Then read the **`Init Exit Status`** text in the same row, which is a link to the hook's full transcript. Read the last line of the transcript and not the number beside it: the number showed `0` for a run that failed and exited 1.
 
-```sql
-GRANT USE CONNECTION ON CONNECTION neo4j_agentcore_mcp TO `account users`;
+```bash
+uv run dbx-vocareum-diagnose --expect expected.json --env-file "$VOC_ENV"
 ```
 
-Without this grant, participants hit a permission error in Lab 4 Part B when the supervisor calls the MCP subagent.
+Exit `0` is the ship signal. Exit `3` lists what is missing. If the course builds a pipeline, wait for its update to finish before believing a failure, because the pipeline's output tables are absent until it does and the gate passes minutes later with nothing changed.
 
-**Step B5: Verify the connection**
+### 9. Launch once as a student, from the web UI
 
-```sql
-SELECT http_request(
-  conn => 'neo4j_agentcore_mcp',
-  method => 'POST',
-  path => '',
-  headers => map('Content-Type', 'application/json'),
-  json => '{"jsonrpc":"2.0","method":"tools/list","id":1}'
-) AS response;
-```
+The gate covers the workspace. It says nothing about what a student gets. Start the lab from the Vocareum web UI and confirm the cluster comes up and every notebook the course names is in the student's home folder.
 
-The response should list two tools. AgentCore prefixes them, so expect `neo4j-mcp-server-target___get_neo4j_schema` and `neo4j-mcp-server-target___read_neo4j_cypher`.
+**From the web UI rather than from the CLI,** because a hook that fails reports itself by redirecting the student's browser to a URL ending in `#voc-diag=<code>&script=<hook>`. That fragment is the only error channel a hook has. A launch started from the CLI throws it away. If the address bar carries no `#voc-diag=`, the hooks finished.
 
-### C. Genie Space (Lab 4)
-
-**Participants create their own Genie space.** Lab 4 Part A walks each participant through creating a space named `Aircraft Sensor Analyst [YOUR_INITIALS]` over `databricks-neo4j-workshop.aircraft`, using the tables `sensor_readings`, `sensors`, `systems`, and `aircraft`. Part B then attaches that space to the participant's own supervisor agent as the `sensor_data_agent` subagent. Do not pre-create a single shared space. Each participant needs their own so they can edit its instructions.
-
-The admin's job is to make sure participants can succeed at Part A:
-
-1. Confirm the four gold tables exist and are readable:
-
-   ```sql
-   SELECT * FROM `databricks-neo4j-workshop`.aircraft.aircraft LIMIT 5;
-   ```
-
-2. Confirm the table and column comments were applied by workspace init. Genie relies on them.
-3. Confirm a **Serverless SQL Warehouse** is running and visible to participants. Part A step 2.3 asks them to select one as the Genie default warehouse.
-4. Confirm the workspace has Agent Bricks and Genie enabled.
-
-## Step 5: Test
-
-1. Click **Student View** in Vocareum to launch a test lab
-2. Verify workspace init completes with no errors in the logs
-3. Verify the volume has 27 files, including the 5 `MAINTENANCE_*.md` manuals:
-   `ls /Volumes/databricks-neo4j-workshop/aircraft/raw_data/`
-4. Verify the DLT pipeline `Fleet Digital Twin ETL` reached COMPLETED
-5. Verify the 8 gold tables exist in `databricks-neo4j-workshop.aircraft` and that bronze and silver landed in `aircraft_pipeline`
-6. Verify row counts. This should return 155,520:
-
-   ```sql
-   SELECT COUNT(*) FROM `databricks-neo4j-workshop`.aircraft.sensor_readings;
-   ```
-
-7. Verify `systems` and `sensors` expose `type` and `name` columns
-8. Verify the notebooks load in the user's home folder, 5 files across two folders
-9. Verify the cluster starts on DBR 17.3 ML and that `import neo4j`, `import neo4j_graphrag`, and `import langgraph` all succeed
-10. Run Lab 2 notebook 01 end to end against a test Aura instance
-11. Run Lab 3 notebook 01, which confirms the maintenance manual is readable from the volume
-12. Run the MCP `tools/list` check from Step B5
-
-## Step 6: Enroll Participants
-
-For direct enrollment (LTI disabled):
-- See "Running Workshops on Vocareum" in the Vocareum docs
-- Share the enrollment link with participants
-
-## Troubleshooting
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `self.w` is None | `VOC_DB_WORKSPACE_URL` or `VOC_DB_API_TOKEN` not set | Vocareum provisioning failed. Check the workspace exists |
-| `delta_sharing_recipient_token_lifetime_in_seconds` = 0 | Databricks no longer allows infinite token lifetime | Patch the dbacademy.py line to use `86400` |
-| `Root storage credential does not exist` | Metastore exists but the credential was deleted | Delete the metastore and re-run init |
-| `Permission assignment APIs not available` | Workspace not using identity federation | Use workspace-level SCIM instead of account-level |
-| `WARNING: No CSV files found` in init logs | The zip was not uploaded, or was uploaded under a different name | Confirm `aircraft_digital_twin_data.zip` or `.dat` is in `/voc/private/courseware/` |
-| Data upload fails | Volume does not exist yet | Ensure the catalog, schema, and volume SQL runs before the upload step |
-| Lab 3 notebook 01 fails reading the manual | The manuals were not staged to the volume | Re-run `upload_data_files`. An old zip with CSVs only causes this |
-| `ImportError` in Lab 2 or Lab 3 | Cluster libraries missing | Check the `libraries` list in `neo4j-databricks-workshop.cfg` has the Maven connector and all 10 PyPI packages, then restart the cluster |
-| `ClassNotFoundException` on `org.neo4j.spark` | Scala version mismatch | The connector must be the `_2.13` build to match DBR 17.3 on Scala 2.13 |
-| Genie generates SQL against `system_type` or `sensor_type` | Stale column names | Gold `systems` and `sensors` use `type` and `name`. Reload the Part A instructions text |
-| MCP connection not listed as an MCP server | The MCP flag is false | Complete Step B3, or run `mcp-set-flag.ipynb` if the checkbox is missing |
-| MCP calls fail with a `:443/` URL | Base path defaulted to `/` | Edit the connection and set **Base path** to `/mcp` |
-| Participant sees permission denied on the MCP subagent | Missing grant | Run the `GRANT USE CONNECTION` from Step B4 |
-
-## Workspace Details
-
-| Resource | Details |
-|----------|---------|
-| Workspace | Vocareum-provisioned (auto) |
-| Catalog | `databricks-neo4j-workshop` |
-| Volume | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
-| Volume contents | 22 CSVs + 5 maintenance manuals |
-| Gold schema | `databricks-neo4j-workshop.aircraft` |
-| Bronze/silver schema | `databricks-neo4j-workshop.aircraft_pipeline` |
-| Gold tables | `aircraft`, `systems`, `sensors`, `sensor_readings`, `flights`, `maintenance_events`, `fleet_readiness`, `sensor_health` |
-| Genie tables (Lab 4) | `aircraft`, `systems`, `sensors`, `sensor_readings` |
-| DLT pipeline | `Fleet Digital Twin ETL`, serverless, triggered, full refresh on init |
-| Cluster | Single-node `m5.large`, DBR `17.3.x-cpu-ml-scala2.13`, 120-minute auto-termination |
-| Spark Connector | `org.neo4j:neo4j-connector-apache-spark_2.13:5.4.3_for_spark_3` |
-| Cluster PyPI libraries | 10 packages, see the User Setup section |
-| MCP connection | `neo4j_agentcore_mcp`, HTTP, OAuth M2M, base path `/mcp` |
-| Entry notebook | `Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j` |
-| Session Length | 4 hours |
+A session bills compute from the moment it starts, so end it when the check is done. A session started in the browser is ended in the browser: `dbx-vocareum-session --end` ends the session named in `.env`, which is a different student.

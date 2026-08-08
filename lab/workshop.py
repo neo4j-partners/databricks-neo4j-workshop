@@ -147,8 +147,10 @@ GOLD_TABLES = (
 # Lab 5 names. Stated here for the same reason every other name is: the notebook
 # that logs the agent, the notebook that queries the endpoint, and any admin
 # script that cleans up after a cohort all have to agree, and a name written
-# three times drifts. Nothing in this file creates these. Lab 5 runs in a
-# participant's notebook and creates them there, reading the names from here.
+# three times drifts. The schema is the one of these this file creates, in
+# infrastructure_statements below, because a model cannot be registered into a
+# schema that is not there. The model, the endpoint and the secret scope are
+# created by Lab 5 in a participant's notebook, reading their names from here.
 #
 # Registered under the workshop catalog so a teardown of the catalog takes the
 # model with it, in the pipeline schema's sibling rather than the gold schema so
@@ -238,7 +240,7 @@ GRANTEE = "`account users`"
 
 
 def infrastructure_statements() -> list[tuple[str, str, bool]]:
-    """The catalog, three schemas, the volume, and the grants that reach them.
+    """The catalog, four schemas, the volume, and the grants that reach them.
 
     Each entry is ``(description, sql, required)``. ``required`` is not
     decoration. The version this replaces logged every failure and carried on,
@@ -300,6 +302,16 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
         (
             "grant use pipeline schema",
             f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{PIPELINE_SCHEMA}` TO {GRANTEE}",
+            True,
+        ),
+        (
+            "agent schema",
+            f"CREATE SCHEMA IF NOT EXISTS {catalog}.`{AGENT_SCHEMA}`",
+            True,
+        ),
+        (
+            "grant use agent schema",
+            f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{AGENT_SCHEMA}` TO {GRANTEE}",
             True,
         ),
         (
@@ -720,7 +732,7 @@ def resolve_warehouse_id(workspace, args: argparse.Namespace) -> str:
 
 
 def provision_infrastructure(workspace, warehouse_id: str) -> dict:
-    voclab.log("creating the catalog, the three schemas and the volume")
+    voclab.log("creating the catalog, the four schemas and the volume")
     skipped = run_statements(
         workspace, warehouse_id, infrastructure_statements(), "infrastructure"
     )

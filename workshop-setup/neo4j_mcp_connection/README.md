@@ -3,6 +3,18 @@
 Supporting material for connecting Databricks to the Neo4j MCP server via a
 Unity Catalog HTTP connection with OAuth2 M2M authentication.
 
+**Manual, and the only Databricks-side procedure that still is.** Everything
+else the workshop needs is built by `lab/workshop.py` from
+`lab/workspace_init.sh`. This connection carries an OAuth client secret issued
+by an AWS AgentCore deployment outside this repository, so a hook has nothing to
+read it from, and the `Is MCP connection` flag is a UI affordance some
+workspaces do not surface at all. The one thing that is automated is the
+privilege: `workshop.provision_infrastructure` grants
+`CREATE CONNECTION ON METASTORE` to `account users`, as the one statement in
+that stage allowed to be refused rather than fatal.
+
+Needed for Lab 4 Part B only, which is optional.
+
 ## Setup
 
 Follow **[`MCP-MANUAL-SETUP.md`](../MCP-MANUAL-SETUP.md)** to create the

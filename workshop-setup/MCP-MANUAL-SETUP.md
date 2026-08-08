@@ -8,6 +8,26 @@ One notebook supports the process:
 Step 3. Use it only if the **Is MCP connection** checkbox is missing from the UI.
 Step 4 validates the finished connection with a SQL query, so it needs no notebook.
 
+**This one stays manual, and it is the only Databricks-side procedure that
+does.** Everything else the workshop needs is built by `lab/workshop.py` from
+`lab/workspace_init.sh`. This is not, for two reasons. It carries an OAuth client
+secret issued by an AWS AgentCore deployment that lives outside this repository,
+so a hook has nothing to read it from. And the **Is MCP connection** flag is a UI
+affordance some workspaces do not surface at all, which is what Step 3's fallback
+exists for.
+
+What is automated is the privilege the connection needs.
+`workshop.provision_infrastructure` runs
+`GRANT CREATE CONNECTION ON METASTORE TO account users`, and it is the one
+statement in that stage allowed to be refused rather than fatal: it needs
+metastore admin, whether the Vocareum service principal holds it has not been
+measured, and a run without it still builds every table. A `CREATE CONNECTION`
+denial here is that grant not having landed.
+
+Lab 4 Part B is optional. The required labs, including the Lab 5 LangGraph
+agent, reach Neo4j with the Python driver against each participant's own
+instance and need none of this.
+
 ## Prerequisites
 
 - **Neo4j MCP server deployed** to AWS AgentCore (`neo4j-agentcore-mcp-server/`)
@@ -220,5 +240,3 @@ SELECT http_request(
 - [`mcp-set-flag.ipynb`](./neo4j_mcp_connection/mcp-set-flag.ipynb) — enable the MCP flag when the UI checkbox is missing
 - [Databricks HTTP Connections](https://docs.databricks.com/aws/en/query-federation/http)
 - [Databricks External MCP](https://docs.databricks.com/aws/en/generative-ai/mcp/external-mcp)
-</content>
-</invoke>

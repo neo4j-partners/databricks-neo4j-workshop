@@ -14,9 +14,9 @@ The core flow is a single notebook:
 
 | Notebook | Description | Required For |
 |----------|-------------|--------------|
-| [`01_aircraft_etl_to_neo4j.ipynb`](01_aircraft_etl_to_neo4j.ipynb) | Guided walkthrough that teaches the Spark Connector mechanics while loading the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals. Clears the database first (`CLEAR_DATABASE = True`) | **Labs 3, 4** |
+| [`01_aircraft_etl_to_neo4j.ipynb`](01_aircraft_etl_to_neo4j.ipynb) | Guided walkthrough that teaches the Spark Connector mechanics while loading the complete canonical dataset: Aircraft, Systems, Components, Sensors, Airports, Flights, Delays, Maintenance Events, and Removals. Clears the database first (`CLEAR_DATABASE = True`) | **Labs 3, 5, 6** |
 
-> **Important:** Run this notebook before proceeding. It teaches how the Spark Connector works while clearing the database and loading the full canonical dataset, so its output is what Labs 3 and 4 depend on.
+> **Important:** Run this notebook before proceeding. It teaches how the Spark Connector works while clearing the database and loading the full canonical dataset, so its output is what Labs 3, 5, and 6 depend on.
 
 ---
 
@@ -109,7 +109,8 @@ This lab introduced Unity Catalog Volumes, where the workshop CSV files live, an
 
 After completing this lab:
 - Continue to [Lab 3 - Semantic Search](../Lab_3_Semantic_Search) to add GraphRAG capabilities over maintenance documentation
-- Continue to [Lab 4 - Compound AI Agents](../Lab_4_Compound_AI_Agents) to build a Supervisor Agent with Genie space and Neo4j MCP
+- Continue to [Lab 4 - Compound AI Agents](../Lab_4_Compound_AI_Agents) to build a Genie space over the lakehouse telemetry in Part A. Part B, which adds a Supervisor Agent over Neo4j MCP, is optional and advanced
+- Continue to Lab 5 to build a LangGraph agent over Genie, your own Aura instance, and the Lab 3 retrievers, then Lab 6 to give that agent memory in Neo4j
 - The data you loaded will be queried by AI agents in later labs
 
 ---

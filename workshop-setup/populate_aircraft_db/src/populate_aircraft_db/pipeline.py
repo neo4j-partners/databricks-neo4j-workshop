@@ -612,9 +612,10 @@ def process_all_documents_lexical_only(
 
     What a caller gives up: no extracted entities means
     ``link_to_existing_graph`` creates the ``Document -[:APPLIES_TO]-> Aircraft``
-    links and none of the entity links, and Lab 3 notebook 02's operating-limit
-    retriever has nothing to traverse to.  Everything vector search touches is
-    present.
+    links and none of the entity links.  Operating limits are not among the
+    losses: ``load_operating_limits`` writes them from CSV on this path too, so
+    Lab 3 notebook 02's operating-limit retriever still has a chain to traverse.
+    Everything vector search touches is present.
     """
     from neo4j_graphrag.experimental.components.embedder import TextChunkEmbedder
     from neo4j_graphrag.experimental.components.kg_writer import Neo4jWriter
@@ -801,10 +802,19 @@ def _get_existing_schema_tokens(driver: Driver) -> tuple[set[str], set[str]]:
     )
 
 
-def validate_enrichment(driver: Driver) -> None:
-    """Run sample queries to verify embeddings, entities, and cross-links."""
+def validate_enrichment(driver: Driver, *, skip_extraction: bool = False) -> None:
+    """Run sample queries to verify embeddings, entities, and cross-links.
+
+    With *skip_extraction* the extracted entity counts and the cross-links that
+    only extraction can produce are left out, since the run never wrote them.
+    """
 
     print(f"\nValidation (sample size {_SAMPLE_SIZE}):")
+    if skip_extraction:
+        print(
+            "  Extraction checks skipped: this run skipped entity extraction, so "
+            "extracted entities and their cross-links were not verified."
+        )
     labels, rel_types = _get_existing_schema_tokens(driver)
 
     # 1. Chunks with embeddings linked to documents
@@ -823,19 +833,20 @@ def validate_enrichment(driver: Driver) -> None:
         print("    [WARN] No chunks with embeddings found!")
 
     # 2. Extracted manual entities
-    rows, _, _ = driver.execute_query(
-        """
-        UNWIND $labels AS label
-        OPTIONAL MATCH (n)
-        WHERE label IN labels(n)
-        RETURN label, count(n) AS count
-        ORDER BY label
-        """,
-        labels=EXTRACTED_LABELS,
-    )
-    print("\n  Extracted manual entities:")
-    for r in rows:
-        print(f"    {r['label']}: {r['count']}")
+    if not skip_extraction:
+        rows, _, _ = driver.execute_query(
+            """
+            UNWIND $labels AS label
+            OPTIONAL MATCH (n)
+            WHERE label IN labels(n)
+            RETURN label, count(n) AS count
+            ORDER BY label
+            """,
+            labels=EXTRACTED_LABELS,
+        )
+        print("\n  Extracted manual entities:")
+        for r in rows:
+            print(f"    {r['label']}: {r['count']}")
 
     # 3. Cross-links to operational graph
     if "Aircraft" not in labels:
@@ -866,6 +877,15 @@ def validate_enrichment(driver: Driver) -> None:
             f"RETURN s.type AS src, ol.name AS tgt LIMIT {_SAMPLE_SIZE}",
         ),
     ]
+    if skip_extraction:
+        # Document links and OperatingLimit links are both present on a
+        # no-extraction run: the first comes from the lexical graph, the second
+        # from nodes_operating_limits.csv. Only the extracted-entity links go.
+        queries = [
+            item
+            for item in queries
+            if item[0].startswith(("Document", "Sensor"))
+        ]
     print("\n  Cross-links to operational graph:")
     for label, query in queries:
         if label.startswith("Document") and not {

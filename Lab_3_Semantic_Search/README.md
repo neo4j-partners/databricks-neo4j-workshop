@@ -50,13 +50,24 @@ Combine vector similarity with keyword-based fulltext search for more robust ret
 
 ## Configuration
 
-Each notebook has a Configuration cell where you enter your Neo4j credentials:
+Notebook 01 is the one place you type your Neo4j credentials. Its Configuration cell takes the URI, username, and password from Lab 1, and the cell after it writes all three into a Databricks secret scope:
 
-```python
-NEO4J_URI = ""  # e.g., "neo4j+s://xxxxxxxx.databases.neo4j.io"
-NEO4J_USERNAME = "neo4j"
-NEO4J_PASSWORD = ""  # Your password from Lab 1
-```
+| Key | Value |
+|-----|-------|
+| `neo4j-uri` | Your Aura connection URI |
+| `neo4j-username` | Usually `neo4j` |
+| `neo4j-password` | Your password from Lab 1 |
+
+The scope is named `fleet-ops-<your user>`, derived from `current_user()`. Scope names are unique per workspace rather than per user, so the per-participant suffix keeps a shared workshop workspace from colliding. Notebook 01 prints the resolved name when it runs.
+
+Notebooks 02 and 03 derive the same name and read the three values with `dbutils.secrets.get`. No plaintext password appears in either one. Lab 5 reads the same scope when it deploys the agent, which is why notebook 01 creates it even though notebook 01 could work without it.
+
+Two things to expect:
+
+- **Redacted output.** Databricks redacts secret values in notebook output, so a printed URI shows `[REDACTED]`. The value is intact in Python.
+- **A missing scope stops notebooks 02 and 03** with an error telling you to run notebook 01 first.
+
+Notebook 01 is safe to re-run. It reuses an existing scope and refuses to write when the URI or password is blank, so a re-run cannot replace working credentials with placeholders.
 
 The embedding and LLM models use Databricks Foundation Model APIs which are pre-deployed and require no additional configuration. When running in Databricks, the MLflow deployments client automatically handles authentication.
 
@@ -69,9 +80,9 @@ The embedding and LLM models use Databricks Foundation Model APIs which are pre-
    ```
 3. Upload the notebook files and `data_utils.py` to your Databricks workspace
 4. Open `01_data_and_embeddings.ipynb`
-5. Enter your Neo4j credentials in the Configuration cell
-6. Run cells sequentially to load the maintenance manual and create embeddings
-7. Continue to **notebook 02** to build GraphRAG retrievers
+5. Enter your Neo4j credentials in the Configuration cell, the only place in this lab you type them
+6. Run cells sequentially to store the credentials in your secret scope, load the maintenance manual, and create embeddings
+7. Continue to **notebook 02** to build GraphRAG retrievers, which reads the credentials from that scope
 
 ## Files
 

@@ -1,7 +1,7 @@
 """Reach ``lab/workshop.py`` from the admin scripts, so nothing here restates it.
 
 ``lab/workshop.py`` is this course's one definition of its Databricks objects:
-the catalog, the three schemas, the volume, the DLT pipeline, the eight gold
+the catalog, the four schemas, the volume, the DLT pipeline, the eight gold
 tables and the comments a Genie space reads. The Vocareum hook calls it, and the
 two admin scripts beside this file call it too, which is the whole point. The
 previous arrangement had a second copy of the catalog name, the schema names and

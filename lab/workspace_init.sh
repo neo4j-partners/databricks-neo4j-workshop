@@ -101,7 +101,7 @@ else
     voc_log "this course names no SQL warehouse, so none was created"
 fi
 
-# This course's own objects: the catalog, the three schemas, the volume, the 27
+# This course's own objects: the catalog, the four schemas, the volume, the 27
 # courseware files, the DLT pipeline, and the comments and grants Lab 4's Genie
 # space reads. All of it shared by every student in this workspace, which is why
 # it is here and not in user_setup.sh: 30 students would otherwise run the same

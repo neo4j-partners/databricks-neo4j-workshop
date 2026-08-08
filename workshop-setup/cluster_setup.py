@@ -1,8 +1,23 @@
-"""Create the workshop's classic compute cluster with the Databricks SDK.
+"""Superseded. Backs the optional automation cell in workshop_setup.ipynb.
 
-Backs the optional automation cell in workshop_setup.ipynb: creates (or finds)
-the cluster, starts it, and installs the Neo4j Spark Connector plus the Python
-libraries the labs need.
+Deletion is proposed for this file along with the notebook, which is the only
+thing that imports it. Nothing else in the repository does.
+
+``voclab.py cluster-ensure`` owns the student's cluster now. ``lab_setup.sh``
+calls it to pre-warm and ``user_setup.sh`` calls it again to guarantee, and the
+call is idempotent on the cluster name so whichever runs first creates and the
+other finds and starts.
+
+The constants below are a second copy of values that belong in ``lab/course.env``
+and they have already drifted from it. This file asks for ``m5.large`` and 30
+minutes; the course runs ``i3.xlarge`` and 90, which is what a live 2026-08-07
+session was measured carrying. The library list is the same eleven, for now. Two
+copies of a list is how this repository broke once already, and the reason
+``lab/workshop.py`` is the single definition of everything else the workshop
+builds.
+
+An instructor creating the cluster by hand on a workspace Vocareum did not
+provision reads the three values out of ``lab/course.env`` rather than from here.
 """
 
 import time
