@@ -15,13 +15,19 @@ dependencies = [
 verify-gds = "verify_gds.main:app"
 verify-lab2 = "verify_lab2.main:app"
 verify-data-exploring = "verify_data_exploring.main:app"
+verify-aura-caps = "verify_aura_caps.main:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/verify_gds", "src/verify_lab2", "src/verify_data_exploring"]
+packages = [
+    "src/verify_gds",
+    "src/verify_lab2",
+    "src/verify_data_exploring",
+    "src/verify_aura_caps",
+]
 
 [tool.ruff]
 target-version = "py311"

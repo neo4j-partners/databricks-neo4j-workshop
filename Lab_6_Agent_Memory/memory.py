@@ -221,6 +221,12 @@ ENV_DATABASE_NAME = "NEO4J_DATABASE"
 # this trades answer context against nothing much.
 RECALL_LIMIT = 3
 
+# How many of this conversation's own turns the recall node reads before it
+# searches. A reference like "that aircraft" almost always points at the turn
+# just before it, and a vector search cannot know that: it ranks by meaning,
+# not by when. Four covers two question-and-answer pairs.
+RECENT_LIMIT = 4
+
 
 # =============================================================================
 # The async bridge
@@ -1177,6 +1183,23 @@ class MemoryAgentState(AgentState, total=False):
     asked: str
 
 
+def _norm(text: Any) -> str:
+    """Reduce a message to what makes two of them the same question.
+
+    Case and surrounding whitespace are the only differences worth ignoring
+    here. The comparison is exact after that, on purpose: a filter that
+    matched loosely would start dropping answers that happen to quote the
+    question.
+
+    Args:
+        text: A ``Message`` content string, or anything with a ``str``.
+
+    Returns:
+        The normalised form.
+    """
+    return str(text).strip().casefold()
+
+
 def format_recalled(messages: Sequence[Any]) -> str:
     """Render recalled messages for a prompt.
 
@@ -1195,6 +1218,7 @@ def build_recall_node(
     session: MemorySession,
     *,
     limit: int = RECALL_LIMIT,
+    recent: int = RECENT_LIMIT,
     threshold: float = 0.7,
 ) -> Callable[[MemoryAgentState], dict[str, Any]]:
     """Build the node that reads memory before the supervisor routes.
@@ -1208,9 +1232,27 @@ def build_recall_node(
     than once per tool call. Participants will see a Neo4j deprecation warning
     naming ``db.index.vector.queryNodes``; it works on 5.27-aura.
 
+    The search alone is not enough, and the measurement that proved it is
+    worth keeping. Ask "tell me about the EGT exceedance on N10004", then
+    "which system was that on?", and a pure search answers about a different
+    aircraft: the follow-up is short and generic, so the nearest neighbours
+    are whatever the busiest aircraft in memory happens to be, and the turn
+    from five seconds ago loses. So this node reads the conversation's own
+    recent turns first and puts the search behind them. Semantic search finds
+    what is related; the conversation says what "that" means.
+
+    One filter is applied to both. Every question the agent is asked is
+    written to memory, so the closest match to "any vibration readings on that
+    aircraft?" is very often that same question, asked before. It scores near
+    1.0, it takes a slot out of ``limit``, and it carries none of what the
+    supervisor needs: the aircraft is in the reply, not in the question.
+    Restatements of the question being asked are dropped before the prompt
+    sees them, and so are duplicates between the two sources.
+
     Args:
         session: An open session.
-        limit: Messages to pull back.
+        limit: Messages the search pulls back.
+        recent: Turns of this conversation read before the search.
         threshold: Minimum similarity.
 
     Returns:
@@ -1218,12 +1260,34 @@ def build_recall_node(
     """
 
     def recall_node(state: MemoryAgentState) -> dict[str, Any]:
-        messages = session.run(
+        question = state["question"]
+        # Section 7 calls this node by hand, with a question and nothing else,
+        # to show what the search finds. There is no conversation to read in
+        # that case and recall is the search on its own.
+        session_id = state.get("session_id")
+        history = (
+            session.run(
+                session.client.short_term.get_conversation(session_id, limit=recent)
+            ).messages
+            if session_id
+            else []
+        )
+        found = session.run(
             session.client.short_term.search_messages(
-                state["question"], limit=limit, threshold=threshold
+                question, limit=limit, threshold=threshold
             )
         )
-        return {"recalled": format_recalled(messages)}
+
+        asked = _norm(question)
+        seen: set[str] = set()
+        ordered = []
+        for message in (*history, *found):
+            text = _norm(getattr(message, "content", message))
+            if not text or text == asked or text in seen:
+                continue
+            seen.add(text)
+            ordered.append(message)
+        return {"recalled": format_recalled(ordered)}
 
     return recall_node
 

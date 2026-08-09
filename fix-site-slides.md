@@ -6,20 +6,53 @@ What is wrong, what is missing, and what has to be added on the two surfaces tha
 
 **Why now:** `README.md` line 1 links the published site, and `.github/workflows/deploy-antora.yml` publishes on every push to `main`.
 
+**Status:** every decision is made. This is a work order, not a proposal. One empirical unknown remains, the AuraDB Free index cap, and it is step 0.
+
+**Two other surfaces carry the same stale claims and are in scope for the sweeps only**, not for restructuring: `vocareum/docs/README.md` and `vocareum/SETUP_GUIDE.md`, which a Vocareum student can reach, and `workshop-setup/docs/MANUAL_SETUP.md`, which admins read. Neither gets a concepts page. Both get the tier fix. `worklog/` is a record and is left alone; `worklog/aura-node-budget.md:79` states the tier question this document closes, which is worth knowing but not worth editing.
+
+**Every file and line number below was re-verified against the repo on 2026-08-08.** Where an earlier draft named a count or a file list from memory, the verified list replaces it.
+
 ---
 
 ## Decisions Taken
 
-Folded in from the review pass. Each is now an instruction to the plan below, not a question.
+**Every open item in this document is now closed.** Nothing below is a question. The `**DECIDED:**` markers throughout carry the reasoning for each; this list is the summary.
+
+### Shape of the work
 
 - **The site ships.** It is the only rendered surface a Vocareum student can reach.
 - **The site becomes background and overview only.** Every step-by-step procedure moves into the lab notebooks. This is the largest decision here and it rewrites most of what follows. See "What the Notebook-First Split Changes" below.
-- **Dataset counts come out.** No reading counts, no node counts, no per-label tables on the site or in the decks. They drift faster than anyone maintains them. Describe the dataset by shape, never by number.
-- **Only workshop decks get published.** Everything else moves under an "Additional Background" grouping rather than being deleted.
-- **Drop every mention of Aura Agents.** Not part of this workshop.
-- **`02_gds_knn_aircraft.ipynb` is optional**, stated plainly, not gated on a tier claim.
-- **Fix and keep:** the slide build script, the architecture diagram, the secret scope story, the tier claim.
 - **Labs 5, 6 and Appendix A get pages.** That is the point of this document.
+- **A short root `README.md` survives**, cut to about 30 lines of pointers. It carries no content of its own, so it cannot go stale.
+
+### What comes out
+
+- **Dataset counts come out.** No reading counts, no node counts, no per-label tables on the site or in the decks. **Two numbers survive** and both are structural rather than statistical: **zero** `Reading` nodes in Neo4j, and the 200,000 node / 400,000 relationship caps.
+- **Drop every mention of Aura Agents.** Not part of this workshop.
+- **The four participant-facing lab READMEs go away**, along with `PART_A.md`. Labs 5 and 6 keep their READMEs as module documentation, because those folders ship Python. `PART_B.md` stays as the instructor's demo script.
+- **Three build-output slide folders get deleted.** `aircraft/` and `databricks-in-depth/` stay: they hold diagram sources, not decks.
+
+### What gets fixed
+
+- **AuraDB Free is the tier. Everywhere, no exceptions.** Not the 14-day trial, not Professional. Every surface uses those three words.
+- **`02_gds_knn_aircraft.ipynb` is optional and unrunnable in class**, because GDS is not on Free. State it as a skip, not a prerequisite.
+- **Screenshots are `raw.githubusercontent.com` URLs on `main`**, the pattern `04_genie_agent.ipynb` already uses. Concept diagrams stay on the site; only the 15 PNGs move.
+- **Two architecture diagrams, not one.** Lab 5 topology becomes the default; the MCP drawing is retitled as the Part B demo and appears only on `lab4.adoc`. **One file per drawing first**, since both currently exist in two directories with four consumers split between them.
+- **CI builds the decks.** `deploy-antora.yml` gets a marp step. Today it never invokes marp, so every published deck is hand-committed HTML, and the committed HTML is already stale.
+- **Fix and keep:** the slide build script, the secret scope story, `agents/02-power-of-graphrag-slides.md` reframed rather than rewritten.
+
+### What gets built
+
+- **Only workshop decks get published.** Everything else moves under an "Additional Background" grouping rather than being deleted. Governance goes there; `graph-ml/` does not.
+- **Two new agent decks, not one.** LangGraph supervisor and deployment stay separate, because deployment is what gets cut when the day runs late.
+- **Appendix A is take-home**, since nobody in the room can run GDS on Free. Its `graph-ml/` decks are still taught, because the argument survives without anyone running a `gds.` call.
+- **`02_instructor_demos.ipynb` ships, instructor-only.** Two slides of the memory deck run out of it. Needs a `course.env` entry.
+- **The agent memory deck uses the 2026 taxonomy**, short-term / long-term / reasoning, because that is what `memory.py` implements.
+- **Routing accuracy numbers go on the site**, stated with the date measured and the prompt version.
+
+### The one thing not decided by anyone here
+
+- **The AuraDB Free index-cap check is unrun**, and it is step 0. It can still flip Lab 6 to no-go, and it is the only item that can invalidate work already written. **The script that was supposed to run it does not exist**, so step 0 is write-then-run. Only the run needs a fresh Free instance.
 
 ---
 
@@ -40,17 +73,59 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 ### Three problems it creates
 
-- **Screenshots have no home.** `site/modules/ROOT/images/` holds 14 procedural screenshots (`lab1-download-credentials.png`, `lab2-clone-menu.png`, `lab4-genie-connect-data.png`, and so on) that exist only for the instructions pages. Databricks notebook markdown cells cannot reliably render a repo-relative image path. Options: embed as base64 in the markdown cell, host them on the site and hot-link absolute URLs from the notebook, or drop them and write the steps in prose. **Hot-linking to the published site is the one that keeps both surfaces honest**, and it makes the site a dependency of the notebooks rather than a duplicate of them.
+- **Screenshots have no home. RESOLVED, and the pattern already ships.** `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` renders five images this way today:
 
-  **RESPONSE** :
+  ```
+  ![Lab Architecture Overview](https://raw.githubusercontent.com/neo4j-partners/databricks-neo4j-workshop/main/images/lab-architecture-overview.png)
+  ```
 
-- **The sample-queries pages are reference, not procedure.** `lab2-sample-queries.adoc` (140 lines) and `lab3-sample-queries.adoc` (353 lines) are copy-paste Cypher for the Neo4j Query workspace, which is a browser, not a notebook. They do not fit "move it to the notebook." **Recommend keeping them on the site** as reference pages under each lab.
+  Absolute `raw.githubusercontent.com` URLs against `main`. This is better than hot-linking the published site: the images are already in the repo, no Antora build has to succeed first, and there is no second copy to keep in sync.
 
-  **RESPONSE** :
+  **`site/modules/ROOT/images/` holds 24 files, not 14, and only 15 of them move.** The split is by role, not by format:
 
-- **The lab-folder markdown becomes ambiguous.** `Lab_1_Aura_Setup/README.md`, `Lab_4_Compound_AI_Agents/PART_A.md` and `PART_B.md` currently hold the procedure that the notebooks also hold. After the split, are they the instructor's copy, or dead weight? **Recommend: they stay as the instructor and admin reference**, and the notebook is the participant's only path.
+  | Kind | Count | Files | Do |
+  |---|---|---|---|
+  | Screenshots | 15 `.png` | `lab1-backup-restore`, `lab1-create-instance`, `lab1-create-instance-alt`, `lab1-download-credentials`, `lab1-instance-details`, `lab2-change-compute`, `lab2-clone-dialog`, `lab2-clone-menu`, `lab2-compute-overview`, `lab2-csv-volume-data`, `lab2-dbx-login-error`, `lab4-configure-genie`, `lab4-genie-connect-data`, `lab4-lakehouse-sensor-readings`, `lab4-mcp-connection` | **Move** to per-lab `images/`, reference by raw URL |
+  | Concept diagrams | 7 `.svg` | `lab1-property-graph`, `lab3-graphrag-retrieval-flow`, `lab3-knowledge-graph-structure`, `graphrag-multiplatform-retrieval`, `step1-flat-tables-foreign-keys`, `step2-spark-connector-mapping`, `step3-connected-graph` | **Stay put.** They belong to concepts pages that survive the split |
+  | Duplicated diagrams | 2 `.svg` | `lab-architecture-overview`, `dual-database-architecture` | **Delete the site copy.** See the architecture-diagram item below |
 
-  **RESPONSE** :
+  `lab1-backup-restore.png` is the one screenshot with no destination: its only consumer was `lab1-instructions.adoc:37-47`, the dead backup-restore procedure, and `01_aura_setup.ipynb` never had that procedure. **Delete it rather than moving it.** That makes 14 screenshots that move and one that goes, which is where the earlier "14" came from.
+
+  **Two things it costs, both acceptable, neither zero:**
+
+  - **It only works on a public repo.** `raw.githubusercontent.com` on `main` needs no auth today. If this repo ever goes private, every image in every notebook breaks at once.
+  - **It pins to `main`, so images update the moment they merge.** A participant on an older notebook copy sees the newest screenshot. For screenshots that is usually right, occasionally confusing.
+
+  **DECIDED: this is the standard**, said once in the repository so the next person adding a screenshot does not invent a third pattern.
+
+- **The sample-queries pages are reference, not procedure.** `lab2-sample-queries.adoc` (140 lines) and `lab3-sample-queries.adoc` (353 lines) are copy-paste Cypher for the Neo4j Query workspace, which is a browser, not a notebook. They do not fit "move it to the notebook."
+
+  **DECIDED:** Keep both on the site. The target is the Neo4j Query browser, so a notebook is the wrong home, and a participant with Cypher open in one tab wants the queries in another. They are the one thing the split does not swallow.
+
+- **The lab-folder markdown becomes ambiguous.** `Lab_1_Aura_Setup/README.md`, `Lab_4_Compound_AI_Agents/PART_A.md` and `PART_B.md` currently hold the procedure that the notebooks also hold. After the split, are they the instructor's copy, or dead weight?
+
+  **DECIDED:** Split the difference, because these two files are not alike. **`PART_B.md` stays** as the instructor's build script for the demo, since no participant notebook can carry it and somebody has to build the thing on stage. **`PART_A.md` goes**, because `04_genie_agent.ipynb` already carries it and carries it better. Same rule as the READMEs: keep it only if a participant notebook cannot hold it.
+
+### Do the per-lab READMEs survive? Answer: mostly no.
+
+There are six, and they total 1,049 lines.
+
+| File | Lines | What it holds | Verdict |
+|---|---|---|---|
+| `Lab_1_Aura_Setup/README.md` | 112 | Signup steps, tier warning | **Delete.** Into `01_aura_setup.ipynb` |
+| `Lab_2_Databricks_ETL_Neo4j/README.md` | 127 | Notebook list, graph shape | **Delete.** Shape to `lab2.adoc`, rest to the notebook |
+| `Lab_3_Semantic_Search/README.md` | 108 | Secret-scope key table | **Delete.** Key table into notebook 01, which writes them |
+| `Lab_4_Compound_AI_Agents/README.md` | 69 | Part A / Part B framing | **Delete.** `04_genie_agent.ipynb` already opens with a better version |
+| `Lab_5_LangGraph_Agent/README.md` | 250 | Module reference for `tools.py`, `agent.py` | **Keep, shrink.** See below |
+| `Lab_6_Agent_Memory/README.md` | 383 | Module reference for `memory.py`, demo notes | **Keep, shrink.** See below |
+
+**The rule that separates them: does a Python module live in this folder?** Labs 1 through 4 are notebooks and data. Labs 5 and 6 ship `tools.py`, `agent.py` and `memory.py`, which are source files someone will open in an editor rather than run in a cell. That folder needs a README the same way any Python package does, and it is a **developer** README, not a participant one.
+
+**So the two survivors change job.** They stop being lab instructions, which the notebooks now carry, and become module documentation: what each function does, what imports across lab folders (`memory.py` reaches into both `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, which is why the three folders must stay siblings), and what breaks if you move things. That should cut 250 and 383 lines to about 80 each.
+
+**The four deletions are the point of the notebook-first split**, not a side effect. A Vocareum student never sees a rendered README, so today those 416 lines are written for an audience that cannot read them while duplicating what the notebooks say.
+
+  **DECIDED:** The table as drawn. The one thing to check before deleting each of the four: does the README hold anything the notebook does not? Lab 2's graph-shape block and Lab 3's secret-key table are the two likely finds, and both have a named destination above.
 
 ---
 
@@ -58,19 +133,45 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **The site ships. DECIDED.** Regenerate it as the participant-facing surface.
 
-  **Your question back was whether to drop the GitHub README and keep only the root README. There is only one README at the root, and it is the GitHub-rendered one, so I need to know which two things you are choosing between.** Best guess at what you meant: the root `README.md` and the site's `index.adoc` plus `workshop-overview.adoc` say the same things, and you want one of them to stop existing. If so, **recommend keeping a short root README** as the repository's front door for anyone browsing GitHub, cut to about 30 lines: what this is, who it is for, the link to the site, and the admin setup pointer. Everything participant-facing lives on the site.
+  **The root `README.md` and the site's `index.adoc` plus `workshop-overview.adoc` say the same things today, at 12.4K of duplication.** The site wins that overlap.
 
-  **RESPONSE** :
+  **DECIDED:** Cut `README.md` from 12.4K to about 30 lines and keep it. It is the first thing anyone sees on GitHub and an empty front door is worse than a thin one. It carries no content of its own after the cut, only pointers, so it cannot go stale. Everything it currently duplicates moves to `index.adoc`.
 
-- **Dataset counts come out entirely. DECIDED.** Not corrected, removed. Affects `workshop-overview.adoc:24` and `:35`, `lab4.adoc:3`, `slides/platform-overview/01-workshop-over.md:89` and `:101`, `slides/docs/overview-and-genai-foundations.md:53` and `:63`, `slides/organize.md:63`, `slides/kg-construction/05-building-knowledge-graphs-slides.md:102`. Replace each with shape language: "hourly-scale telemetry over 90 days across a multi-model fleet."
+- **Dataset counts come out entirely. DECIDED.** Not corrected, removed. Replace each with shape language: "hourly-scale telemetry over 90 days across a multi-model fleet."
 
-  **One count is load-bearing and I would keep it: zero.** Lab 2 writes **no `Reading` nodes** to Neo4j. That is not a statistic that drifts, it is the dual-database argument itself.
+  **The drift already happened, which settles the argument.** The site and decks say `345,600+` readings. `README.md:57` says "roughly 155K". Those are the same dataset described two ways that differ by more than 2x, and nobody noticed. No number in this class of fact is worth maintaining.
 
-  **RESPONSE** :
+  **The verified sweep list. Nine files, and the earlier list missed three of them plus every table row:**
 
-- **`site/nav.adoc` stops at Lab 4. DECIDED to fix.** Add Lab 5, Lab 6, Appendix A. Collapse the Instructions children per the notebook-first split. Add a nav group for slides, which today has none, so the three existing slide pages are unreachable.
+  | File | Lines | Holds |
+  |---|---|---|
+  | `site/modules/ROOT/pages/workshop-overview.adoc` | 24, 35 | `345,600+`, plus `sensors` (160) / `systems` (80) / `aircraft` (20) inline |
+  | `site/modules/ROOT/pages/lab4.adoc` | 3 | `345,600+` in the sentence motivating the whole lab |
+  | `slides/platform-overview/01-workshop-over.md` | **85-91**, 101 | The full per-label table, not just the readings row |
+  | `slides/docs/overview-and-genai-foundations.md` | **49-55**, 63 | The same table, duplicated |
+  | `slides/organize.md` | 63 | "A fleet of 20 aircraft" |
+  | `slides/kg-construction/05-building-knowledge-graphs-slides.md` | 102 | "20 aircraft across 4 operators" |
+  | `README.md` | **57** | "roughly 155K readings". Dies anyway with the 30-line cut, but do not leave it for that |
 
-- **The slide build script is broken. DECIDED to fix.** `slides/package.json` `build:html` targets `overview-databricks-neo4j/` and `databricks-in-depth/`; neither holds a `.md` any more. Rewrite it to iterate the real topic folders and output one attachment directory per folder. Until this is fixed nothing new can be published, so it goes first.
+  The two table blocks are the bulk of the work and were absent from the earlier list, which named only the `Sensor Readings` row in each. **The per-label table is exactly what the no-counts decision deletes**, so all seven rows go, not one.
+
+  **One count is load-bearing and it stays: zero.** Lab 2 writes **no `Reading` nodes** to Neo4j. That is not a statistic that drifts, it is the dual-database argument itself.
+
+  **DECIDED:** Keep zero, drop every other number. The test for any count that survives: would changing the dataset change it? A reading count moves the moment the generator is re-run. "Zero `Reading` nodes in Neo4j" and "200,000 node cap" do not move at all, because one is a design decision and the other is a product limit.
+
+- **`site/nav.adoc` stops at Lab 4. DECIDED to fix.** Add Lab 5, Lab 6, Appendix A. Collapse the Instructions children per the notebook-first split. Add a nav group for slides.
+
+  **Three slide pages exist and are unreachable**, in `site/modules/ROOT/pages/slides/`: `slides-overview.adoc`, `slides-intro-databricks-neo4j.adoc`, `slides-power-of-graphrag.adoc`. Each is a four-line `iframe` wrapper around a built HTML file under `_attachments/`. No `nav.adoc` line points at any of them, so nothing on the published site can reach them. **The wrapper pattern is already established**, which makes the remaining slide pages a copy-and-retarget job rather than authoring. Adding the nav group still waits for step 10, when the full deck split decides what goes in it.
+
+- **The slide build script is broken in three ways, not one. DECIDED to fix all three.**
+
+  1. **Its inputs are outputs.** `slides/package.json` `build:html` targets `overview-databricks-neo4j/` and `databricks-in-depth/`; neither holds a `.md` any more. Rewrite it to iterate the real topic folders and output one attachment directory per folder.
+  2. **It hardcodes one machine's interpreter.** The script calls `/opt/homebrew/opt/node@22/bin/node` twice by absolute path. That works on one Mac and fails everywhere else, CI included. Use the `marp` bin directly and let `npm` resolve node.
+  3. **Nothing ever runs it.** `.github/workflows/deploy-antora.yml` runs `npm run build` in `site/`, and `site/package.json` `build` is bare `antora antora-playbook.yml`. Marp is never invoked in CI. **Decks reach the published site only as pre-built HTML committed by hand into `site/modules/ROOT/attachments/`.**
+
+  **DECIDED: add a marp step to `deploy-antora.yml` ahead of the Antora build**, rather than keeping committed build output. Committed HTML is what produced the current mess: the attachments directory holds `databricks-in-depth/01-intro-databricks-neo4j-slides.html` and `databricks-in-depth/02-power-of-graphrag-slides.html` and `overview/01-databricks-neo4j-integration-slides.html`, whose sources now live in `slides/platform-overview/` and `slides/agents/`. The folder names describe where those decks used to be. **Clear `site/modules/ROOT/attachments/slides/` and regenerate**, or the site keeps serving decks built from folders step 3 deletes.
+
+  Fixing item 1 alone publishes nothing. All three, or the step does not do what it says.
 
 - **Split the decks into workshop and background. DECIDED, mechanism open.** Move the decks no session uses into `slides/background/<topic>/` and build them to `site/modules/ROOT/attachments/slides/background/<topic>/`.
 
@@ -82,25 +183,59 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
   ** xref:slides/background-entity-resolution.adoc[Entity Resolution]
   ```
 
-  One file, no config change, and it renders as a collapsible group in the sidebar below the labs. **Recommend that.**
+  One file, no config change, and it renders as a collapsible group in the sidebar below the labs. **DECIDED: that one.**
 
-  **The split I would draw**, and this is the part I need you to confirm, because "part of the workshop" depends on which session is running:
+  **What the split is, plainly.** `slides/` holds **24 decks across 8 folders**. A one-day workshop presents maybe 8 of them. The other 16 are good material written for other talks, and right now all 24 sit in one flat pile with nothing marking which is which. Nothing gets deleted. It is a filing decision.
 
-  | Deck | Suggested |
-  |---|---|
-  | `platform-overview/` (4 decks) | Workshop |
-  | `genai-foundations/` (3 decks) | Workshop |
-  | `retrieval-patterns/` (4 decks) | Workshop, Lab 3 and Lab 5 both lean on Vector Cypher |
-  | `agents/` (2 now, 5 after this plan) | Workshop |
-  | `kg-construction/` (5 decks) | Background, except vectors and chunking |
-  | `graph-ml/` (2 decks) | Background, unless Appendix A is being taught |
-  | `governance/` (1 deck) | Background |
+  It changes three things:
 
-  **RESPONSE** :
+  - **Which folder each deck sits in** on disk, `slides/<topic>/` or `slides/background/<topic>/`
+  - **Where it appears in the site sidebar**, under its lab or under a collapsed "Additional Background" group at the bottom
+  - **Whether it needs a slot in `agenda.md`.** A workshop deck costs minutes in a fixed day; a background deck costs nothing
 
-- **The architecture diagram shows the retired topology. DECIDED to fix.** `images/lab-architecture-overview.svg` draws the Agent Bricks supervisor over the Neo4j MCP server. That is the Lab 4 Part B instructor demo now. `README.md:36`, `workshop-overview.adoc:53` and `lab4.adoc:117` all display it. Redraw as the Lab 5 topology and keep the MCP version as a second, clearly-labelled Part B diagram.
+  **The split, DECIDED:**
 
-  **RESPONSE** : (confirm two diagrams, or one)
+  | Folder | Decks | Suggested | Why |
+  |---|---|---|---|
+  | `platform-overview/` | 4 | Workshop | Opens the day |
+  | `genai-foundations/` | 3 | Workshop | Sets up Lab 3 |
+  | `retrieval-patterns/` | 4 | Workshop | Lab 3 and Lab 5 both lean on Vector Cypher |
+  | `agents/` | 2 now, 5 after this plan | Workshop | Labs 4, 5, 6 |
+  | `kg-construction/` | 5 | Background, except chunking and vectors | The extraction material is a different course |
+  | `graph-ml/` | 2 | Background, unless Appendix A is taught | Depends on the Appendix A question below |
+  | `governance/` | 1 | Background | Nothing in the labs touches it |
+  | `docs/` | 3 | Neither, it is not a deck folder | Looks like scratch. Confirm before it gets built |
+
+  **Five folders hold no `.md` at all, and they are not all the same thing.** Correcting an earlier line here that called them all deletable:
+
+  | Folder | Holds | Do |
+  |---|---|---|
+  | `aircraft/` | 6 `.excalidraw` + `.svg` diagram pairs, including the three ETL steps | **Keep.** It is the diagram source, not a deck |
+  | `databricks-in-depth/` | 3 diagram pairs and one built PDF | **Keep the diagrams**, delete the PDF |
+  | `overview-databricks-neo4j/` | One built PDF | **Delete.** Build output |
+  | `overview-knowledge-graph/` | 10 built HTML files | **Delete.** Build output from a retired build |
+  | `overview-retrievers/` | Nothing | **Delete** |
+
+  **The two the build script points at are both build-output folders**, which is exactly why it fails: the script's inputs were outputs all along. Deleting them first makes the rewrite obvious.
+
+  **DECIDED:** The folder table above, and Workshop / Background exactly as drawn. If a session is dropped, the safe direction is Workshop to Background, never delete.
+
+- **The architecture diagram shows the retired topology. DECIDED to fix.** `images/lab-architecture-overview.svg` draws the Agent Bricks supervisor over the Neo4j MCP server. That is the Lab 4 Part B instructor demo now.
+
+  **DECIDED:** Two diagrams. One cannot carry both, because the whole Lab 4 point is that Part B and Lab 5 are the same architecture reached two ways, and a merged diagram makes them look like one system. **Lab 5 topology becomes the default**, shown on `README.md`, `workshop-overview.adoc` and `lab5.adoc`. The existing MCP drawing keeps its file, gets retitled "Part B: Instructor Demo," and appears only on `lab4.adoc`.
+
+  **The drawing exists three times in two directories, and every consumer picks a different one.** This has to be collapsed first or the redraw has to be done twice:
+
+  | Consumer | Line | References |
+  |---|---|---|
+  | `README.md` | 36 | `images/lab-architecture-overview.png` |
+  | `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` | 12 | the raw URL to `images/lab-architecture-overview.png` |
+  | `site/modules/ROOT/pages/workshop-overview.adoc` | 53 | `lab-architecture-overview.svg`, resolved from `site/modules/ROOT/images/` |
+  | `site/modules/ROOT/pages/lab4.adoc` | 117 | the same site-local `.svg` |
+
+  `dual-database-architecture` has the identical problem: `README.md:45` and `Lab_4_Compound_AI_Agents/README.md:13` take the root PNG, `workshop-overview.adoc:31` and `lab1.adoc:90` take the site SVG.
+
+  **DECIDED: delete both `.svg` copies under `site/modules/ROOT/images/` and have the site reference the root `images/` copies.** `images/` is where the `.excalidraw` sources live, so it is the only place a redraw can start. One source, one export, four consumers. Do this before step 7 or the redraw ships to half the pages.
 
 - **Nothing anywhere mentions the secret scope. DECIDED to fix.** Lab 3 notebook 01 creates `fleet-ops-<user-slug>` with four keys and Labs 3, 5 and 6 read it. The site still shows a plaintext `NEO4J_PASSWORD` in every notebook's config cell. On the site this becomes concept, not procedure: one paragraph on the Lab 3 page about why credentials get written once and read four times.
 
@@ -123,22 +258,45 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
   | Never expires | No mid-course expiry, so a multi-session format is safe |
   | Lab 6 index cap | Still unmeasured. `expand-v2.md` q6 stays open and stays the one no-go |
 
-  **Every place the wrong tier is still written down:**
+  **Every place the wrong tier is still written down. Verified by grep, and it is sixteen lines across ten files, not four.** The earlier four-row list caught the site and missed the notebooks entirely.
+
+  **Dies with step 1, no edit needed:**
 
   | File | Line | Says |
   |---|---|---|
-  | `site/modules/ROOT/pages/lab1-instructions.adoc` | 13, 16 | "Neo4j Aura free trial", "14-day free trial" |
+  | `site/modules/ROOT/pages/lab1-instructions.adoc` | 13, 15, 16 | "Neo4j Aura free trial", "14-day free trial" |
   | `site/modules/ROOT/pages/lab2-instructions.adoc` | 31 | "requires AuraDB Professional" |
-  | `Lab_1_Aura_Setup/slides/07-lab-steps-1.md` | 6, 12 | "free trial signup process", "free trial instance" |
-  | `Lab_1_Aura_Setup/Aura_Free_Trial.md` | filename | Body is correct. The **name** reads as the thing it warns against |
 
-  The two `.adoc` lines die with the notebook-first split, so they need deleting rather than editing. The slide and the filename are live and need real fixes.
+  **Live and needs a real edit:**
 
-  **`Aura_Free_Trial.md` should be renamed or folded in.** A participant who sees the filename and skips the body clicks exactly the wrong button. Recommendation: fold the whole file into `01_aura_setup.ipynb` and delete it, which the notebook-first split calls for anyway.
+  | File | Line | Says | Fix |
+  |---|---|---|---|
+  | `Lab_1_Aura_Setup/slides/07-lab-steps-1.md` | 6, 12 | "free trial signup process", "free trial instance" | Both become "AuraDB Free" |
+  | `Lab_1_Aura_Setup/Aura_Free_Trial.md` | filename | Body is correct. The **name** reads as the thing it warns against | Folded into the notebook and deleted |
+  | `README.md` | 96, 158 | "Create an Aura free trial", "Neo4j Aura free trial account" | Rewrite in the 30-line cut |
+  | `vocareum/docs/README.md` | 74 | "your own Neo4j Aura free trial instance" | Edit in place |
+  | `workshop-setup/docs/MANUAL_SETUP.md` | 118 | "Graph Data Science needs Aura Professional" | Reframe as a skip, not a prerequisite |
+
+  **The Appendix A notebooks are the largest miss, and they carry the exact framing this decision rejects.** Every one of them states Professional as a **prerequisite to go acquire**, which is what `lab2-instructions.adoc:31` was condemned for:
+
+  | File | Line | Says |
+  |---|---|---|
+  | `Appendix_A_GDS_Graph_Analytics/community_detection/02_gds_louvain_maintenance.ipynb` | 12, 32, 194 | "Requires AuraDB Professional", "AuraDB Professional or higher" |
+  | `Appendix_A_GDS_Graph_Analytics/centrality/04_gds_pagerank_airports.ipynb` | 12, 32 | same |
+  | `Appendix_A_GDS_Graph_Analytics/similarity/05_gds_node_similarity_aircraft.ipynb` | 12, 37 | same |
+  | `Appendix_A_GDS_Graph_Analytics/gds-exploring.md` | 25 | "AuraDB Professional ships with GDS included" |
+
+  This matters beyond wording. **The Appendix A page decided below opens with "nobody in the room can run this," and the notebooks it points at open with "go get Professional."** Those two cannot both ship. All four files take the same reframing `02_gds_knn_aircraft.ipynb:7` already has: skip it, here is why, everything else runs on Free.
+
+  **Already correct, leave alone:** `Lab_1_Aura_Setup/README.md:14`, `Lab_1_Aura_Setup/Aura_Free_Trial.md:15,37`, `Lab_1_Aura_Setup/01_aura_setup.ipynb:61,99`, `Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb:7,38`. These say AuraDB Free and warn off the trial button by name. They are the model the other ten conform to.
+
+  **`Aura_Free_Trial.md` should be renamed or folded in.** A participant who sees the filename and skips the body clicks exactly the wrong button. **DECIDED: fold the whole file into `01_aura_setup.ipynb` and delete it**, which the notebook-first split calls for anyway.
 
 - **`lab1-instructions.adoc:37-47`, the dead backup-restore procedure. RESOLVED by the notebook-first split.** The page is retired; `01_aura_setup.ipynb` never had the procedure. No fix needed, just deletion.
 
-- **`lab1.adoc:117` points Aura Agents at Lab 4. DECIDED: drop every mention of Aura Agents.** That is the whole of `lab1.adoc:115-120`. Nothing replaces it.
+- **`lab1.adoc:117` points Aura Agents at Lab 4. DECIDED: drop every mention of Aura Agents.** Nothing replaces it.
+
+  **It is two edits, not one block.** `lab1.adoc:114-117` is the titled section, and `lab1.adoc:12` also lists Aura Agents in the sentence describing what Neo4j Aura is: "with built-in vector search, Graph Data Science, and Aura Agents." Deleting only the section leaves the feature named on the page, and line 12 additionally advertises Graph Data Science on the tier that does not have it. **Rewrite line 12 and delete 114-117.**
 
 - **The signup guide is misquoted. DECIDED to fix.** The guide's body already points at AuraDB Free and warns off the trial button by name. The site paraphrased it backwards. Fixed by deleting the site copy and folding the guide into the notebook.
 
@@ -146,7 +304,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **The node and relationship caps. DECIDED to add, one sentence.** The class is on Free, so 200,000 nodes and 400,000 relationships are real numbers a participant can hit. These two are not the drifting dataset counts the no-counts rule targets; they are product limits, and they change about never.
 
-- **`Aura_Free_Trial.md` is not published. DECIDED: fold into `01_aura_setup.ipynb` and delete.** It is a signup procedure, so the notebook-first split takes it. Deleting it also retires a filename that argues against its own contents.
+- **`Aura_Free_Trial.md` folds into `01_aura_setup.ipynb` and is deleted.** It is a signup procedure, so the notebook-first split takes it. Deleting it also retires a filename that argues against its own contents.
 
 ### To add
 
@@ -168,28 +326,23 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **`lab2-instructions.adoc:77` sends participants to Lab 4 for the supervisor. RESOLVED by the split**, page retired. The equivalent handoff on `lab2.adoc` still needs to point at Lab 3, then Lab 4 Part A, then Lab 5.
 
-  **RESPONSE** :
-
+  **DECIDED.**
 - **`lab2-instructions.adoc:35-37` is a two-sentence stub for the longest lab. RESOLVED by the split**, page retired. The procedure is already in the notebook.
 
 ### Missing
 
 - **What Lab 2 does *not* load.** Lab 2 writes zero `Reading` nodes to Neo4j; telemetry stays in Delta. Belongs on `lab2.adoc` as concept, and it is the one count worth keeping.
 
-  **RESPONSE** :
-
+  **DECIDED.**
 - **The canonical `OperatingLimit` rows and the `HAS_LIMIT` edges.** The graph-shape block omits `HAS_LIMIT` entirely, and Lab 5's limit questions depend on it. Add the edge to the shape diagram, no counts.
 
-  **RESPONSE** :
-
+  **DECIDED.**
 - **`CLEAR_DATABASE = True` as a contract, not a cure.** Today it appears only in troubleshooting. On the notebook side it belongs in the procedure; on the site side, one line on `lab2.adoc` about why the load is destructive by design.
 
-  **RESPONSE** :
-
+  **DECIDED.**
 - **Sensor units.** `EGT` is `°C` and `N1Speed` is `% RPM`, matching the manual limit tables so `Sensor.unit = OperatingLimit.unit` joins on a plain string compare. This is why Lab 5's limit questions work at all. Concept, belongs on the page.
 
-  **RESPONSE** :
-
+  **DECIDED.**
 ### To add
 
 - **A per-label expected-count table. DROPPED** by the no-counts decision. Verification belongs in the notebook, where it can be a query that prints live numbers instead of prose that goes stale.
@@ -200,7 +353,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **`slides/aircraft/` holds the three-step ETL diagrams** (`step1-flat-tables-foreign-keys`, `step2-spark-connector-mapping`, `step3-connected-graph`). They are already in `site/modules/ROOT/images/` but no published deck teaches them. This is the clearest visual in the repository for what the Spark Connector does.
 
-  **RESPONSE** : (which deck owns these three?)
+  **DECIDED:** `platform-overview/`, in the deck that introduces the dual-database story, and shown again on `lab2.adoc` itself. Not `kg-construction/`: these three diagrams are about the Spark Connector turning foreign keys into edges, which is a Lab 2 idea, while `kg-construction/` is about extracting a graph from text, which is Lab 3's. Putting them in the wrong deck buries the clearest visual in the repository under material filed as Background.
 
 - **`kg-construction/05-building-knowledge-graphs-slides.md:102`** carries the "20 aircraft" count. Covered by the no-counts sweep.
 
@@ -214,38 +367,38 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **`lab3.adoc` has no `OperatingLimit` versus `ExtractedLimit` split.** `lab3-sample-queries.adoc:133-204` has it correct; the concepts page never introduces the distinction its own sample queries depend on. `OperatingLimit` means the canonical CSV rows, `ExtractedLimit` is what the LLM read out of the manual.
 
-  **RESPONSE** :
+  **DECIDED:** Add it, and make it the page's central idea rather than a definition. Two labels for the same fact, one trusted and one inferred, is the honest version of what LLM extraction produces. Lab 5's refusal rule ("never substitute a limit for a measurement") only makes sense to someone who already knows these are two different things.
 
 ### Missing
 
 - **The secret scope as a teaching beat.** Four keys, scope name derived from `current_user()` because scope names are workspace-unique rather than per-user. This is the credential handoff the entire back half of the workshop rides on, and it is the kind of thing that belongs on a concepts page precisely because it is not a step.
 
-  **RESPONSE** :
+  **DECIDED:** Add it, one paragraph. Written once in Lab 3, read by Labs 3, 5 and 6, which is why a Lab 3 mistake surfaces two labs later as a failure that looks like Lab 5's fault. Say that out loud and the debugging story writes itself.
 
 - **`NEO4J_DATABASE` as the fourth key.** Newly threaded through Labs 3, 5 and 6. Worth a line only if the tier answer means the value is ever anything but `neo4j`. See `expand-v2.md` question 5.
 
-  **RESPONSE** :
+  **DECIDED:** One line, not a paragraph. On AuraDB Free the value is always `neo4j`, so for every participant this key is a constant. It exists for the instructor's multi-database instance and for anyone who later points the labs at their own. Say it is there and why, then move on.
 
 - **The embedding model, named once.** `databricks-bge-large-en`, 1024 dimensions, the same endpoint the admin loader uses, which is why loader-written vectors and notebook-written query vectors are comparable at all.
 
-  **RESPONSE** :
+  **DECIDED:** Add it. The "same endpoint both sides" point is the one that matters, not the model name: vectors from two different models are not comparable and the failure is silent, returning plausible nonsense rather than an error. That is the reusable lesson.
 
 - **Index names and what breaks without them.** `maintenanceChunkEmbeddings` and the fulltext index. If the vector index is missing, Lab 5 silently drops `graphrag_node` from its routing list rather than failing loudly. That is a concept worth teaching, not a troubleshooting note.
 
-  **RESPONSE** :
+  **DECIDED:** Add it, and put it on `lab5.adoc` as well as `lab3.adoc`. A participant who skipped Lab 3 gets a Lab 5 agent that works, answers, and quietly cannot reach the manuals. Silent degradation is a design choice worth defending on the page, since the alternative, failing at import, would strand them entirely.
 
 ### To add
 
 - **A "what Lab 3 leaves in your graph" close**, as shape rather than counts: documents, embedded chunks, two indexes, one secret scope. That list is exactly Lab 5's entry condition.
 
-  **RESPONSE** :
+  **DECIDED:** Add it, and reuse the same four bullets verbatim as Lab 5's "before you start" list. One list stated twice from both ends is how a participant self-checks without an instructor.
 
 ### Slides
 
-- **`retrieval-patterns/` is four decks, none published.** Recommended Workshop in the table above. Deck 03, Vector Cypher Retriever, is now load-bearing for Lab 3 and Lab 5 both.
-- **`kg-construction/` is five decks, none published.** Recommended split: vectors and chunking to Workshop, schema design and entity resolution to Background.
+- **`retrieval-patterns/` is four decks, none published.** Filed Workshop in the table above. Deck 03, Vector Cypher Retriever, is now load-bearing for Lab 3 and Lab 5 both.
+- **`kg-construction/` is five decks, none published.** Split: vectors and chunking to Workshop, schema design and entity resolution to Background.
 
-  **RESPONSE** :
+  **DECIDED:** As stated. Chunking and vectors are the two things Lab 3 notebook 01 actually does, so a participant needs them before running it. Schema design and entity resolution are craft topics with no Lab 3 step behind them, which is what makes them Background rather than cuts.
 
 ---
 
@@ -257,23 +410,25 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **`lab4.adoc:3` uses the stale reading count.** Covered by the no-counts sweep. The sentence motivating the whole lab has to be rewritten around shape: the full telemetry ledger never enters the graph, so GraphRAG cannot reach it.
 
-- **`lab4.adoc:12` and `workshop-overview.adoc:51` still call the Agent Bricks supervisor the final architecture.** The instructions page was corrected to "instructor demo, your continuation is Lab 5"; the concepts page and the overview were not, and the instructions page is the one being deleted. **This is now the highest-priority remaining site edit**, because deleting the corrected page leaves only the uncorrected ones.
+- **`lab4.adoc:12` and `workshop-overview.adoc:51` still call the Agent Bricks supervisor the final architecture. DECIDED to fix. Not a question, a sequencing constraint.**
 
-  **RESPONSE** :
+  The Part B reframing landed on `lab4-instructions.adoc` and nowhere else. That page is the one the split deletes. So the deletion, on its own, would take the *only* corrected copy off the site and leave the two stale ones standing.
+
+  **The constraint that falls out: fix `lab4.adoc` and `workshop-overview.adoc` in the same change that deletes `lab4-instructions.adoc`, never after.** Doing them in the other order leaves `main` published, briefly, saying the retired architecture is the destination. Nothing to decide, just an ordering not to get wrong. It is reflected in the work order below.
 
 ### Missing
 
 - **Which tables the Genie space attaches.** Four of the eight gold tables. Concept-level: Genie reads table and column comments, so scope is a modelling decision, not a permissions one.
 
-  **RESPONSE** :
+  **DECIDED:** Add it, and merge it with the eight-versus-four item below into one beat. They are the same idea twice. The lesson: what you *hide* from Genie shapes its answers as much as what you show it, and the comments in `lab/workshop.py` are written to be read by a model.
 
 - **The Genie space ID.** Participants copy the 32-character ID out of the room URL because everyone titles their space differently, and Lab 5 and Lab 6 both read `GENIE_SPACE_ID`. **Procedure, so it lives in the notebook.** The site's job is one line saying Lab 4 produces a value Lab 5 consumes.
 
-  **RESPONSE** :
+  **DECIDED:** One line on the site, procedure in the notebook. This is the second cross-lab handoff after the Lab 3 secret scope, so name it as one: Lab 4 produces a value, Lab 5 consumes it, and losing it costs a rebuild.
 
 - **The eight gold tables versus the four Genie sees.** Concept, belongs on the page.
 
-  **RESPONSE** :
+  **DECIDED:** Fold into the first item above. One beat, not two.
 
 ### To add
 
@@ -281,17 +436,17 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **A closing contrast for Part B:** no-code Agent Bricks over a governed MCP connection, versus the same routing written in code in Lab 5. That contrast is the only reason Part B survives as a demo.
 
-  **RESPONSE** :
+  **DECIDED:** Add it, and make it a table rather than prose. Two columns, Part B and Lab 5, across rows for how it is built, where credentials live, who can change it, and what it costs to extend. Without that contrast Part B reads as a lab that got cancelled.
 
 ### Slides
 
 - **`agents/02-power-of-graphrag-slides.md` needs reframing, not replacing.** Its last five sections present MCP plus Agent Bricks as *the* architecture. Retitle that run as the Part B demo and put the Lab 5 path beside it.
 
-  **RESPONSE** :
+  **DECIDED:** Reframe, do not rewrite. Five section titles and a lead-in slide, not new content. The material is correct; only its billing as the destination is wrong.
 
 - **`platform-overview/01-databricks-neo4j-integration-slides.md:300-313`** already has "Alternative Architecture: Agent as a Serving Endpoint." That is now the primary architecture. Promote it and retitle.
 
-  **RESPONSE** :
+  **DECIDED:** Retitle to "Agent as a Serving Endpoint" with the word "Alternative" removed, and move it ahead of the MCP section rather than after it. Order is the argument here: whatever comes first reads as the default.
 
 - **`01-workshop-over.md:120-143`** already reads "used only in the Part B demo." Correct as-is, leave it.
 
@@ -310,17 +465,19 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **The three tools, one line each.** `genie_node` for SQL over Delta telemetry, `cypher_node` for traversal over the participant's own Aura instance, `graphrag_node` for a `VectorCypherRetriever` over the Lab 3 manual chunks.
 
-- **The routing lesson, which is the lab.** `cypher_node` and `graphrag_node` sit close together because the GraphRAG retriever has a Cypher tail. **Do the measured routing numbers go on the site, or stay in the lab README?** They are the strongest evidence in the repository, but they are also numbers, and the no-counts decision was about numbers drifting. Routing accuracy differs from dataset counts: it is a claim about the workshop's own quality, and it goes stale only when the prompt changes.
+- **The routing lesson, which is the lab.** `cypher_node` and `graphrag_node` sit close together because the GraphRAG retriever has a Cypher tail. **The measured routing numbers go on the site.** They are the strongest evidence in the repository. Routing accuracy differs from dataset counts: it is a claim about the workshop's own quality, and it goes stale only when the prompt changes.
 
-  **RESPONSE** :
+  **DECIDED:** Put them on the site. The no-counts rule was aimed at dataset facts that drift on every regeneration; a routing accuracy figure is a measurement of this workshop's own quality and it moves only when someone edits the prompt. State it with the date it was measured and the prompt version, which is what makes a number honest rather than decorative.
 
 - **The prompt is the artifact.** Two rules earned their place from measured failures. The refusal rule: never substitute a limit, threshold or ceiling for a measurement. The direction rule: an `AFFECTS_AIRCRAFT` arrow written backwards was fixed with nine lines of schema text rather than by dropping the arrow, because dropping it teaches a Cypher habit Lab 1 spends its time arguing against.
 
-  **RESPONSE** :
+  **DECIDED:** Add both rules with the failure that produced each one. A prompt rule with its bug attached is a lesson; the same rule without it is a wall of text nobody reads. The direction rule is the better of the two to lead with, because "we fixed the prompt rather than the schema" is the non-obvious call.
 
 - **The anchor question, end to end.** Genie names the engines with abnormal EGT, the graph returns their maintenance history including a bearing wear fault, the manual closes with the high-EGT procedure. One question, three tools, one answer. This is the demo the whole workshop builds toward and it belongs on the page.
 
 - **Deployment as its own beat.** Logging to Unity Catalog, then serving as an endpoint that authenticates as a **service principal** rather than as the notebook user. That is the line between a notebook demo and a product, and `agenda.md` already treats it as its own topic.
+
+  **Lab 5 ships two notebooks, and the second one is this beat.** `01_langgraph_agent.ipynb` builds the graph; `02_deploy_and_evaluate.ipynb` logs, registers, serves and evaluates it. The deck split decided below falls out of the folder structure rather than being a judgment call: one deck per notebook. It is also where the measured routing numbers get re-run, so the site states the claim and cites the date, and the notebook is what reproduces it.
 
 - **The credential path.** Reads the Lab 3 scope. No plaintext password anywhere in Lab 5.
 
@@ -334,7 +491,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **A deployment deck, `agents/04-deploy-the-agent-slides.md`.** MLflow `ResponsesAgent`, Unity Catalog registration, Model Serving, service principal auth. `agenda.md` lists "Deploying the Agent" as its own topic and no deck backs it.
 
-  **RESPONSE** : (one deck for both, or two?)
+  **DECIDED:** Two decks. `agenda.md` already treats deployment as its own topic, and the audiences differ: the supervisor deck is for whoever is writing the graph, the deployment deck is for whoever has to explain service principal auth to a security reviewer. Merging them buries the second inside the first. Two decks also survive a shortened day better, since deployment is the one that gets cut.
 
 ---
 
@@ -360,15 +517,15 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **The pinned install.** A fork wheel on the Unity Catalog volume, plus `httpx` alongside it because a wheel carries no extras. **Procedure, so it goes in the notebook.** The site gets one line that the library is pinned to a fork and why.
 
-  **RESPONSE** :
+  **DECIDED:** One line on the site, procedure in the notebook. Say plainly that it is a fork and name what the fork fixes. A pinned fork wheel on a volume is the kind of thing a participant will try to reproduce at work, and they need to know whether they are waiting on an upstream release or carrying a patch forever.
 
 - **One endpoint, redeployed.** Lab 6 redeploys the endpoint Lab 5 created rather than making a second one, which is why the memory-off baseline has to be captured before Lab 6 overwrites it.
 
 - **Graph cost. DECIDED to include.** The class is on Free, so the cap is real and the arithmetic reassures rather than worries: memory costs about 20 nodes per participant per session against roughly 178,000 nodes of headroom after Labs 1 through 3.
 
-- **Whether `02_instructor_demos.ipynb` ships.** `expand-v2.md` question 8, still open. If it ships it needs a `course.env` entry; if not, one sentence stops the next reader asking. **The four demos in it are the Lab 6 payoff**, and the memory deck below leans on demo 1.
+- **`02_instructor_demos.ipynb` ships.** Closes `expand-v2.md` question 8. **The four demos in it are the Lab 6 payoff**, and the memory deck below leans on demo 1.
 
-  **RESPONSE** :
+  **DECIDED:** Ship it, as an instructor notebook rather than a participant one. Slide 5 and slide 8 of the memory deck both run out of it, so cutting it means rewriting the deck around material that no longer exists. Instructor-only keeps it off the participant critical path while the demos stay runnable on stage. That needs the `course.env` entry.
 
 ### Missing, slides
 
@@ -376,9 +533,13 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 ### Open, do not write around it
 
-- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and `expand-v2.md` q6 stays the single remaining no-go. `scratchpad/aura_free_index_check.py` is already written and needs a fresh Free instance to run against.
+- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and `expand-v2.md` q6 stays the single remaining no-go.
 
-  **RESPONSE** :
+  **The check script does not exist.** Both this document and `expand-v2.md:684` describe `scratchpad/aura_free_index_check.py` as written, with "a read-only `check` and an apply-then-roll-back `probe`." There is no `scratchpad/` directory in the repository and nothing in git history ever created one. It was written into an ephemeral session scratchpad and is gone. **Correct both documents and treat the script as unwritten.**
+
+  **DECIDED:** Step 0 is two jobs, not one. **Write the script, then run it.** It needs a durable home in the repository this time, not a scratchpad: `workshop-setup/verify/` already exists as the package that replays lab queries against Aura, and this is the same shape of thing. Give it the two modes the lost version had, read-only `check` first so it can run against any instance safely.
+
+  It still blocks only `lab6.adoc`, and it still cannot be started by anyone without a fresh Free instance to point it at. **Ryan provisions; the script can be written before the instance exists.**
 
 ---
 
@@ -390,29 +551,27 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 ### To add
 
-- **The tier statement, up top.** GDS availability is the whole gate on this appendix, and what it says depends on the tier answer. On Free, the appendix is a trap without a warning; on the trial, it is simply part of the course.
-
-  **RESPONSE** :
+- **The tier statement, up top. DECIDED, and it is now a warning rather than a footnote.** The class is on AuraDB Free and GDS is not on Free, so **nobody in the room can run Appendix A on their workshop instance.** State that in the first paragraph, not the fifth. Without it the appendix is a trap: a participant works through the setup and fails at the first `gds.` call.
 
 - **The dependency chain.** All of it needs Lab 2 notebook 01. Node Similarity additionally assumes `02_gds_knn_aircraft.ipynb` has run.
 
-- **Is Appendix A taught, or is it take-home?** It changes whether `graph-ml/` is a Workshop deck or a Background one, and whether the appendix needs a slide slot in the agenda at all.
+- **Appendix A is take-home.** Its `graph-ml/` decks are still taught.
 
-  **RESPONSE** :
+  **DECIDED:** Take-home, and the tier decides it rather than the agenda. Nobody in the room can run GDS on an AuraDB Free instance, so "taught" could only mean watching an instructor demo, and the day has no spare slot for one. **Keep the `graph-ml/` decks as Workshop anyway**, which is the one place I would break my own table: the concepts, graph features feeding an ML model and the bidirectional loop back to Databricks, stand on their own without anyone running a `gds.` call. Teach the idea, hand out the notebooks.
 
 ### Slides
 
 - **`graph-ml/03-graph-enrichment-slides.md` and `04-future-graph-enrichment-slides.md`** are the conceptual half of this appendix and are unpublished. They cover the GDS algorithms, the MLflow lift comparison, and the bidirectional data loop, which is the `agenda.md` topic "Graph Algorithms: From Connected Data to Analytical Features."
 
-  **RESPONSE** :
+  **DECIDED:** Publish both as Workshop, per the answer above. They are the only decks backing a named agenda topic, and they are the half of Appendix A that survives the tier constraint. The notebooks go take-home; the argument stays on stage.
 
 ---
 
 ## Governance, Not a Lab
 
-- **`governance/auth-sync-slides.md`** covers four patterns for aligning Unity Catalog and Neo4j privileges. PDF only, no HTML, referenced by nothing. Recommended Background above. **Publish it under Additional Background, or drop it from `slides/` entirely?**
+- **`governance/auth-sync-slides.md`** covers four patterns for aligning Unity Catalog and Neo4j privileges. PDF only, no HTML, referenced by nothing. Filed Background above.
 
-  **RESPONSE** :
+  **DECIDED:** Publish under Additional Background. It costs one nav line and it answers the question a customer asks right after the workshop lands: who is allowed to see what, once the same data lives in two systems. Dropping it deletes the only material in the repository on that. Note it is PDF-only today, so it needs its source rebuilt to HTML before it can go anywhere.
 
 ---
 
@@ -425,7 +584,7 @@ The deck Lab 6 is missing, `agents/05-agent-memory-slides.md`. Nine slides, abou
 - **Neo4j ships two taxonomies and they conflict.** The 2025 developer blog, Alex Gilmore, borrows LangGraph's: short-term versus long-term, with long-term splitting into semantic, episodic and procedural. The 2026 Labs and hosted-service line uses short-term / long-term / **reasoning**. Neo4j's own glossary maps external "episodic" onto short-term, which inverts the LangGraph mapping.
 - **Use the 2026 one.** `Lab_6_Agent_Memory/memory.py` and `02_instructor_demos.ipynb` are built on `short_term`, `long_term` and `reasoning`, so the deck has to match the code participants run. Name the conflict in one sentence, cite Gilmore as the cross-walk, move on.
 
-  **RESPONSE** :
+  **DECIDED:** Use the 2026 taxonomy. The deck has to match the code participants run, and `memory.py` is built on `short_term`, `long_term` and `reasoning`. Naming the conflict once is also worth doing on its own merits: anyone who reads a Neo4j blog after the workshop will hit the other taxonomy, and one sentence now saves them the confusion later.
 
 ### The slides
 
@@ -439,7 +598,7 @@ The deck Lab 6 is missing, `agents/05-agent-memory-slides.md`. Nine slides, abou
 8. **The payoff. Never cut this one.** 3.0 min. Adoption in one line: stamping `:Entity` onto the Lab 2 `Aircraft` nodes means a remembered aircraft *is* the fleet node, so one traversal crosses both. Then the three queries in order. Fleet-only ranks N10011 **last of six**. Memory-only ranks it **joint first**. The joined query explains why. **Analogy:** the log is what got written down, the conversation is what the crew keeps worrying about, and the gap between them is where the next incident lives. **Optional 30 seconds:** an `APPLIES_TO`-scoped preference reaching any technician who touches that aircraft.
 9. **Context graph, and where memory belongs.** 1.5 min. Databricks holds the telemetry, Neo4j holds the topology, the history, and now the memory. Memory belongs on the side where the joins are.
 
-**RESPONSE** : (on the flow as a whole)
+**DECIDED:** The nine as ordered, with one caution. **Slides 5 and 6 are the soft middle.** They are the most interesting to a practitioner and the least connected to anything a participant runs, so they are where a room's attention goes if the day is running late. If time is short, cut 6 into a line on 7 and keep 5, because 5 has a live demo behind it and 6 does not. Slide 8 is the argument for the entire lab and never gets cut.
 
 ### Notes for whoever builds it
 
@@ -453,14 +612,52 @@ The deck Lab 6 is missing, `agents/05-agent-memory-slides.md`. Nine slides, abou
 
 ## Suggested Order of Work
 
-Revised for the notebook-first split. Steps 1 and 2 are deletions, which is why they come first: they remove about 1,300 lines that would otherwise have to be edited.
+Revised for the notebook-first split. The early steps are deletions, which is why they come first: they remove about 1,300 lines of site content and 416 lines of README that would otherwise have to be edited.
 
-1. **Answer the tier question.** It gates Lab 1, Lab 2's optional notebook, Appendix A, and Lab 6's index-cap risk. Nothing below can be written correctly without it.
-2. **Retire the four instructions pages** and collapse `nav.adoc`. Both live defects die here. Confirm each notebook carries what its page carried before deleting.
-3. **Fix the slide build script**, so anything written afterward can actually be published.
-4. **Sweep the dataset counts out** of the 8 files listed in section 0. Mechanical.
-5. **Correct the Agent Bricks framing on `lab4.adoc` and `workshop-overview.adoc`**, which is now urgent because step 2 deletes the only page where it was already right.
-6. **Redraw the architecture diagram.** Five pages display it.
-7. **Write `lab5.adoc` and `lab6.adoc`**, plus the Appendix A page and their nav entries.
-8. **Write the three new decks:** LangGraph supervisor, deployment, agent memory.
-9. **Split and publish the remaining decks**, Workshop against Additional Background, and add the slides nav group that today does not exist.
+**Step 0, and it starts before everything:** the AuraDB Free index-cap check, which is **write the script, then run it**. The version both this document and `expand-v2.md` described as existing did not. Give it a durable home under `workshop-setup/verify/`. Writing it blocks on nothing; running it blocks on Ryan provisioning a fresh Free instance. It is the only item here that can invalidate work already written.
+
+> **STATUS: script written, run still owed.** `workshop-setup/verify/src/verify_aura_caps/main.py`, registered as `verify-aura-caps` in that package's `pyproject.toml`. Two commands as decided: read-only `check` and apply-then-roll-back `probe`. Ruff clean. `check` was run against the instructor instance `f024ea61` and reports 59 indexes and 24 constraints, so Lab 6 would project to 92 and 36 there. **That is not the answer**, because `f024ea61` is not Free. The run that closes this needs a fresh Free instance.
+>
+> **It already earned its keep once.** `home_database()` reads the home database out of `SHOW DATABASES` rather than assuming `neo4j`, and on `f024ea61` the answer is `f024ea61`. A version that assumed `neo4j` would have failed on the first real query.
+>
+> `expand-v2.md` step 3 corrected to match: the script is unwritten there no longer, and the false "read-only `check` and apply-then-roll-back `probe`" claim is replaced by what actually exists.
+
+1. **Retire the four instructions pages, correct `lab4.adoc` and `workshop-overview.adoc`, and collapse `nav.adoc`, as one change.** Both live defects die here. The three parts ship together because deleting `lab4-instructions.adoc` alone would leave only the uncorrected Agent Bricks framing on a site that publishes on every push. Confirm each notebook carries what its page carried before deleting. **Do not add the slides nav group here**; it has no pages to point at until step 10.
+
+> **STATUS: DONE.** `849` lines of site content deleted across the four pages. `npm run build` in `site/` completes with no warnings, so no `xref` was left pointing at a deleted page.
+>
+> **What moved rather than died.** Three things the deleted pages held were concept, not procedure, and would have been lost:
+> - **The full graph shape**, now on `lab2.adoc` **with `HAS_LIMIT` added**, which the old block omitted entirely. Lab 5's limit questions depend on that edge. The sensor-unit point (`EGT` is `°C` on both sides, `N1Speed` is `% RPM`) is stated there too, since it is why the join is a plain string compare.
+> - **`CLEAR_DATABASE = True` as a contract**, now its own short section on `lab2.adoc` rather than a troubleshooting note. Appending twice gives you two of everything; wiping first is what makes the load repeatable.
+> - **Zero `Reading` nodes**, now a named section on `lab2.adoc`. The one count the no-counts rule keeps.
+>
+> **`lab4.adoc` was further along than the plan assumed.** Line 121 already carried a correct Part B note. What was missing was the framing above it, so the page now opens with a "Part A you build, Part B you watch" section, the At-a-Glance bullets are labelled by part, and the Part B versus Lab 5 contrast table decided in the Lab 4 section is written. The architecture image is retitled as the Part B demo in its alt text.
+>
+> **`workshop-overview.adoc` lost its architecture image rather than gaining a new one.** The section now describes the Lab 5 endpoint in prose and points at `lab4.adoc` for the Agent Bricks contrast. **Step 7 owes it the Lab 5 topology drawing.** Its "What You Will Learn" list gained Lab 5 and Lab 6 as plain text; step 8 turns those into `xref`s once the pages exist.
+>
+> **Left for the step that owns it:** the lab table on `workshop-overview.adoc` still stops at Lab 4, because adding rows means adding `xref`s to pages that step 8 writes.
+2. **Sweep the tier language. Sixteen lines across ten files**, tabled under Lab 1. Two files die with step 1. The other eight need real edits, and **four of them are the Appendix A notebooks**, which today tell participants to go acquire Professional. Everything says AuraDB Free.
+
+> **STATUS: DONE except the two lines step 5 owns.** Seven files edited. A repo-wide grep for `free trial`, `AuraDB Professional`, `Aura Professional` and `14-day` now returns only lines that name the trial in order to warn participants off it, plus the two below.
+>
+> **The Appendix A notebooks are fixed and they were the point.** All three now open with the same skip framing `02_gds_knn_aircraft.ipynb:7` already had, and add the take-home line: read it now, run it later on an instance that has GDS. Their prerequisite lists no longer say "Neo4j Aura credentials (AuraDB Professional or higher)", which read as a shopping instruction; they say "An instance with the GDS plugin, which your AuraDB Free workshop instance is not." Applied with a checked script, `scratchpad/tier_sweep.py`, that fails loudly on any pattern it cannot find. All four reported `ok`.
+>
+> **Two corrections to this document's own table.**
+> - **`workshop-setup/docs/MANUAL_SETUP.md:118` needed no edit.** It already carries the skip framing: "Graph Data Science needs Aura Professional and Vocareum participants are on Aura Free, so shipping either one hands a student a notebook that cannot run." That is a reason, not a prerequisite. Left alone.
+> - **`Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb:38` was not already correct**, though the table listed it that way. Line 7 had the skip framing and line 38's prerequisite list still said "AuraDB Professional or higher — GDS plugin required", so the notebook contradicted itself two screens apart. Fixed to match line 7.
+>
+> **Also swept, and not in the table:** `Lab_1_Aura_Setup/slides/07-lab-steps-1.md` needed more than a wording change. Its Step 2 said the instance "is created automatically", which is the trial path. It now says which button not to click and where the AuraDB Free option hides.
+>
+> **Left for step 5, as planned:** `README.md:96` and `:158`, which the 30-line cut rewrites, and `Lab_1_Aura_Setup/Aura_Free_Trial.md`, whose body is correct and whose filename is the problem.
+3. **Delete the three build-output slide folders, clear the stale attachments, then fix the build script three ways.** `overview-databricks-neo4j/`, `overview-knowledge-graph/` and `overview-retrievers/` go; `aircraft/` and `databricks-in-depth/` stay, because they hold diagram sources. Clear `site/modules/ROOT/attachments/slides/`, whose folder names describe where decks used to live. Then: point the script at real topic folders, drop the hardcoded `/opt/homebrew/opt/node@22/bin/node`, and **add a marp step to `deploy-antora.yml`**, which today never builds a deck at all. Items 1 and 2 without item 3 publish nothing.
+4. **Sweep the dataset counts out** of the nine files tabled in section 0, **including both full per-label tables** and `README.md:57`. Mechanical, but larger than the earlier list implied.
+5. **Collapse the four participant-facing lab READMEs into their notebooks**, delete `PART_A.md`, keep `PART_B.md`, and shrink the Lab 5 and Lab 6 READMEs to module documentation. Cut the root `README.md` to about 30 lines of pointers, which also retires its two tier mentions and its count.
+6. **Move the 15 screenshots into per-lab `images/` folders** and reference them as `raw.githubusercontent.com` URLs, the pattern `04_genie_agent.ipynb` already uses. **Delete `lab1-backup-restore.png`**, whose only consumer was the dead backup-restore procedure. **Leave the 7 concept `.svg` files where they are**; they belong to pages that survive. Write the convention down once so nobody invents a third.
+7. **Collapse the duplicated diagram files, then redraw as two.** Delete `lab-architecture-overview.svg` and `dual-database-architecture.svg` from `site/modules/ROOT/images/` and point the site at the root `images/` copies, so there is one source per drawing. Then the Lab 5 topology becomes the default and the MCP drawing is retitled as the Part B demo, kept on `lab4.adoc` alone. Collapsing first is what stops the redraw shipping to half the consumers.
+8. **Write `lab5.adoc` and `lab6.adoc`**, plus the Appendix A page and their nav entries. Appendix A opens with the tier warning in its first paragraph, and step 2 has already made its notebooks agree with it.
+9. **Write the three new decks:** LangGraph supervisor, deployment, agent memory. Two agent decks, not one, matching Lab 5's two notebooks.
+10. **Split and publish the remaining decks**, Workshop against Additional Background. **This is where the slides nav group lands**, along with the remaining `.adoc` wrappers. Three exist already under `site/modules/ROOT/pages/slides/` and are unreachable; the rest copy their `iframe` pattern. `governance/auth-sync-slides.md` needs its source rebuilt to HTML first, since it is PDF-only.
+
+**Gates the last step, not the whole plan:** `02_instructor_demos.ipynb` needs its `course.env` entry before the memory deck can rely on slides 5 and 8.
+
+**Blocks step 8 alone:** the AuraDB Free index-cap check from step 0. Do not publish `lab6.adoc` promising the lab works until it passes.

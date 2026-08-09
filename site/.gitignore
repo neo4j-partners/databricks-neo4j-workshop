@@ -1,2 +1,7 @@
 build/
 node_modules/
+
+# Everything under attachments/ is produced by `npm run build:html` in slides/,
+# which the deploy workflow now runs before Antora. Committing it means a stale
+# deck ships whenever someone edits the Markdown and forgets to rebuild.
+modules/ROOT/attachments/

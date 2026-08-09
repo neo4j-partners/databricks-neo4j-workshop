@@ -2,14 +2,21 @@
 
 Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger (345,600+ hourly readings across 90 days) stays in Delta Lake. GraphRAG cannot answer "what is the average EGT for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
 
-TIP: Ready to start? Jump to the xref:lab4-instructions.adoc[Lab 4 Instructions] for step-by-step setup.
+== Part A You Build, Part B You Watch
+
+This lab has two halves and they are not the same kind of exercise.
+
+* **Part A is yours.** You build a Genie space over the Lakehouse telemetry, attach four gold tables to it, and ask it questions. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie space ID that Lab 5 and Lab 6 both consume.
+* **Part B is a demonstration.** The instructor builds a no-code Supervisor Agent in Agent Bricks over a governed Neo4j MCP connection, against their own demo instance. You need no Aura instance, no MCP connection and no OAuth credential to watch it.
+
+**Neither one is the workshop's final architecture.** Lab 5 is, and it reaches the same routing behaviour in code against your own graph. Part B exists to show what the no-code path looks like and what it costs, which is a contrast worth seeing before you write the code version.
 
 .**At a Glance**
 
 * **Agents** use the ReAct pattern (Reason + Act): perceive, reason, call tools, observe results, repeat
-* **Genie space** translates natural language to SQL for sensor telemetry analytics over Delta tables
-* **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher)
-* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both
+* **Genie space** translates natural language to SQL for sensor telemetry analytics over Delta tables. **Part A, and you build it**
+* **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher). **Part B, instructor demo**
+* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both. **Part B, and Lab 5 rebuilds this in code**
 * One agent per platform prevents idiom mixing (SQL thinks in rows/aggregations, Cypher thinks in paths/patterns)
 
 == What Are Agents
@@ -114,11 +121,38 @@ Write operations are hidden entirely, so agents can never modify production data
 
 A supervisor agent sits above both specialists and routes questions based on their nature.
 
-image::lab-architecture-overview.svg[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
+image::lab-architecture-overview.svg[Part B instructor demo: an Agent Bricks supervisor routing to Genie and a Neo4j MCP agent]
 
 The supervisor does not answer questions itself. It reads the question, determines which data shape it targets, and routes to the right specialist. For questions that span both platforms, it decomposes the question into sub-tasks, sends each to the appropriate agent, and synthesizes a single answer.
 
-NOTE: You build the Genie space in Part A. The supervisor and its Neo4j MCP agent are Part B, which the instructor demonstrates against their own demo instance and MCP connection. Watching it requires no Aura instance, no MCP connection, and no OAuth credential from you. Lab 5 is where you build this routing yourself, in code, against your own graph.
+NOTE: The diagram above is the **Part B demo**, not the workshop's destination. You build the Genie space in Part A. The supervisor and its Neo4j MCP agent are Part B, which the instructor demonstrates against their own demo instance and MCP connection. Watching it requires no Aura instance, no MCP connection, and no OAuth credential from you. Lab 5 is where you build this routing yourself, in code, against your own graph.
+
+=== Part B and Lab 5, side by side
+
+The same routing behaviour reached two ways. This contrast is the reason Part B is worth watching rather than skipping.
+
+[cols="1,2,2"]
+|===
+| | Part B: Agent Bricks | Lab 5: LangGraph
+
+| How it is built
+| A form. Name each subagent, describe what it does, save
+| Python. A state graph with a supervisor node and three tool nodes
+
+| Where credentials live
+| A Unity Catalog HTTP connection holding an OAuth2 M2M credential, managed by an admin
+| A Databricks secret scope written in Lab 3, read by the notebook and by the serving endpoint's service principal
+
+| Who can change it
+| Anyone with workspace permission on the agent, no code review
+| Whoever can merge to the repository, with the prompt under version control
+
+| What it costs to extend
+| A new subagent has to exist as an endpoint, a Genie space, a UC function or an MCP server first
+| A new tool is a Python function and a node, and the supervisor prompt gets a line
+|===
+
+Neither column is the right answer in general. Part B is faster to stand up and easier to hand to a non-engineer; Lab 5 is what you reach for when the routing rules themselves need testing, review and a git history.
 
 == Query Routing Strategy
 
@@ -159,4 +193,6 @@ NOTE: You build the Genie space in Part A. The supervisor and its Neo4j MCP agen
 
 == Next Steps
 
-Continue to xref:lab4-instructions.adoc[Lab 4 Instructions] to build the agents.
+Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` to build your Genie space, and keep the space ID it gives you. Lab 5 reads it as `GENIE_SPACE_ID`, and losing it means rebuilding the space.
+
+Then watch Part B, and continue to Lab 5, where the supervisor becomes code you own.

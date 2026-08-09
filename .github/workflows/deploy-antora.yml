@@ -30,7 +30,20 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: site/package-lock.json
+          cache-dependency-path: |
+            site/package-lock.json
+            slides/package-lock.json
+
+      - name: Install slide dependencies
+        run: npm ci
+        working-directory: slides
+
+      # The decks are build output, not source. Nothing under
+      # site/modules/ROOT/attachments/ is committed, so this step is what puts
+      # the slides on the published site at all.
+      - name: Build Marp decks into the site attachments
+        run: npm run build:html
+        working-directory: slides
 
       - name: Install dependencies
         run: npm ci

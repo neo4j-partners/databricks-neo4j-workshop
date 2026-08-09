@@ -22,7 +22,7 @@ Notebooks run the full pipeline (feature compute → project → write) from Dat
 RETURN gds.version() AS version
 ```
 
-> **Concepts**: Confirms the GDS plugin is installed and returns the version. AuraDB Professional ships with GDS included — if this errors, your tier does not support GDS.
+> **Concepts**: Confirms the GDS plugin is installed and returns the version. **On your workshop instance this errors, and that is expected.** AuraDB Free does not include GDS. The queries below are take-home material for an instance that has it.
 
 ### List active in-memory projections
 

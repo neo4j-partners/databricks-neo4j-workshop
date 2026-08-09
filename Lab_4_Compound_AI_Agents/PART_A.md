@@ -22,7 +22,7 @@ Your workshop admin has pre-loaded a set of tables into Unity Catalog that repre
 
 4. Click on any table (e.g., `sensor_readings`) and select the **Sample Data** tab to preview its contents.
 
-![Lakehouse sensor_readings table in Unity Catalog](images/lakehouse_sensor_readings.png)
+![Lakehouse sensor_readings table in Unity Catalog](../site/modules/ROOT/images/lab4-lakehouse-sensor-readings.png)
 
 These four tables form a join chain — `sensor_readings` → `sensors` → `systems` → `aircraft` — that connects raw telemetry values all the way up to fleet-level metadata. The Genie space you create in the next steps will use this structure to answer natural language questions by generating SQL queries across these tables automatically.
 
@@ -42,7 +42,7 @@ After clicking **New Genie space**, the **Connect your data** dialog appears. Se
 > **Tip:** These tables form a join chain: `sensor_readings` -> `sensors` -> `systems` -> `aircraft`
 
 
-![Connect your data dialog](images/genie_connect_data.png)
+![Connect your data dialog](../site/modules/ROOT/images/lab4-genie-connect-data.png)
 
 > **Tip:** If you don't see the table under **Recent**, click **All** or use the search bar to find `databricks-neo4j-workshop`.
 
@@ -50,7 +50,7 @@ After clicking **New Genie space**, the **Connect your data** dialog appears. Se
 
 Once the Genie space is created, click **Configure** in the top navigation bar, then select the **Settings** tab:
 
-![Genie space Configure > Settings panel](images/configure_basics_genie.png)
+![Genie space Configure > Settings panel](../site/modules/ROOT/images/lab4-configure-genie.png)
 
 1. **Title:** `Aircraft Sensor Analyst [YOUR_INITIALS]`
    - Example: `Aircraft Sensor Analyst RK`

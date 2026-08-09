@@ -93,7 +93,7 @@ Which aircraft had critical maintenance events?
 3. From the **Unity Catalog connection** dropdown, select `neo4j_agentcore_mcp`
 4. The **Agent Name** `mcp-neo4j-agentcore-mcp` will auto-populate
 
-![MCP Connection Configuration](images/mcp_connection.png)
+![MCP Connection Configuration](../site/modules/ROOT/images/lab4-mcp-connection.png)
 
 5. In the **Describe the content** field, paste the following. The supervisor uses this description to decide which agent handles each question, so detail matters:
 

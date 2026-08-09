@@ -2,7 +2,7 @@
 
 In this lab you move data from Databricks Lakehouse into Neo4j using the Spark Connector. The Lakehouse holds aircraft fleet data as governed Delta tables; by the end, that same data will exist as a traversable graph of aircraft, systems, components, sensors, flights, and maintenance events.
 
-TIP: Ready to start? Jump to the xref:lab2-instructions.adoc[Lab 2 Instructions] for step-by-step setup.
+TIP: Ready to start? Open `Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 
 .**At a Glance**
 
@@ -112,7 +112,35 @@ A **notebook** is an interactive document of cells containing Python, SQL, or ma
 
 Topology loads in order: Aircraft nodes, then System nodes (Engines, Avionics, Hydraulics per aircraft), then Component nodes (fans, compressors, turbines, pumps) attached to each system.
 
-The notebook then layers operational and maintenance data on top of that topology: Sensors attached to systems, Flights operated by aircraft, Delays on flights, MaintenanceEvents affecting components (with `AFFECTS_SYSTEM` and `AFFECTS_AIRCRAFT` back-links for cross-cutting impact queries), and Removals that link aircraft to removed components.
+The notebook then layers operational and maintenance data on top of that topology: Sensors attached to systems, Flights operated by aircraft, Delays on flights, MaintenanceEvents affecting components (with `AFFECTS_SYSTEM` and `AFFECTS_AIRCRAFT` back-links for cross-cutting impact queries), and Removals that link aircraft to removed components. It also loads the canonical `OperatingLimit` rows and attaches each one to the sensor it governs.
+
+The whole shape, once the notebook finishes:
+
+----
+(Aircraft) -[:HAS_SYSTEM]-> (System) -[:HAS_COMPONENT]-> (Component)
+(Aircraft) -[:HAS_SYSTEM]-> (System) -[:HAS_SENSOR]-> (Sensor)
+(Sensor)   -[:HAS_LIMIT]-> (OperatingLimit)
+(Aircraft) -[:OPERATES_FLIGHT]-> (Flight) -[:DEPARTS_FROM / :ARRIVES_AT]-> (Airport)
+(Flight)   -[:HAS_DELAY]-> (Delay)
+(Component) -[:HAS_EVENT]-> (MaintenanceEvent)
+(MaintenanceEvent) -[:AFFECTS_SYSTEM]-> (System)
+(MaintenanceEvent) -[:AFFECTS_AIRCRAFT]-> (Aircraft)
+(Aircraft) -[:HAS_REMOVAL]-> (Removal) -[:REMOVED_COMPONENT]-> (Component)
+----
+
+`HAS_LIMIT` is easy to overlook and Lab 5 leans on it directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares. The join works on a plain string because the units match on both sides by design: `EGT` is `°C` in the sensor metadata and `°C` in the limit table, `N1Speed` is `% RPM` in both.
+
+== What Lab 2 Does Not Load
+
+**No `Reading` nodes reach Neo4j. Zero.** The sensor telemetry stays in Delta, and that is the entire dual-database argument in one fact rather than an opinion about it. The graph holds the things worth traversing: which aircraft, which system, which sensor, which limit, which maintenance event. The readings themselves are a columnar aggregation workload, so they stay where aggregation is cheap.
+
+This is why Lab 4 needs a Genie space at all, and why Lab 5's agent has to route rather than pick one backend. A question about EGT trends cannot be answered by traversal, and a question about which components a fault cascaded into cannot be answered by SQL.
+
+== The Load Is Destructive by Design
+
+The notebook runs with `CLEAR_DATABASE = True`, and that is a contract rather than a workaround. Nodes are written in Append mode, a plain `CREATE`, which never replaces an existing node. Appending twice would give you two of everything. Wiping first is what makes the load repeatable, so a participant who gets halfway and stops can start the notebook again from the top and land in a known state.
+
+The cost is that your Aura instance is not a place to keep anything else. Re-running Lab 2 deletes whatever Lab 3 or Lab 6 wrote alongside it.
 
 == Key Concepts
 
@@ -122,4 +150,8 @@ The notebook then layers operational and maintenance data on top of that topolog
 
 == Next Steps
 
-Continue to xref:lab2-instructions.adoc[Lab 2 Instructions] to run the ETL notebooks. Once the data is loaded, see xref:lab2-sample-queries.adoc[Sample Queries] for hands-on Cypher to explore the graph, or proceed to xref:lab3.adoc[Lab 3: Semantic Search].
+Run `01_aircraft_etl_to_neo4j.ipynb` to load the graph. Once the data is in, see xref:lab2-sample-queries.adoc[Sample Queries] for hands-on Cypher to explore it.
+
+Then continue to xref:lab3.adoc[Lab 3: Semantic Search], which adds the maintenance manual to the graph you just built. Lab 3 is the prerequisite for xref:lab4.adoc[Lab 4] Part A and for Lab 5, where the agent that queries all of this gets built.
+
+The optional `02_gds_knn_aircraft.ipynb` needs Graph Data Science, which AuraDB Free does not carry, so it does not run on your workshop instance. Read it, skip running it. The same applies to Appendix A.

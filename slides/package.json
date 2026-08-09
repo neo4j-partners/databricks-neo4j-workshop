@@ -1,6 +1,9 @@
 {
   "scripts": {
-    "build:html": "/opt/homebrew/opt/node@22/bin/node ./node_modules/.bin/marp -I overview-databricks-neo4j/ -o ../site/modules/ROOT/attachments/slides/overview/ --allow-local-files && /opt/homebrew/opt/node@22/bin/node ./node_modules/.bin/marp -I databricks-in-depth/ -o ../site/modules/ROOT/attachments/slides/databricks-in-depth/ --allow-local-files"
+    "marp": "marp --allow-local-files",
+    "build:html": "npm run build:decks && npm run build:assets",
+    "build:decks": "npm run marp -- platform-overview/01-databricks-neo4j-integration-slides.md -o ../site/modules/ROOT/attachments/slides/overview/01-databricks-neo4j-integration-slides.html && npm run marp -- platform-overview/01-intro-databricks-neo4j-slides.md -o ../site/modules/ROOT/attachments/slides/databricks-in-depth/01-intro-databricks-neo4j-slides.html && npm run marp -- agents/02-power-of-graphrag-slides.md -o ../site/modules/ROOT/attachments/slides/databricks-in-depth/02-power-of-graphrag-slides.html",
+    "build:assets": "mkdir -p ../site/modules/ROOT/attachments/images && cp ../images/dual-database-architecture.svg ../site/modules/ROOT/attachments/images/ && cp databricks-in-depth/fraud-ring-dual-architecture.svg databricks-in-depth/intelligence-platform-flow.svg ../site/modules/ROOT/attachments/slides/databricks-in-depth/"
   },
   "dependencies": {
     "@marp-team/marp-cli": "^4.2.3"

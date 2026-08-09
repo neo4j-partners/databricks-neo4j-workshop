@@ -44,13 +44,15 @@ The labs build on each other, moving from a single graph database to a full mult
 * **Lab 1** provisions Neo4j Aura and introduces Cypher, the graph query language.
 * **Lab 2** loads the Aircraft Digital Twin into Neo4j from Databricks using the Spark Connector.
 * **Lab 3** adds semantic search: chunk the maintenance manual, generate embeddings, and build GraphRAG retrievers.
-* **Lab 4** builds the compound AI system: a Genie space for sensor analytics and a Supervisor Agent that routes questions across both platforms.
+* **Lab 4** builds a Genie space for sensor analytics in Part A, and shows a no-code Agent Bricks supervisor as an instructor demo in Part B.
+* **Lab 5** writes the supervisor yourself in LangGraph, over Genie, your own graph and the Lab 3 retrievers, then deploys it to Model Serving.
+* **Lab 6** gives that agent memory in Neo4j, so conversation history and maintenance history sit in one graph and one query can cross both.
 
 == Architecture
 
-The final architecture is a **Supervisor Agent** built with Databricks Agent Bricks that routes questions to specialized subagents: a **Genie space** for sensor telemetry analytics (natural language to SQL) and a **Neo4j MCP Agent** for graph relationship queries (natural language to Cypher).
+The workshop lands on a **LangGraph supervisor agent that you write, deploy and own**, built in Lab 5 and given memory in Lab 6. A supervisor node reads each question and routes it to one of three tools: a Genie space for sensor telemetry in SQL, a Cypher query against your own Aura instance, and a GraphRAG retriever over the maintenance manuals. It is logged to Unity Catalog and served as a Model Serving endpoint that authenticates as a service principal.
 
-image::lab-architecture-overview.svg[Multi-agent supervisor routing to Genie and Neo4j MCP agents]
+Lab 4 shows the same routing idea reached a second way, without code. The instructor builds a **Supervisor Agent in Databricks Agent Bricks** over a Genie space and a governed Neo4j MCP connection, and you watch. That is Part B, an instructor demo rather than the destination, and xref:lab4.adoc[Lab 4] puts the two approaches side by side.
 
 == Labs
 

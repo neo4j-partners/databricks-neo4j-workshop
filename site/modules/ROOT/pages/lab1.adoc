@@ -2,7 +2,7 @@
 
 This is Lab 1 of 4. The graph database you provision here is the foundation for everything that follows: the ETL pipelines in Lab 2 load data into it, Lab 3 runs semantic search against its maintenance manuals, and Lab 4 connects it to a multi-agent system. Getting Aura running and understanding what the graph contains is the starting point.
 
-TIP: Ready to start? Jump to the xref:lab1-instructions.adoc[Lab 1 Instructions] for step-by-step setup.
+TIP: Ready to start? Open `Lab_1_Aura_Setup/01_aura_setup.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 
 .**At a Glance**
 
@@ -127,4 +127,4 @@ The Aura console provides three tools you will use throughout the workshop:
 
 == Next Steps
 
-Continue to xref:lab1-instructions.adoc[Lab 1 Instructions] to set up your Neo4j Aura database and practice Cypher basics. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].
+Open `Lab_1_Aura_Setup/01_aura_setup.ipynb` to provision your Neo4j Aura database and practice Cypher basics. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].

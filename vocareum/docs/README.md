@@ -71,7 +71,7 @@ Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 need
 
 ## Neo4j Credentials
 
-You create your own Neo4j Aura free trial instance in Lab 1 and download the credentials file there. Enter those values in the **Configuration** cell at the top of each notebook:
+You create your own AuraDB Free instance in Lab 1 and download the credentials file there. AuraDB Free, not the 14-day trial the console offers first: the trial provisions AuraDB Professional and expires partway through this course. Enter those values in the **Configuration** cell at the top of each notebook:
 
 ```python
 NEO4J_URI = "neo4j+s://xxxxxxxx.databases.neo4j.io"

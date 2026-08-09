@@ -3,14 +3,14 @@
 ## Part 1: Create Your Database
 
 ### Step 1: Sign Up for Neo4j Aura
-1. Follow the Aura free trial signup process
+1. Follow the Aura signup process
 2. Create a Neo4j Aura account
 3. Verify your email
 
 ### Step 2: Provision Database
-1. Choose your cloud provider and region
-2. Your free trial instance is created automatically
-3. Wait for provisioning (1-2 minutes)
+1. **Do not click "Start 14-day free trial."** That gives you AuraDB Professional, which expires partway through this course
+2. Under "Not looking to start a free trial?", pick **Select another instance type**, then **AuraDB Free**
+3. Choose your cloud provider and region, and wait for provisioning (1-2 minutes)
 
 ### Step 3: Save Credentials
 **Important:** Download and save the connection file - the password is only shown once!
