@@ -1,6 +1,8 @@
-= Lab 1: Neo4j Aura Setup
+= Lab 1: Graph Databases and Neo4j Aura
 
-This is the first of six labs. The graph database you provision here is the foundation for everything that follows: Lab 2 loads data into it, Lab 3 runs semantic search against its maintenance manuals, Lab 5 builds an agent that queries it, and Lab 6 writes that agent's memory back into it. Getting Aura running and understanding what the graph contains is the starting point.
+A graph database stores connections as first-class data rather than deriving them from joins. This page covers what that means, how Cypher queries those connections, and what the Aircraft Digital Twin graph holds. It closes with Neo4j Aura, the managed service that runs your copy of that graph. The two notebooks provision the instance and put the concepts to work.
+
+Everything after this reads what you set up here. Lab 2 loads data into your instance, Lab 3 runs semantic search against its maintenance manuals, Lab 5 builds an agent that queries it, and Lab 6 writes that agent's memory back into it.
 
 IMPORTANT: There is one instance and no fallback. Every later lab reads and writes the instance you create here, so save the password where you can find it again. Losing it means redoing Labs 2 and 3.
 

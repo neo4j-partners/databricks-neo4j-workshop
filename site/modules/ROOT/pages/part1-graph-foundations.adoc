@@ -15,7 +15,7 @@ Part 1 gets you a graph database of your own and puts the fleet in it. Everythin
 | Lab | Description | Duration
 
 | xref:lab1.adoc[Lab 1]
-| Neo4j Aura Setup and Cypher Introduction
+| Graph Databases and Neo4j Aura
 | 20 min
 
 | xref:lab2.adoc[Lab 2]
@@ -27,4 +27,4 @@ Slides for this part: xref:slides/slides-business-case.adoc[The Business Case fo
 
 == Next Steps
 
-Start with xref:lab1.adoc[Lab 1: Neo4j Aura Setup]. When the fleet is loaded, continue to xref:part2-retrieval.adoc[Part 2: Retrieval].
+Start with xref:lab1.adoc[Lab 1: Graph Databases and Neo4j Aura]. When the fleet is loaded, continue to xref:part2-retrieval.adoc[Part 2: Retrieval].

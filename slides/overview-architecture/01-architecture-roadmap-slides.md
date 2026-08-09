@@ -179,13 +179,12 @@ feeds the graph, Gold captures what the graph discovers.
 
 ---
 
-## The Intelligence Platform: Where the Pattern Goes Next
-
-This diagram shows a production pattern, not this workshop's build. No lab here creates a Neo4j Virtual Graph or composite graphs.
-
 ![bg contain](../databricks-in-depth/spark-connector-virtual-graph.png)
 
 <!--
+This diagram shows a production pattern, not this workshop's build. No
+lab here creates a Neo4j Virtual Graph or composite graphs.
+
 This is where a team takes the workshop's pattern once they operate
 at enterprise scale, so read it as "later," not "Lab 2." The
 Medallion Architecture with Neo4j attached to it. Structured and
@@ -224,7 +223,8 @@ section { font-size: 25px; }
 
 - **Data Pipeline:** Neo4j Spark Connector, batch writes
 - **Knowledge Graph Construction:** neo4j-graphrag-python, uses the Neo4j Python driver
-- **Data Analytics:** Spark Connector for Graph Data Science reads, plus Unity Catalog JDBC for governed SQL and BI tools
+- **Data Analytics:** Spark Connector for Graph Data Science reads and write-back to Gold
+- **SQL Federation:** Neo4j Unity Catalog Connector, SQL over the graph, joined with Delta in one query
 - **GraphRAG Retrieval/Agent:** Neo4j MCP Server, Python driver, Aura Agent
 
 <!--
@@ -239,15 +239,26 @@ neo4j-graphrag-python handles chunking, LLM-based entity extraction,
 and embedding generation, none of which are Spark operations. This is
 Lab 3.
 
-Data Analytics uses both connectors. The Spark Connector provides
-first-class GDS integration: invoke PageRank, community detection,
-and other graph algorithms directly, get results as DataFrames for ML
-features and Gold Delta tables. Neo4j's docs position this as a
-"graph co-processor" in existing Spark ML workflows. Unity Catalog
-JDBC adds the governed SQL layer: register Neo4j as a JDBC
-connection, query graph data via SQL translated to Cypher, join graph
-results with Delta tables, and connect BI tools like Power BI and
-Tableau through standard JDBC.
+Data Analytics uses the Spark Connector for its first-class GDS
+integration: invoke PageRank, community detection, and other graph
+algorithms directly, get results as DataFrames for ML features and
+Gold Delta tables. Neo4j's docs position this as a "graph
+co-processor" in existing Spark ML workflows.
+
+SQL Federation is the one that moves nothing, and it is for the
+analyst who knows SQL and has never written Cypher. Upload the Neo4j
+Unity Catalog Connector to a UC Volume, register Neo4j as a JDBC
+connection, and the driver rewrites SQL as Cypher on the way in.
+SELECT COUNT(*) FROM Aircraft arrives at the graph as MATCH
+(n:Aircraft) RETURN count(n). Node labels behave like tables.
+
+The remote_query function is how you call it. It runs the query
+inside Neo4j and hands the rows back as a table, so one statement can
+join graph results to Delta tables. That is what puts graph data in
+Power BI, Tableau and Genie with nobody learning a second language.
+
+Custom-driver JDBC reached Public Preview at Runtime 18.1. No lab
+builds this. It is on the slide so you know the option exists.
 
 GraphRAG Retrieval uses the Neo4j MCP Server to expose schema
 inspection and read-only Cypher as agent tools. The Python driver
@@ -300,11 +311,13 @@ makes automatically at runtime.
 | **AI capability** | Foundation Models, Genie | Vector indexes, GraphRAG, MCP |
 | **Strength** | Scale, aggregation, ML | Relationships, traversal, pattern matching |
 
-**The Spark Connector** moves data. **MCP** lets agents query the graph directly. Together, the platforms stay connected at every layer.
+**The Spark Connector** moves data. **Unity Catalog JDBC** reads the graph as SQL without moving it. **MCP** lets agents query the graph directly. Together, the platforms stay connected at every layer.
 
 <!--
 The same division of labor as a lookup table: scale on one side,
-connections on the other, two connectors keeping them in sync.
+connections on the other, and three connectors keeping them in
+sync. One copies, one reads in place, one hands the graph to an
+agent as a tool.
 -->
 
 ---

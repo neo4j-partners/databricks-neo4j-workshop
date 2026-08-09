@@ -139,7 +139,7 @@ The same routing behaviour, built two ways.
 
 | Where credentials live
 | A Unity Catalog HTTP connection holding an OAuth2 M2M credential, managed by an admin
-| A Databricks secret scope written in Lab 3, read by the notebook and by the serving endpoint's service principal
+| A Databricks secret scope written in Lab 1, read by the notebook and by the serving endpoint's service principal
 
 | Who can change it
 | Anyone with workspace permission on the agent, no code review

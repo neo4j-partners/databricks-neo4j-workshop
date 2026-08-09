@@ -65,7 +65,9 @@ Lab 5 uses a direct Bolt driver rather than the MCP connection Lab 4's demo show
 
 Once an instance has several users and several agents reaching it, the governed MCP connection is worth its setup: one admin-managed object, OAuth2 M2M auth, and access that Unity Catalog can audit.
 
-Carrying Unity Catalog's own table-level permissions across into the graph is a further step, and not a solved one. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers a JDBC federation prototype and the governance gap it aims at. Read it as direction of travel rather than as something to build on today.
+There is a second governed path, for the people who want SQL rather than Cypher. The https://github.com/neo4j-labs/neo4j-unity-catalog-connector[Neo4j Unity Catalog Connector] registers Aura as a `TYPE JDBC` connection, so analysts and BI tools reach the graph through Unity Catalog credentials and audit instead of opening Bolt sessions of their own. Custom-driver JDBC connections reached Public Preview at Databricks Runtime 18.1 and Databricks SQL 2025.40, so this is buildable today. See xref:databricks-platform.adoc#sql-federation-over-the-graph[SQL Federation over the Graph] for how it sits beside the Spark Connector.
+
+Carrying Unity Catalog's own table-level permissions across into the graph is a further step, and not a solved one. Today a UC connection grants access at the connection level, not per node label. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers that gap and what official Lakehouse Federation source status would close.
 
 == Watch the Index Count, Not the Node Count
 
@@ -80,6 +82,7 @@ Keep doing that in any deployment where index quota is limited. Declare the subs
 * https://neo4j.com/docs/aura/[Aura tiers and limits]
 * https://neo4j.com/docs/graph-data-science/current/[Graph Data Science], the plugin xref:appendix-a.adoc[Appendix A] needs
 * https://neo4j.com/docs/spark/current/[Spark Connector], for scheduled loads
+* https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Unity Catalog Connector], for SQL access to the graph from Databricks
 * https://github.com/neo4j/mcp[Neo4j MCP Server]
 
 **Databricks**

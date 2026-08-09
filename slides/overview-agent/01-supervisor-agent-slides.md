@@ -222,7 +222,7 @@ aircraft's history, the manual returns the procedure.
 
 - **`VectorCypherRetriever` raises when its index is missing.** The builder checks first: no `maintenanceChunkEmbeddings` index means `graphrag_node` is dropped from `available_tools`, and the routing enum narrows to what actually exists
 - **The graph still compiles and still answers** from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change
-- **The Lab 4 demo reached Neo4j through an MCP server**, the right shape for a governed, admin-managed instance. Your Aura instance is yours: its password sits in the secret scope Lab 3 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
+- **The Lab 4 demo reached Neo4j through an MCP server**, the right shape for a governed, admin-managed instance. Your Aura instance is yours: its password sits in the secret scope Lab 1 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
 - **Governance pays when the graph is shared.** It costs more than it returns when the graph has exactly one user
 
 <!-- Tool sets discovered at build time degrade; assumed at import time they fail. Not MCP being wrong, just the wrong shape for one user. No plaintext password is typed anywhere in Lab 5's normal path. -->

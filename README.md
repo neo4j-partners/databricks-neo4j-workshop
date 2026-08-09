@@ -10,7 +10,7 @@ Start at the [workshop overview](https://neo4j-partners.github.io/databricks-neo
 
 | Lab | Notebooks | Time |
 |-----|-----------|------|
-| 1. Neo4j Aura Setup | [`Lab_1_Aura_Setup`](./Lab_1_Aura_Setup) | 20 min |
+| 1. Graph Databases and Neo4j Aura | [`Lab_1_Aura_Setup`](./Lab_1_Aura_Setup) | 20 min |
 | 2. Databricks ETL to Neo4j | [`Lab_2_Databricks_ETL_Neo4j`](./Lab_2_Databricks_ETL_Neo4j) | 45 min |
 | 3. Semantic Search with GraphRAG | [`Lab_3_Semantic_Search`](./Lab_3_Semantic_Search) | 45 min |
 | 4. Genie Agent | [`04_genie_agent.ipynb`](./Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | 30 min |

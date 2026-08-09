@@ -243,33 +243,47 @@ Three hops: Aircraft to System to Component to MaintenanceEvent. Each hop follow
 
 ---
 
-## From Tables to a Graph: Flat Tables
-
-Lab 2 starts here. Aircraft, systems, and sensors live as rows in Databricks Delta tables, joined only by foreign keys, implicit until a query names them.
-
 ![bg contain](../aircraft/step1-flat-tables-foreign-keys.svg)
 
-<!-- An Aircraft table, a Systems table, a foreign key column. The connection is real but only exists as a value a JOIN has to interpret every time. -->
+<!--
+Lab 2 starts here. Aircraft, systems, and sensors live as rows in
+Databricks Delta tables, joined only by foreign keys, implicit until a
+query names them. An Aircraft table, a Systems table, a foreign key
+column. The connection is real but only exists as a value a JOIN has
+to interpret every time.
+-->
 
 ---
-
-## From Tables to a Graph: the Spark Connector
-
-The Neo4j Spark Connector is the two-way bridge. Databricks to Neo4j, it turns Delta rows into nodes and foreign keys into typed relationships. Neo4j to Databricks, it pulls graph data back into DataFrames. Only the subset that fits a graph model makes the trip.
 
 ![bg contain](../aircraft/step2-spark-connector-mapping.svg)
 
-<!-- Lab 2's job: run the connector against aircraft, systems, and sensors and watch rows become nodes. Sensor readings stay in Delta; topology and maintenance history move because they are relationship-heavy. -->
+<!--
+The Neo4j Spark Connector is the two-way bridge. Databricks to Neo4j,
+it turns Delta rows into nodes and foreign keys into typed
+relationships. Neo4j to Databricks, it pulls graph data back into
+DataFrames. Only the subset that fits a graph model makes the trip.
+Lab 2's job: run the connector against aircraft, systems, and sensors
+and watch rows become nodes. Sensor readings stay in Delta; topology
+and maintenance history move because they are relationship-heavy.
+
+Moving the data is one option of three. The Neo4j Unity Catalog
+Connector goes the other way, translating SQL into Cypher so
+Databricks reads the graph in place, and a virtual graph translates
+Cypher into SQL so Neo4j reads the lakehouse in place. This workshop
+loads the graph because every lab after this one traverses it.
+-->
 
 ---
 
-## From Tables to a Graph: a Connected Graph
-
-The foreign key that once required a join is now a stored, named, traversable `HAS_SYSTEM` relationship. Lab 2 ends with this graph loaded and queryable.
-
 ![bg contain](../aircraft/step3-connected-graph.svg)
 
-<!-- The rest of the workshop, GraphRAG in Lab 3 through the supervisor agent in Lab 5, builds on this graph existing and staying queryable. -->
+<!--
+The foreign key that once required a join is now a stored, named,
+traversable HAS_SYSTEM relationship. Lab 2 ends with this graph loaded
+and queryable. The rest of the workshop, GraphRAG in Lab 3 through the
+supervisor agent in Lab 5, builds on this graph existing and staying
+queryable.
+-->
 
 ---
 

@@ -61,6 +61,8 @@ from tools import (
 
 __all__ = [
     "AGENT_ENDPOINT_PREFIX",
+    "AGENT_MODEL_PREFIX",
+    "AGENT_SCHEMA",
     "AGENT",
     "DEFAULT_CONFIG",
     "GOLD_SCHEMA",
@@ -70,13 +72,13 @@ __all__ = [
     "ENV_NEO4J_URI",
     "ENV_NEO4J_USERNAME",
     "MISSING_CREDENTIAL_MESSAGE",
-    "UC_MODEL_NAME",
     "AgentRuntime",
     "FleetOpsAgent",
     "build_resources",
     "build_runtime",
     "endpoint_name",
     "export_neo4j_env",
+    "model_name",
     "serving_environment_vars",
 ]
 
@@ -85,22 +87,31 @@ __all__ = [
 # Configuration
 # =============================================================================
 
-# The two names Lab 5 and Lab 6 both have to agree on. They mirror
-# AGENT_MODEL_FULL_NAME and AGENT_ENDPOINT_PREFIX in lab/workshop.py, which is
-# where the workshop's object names are defined; that file provisions the
-# `agents` schema so a model can be registered into it, and cannot be imported
-# from a notebook because it does not ship to the workspace.
+# The three names Lab 5 and Lab 6 both have to agree on. They mirror
+# AGENT_SCHEMA, AGENT_MODEL_PREFIX and AGENT_ENDPOINT_PREFIX in
+# lab/workshop.py, which is where the workshop's object names are defined; that
+# file provisions the `agents` schema so a model can be registered into it, and
+# cannot be imported from a notebook because it does not ship to the workspace.
 #
-# Lab 6 redeploys this endpoint rather than creating a second one, so the name
-# is a contract rather than a preference. A serving endpoint name is unique
-# across the account, so it carries the participant's slug; a registered model
-# name is scoped to its catalog, so it does not.
-UC_MODEL_NAME = "databricks-neo4j-workshop.agents.fleet_ops_assistant"
+# Lab 6 redeploys this endpoint rather than creating a second one, so the names
+# are a contract rather than a preference.
+#
+# Both the model and the endpoint carry the participant's slug. The endpoint has
+# to: its name is unique across the account. The model does not have to, and
+# carries one anyway, because a shared workshop workspace registering everyone
+# into one model name gives the first participant ownership and everyone after
+# them a PERMISSION_DENIED on the version they try to add. A model each means
+# the schema needs one write privilege granted to the class, CREATE MODEL, and
+# no one can touch anyone else's.
+AGENT_SCHEMA = "databricks-neo4j-workshop.agents"
+AGENT_MODEL_PREFIX = "fleet_ops_assistant"
 AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
 
 # Serving endpoint names are limited to 63 characters, and the scope slug is
-# allowed to be longer than that on its own.
+# allowed to be longer than that on its own. A Unity Catalog name is capped at
+# 255, which the slug cannot reach, but it is stated rather than assumed.
 _MAX_ENDPOINT_SLUG = 63 - len(AGENT_ENDPOINT_PREFIX) - 1
+_MAX_MODEL_SLUG = 255 - len(AGENT_MODEL_PREFIX) - 1
 
 # The names the endpoint's environment block binds to secret references. They
 # are read here and nowhere else, so a rename is one edit. All four are

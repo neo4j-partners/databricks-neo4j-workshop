@@ -120,7 +120,7 @@ No single store holds all three answers. The telemetry is in Delta, the maintena
 
 == Credentials, and What Happens Without Them
 
-The notebook reads your Aura password from the secret scope Lab 3 wrote. **On the normal path no plaintext password is ever typed**, not into a cell, not into a config file, and it is not in the logged model. The deployed endpoint gets the same secret through its environment block, resolved when the endpoint starts. If the scope is missing, notebook 01 has a commented-out fallback cell you fill in by hand, which is the one place a password appears in the clear. Use it to get moving, then create the scope and clear the cell.
+The notebook reads your Aura password from the secret scope Lab 1 wrote. **On the normal path no plaintext password is ever typed**, not into a cell, not into a config file, and it is not in the logged model. The deployed endpoint gets the same secret through its environment block, resolved when the endpoint starts. If the scope is missing, notebook 01 has a commented-out fallback cell you fill in by hand, which is the one place a password appears in the clear. Use it to get moving, then create the scope and clear the cell.
 
 The agent also degrades rather than failing. If the `maintenanceChunkEmbeddings` vector index is missing, because Lab 3 notebook 01 was skipped, the builder detects it and drops `graphrag_node` from the available tools instead of raising at import. The graph still compiles and the agent still answers from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change.
 

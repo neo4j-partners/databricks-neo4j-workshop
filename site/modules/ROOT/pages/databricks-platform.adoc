@@ -2,7 +2,7 @@
 
 Databricks and Neo4j are complementary platforms connected through governed data pipelines. Databricks governs and refines data at scale and answers aggregation questions through SQL. Neo4j makes the connections between entities explicit and answers traversal questions through Cypher. Delta Lake serves as the interchange format between them, the Spark Connector moves data in both directions, and Mosaic AI powers the agents that route questions to the right engine.
 
-This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the five integration patterns that carry data and queries between the systems. The xref:index.adoc[workshop overview] has the dataset this architecture operates on and the lab roadmap. For hands-on implementation, see xref:lab2.adoc[Lab 2] for Spark Connector ETL, xref:lab3.adoc[Lab 3] for semantic search, and xref:lab4.adoc[Lab 4] for agents.
+This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the six integration patterns that carry data and queries between the systems. The xref:index.adoc[workshop overview] has the dataset this architecture operates on and the lab roadmap. For hands-on implementation, see xref:lab2.adoc[Lab 2] for Spark Connector ETL, xref:lab3.adoc[Lab 3] for semantic search, and xref:lab4.adoc[Lab 4] for agents.
 
 == Two Platforms, Two Query Shapes
 
@@ -59,9 +59,9 @@ The Neo4j Spark Connector is the Databricks-certified bridge for bulk data movem
 
 See xref:lab2.adoc[Lab 2] for a hands-on walkthrough loading the aircraft digital twin data, including the specific transformation patterns for each entity type.
 
-== Five Integration Patterns
+== Six Integration Patterns
 
-Five patterns connect Databricks to Neo4j, each suited to a different workload.
+Six patterns connect Databricks to Neo4j, each suited to a different workload.
 
 === ELT Data Pipeline
 
@@ -91,6 +91,52 @@ Four properties define the pattern:
 
 The virtual graph suits exploration and analysis over data that already lives in the lakehouse, where the cost or latency of a full projection is hard to justify. When traversal performance at scale, write-back of graph algorithm results, or a persistent operational graph matters, the ELT data pipeline remains the right path.
 
+=== SQL Federation over the Graph
+
+The virtual graph queries the lakehouse as a graph. SQL federation is the mirror image: it queries the graph as SQL, and the data stays in Neo4j.
+
+The point is who gets to ask. An analyst who writes SQL every day and has never seen Cypher can query the graph directly, from a notebook, from Power BI, or through Genie. Nobody learns a second query language, and no copy of the graph lands in the lakehouse first.
+
+The https://github.com/neo4j-labs/neo4j-unity-catalog-connector[Neo4j Unity Catalog Connector] does the translating. It is a driver you install once: upload it to a Unity Catalog Volume, then register Neo4j as a `TYPE JDBC` connection. After that the driver rewrites incoming SQL as Cypher, so node labels behave like tables and node properties behave like columns. `SELECT COUNT(*) FROM Aircraft` reaches the graph as `MATCH (n:Aircraft) RETURN count(n)`.
+
+....
+  BI tools (Power BI, Tableau) / Genie / notebooks
+        │  SQL
+        ▼
+  Unity Catalog JDBC ──── translates SQL to Cypher ────▶ Neo4j graph
+        ▲                                                 (graph stays in Neo4j)
+        └──────────── results as rows / columns ──────────┘
+....
+
+Queries go through `remote_query()`, a SQL function that sends a query through a connection and hands the answer back as a table. Because the answer is a table, one statement can join it to Delta tables:
+
+[source,sql]
+----
+SELECT operator, flight_count
+FROM remote_query('neo4j_connection',
+    query => 'SELECT operator, COUNT(*) AS flight_count
+              FROM Flight
+              GROUP BY operator
+              HAVING COUNT(*) > 0'
+)
+ORDER BY flight_count DESC
+----
+
+The `GROUP BY` runs inside Neo4j, so one row per operator crosses the wire instead of one row per flight. The `HAVING COUNT(*) > 0` does not change the result. It works around a caching bug that can return an empty set for a plain `GROUP BY` on a warm cluster, and it is worth keeping in every federated aggregation you write.
+
+Four properties define the pattern:
+
+* **Zero data movement**: the graph stays in Neo4j under its existing storage and lifecycle.
+* **Pushdown**: filters, aggregates, sorts, and joins translate into Cypher and run in Neo4j.
+* **No Cypher required**: any SQL client that reaches Unity Catalog reaches the graph.
+* **Your governance**: the connection carries Unity Catalog credentials, permissions, and audit.
+
+Neo4j's schema can also be published into Catalog Explorer, so graph labels are listed beside Delta tables and Genie can answer questions about them in plain English.
+
+One cost shapes where this fits. Databricks runs custom drivers inside an isolated sandbox, which needs a memory setting raised and adds seconds to every query. That suits interactive analysis and BI, and rules out anything latency-sensitive. For bulk movement or a persistent operational graph, the ELT data pipeline is still the right path.
+
+Custom-driver JDBC connections reached Public Preview at Databricks Runtime 18.1 and Databricks SQL 2025.40. Below that, two preview features have to be switched on per workspace. No lab in this workshop builds this pattern; https://neo4j-partners.github.io/neo4j-uc-connector-demos[the connector demos] carry runnable notebooks.
+
 === Knowledge Graph Construction
 
 Maintenance manuals, technical bulletins, and regulatory filings pass through a knowledge graph construction pipeline. Documents split into chunks, embedding models convert chunk text into vectors, and LLM-based entity extraction pulls structured nodes from the text. The `neo4j-graphrag-python` library's SimpleKGPipeline handles this pipeline using the Neo4j Python driver directly, because chunking and entity extraction are single-machine work rather than Spark operations. Extracted entities cross-link to the operational graph built by the data pipeline, bridging maintenance knowledge and fleet structure.
@@ -105,7 +151,7 @@ Graph algorithms run on in-memory projections in Neo4j and write results back to
 
 These graph-derived metrics become columns in Delta tables, available for dashboards, ML features, and downstream analytics.
 
-Unity Catalog JDBC connections add a governed SQL layer: BI tools like Power BI and Tableau query graph data through standard JDBC, and graph results join with lakehouse data without leaving the SQL environment.
+Where the Spark Connector carries algorithm results back as tables, <<sql-federation-over-the-graph,SQL federation>> reads the graph in place, so BI tools and notebooks join graph results with lakehouse data without leaving SQL.
 
 === GraphRAG and Agents: Multi-Platform Retrieval
 
@@ -132,8 +178,12 @@ image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Datab
 | Chunking, embedding, entity extraction, cross-linking
 
 | Data Analytics
-| Spark Connector + Unity Catalog JDBC
-| GDS algorithm results to gold tables; governed SQL access for BI tools
+| Neo4j Spark Connector
+| GDS algorithm results written back to gold Delta tables
+
+| SQL Federation
+| Neo4j Unity Catalog Connector (JDBC)
+| SQL over the graph via `remote_query()`; joins with Delta tables in one statement
 
 | GraphRAG / Agent
 | Neo4j MCP Server + Python driver
@@ -145,16 +195,9 @@ image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Datab
 For the GraphRAG architecture, Unity Catalog plays two specific roles:
 
 * **Governance of graph-bound data**: the silver tables that feed the Spark Connector are governed assets with lineage tracking. When graph data quality issues surface, lineage traces back through the exact transformations and source records that produced the data.
-* **Federated access to Neo4j**: Neo4j can be registered as a JDBC connection in Unity Catalog using the Neo4j JDBC driver. The driver translates SQL into Cypher automatically, so users and BI tools write SQL against what appears to be another catalog, and Neo4j executes the equivalent graph query. This enables federated queries that combine graph relationships and lakehouse metrics in a single SQL statement, governed under the same access controls as the rest of the lakehouse. Graph data can also be materialized as Delta tables for use in dashboards and Genie Agents. This is the reverse of the virtual graph pattern: JDBC federation translates SQL into Cypher to query the graph as SQL, while the virtual graph translates Cypher into SQL to query the lakehouse as a graph.
+* **Federated access to Neo4j**: the Neo4j Unity Catalog Connector registers the graph as a `TYPE JDBC` connection, so federated queries that combine graph relationships and lakehouse metrics run under the same credentials, permissions, and audit as any other lakehouse query. <<sql-federation-over-the-graph,SQL Federation over the Graph>> above has the mechanics.
 
-....
-  BI tools (Power BI, Tableau) / Genie
-        │  SQL
-        ▼
-  Unity Catalog JDBC ──── translates SQL to Cypher ────▶ Neo4j graph
-        ▲                                                 (graph stays in Neo4j)
-        └──────────── results as rows / columns ──────────┘
-....
+Grants on that path stop at the connection. Access is given on the connection as a whole rather than on individual node labels, so anyone who can use it can read the whole graph behind it. Neo4j is not an officially supported federation source yet, and official status is what would bring per-table grants, a browsable foreign catalog, and column-level lineage. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers that gap in full.
 
 == Agent Systems
 
@@ -184,6 +227,8 @@ Agent memory plugs into Agent Bricks the same way the other sub-agents do. The s
 * https://docs.databricks.com/en/delta/index.html[Delta Lake Documentation]: ACID transactions, schema enforcement, time travel
 * https://docs.databricks.com/en/data-governance/unity-catalog/index.html[Unity Catalog Documentation]: unified governance across data and AI
 * https://neo4j.com/docs/spark/current/[Neo4j Spark Connector Documentation]: Databricks-certified connector for bidirectional data flow
+* https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Unity Catalog Connector]: SQL federation over the graph, with runnable notebooks
+* https://neo4j.com/docs/jdbc-manual/current/sql2cypher/[Neo4j SQL to Cypher Translation]: what the JDBC driver translates, and what it does not
 * https://docs.databricks.com/en/genie/index.html[Databricks Genie]: natural language SQL
 
 == Next Steps

@@ -33,30 +33,36 @@ Bridging two privilege models through a common semantic map
 
 ---
 
-## Neo4j JDBC Lakehouse Federation: Working Prototype
+## Neo4j JDBC Lakehouse Federation: Shipping
 
-- **Prototype validated:** Neo4j JDBC registered as a UC JDBC connector, working end-to-end in Databricks
+- **Released connector:** the Neo4j Unity Catalog Connector JAR registers Neo4j as a `TYPE JDBC` connection in Unity Catalog
 - **Neo4j JDBC driver enables SQL-to-Cypher translation:** `SELECT COUNT(*) FROM Aircraft` becomes `MATCH (n:Aircraft) RETURN count(n)` automatically
-- **Federated queries:** Neo4j graph data joins with Delta tables in a single Spark SQL statement
-- **Current issue:** custom connectors run in an isolated sandbox, adding 13-16 seconds of overhead per query
+- **Federated queries:** `remote_query()` pushes aggregates into Neo4j and joins the results with Delta tables in one SQL statement
+- **Public Preview:** custom-driver JDBC connections reached Public Preview at Databricks Runtime 18.1 and Databricks SQL 2025.40
+- **Remaining cost:** custom connectors run in an isolated sandbox, adding 13-16 seconds of overhead per query
 
 <!--
-The working prototype lives in the neo4j-uc-integration repository.
-It uses a custom JDBC connector JAR that bundles the Neo4j driver
-and a SQL-to-Cypher translator, registered as a UC Connection.
-Analysts write standard SQL in Databricks and the connector
-translates it to Cypher under the hood.
+The connector is a single JAR file bundling the Neo4j JDBC driver
+with two translators: a Spark cleaner that strips the
+SPARK_GEN_SUBQ wrappers Databricks adds to JDBC queries, and the
+SQL-to-Cypher translator itself. It is released from the
+neo4j-labs/neo4j-unity-catalog-connector repository and uploaded
+to a Unity Catalog Volume, where a CREATE CONNECTION statement
+points at it. Analysts write standard SQL in Databricks and the
+connector translates it to Cypher under the hood.
 
-The prototype handles Spark's schema-probing subqueries through a
-Spark Cleaner module that unwraps the generated wrapper queries
-for correct execution. It also resolved a critical metaspace
-exhaustion issue in Databricks' SafeSpark sandbox with tuned
-Spark config settings.
+Every validated query pattern passes: aggregates, COUNT DISTINCT,
+WHERE clauses, GROUP BY, HAVING, ORDER BY, LIMIT/OFFSET, and JOINs
+that become graph traversals. Federated queries that join Neo4j
+graph data with Delta tables work in a single statement.
 
-All fourteen validated query patterns pass: aggregates, COUNT
-DISTINCT, WHERE clauses, GROUP BY, HAVING, ORDER BY, LIMIT/OFFSET,
-and JOINs. Federated queries that join Neo4j graph data with Delta
-tables work in a single statement.
+Below Runtime 18.1 two preview features have to be enabled by
+hand: custom JDBC on UC compute, and the remote_query
+table-valued function. The SafeSpark sandbox also needs metaspace
+tuning or its JVM crashes mid-query.
+
+Worked notebooks and validation jobs live in the
+neo4j-uc-connector-demos repository.
 -->
 
 ---

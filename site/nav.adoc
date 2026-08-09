@@ -1,7 +1,7 @@
 * xref:index.adoc[Home]
 * xref:databricks-platform.adoc[How Neo4j + Databricks Work Together]
 * xref:part1-graph-foundations.adoc[Part 1: Graph Foundations]
-** xref:lab1.adoc[Lab 1: Neo4j Aura Setup]
+** xref:lab1.adoc[Lab 1: Graph Databases and Neo4j Aura]
 ** xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j]
 *** xref:lab2-sample-queries.adoc[Sample Queries]
 * xref:part2-retrieval.adoc[Part 2: Retrieval]

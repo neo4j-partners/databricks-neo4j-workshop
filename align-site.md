@@ -139,10 +139,26 @@ split, the deck build. Nothing below repeats those.
   auth-sync deck is a prototype under review rather than shipped guidance.
 - Every query in `lab6-sample-queries.adoc` is copied from a notebook cell.
 
-## Open defect, not fixed
+## Pre-existing defect, fixed
 
-`lab4.adoc` and `lab5.adoc` both say the Databricks secret scope was **written
-in Lab 3**. `Lab_1_Aura_Setup/02_credentials_and_cypher.ipynb` is what creates
-it, and `lab1.adoc` says so. Two pages against one notebook and one page.
-Left alone pending a decision, because it is pre-existing content rather than
-part of this work.
+Three live artifacts said the Databricks secret scope was **written in Lab 3**.
+It is written in Lab 1. A scan of every `Lab_*/*.ipynb` and `Lab_*/*.py` for
+`create_scope|put_secret|scopes.create` returns one hit, cell 6 of
+`Lab_1_Aura_Setup/02_credentials_and_cypher.ipynb`, which calls
+`w.secrets.create_scope` and four `w.secrets.put_secret`. Lab 5's own notebook
+prerequisites table already named Lab 1 notebook 02 as the source, so the site
+contradicted the notebook it points at.
+
+Changed, two words in each place:
+
+- `site/modules/ROOT/pages/lab4.adoc:142`, "A Databricks secret scope written in
+  Lab 3" to "in Lab 1".
+- `site/modules/ROOT/pages/lab5.adoc:123`, "the secret scope Lab 3 wrote" to
+  "Lab 1 wrote".
+- `slides/overview-agent/01-supervisor-agent-slides.md:225`, the same sentence in
+  the deck. Decks rebuild with `npm run build:html`, which was re-run.
+
+**Left alone on purpose.** `expand.md`, `expand-v3.md` and `fix-site-slides.md`
+carry the same wording, and they are records of intent rather than published
+content. `Lab_5_LangGraph_Agent/tools.py:31` says "the model Lab 3 wrote the
+index with", which is about the embedding model and is correct.

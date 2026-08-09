@@ -13,7 +13,7 @@ Full lab instructions live on the workshop site:
 
 | Lab | Topic | Where you work | Instructions |
 |-----|-------|----------------|--------------|
-| **Lab 1** | Neo4j Aura Setup | Aura console, guided by a notebook | [Lab 1](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab1.html) |
+| **Lab 1** | Graph Databases and Neo4j Aura | Aura console, guided by a notebook | [Lab 1](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab1.html) |
 | **Lab 2** | Databricks ETL to Neo4j | Notebook in this workspace | [Lab 2](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab2.html) |
 | **Lab 3** | Semantic Search / GraphRAG | Notebooks in this workspace | [Lab 3](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab3.html) |
 | **Lab 4** | Compound AI Agents | Genie and Agent Bricks, guided by a notebook | [Lab 4](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab4.html) |
