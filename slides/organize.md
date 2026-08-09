@@ -50,7 +50,7 @@
 
 * **Deploying the Agent**: What changes when the notebook graph becomes a Model Serving endpoint. The endpoint runs as its own service principal rather than with the author's permissions, the graph is wrapped as an MLflow `ResponsesAgent`, the model is registered to Unity Catalog, and reachable Databricks objects are declared as resources while secrets stay credential references. Covered in: `agents/04-deploy-the-agent-slides.md`
 
-* **Agent Memory**: Lab 6 gives the deployed agent memory in Neo4j, adding recall before the supervisor and remember after it, and redeploying the same endpoint. No deck exists yet: `agents/05-agent-memory-slides.md` is planned but not on disk.
+* **Agent Memory**: Lab 6 gives the deployed agent memory in Neo4j, adding a `recall` node before the supervisor and a `remember` node after it, and redeploying the same endpoint. Memory is three layers on one graph, short term, long term and reasoning, and it is routing context for the supervisor rather than a fourth tool. Superseding rather than deleting keeps a wrong answer auditable. The payoff is adoption: stamping `:Entity` onto the Lab 2 `Aircraft` nodes makes a remembered aircraft the fleet node, so one traversal crosses both halves. Covered in: `agents/05-agent-memory-slides.md`
 
 * **Graph Data Science (GDS)**: Neo4j's library of 65+ graph algorithms organized into centrality, community detection, similarity, pathfinding, and node embedding categories. Algorithms run on in-memory graph projections and results write back to the database as node properties. Covered in: `graph-ml/03-graph-enrichment-slides.md`
 
@@ -217,7 +217,7 @@ Every topic from the Key Topics Summary has at least one canonical file that cov
 | Multi-agent supervisor | `platform-overview/01-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`, `agents/03-langgraph-supervisor-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md` |
 | LangGraph supervisor agent | `agents/03-langgraph-supervisor-slides.md` |
 | Agent deployment to Model Serving | `agents/04-deploy-the-agent-slides.md` |
-| Agent memory | Not covered. `agents/05-agent-memory-slides.md` is planned but does not exist on disk |
+| Agent memory | `agents/05-agent-memory-slides.md` |
 | Graph Data Science (GDS) | `platform-overview/01-neo4j-aura-overview-slides.md` (brief), `graph-ml/03-graph-enrichment-slides.md` |
 | Graph feature engineering | `graph-ml/03-graph-enrichment-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md` |
 | MLflow experiment tracking | `graph-ml/03-graph-enrichment-slides.md` |
@@ -279,8 +279,10 @@ Gaps confirmed from Phase 2 and newly identified in this review:
 - No slide covering the `GraphRAG` orchestration class from `neo4j-graphrag-python`. CLOSED in Phase 6: `retrieval-patterns/01-retrievers-overview-slides.md` now carries a "The GraphRAG Class" slide.
 - No slide on LangGraph or any other agent framework. CLOSED: `agents/03-langgraph-supervisor-slides.md` builds the Lab 5 supervisor in LangGraph, and `agents/04-deploy-the-agent-slides.md` takes the same graph to a Model Serving endpoint.
 
+- No agent memory deck. CLOSED: `agents/05-agent-memory-slides.md` covers Lab 6 in nine slides, from the stateless Lab 5 agent through the three memory layers, superseding, and the adoption payoff.
+
 **Gaps as of the current file layout:**
-- No agent memory deck. `agents/05-agent-memory-slides.md` is planned to cover Lab 6 but does not exist on disk. Until it does, Lab 6 has no slide support.
+- None outstanding in the agents cluster.
 
 **What is not a gap:** Aura Agents. The feature is out of scope for this workshop and no deck should cover it. The `graph-ml/` portfolio use case is a coherence issue, not a content gap: the concepts are fully covered and only the example domain differs.
 
@@ -326,7 +328,7 @@ Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` an
 | `agents/01-from-retrievers-to-agents-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | Four agent components, tools, ReAct pattern, multi-tool example. Bridges the retrieval patterns cluster to agents. |
 | `agents/03-langgraph-supervisor-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | The Lab 5 supervisor in LangGraph. What the earlier labs supply, the shape of the graph, the three tool nodes (Genie, Cypher over the participant's own Aura instance, GraphRAG over the manuals), routing as a loop rather than a one-shot decision, the two prompt rules that fix the routing failures, measured routing, and why the Cypher node uses a Bolt driver rather than MCP. |
 | `agents/04-deploy-the-agent-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | Taking the same graph to Model Serving. What changes when the endpoint runs as its own service principal, the MLflow `ResponsesAgent` wrapper, registering to Unity Catalog, declaring resources against referencing credentials, deploy and wait, scoring the deployed endpoint, and why the object names are a contract Lab 6 depends on. |
-| `agents/05-agent-memory-slides.md` | n/a | Workshop | agents and multi-agent systems | n/a | n/a | Does not exist on disk. Planned to cover Lab 6 agent memory in Neo4j: a recall step before the supervisor, a remember step after it, redeploying the same endpoint. No contents to catalogue yet. |
+| `agents/05-agent-memory-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | Lab 6 agent memory in Neo4j. Nine slides: why the Lab 5 agent is stateless, why a longer prompt or a vector store does not fix it, the three memory layers (short term, long term, reasoning), the reasoning-trace query that is the thesis, superseding rather than deleting so a wrong answer stays auditable, hot-path against background writes, the `recall` and `remember` nodes added around an unchanged supervisor, the adoption payoff where fleet ranking and conversation ranking disagree, and why memory belongs on the side where the joins are. |
 
 **Multi-cluster files (flagged for review in Phase 3):**
 
@@ -387,7 +389,7 @@ slides/
 | agents and multi-agent systems | Workshop | `agents/02-power-of-graphrag-slides.md` | Genie, Neo4j MCP, and the multi-agent supervisor. Most detailed conceptual treatment. Spans GenAI foundations but the agent architecture is the primary content. |
 | agents and multi-agent systems | Workshop | `agents/03-langgraph-supervisor-slides.md` | The Lab 5 supervisor written in LangGraph: three tool nodes, routing as a loop, the prompt rules that make routing correct, and why the Cypher node uses a Bolt driver rather than MCP. |
 | agents and multi-agent systems | Workshop | `agents/04-deploy-the-agent-slides.md` | The same graph on Model Serving: service principal identity, the MLflow `ResponsesAgent` wrapper, Unity Catalog registration, resources against credentials, and scoring the deployed endpoint. |
-| agents and multi-agent systems | Workshop | `agents/05-agent-memory-slides.md` | Planned for Lab 6 agent memory. Does not exist on disk; nothing to catalogue yet. |
+| agents and multi-agent systems | Workshop | `agents/05-agent-memory-slides.md` | Lab 6 agent memory: the three memory layers on one graph, superseding rather than deleting, `recall` and `remember` around an unchanged supervisor, and the adoption payoff that makes a remembered aircraft the fleet node. |
 | graph ML and enrichment | Workshop | `graph-ml/03-graph-enrichment-slides.md` | GDS algorithms, graph feature engineering, MLflow lift comparison, bidirectional data loop. |
 | graph ML and enrichment | Workshop | `graph-ml/04-future-graph-enrichment-slides.md` | Agentic enrichment loop, confidence scoring, ontology validation. Spans agents cluster but graph ML is the primary content. |
 | governance and integration | Background | `background/governance/auth-sync-slides.md` | Four authorization sync patterns. Unique content; no overlap with other files. |

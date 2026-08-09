@@ -17,9 +17,10 @@ Full lab instructions live on the workshop site:
 | **Lab 2** | Databricks ETL to Neo4j | Notebook in this workspace | [Lab 2](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab2.html) |
 | **Lab 3** | Semantic Search / GraphRAG | Notebooks in this workspace | [Lab 3](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab3.html) |
 | **Lab 4** | Compound AI Agents | Genie and Agent Bricks, guided by a notebook | [Lab 4](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab4.html) |
-| **Lab 5** | LangGraph Agent | Notebook in this workspace | [Lab 5](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html) |
+| **Lab 5** | LangGraph Agent | Notebooks in this workspace | [Lab 5](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html) |
+| **Lab 6** | Agent Memory | Notebook in this workspace | `Lab_6_Agent_Memory/01_agent_memory.ipynb` |
 
-Every lab has a notebook in your workspace, including Labs 1 and 4. Those two are browser work, so their notebooks carry the click-through steps as text beside the few cells you run. Work from the notebooks. The links above are the same instructions on the web.
+Every lab has a notebook in your workspace, including Labs 1 and 4. Those two are browser work, so their notebooks carry the click-through steps as text beside the few cells you run. Work from the notebooks. The links above are the same instructions on the web. Lab 6 has no web page yet, so its notebook is the instructions.
 
 ---
 
@@ -29,10 +30,17 @@ Every lab has a notebook in your workspace, including Labs 1 and 4. Those two ar
 - **Databricks Lakehouse** — time-series sensor telemetry, hourly-scale readings across 90 days
 - **Neo4j Aura** — graph relationships: aircraft topology, components, sensors, maintenance events, flights, delays, airports
 
-**Multi-Agent Supervisor (Lab 4):**
-- User question → Agent Bricks Supervisor
-  - → **Genie Agent** (sensor analytics via SQL)
-  - → **Neo4j MCP Agent** (graph queries via Cypher)
+**Supervisor Agent (Lab 5), the one you build:**
+- User question → LangGraph supervisor
+  - → **Genie node**, sensor analytics as SQL over the lakehouse
+  - → **Cypher node**, graph queries against your own Aura instance
+  - → **GraphRAG node**, retrieval over the maintenance manuals from Lab 3
+- Deployed to Model Serving, then given memory in Lab 6
+
+**Supervisor Agent (Lab 4 Part B), an instructor demo you watch:**
+- User question → Agent Bricks Supervisor, built with no code
+  - → **Genie Agent**, sensor analytics as SQL
+  - → **Neo4j MCP Agent**, graph queries as Cypher
 
 ---
 
@@ -54,10 +62,16 @@ Lab_4_Compound_AI_Agents/
   04_genie_agent.ipynb
 Lab_5_LangGraph_Agent/
   01_langgraph_agent.ipynb
+  02_deploy_and_evaluate.ipynb
   tools.py
+  agent.py
+Lab_6_Agent_Memory/
+  01_agent_memory.ipynb
+  02_instructor_demos.ipynb           <- the instructor drives this one
+  memory.py
 ```
 
-Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 needs the graph Lab 2 loads, and Lab 5 needs the Genie space you create in Lab 4.
+Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 needs the graph Lab 2 loads, Lab 5 needs the Genie space you create in Lab 4, and Lab 6 needs the agent and the Model Serving endpoint from Lab 5. Keep the lab folders as siblings. `memory.py` imports from `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, so moving a folder breaks Lab 6.
 
 ---
 
@@ -77,7 +91,7 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "your_password_here"
 ```
 
-Lab 4 Part A does not use Neo4j at all. You build a Genie space over the lakehouse sensor tables. Part B is an instructor demo you watch rather than run, against the instructor's own workspace and Neo4j MCP connection, so there is nothing for you to configure there. Lab 5 goes back to your own Aura instance, the one you loaded in Lab 2.
+Lab 4 Part A does not use Neo4j at all. You build a Genie space over the lakehouse sensor tables. Part B is an instructor demo you watch rather than run, against the instructor's own workspace and Neo4j MCP connection, so there is nothing for you to configure there. Lab 5 goes back to your own Aura instance, the one you loaded in Lab 2. Lab 6 uses that same instance and is the first lab that writes to it, storing the agent's memory beside the fleet graph.
 
 ## Shared Lakehouse Data
 

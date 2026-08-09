@@ -85,7 +85,7 @@ The workshop models a multi-model aviation fleet over 90 operational days:
 | Systems | Engines, Avionics, Hydraulics per aircraft |
 | Components | Turbines, Compressors, Pumps |
 | Sensors | Monitoring metadata |
-| Sensor Readings | Hourly-scale telemetry over 90 days |
+| Sensor Readings | Telemetry every 4 hours over 90 days |
 | Flights | Departure/arrival information |
 | Maintenance Events | Fault severity and corrective actions |
 | Airports | Route network |
@@ -97,7 +97,7 @@ The workshop models a multi-model aviation fleet over 90 operational days:
 The data is split across two platforms, each chosen for the workload it handles best:
 
 **Databricks Lakehouse** — Time-series sensor telemetry
-- Hourly-scale readings across 90 days
+- Readings every 4 hours across 90 days
 - Columnar storage and SQL for aggregations, trend analysis, statistical comparisons
 
 **Neo4j Aura** — Richly connected relational data
