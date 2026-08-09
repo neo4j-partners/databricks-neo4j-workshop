@@ -1,250 +1,81 @@
-# Lab 5 - The LangGraph Supervisor Agent
+# Lab 5 modules
 
-In this lab you build the agent the workshop has been assembling parts for. It
-routes a question across three stores: the Genie space from Lab 4 Part A for
-sensor telemetry, Cypher over the fleet graph from Lab 2, and the GraphRAG
-retrievers from Lab 3 for the maintenance manuals.
-
-> **Infrastructure:** This lab uses your **personal** Aura instance, the one you
-> loaded in Lab 2 and enriched in Lab 3, plus your own Genie space. Nothing here
-> writes to the graph.
-
-## Prerequisites
-
-| Lab | What this lab needs from it | Required |
-|---|---|---|
-| [Lab 2](../Lab_2_Databricks_ETL_Neo4j) | Aircraft, System, Component, Flight, Delay, MaintenanceEvent, Removal in your Aura instance | Yes |
-| [Lab 3 notebook 01](../Lab_3_Semantic_Search/01_data_and_embeddings.ipynb) | The `fleet-ops-<your-user>` secret scope, and the `maintenanceChunkEmbeddings` vector index | Yes for three tools |
-| [Lab 3 notebook 02](../Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb) | Understanding of `VectorCypherRetriever`, which `graphrag_node` is built from | Recommended |
-| [Lab 3 notebook 03](../Lab_3_Semantic_Search/03_hybrid_retrievers.ipynb) | The `maintenanceChunkText` fulltext index, for the optional Section 10 exercise | Optional |
-| [Lab 4 Part A](../Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | Your Genie space, and its space ID | Yes |
-
-Lab 4 Part B is not a prerequisite. Its routing instructions are where this
-lab's supervisor prompt started, and you can read them without having built the
-Agent Bricks version.
-
-## Files
+Developer documentation for the Python in this folder. **The lab itself is the
+notebooks**, and the concepts are on the site:
+[Lab 5: The LangGraph Supervisor Agent](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html).
 
 | File | What it is |
 |---|---|
 | `01_langgraph_agent.ipynb` | Build the three tools, write the supervisor, wire the graph, run it, measure the routing |
-| `tools.py` | Node builders, prompts, and the graph schema the text-to-Cypher tool is given |
-| `agent.py` | The same graph wrapped as an MLflow `ResponsesAgent`, for Model Serving. It reads credentials from environment variables bound to `{{secrets/<scope>/<key>}}` rather than from `dbutils`, and everything else from model config logged beside it. Lab 6's `memory.py` subclasses its `FleetOpsAgent` |
+| `02_deploy_and_evaluate.ipynb` | Log to Unity Catalog, deploy to Model Serving, evaluate with MLflow judges |
+| `tools.py` | Node builders, the supervisor prompt, and the graph schema the text-to-Cypher tool is given |
+| `agent.py` | The same graph wrapped as an MLflow `ResponsesAgent` |
 
-`tools.py` imports the embedder, the LLM, and the secret-scope helpers from
+## `tools.py`
+
+Builds the three nodes and carries the two prompts that matter.
+
+| Name | What it does |
+|---|---|
+| `build_genie_node` | Calls your Genie space. Needs `GENIE_SPACE_ID` |
+| `build_cypher_node` | Text to Cypher, run in a read transaction, one retry with the error attached |
+| `build_graphrag_node` | `VectorCypherRetriever` over `maintenanceChunkEmbeddings`. Returns a self-explaining stub if the index is missing, rather than raising |
+| `SUPERVISOR_PROMPT` | Routes on where a question *starts*, not on what a tool does at the end |
+| `GRAPH_SCHEMA` | The schema string given to the Cypher tool |
+
+`GRAPH_SCHEMA` is not generated from the live graph and should not be. It states
+relationship directions explicitly, tells the tool to refuse reading questions
+instead of substituting an operating limit for a measurement, and names the
+failures each rule prevents. A schema promising labels the graph does not have
+produces queries that return zero rows with no error. **Edit it when the graph
+shape changes, and re-run Section 9 of notebook 01 to confirm routing held.**
+
+### What `GRAPH_SCHEMA` says about `OperatingLimit`
+
+The twenty canonical limits Lab 2 loads from CSV: four parameters for each of
+five aircraft models. Never empty, never duplicated, no filter needed. The rules
+in the schema exist because each of these was got wrong:
+
+- **A limit is not a measurement.** `maxValue` is a model-wide ceiling from a
+  manual, so it can never answer "what was the average" or "which is highest".
+- **Ten have no floor.** `minValue` is null on the Vibration and N1Speed limits
+  for all five models. Check `IS NOT NULL` before comparing. Both bounds are
+  `FLOAT`, so nothing needs casting.
+- **All belong to a regime.** A takeoff bound held against cruise readings
+  reports the whole fleet out of range.
+- **Extraction writes a different label.** Lab 3 notebook 01 writes
+  `ExtractedLimit`, never `OperatingLimit`. The two never mix. `ExtractedLimit`
+  varies between graphs and is empty when Lab 3 ran without extraction. Treat
+  `OperatingLimit` as the authority.
+
+## `agent.py`
+
+The notebook-01 graph as an MLflow `ResponsesAgent`, which is what gets logged
+and served. It reads credentials from **environment variables** bound to
+`{{secrets/<scope>/<key>}}` rather than from `dbutils`, because `dbutils` does
+not exist inside a serving container, and everything else from model config
+logged beside it.
+
+`FleetOpsAgent` is the class Lab 6's `memory.py` subclasses. The registered model
+name and the endpoint name are constants here rather than strings a participant
+types, because Lab 6 redeploys **this** endpoint rather than creating a second
+one. Renaming either breaks Lab 6.
+
+## Cross-lab imports, and why the folders must stay siblings
+
+`tools.py` imports the embedder, the LLM and the secret-scope helpers from
 `../Lab_3_Semantic_Search/data_utils.py` rather than carrying copies. That is not
-tidiness. The vectors in your `maintenanceChunkEmbeddings` index were written by
+tidiness: the vectors in your `maintenanceChunkEmbeddings` index were written by
 that embedder, and a query embedded by a different model does not match them.
-Keep the two lab folders as siblings, in the repository and in the workspace, and
-the import resolves on its own.
 
-## What you build
-
-```
-                    question
-                       |
-                       v
-              +------------------+
-              |    supervisor    |<---------+
-              | Claude Sonnet 5  |          |
-              +------------------+          |
-                       |                    |
-        +--------------+--------------+     |
-        v              v              v     |
-  +-----------+  +-----------+  +----------------+
-  | genie     |  | cypher    |  | graphrag       |
-  | Delta     |  | Neo4j     |  | Neo4j vector   |
-  | telemetry |  | traversal |  | + Cypher tail  |
-  +-----------+  +-----------+  +----------------+
-        |              |              |     |
-        +--------------+--------------+-----+
-                       |
-                       v
-                  synthesize --> answer
-```
-
-Each tool reports back to the supervisor rather than answering. That edge is what
-separates a supervisor from a router: a router picks one tool and is done, while
-this one sees what came back and gets to pick again. It is also what lets a
-single question use three tools in sequence, each choice informed by the last
-result.
-
-### The three tools
-
-**`genie_node`** asks your Genie space, which writes SQL over the four Lakehouse
-tables and runs it. This is the only tool that can see a sensor reading. Your
-graph has `Sensor` nodes with no readings on them, because 155,000 timestamped
-values belong in Delta where scanning them is cheap.
-
-**`cypher_node`** generates Cypher from the question and runs it in a read
-transaction. The schema it is given is the one your graph actually has, which
-matters: a schema promising nodes that are not there produces queries returning
-zero rows and an agent that says it found nothing. A failed query gets one retry
-with its error message attached, because most text-to-Cypher failures are a
-mistyped property or a relationship pointing the wrong way, and the error says
-which.
-
-**`graphrag_node`** is the Lab 3 notebook 02 retriever, wrapped as a node. The
-question is embedded, the vector index returns the closest manual chunks, and a
-Cypher tail runs from each hit. The tail is the point. It walks sideways along
-`NEXT_CHUNK`, so a procedure split across a chunk boundary arrives whole, and
-upward through the `Document` to the aircraft the manual applies to. Neither of
-those is in the embedding. Both are one hop away in the graph.
-
-### The prompt is the lab
-
-The wiring is thirty lines and it is not the interesting part.
-
-`cypher_node` and `graphrag_node` both end in a Neo4j traversal. A supervisor
-that describes its tools by what they do at the end cannot tell them apart, and
-it sends manual questions to Cypher, where they return nothing, because manual
-text is not a property you can filter on.
-
-So the prompt tells the model to decide on where the question **starts**:
-
-> Starts with a name you could put in a `WHERE` clause -> `cypher_node`
-> Starts with a phrase you would search a manual for -> `graphrag_node`
-
-Section 9 of the notebook measures this. It runs twelve questions through the
-supervisor alone and reports the `cypher_node` against `graphrag_node` number
-separately from the overall score, because folding the hard pair into an average
-hides the one thing worth knowing.
-
-## Running the lab
-
-1. Open `01_langgraph_agent.ipynb` on a Databricks cluster or serverless notebook.
-2. Set `GENIE_SPACE_ID` in Section 1 to your own space ID, from the Genie space URL.
-3. Run the cells in order.
-
-Section 1 also holds a commented-out block that creates the secret scope. It is a
-recovery path for anyone who skipped Lab 3, not the normal path. Leave it
-commented out unless the next cell tells you the scope is missing.
-
-## If you skipped Lab 3 notebook 01
-
-`graphrag_node` reads the `maintenanceChunkEmbeddings` vector index, and without
-it `VectorCypherRetriever` raises. Rather than turning a skipped notebook into a
-failure several cells before the agent exists, the builder checks for the index
-first and returns a node that explains itself. The agent still compiles, still
-runs, and answers from telemetry and the graph.
-
-You will see this in Section 5, and the supervisor drops to two tools in Section
-6. Run Lab 3 notebook 01 and all three come back with no other change.
-
-## What the operating limits will and will not do
-
-`OperatingLimit` is exactly the twenty canonical limits Lab 2 loads from CSV,
-four parameters for each of five aircraft models. Never empty, never
-duplicated, no filter needed. Four things follow.
-
-**A limit is not a measurement.** `maxValue` is the ceiling a manual sets for
-every aircraft of that model. It is not what any sensor read, so it can never
-answer "what was the average", "which is highest", or anything else about a
-reading. `genie_node` owns those questions. The schema in `tools.py` tells the
-Cypher tool to refuse a reading question outright rather than return the
-nearest number it can find, because the nearest number is a limit and a limit
-is the wrong answer confidently given.
-
-**Ten have no floor.** `minValue` is null on ten of the twenty, the Vibration
-and N1Speed limits for each of the five models, because those are ceilings and
-nothing else. The schema says to check `IS NOT NULL` before comparing. Both
-bounds are `FLOAT`, so nothing needs casting.
-
-**All belong to a regime.** Each limit carries the phase of flight it applies
-to. A takeoff bound held against cruise readings is a category error rather
-than a comparison, and it reports the whole fleet out of range.
-
-**Extraction writes a different label.** Lab 3 notebook 01 pulls limits out of
-the manual prose under the label `ExtractedLimit`, not `OperatingLimit`. The
-two never mix, so a name means one thing. `ExtractedLimit` records what a
-manual said, its contents vary between graphs, and it is empty on a graph that
-ran Lab 3 without extraction. Treat `OperatingLimit` as the authority.
+`Lab_6_Agent_Memory/memory.py` in turn imports from both `data_utils.py` and this
+folder's `tools.py`. **Keep `Lab_3_Semantic_Search`, `Lab_5_LangGraph_Agent` and
+`Lab_6_Agent_Memory` as siblings**, in the repository and in the workspace, and
+every import resolves on its own. Moving any one of them breaks the other two.
 
 ## Measured results
 
-The notebook ships without stored outputs, so the numbers from the last full
-run are recorded here. Every cell executed against a live Aura instance, a live
-Genie space and live Databricks Foundation Model endpoints. Thirty-eight cells,
-zero errors.
-
-### Routing
-
-Twelve questions, four per tool, each scored on the first tool the supervisor
-chose.
-
-| Slice | Accuracy |
-|---|---|
-| Overall | 12/12 (100%) |
-| `genie_node` questions | 4/4 (100%) |
-| `cypher_node` questions | 4/4 (100%) |
-| `graphrag_node` questions | 4/4 (100%) |
-| **`cypher_node` vs `graphrag_node` alone** | **8/8 (100%)** |
-
-The last row is the one that matters. Both tools end in a graph traversal, so
-that pair is where a weak routing prompt fails first.
-
-### The anchor question
-
-"Which engines are showing abnormal EGT readings, what maintenance history do
-those aircraft have, and what does the maintenance manual say to do about high
-EGT?"
-
-Routed `genie_node` to `cypher_node` to `graphrag_node`, all three in one pass.
-The answer named the engines carrying abnormal EGT, CFM56-7B on N10000, N10001
-and N10002, LEAP-1A on N10003 and CF34-10E on N10004; returned maintenance
-history for them from the graph, including a bearing wear fault on N10000 with
-its corrective action; and closed with the manual's guidance for high EGT,
-reviewing trend data for margin degradation, oil spectrographic analysis, fuel
-filter differential pressure and a borescope of the HPT nozzle and blades, with
-corrective actions graded from minor to critical.
-
-### One limitation on these numbers
-
-The test graph had extraction switched off in Lab 3, so it held the twenty
-canonical `OperatingLimit` rows and nothing else. It had no `AircraftModel`,
-`SystemReference`, `ComponentReference`, `Fault` or `MaintenanceProcedure`
-nodes, and no `ExtractedLimit` nodes. A participant who runs Lab 3 with
-extraction on gets all of those, `ExtractedLimit` sitting alongside
-`OperatingLimit` rather than mixed into it. The run did not exercise that. The
-routing numbers do not depend on those labels, but no claim here has been
-tested against them.
-
-## What comes next
-
-`agent.py` is this same graph as an MLflow `ResponsesAgent`, which is what gets
-logged to Unity Catalog and deployed to Model Serving. Lab 6 then gives it
-memory, in Neo4j, so it can be asked a follow-up, and redeploys the one endpoint
-rather than standing up a second.
-
-## Notebook 02, deploy and evaluate
-
-`02_deploy_and_evaluate.ipynb` takes the graph from notebook 01 and puts it
-behind an endpoint. It logs `agent.py` to Unity Catalog as
-`databricks-neo4j-workshop.agents.fleet_ops_assistant`, deploys it as
-`fleet-ops-assistant-<your user slug>`, asks it the same questions notebook 01
-asked, and scores the answers with MLflow's judges.
-
-Three things in it are worth reading even if the run goes smoothly.
-
-**Resources and credentials are different mechanisms.** Databricks things are
-declared at log time and granted to the serving principal from that list. Your
-Aura password cannot be, so it travels as `{{secrets/<scope>/<key>}}` in the
-endpoint's environment block and is resolved when the endpoint starts.
-
-**The Genie space is not enough on its own.** A model logged with
-`DatabricksGenieSpace` and no `DatabricksSQLWarehouse` deploys cleanly, routes
-correctly, and answers every sensor question with `is not authorized to use or
-monitor this SQL Endpoint`. The space grants the space; the SQL underneath it is
-a separate resource. Measured, not theorised.
-
-**Pin `pip_requirements`.** Inferred requirements read the cluster, and a
-cluster carrying the Lab 6 memory wheel produces a requirement with a local
-version segment that resolves from no index. The container then fails to build,
-about fifteen minutes after you stopped watching.
-
-A first deploy takes roughly sixteen minutes. Notebook 02 polls and prints where
-it got to.
-
-The two names Lab 5 and Lab 6 share, the registered model and the endpoint, come
-from `agent.py` rather than from a string a participant types, because Lab 6
-redeploys this endpoint rather than creating a second one.
+Routing accuracy, the anchor question, and the caveat on both are on the
+[site page](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html#measured-routing).
+Section 9 of notebook 01 is what reproduces them. **If you edit
+`SUPERVISOR_PROMPT`, re-run it and update the site page.**

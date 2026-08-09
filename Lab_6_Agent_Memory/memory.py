@@ -109,6 +109,7 @@ from data_utils import (  # noqa: E402
     DEFAULT_NEO4J_DATABASE,
     EMBEDDING_ENDPOINT,
     LLM_ENDPOINT,
+    extract_text,
     read_neo4j_secrets,
     secret_scope_name,
 )
@@ -377,17 +378,23 @@ class MemoryLLM:
     """A Databricks chat endpoint, shaped for ``neo4j-agent-memory``.
 
     Satisfies both ``LLMProvider`` and ``StructuredExtractor``. The first is
-    a plain completion. The second has to return a validated Pydantic model,
-    which Foundation Model endpoints cannot guarantee: unlike the OpenAI
-    structured-output API they do not enforce a JSON Schema server-side, so
-    something has to inject the schema, parse what comes back, and ask again
-    when it does not validate.
+    a plain completion. The second has to return a validated Pydantic model.
 
-    That loop is not written here. ``neo4j_agent_memory.llm.structured``
-    ships ``schema_aligned_extract`` for exactly this case, and delegating to
-    it means the retry behaviour, the fence stripping and the error feedback
-    match every other adapter the library supports rather than being this
-    workshop's own version of them.
+    Foundation Model endpoints can enforce that shape themselves. Databricks
+    structured outputs take a ``response_format`` of type ``json_schema`` and
+    hold the model to it server-side, measured working on this workspace at
+    three clean parses out of three against ``databricks-claude-sonnet-5``.
+    The reference is
+    https://docs.databricks.com/aws/en/machine-learning/model-serving/structured-outputs
+
+    This adapter does not use it, and that is a deliberate choice rather than
+    a limitation. ``neo4j_agent_memory.llm.structured`` ships
+    ``schema_aligned_extract``, which owns the retry loop, the fence
+    stripping and the error feedback sent back to the model when a reply does
+    not validate. Delegating to it means Lab 6 behaves exactly like every
+    other adapter the library supports, and behaving like the library is
+    worth more here than saving the occasional retry: a bespoke path would
+    have to reimplement all three of those to gain one round trip.
 
     Args:
         model: Foundation Model chat endpoint name.
@@ -403,7 +410,11 @@ class MemoryLLM:
         self,
         model: str = LLM_ENDPOINT,
         *,
-        default_max_tokens: int = 2048,
+        # 4096 rather than something smaller because reasoning tokens are
+        # charged against max_tokens. A thinking reply can spend most of the
+        # budget before it reaches its text part, and what comes back is then
+        # truncated JSON that fails validation for a reason nothing reports.
+        default_max_tokens: int = 4096,
     ) -> None:
         import mlflow.deployments
 
@@ -463,7 +474,11 @@ class MemoryLLM:
         choice = response["choices"][0]
         reported = response.get("usage") or {}
         return Completion(
-            content=choice["message"]["content"] or "",
+            # Completion.content is typed as a plain string, and a reasoning
+            # endpoint answers with a list of content parts whenever it
+            # thinks, so the raw content is flattened by the one helper Lab 3
+            # owns rather than by a second copy of that logic here.
+            content=extract_text(choice["message"]["content"]),
             model=response.get("model", self.model),
             finish_reason=choice.get("finish_reason"),
             usage=Usage(

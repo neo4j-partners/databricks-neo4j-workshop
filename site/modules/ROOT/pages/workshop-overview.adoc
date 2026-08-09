@@ -52,6 +52,10 @@ The labs build on each other, moving from a single graph database to a full mult
 
 The workshop lands on a **LangGraph supervisor agent that you write, deploy and own**, built in Lab 5 and given memory in Lab 6. A supervisor node reads each question and routes it to one of three tools: a Genie space for sensor telemetry in SQL, a Cypher query against your own Aura instance, and a GraphRAG retriever over the maintenance manuals. It is logged to Unity Catalog and served as a Model Serving endpoint that authenticates as a service principal.
 
+image::lab5-agent-topology.svg[The Lab 5 supervisor routing to a Genie node, a Cypher node and a GraphRAG node over the Databricks Lakehouse and your own Aura instance,align=center]
+
+Routing is a loop, not a one-shot decision. Every tool returns its result to the supervisor, which is free to pick another tool before it answers. That is how one question reaches both stores.
+
 Lab 4 shows the same routing idea reached a second way, without code. The instructor builds a **Supervisor Agent in Databricks Agent Bricks** over a Genie space and a governed Neo4j MCP connection, and you watch. That is Part B, an instructor demo rather than the destination, and xref:lab4.adoc[Lab 4] puts the two approaches side by side.
 
 == Labs
@@ -75,6 +79,18 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 | xref:lab4.adoc[Lab 4]
 | Compound AI Agents: Genie + Supervisor
 | 75 min
+
+| xref:lab5.adoc[Lab 5]
+| The LangGraph Supervisor Agent, built and deployed
+| 90 min
+
+| Lab 6
+| Agent Memory in Neo4j
+| 75 min
+
+| xref:appendix-a.adoc[Appendix A]
+| GDS Graph Analytics. Take-home, and not runnable on AuraDB Free
+| 45 min
 
 |===
 

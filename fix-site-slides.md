@@ -750,7 +750,41 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 >
 > **Verified.** `npm run build` in `site/`, clean.
 7. **Collapse the duplicated diagram files, then redraw as two.** REVERSED from this document's first draft, which kept the root `images/` copies and deleted the site's. **The site directory wins, for the same reason step 6 gives.** Delete `dual-database-architecture.svg`, `dual-database-architecture.png` and `lab-architecture-overview.svg` from root `images/`, move `lab-architecture-overview.png` into `site/modules/ROOT/images/`, and repoint the three slide decks, `build:assets` and `04_genie_agent.ipynb` at the surviving copies. The `.excalidraw` files stay in root `images/`: they are editing sources rather than published assets, and Antora would otherwise ship 120KB nobody fetches. Then the Lab 5 topology becomes the default and the MCP drawing is retitled as the Part B demo, kept on `lab4.adoc` alone. Collapsing first is what stops the redraw shipping to half the consumers.
+
+> **STATUS: step 7 done.**
+>
+> **The collapse.** Three files deleted from root `images/`: `dual-database-architecture.svg`, `dual-database-architecture.png`, `lab-architecture-overview.svg`. `lab-architecture-overview.png` moved to `site/modules/ROOT/images/`. Root `images/` now holds the three `.excalidraw` sources and `workshop-infrastructure.svg`, nothing else. The `.png` had zero live consumers, checked before deleting.
+>
+> **Five consumers repointed.** Three Marp deck sources (`platform-overview/01-databricks-neo4j-integration-slides.md`, `platform-overview/01-workshop-over.md`, `docs/overview-and-genai-foundations.md`), `build:assets` in `slides/package.json`, and the raw-URL reference in `04_genie_agent.ipynb`. That notebook also got its alt text fixed: it was `Lab Architecture Overview`, which named nothing, and is now "Part B instructor demo: an Agent Bricks supervisor routing to Genie and a Neo4j MCP agent".
+>
+> **One thing the plan did not anticipate: Marp does not copy images.** It writes a relative path into the emitted HTML verbatim. The published deck lands at `attachments/slides/<topic>/`, so `../../site/modules/ROOT/images/...` resolves against `attachments/`, not against the repository root, and the repointed decks shipped a broken image. Fix: `build:assets` now mirrors the SVG into `site/modules/ROOT/attachments/site/modules/ROOT/images/`. That nested path is deliberate. Any other reference would break either the live preview or the published deck, since the two resolve from different trees. **Written down in `site/README.md`** under "The one odd path, and why it is not a mistake", so nobody corrects it back.
+>
+> **The redraw.** `site/modules/ROOT/images/lab5-agent-topology.svg` is new: supervisor, the three tool nodes, the two stores, and the return path that makes routing a loop rather than a one-shot decision. It is placed on `workshop-overview.adoc` in `== Architecture`, which step 1 stripped and step 7 owed it. The MCP drawing stayed on `lab4.adoc` and needs no retitle: it never claimed to be the workshop's destination.
+>
+> **For Ryan.** The topology SVG is hand-authored, so it is vector-clean and reads well, but it does not match the sketched Excalidraw style of the other diagrams. If you would rather redraw it there, the `.excalidraw` source belongs in root `images/` per the convention step 6 wrote down.
+>
+> **Verified.** `npm run build:html` in `slides/`, then every emitted reference resolved on disk. `npm run build` in `site/`, clean, with `_images/lab5-agent-topology.svg`, `_images/lab-architecture-overview.{svg,png}` and `_attachments/site/modules/ROOT/images/dual-database-architecture.svg` all present. The new SVG was rendered to PNG and inspected twice: the first pass overflowed the supervisor box and crossed two labels through arrows, both fixed.
 8. **Write `lab5.adoc` and `lab6.adoc`**, plus the Appendix A page and their nav entries. Appendix A opens with the tier warning in its first paragraph, and step 2 has already made its notebooks agree with it.
+
+> **STATUS: step 8 done except Lab 6, which is gated and stays gated.**
+>
+> **`lab5.adoc` written**, 100 lines of concepts and no procedure. It carries the three tools, the shape of the agent with the step 7 diagram, the routing lesson, both prompt rules with the failure that produced each, the measured routing table, the anchor question, the credential path, the degradation behaviour, deployment as its own section, and why a Bolt driver rather than MCP. The direction rule leads, because "we fixed the prompt rather than the schema" is the non-obvious call this document asked to put first.
+>
+> **The routing numbers are on the site, dated and sourced.** `Recorded 2026-08-08 from a full run of 01_langgraph_agent.ipynb, against SUPERVISOR_PROMPT in Lab_5_LangGraph_Agent/tools.py as it stands today`, with the note that they go stale when someone edits the prompt and not before. 2026-08-08 is the date the numbers landed in the repository, which is the only date the history actually supports: the repository was squashed to a single `first pass` commit on that day and the run itself is undated. Say so if a more precise date is wanted.
+>
+> **`appendix-a.adoc` written**, and the tier statement is the first thing on the page, as a `WARNING` admonition rather than a paragraph. It says plainly that nobody in the room can run it, that the appendix is take-home, and that the concepts are still taught. The dependency chain, the projection concept and the feature-loop-back-to-Databricks argument are all on it.
+>
+> **Nav and the lab table.** `nav.adoc` gains Lab 5 under Labs and Appendix A as a top-level entry. `workshop-overview.adoc`'s lab table gains three rows: Lab 5 and Appendix A as xrefs, Lab 6 as plain text until its page exists.
+>
+> **One thing this document asked for and did not get: the Lab 5/6 bullets in `What You Will Learn` are still plain text.** So are the Lab 1 through 4 bullets, which set that pattern before step 8 arrived. Making only 5 and 6 into links would read as an accident. The table directly below them is the xref surface. Change all six or none.
+>
+> **`Lab_5_LangGraph_Agent/README.md` cut from 250 lines to 88**, and it changed job as decided. It is module documentation now: what `tools.py` and `agent.py` export, why `GRAPH_SCHEMA` is hand-written rather than generated, the four `OperatingLimit` rules a maintainer needs, why `FleetOpsAgent`'s two names cannot be renamed, and the sibling-folder import constraint. Everything conceptual moved to `lab5.adoc` and the README links to it, including a deep link to the routing table.
+>
+> **`Lab_6_Agent_Memory/README.md` is unshrunk, deliberately.** Step 5 deferred it here because its conceptual half had no destination. `lab6.adoc` is still gated, so it still has none. Shrinking it now would delete the material rather than move it. **Both jobs unblock together.**
+>
+> **What Lab 6 still owes, once the step 0 probe passes:** `lab6.adoc`, its nav entry, the xref at the end of `lab5.adoc` (plain text today), the `Lab 6` row in the `workshop-overview.adoc` lab table (plain text today), and the README shrink. Nothing else in step 8 is waiting on it.
+>
+> **Verified.** `npm run build` in `site/`, clean, three times across the step. `lab5.html` and `appendix-a.html` both publish, and the README's deep link was checked against the generated anchor id rather than guessed.
 9. **Write the three new decks:** LangGraph supervisor, deployment, agent memory. Two agent decks, not one, matching Lab 5's two notebooks.
 10. **Split and publish the remaining decks**, Workshop against Additional Background. **This is where the slides nav group lands**, along with the remaining `.adoc` wrappers. Three exist already under `site/modules/ROOT/pages/slides/` and are unreachable; the rest copy their `iframe` pattern. `governance/auth-sync-slides.md` needs its source rebuilt to HTML first, since it is PDF-only.
 

@@ -39,6 +39,15 @@ sync by hand. Change an endpoint in both or in neither.
 To try a different supervisor model for one run, pass it to ``get_llm`` in the
 notebook rather than editing anything here.
 
+The supervisor's route and the Cypher this lab generates come back as JSON,
+constrained by a schema the request carries in ``response_format``. That is the
+Databricks-wide mechanism for structured outputs, so it works on any endpoint
+that supports them, and it replaces reading a decision out of prose the model
+wrote for a human. ``ROUTE_SCHEMA`` and ``CYPHER_SCHEMA`` below are the two
+schemas. The old free-text scan is still in ``build_supervisor_node``, reached
+only when the reply will not parse, so an edited prompt or an endpoint that
+ignores ``response_format`` degrades rather than fails.
+
 Embeddings and the LLM come from ``Lab_3_Semantic_Search/data_utils.py``. That
 module is the workshop's one path to the Databricks Foundation Model endpoints,
 and the vectors in ``maintenanceChunkEmbeddings`` were written through it. A
@@ -48,6 +57,7 @@ that have to match, so there is not one.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from collections.abc import Callable, Sequence
@@ -104,6 +114,7 @@ from data_utils import (  # noqa: E402
     LLM_ENDPOINT,
     get_embedder,
     get_llm,
+    json_schema_format,
     read_neo4j_secrets,
     secret_scope_name,
 )
@@ -111,6 +122,7 @@ from data_utils import (  # noqa: E402
 __all__ = [
     "CYPHER_GENERATION_PROMPT",
     "CYPHER_REPAIR_PROMPT",
+    "CYPHER_SCHEMA",
     "EMBEDDING_ENDPOINT",
     "FULLTEXT_INDEX_NAME",
     "GRAPH_SCHEMA",
@@ -118,6 +130,7 @@ __all__ = [
     "MANUAL_CONTEXT_QUERY",
     "MAX_TOOL_CALLS",
     "MISSING_INDEX_MESSAGE",
+    "ROUTE_SCHEMA",
     "SUPERVISOR_PROMPT",
     "SYNTHESIS_PROMPT",
     "TOOL_NAMES",
@@ -162,6 +175,39 @@ TOOL_NAMES = ("genie_node", "cypher_node", "graphrag_node")
 # question needs three. The guard exists so a supervisor that keeps asking for
 # the same tool ends the run instead of the participant's patience.
 MAX_TOOL_CALLS = 4
+
+
+# =============================================================================
+# Structured output schemas
+# =============================================================================
+
+# What the two nodes that have to read a reply ask the model for. Databricks
+# structured outputs takes a JSON Schema on the request and constrains the
+# generation to it, so the reply arrives as JSON rather than as prose a regular
+# expression has to guess at. Both are flat on purpose: Databricks accepts
+# json_schema only, caps the object at 64 keys, rejects pattern, anyOf, oneOf,
+# allOf and $ref, and a flat schema is generated more reliably than a nested one.
+ROUTE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "next": {
+            "type": "string",
+            "enum": ["genie_node", "cypher_node", "graphrag_node", "synthesize"],
+        },
+        "reason": {"type": "string"},
+    },
+    "required": ["next", "reason"],
+}
+
+# No code reads reason. It is in the schema because a model that has to write
+# down why it picked a tool picks better, and because the free-text fallback in
+# build_supervisor_node needs the tool named somewhere in the reply.
+
+CYPHER_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {"cypher": {"type": "string"}},
+    "required": ["cypher"],
+}
 
 
 # =============================================================================
@@ -349,7 +395,7 @@ Facts that change the query you write:
 
 CYPHER_GENERATION_PROMPT = """\
 You write Cypher for a Neo4j aircraft fleet graph. Return one read-only Cypher
-query and nothing else.
+query, as a JSON object whose single field, cypher, holds the query.
 
 Schema:
 {schema}
@@ -364,14 +410,16 @@ Rules:
     a limit, a threshold or any other number standing in for a measurement. A
     question about what the fleet is limited to is not one of these. Answer it
     from OperatingLimit however it is phrased.
-  - Output the query alone. No prose, no explanation, no markdown fence.
+  - The cypher field holds the query alone. No prose, no explanation, no
+    markdown fence.
 
 Question: {question}
 """
 
 
 CYPHER_REPAIR_PROMPT = """\
-The Cypher below failed. Fix it and return the corrected query alone.
+The Cypher below failed. Fix it and return the corrected query alone, as a JSON
+object whose single field, cypher, holds the query.
 
 Schema:
 {schema}
@@ -479,11 +527,11 @@ next. A typical order:
 
 ## What to answer with
 
-Reply with exactly one line, in this form:
+Reply with a JSON object holding exactly two fields:
 
-NEXT: <tool>
-
-where <tool> is genie_node, cypher_node, graphrag_node, or synthesize.
+  next    the one tool to call: genie_node, cypher_node, graphrag_node, or
+          synthesize
+  reason  one sentence, naming that same tool, saying why it is the next one
 
 ## The question
 
@@ -748,17 +796,43 @@ def build_cypher_node(
     """
     from neo4j import RoutingControl
 
+    cypher_format = json_schema_format("cypher_query", CYPHER_SCHEMA)
+
+    def _ask(rendered: str) -> str:
+        """Ask the LLM for one query and take it out of the reply.
+
+        Args:
+            rendered: A prompt with its placeholders already filled in.
+
+        Returns:
+            The Cypher query, with any markdown fence removed.
+        """
+        reply = llm.invoke(rendered, response_format=cypher_format).content
+        try:
+            query = json.loads(reply)["cypher"]
+        except (KeyError, TypeError, ValueError):
+            query = None
+        if not isinstance(query, str):
+            # The reply was not the JSON the schema asked for, so read the
+            # whole reply as the query. That is what this node did before the
+            # schema existed, and it keeps an endpoint that ignores
+            # response_format producing something runnable.
+            query = reply
+        # The fence strip runs on either path. A model that honours the schema
+        # can still put a fenced block inside the string it hands back.
+        return _strip_code_fence(query)
+
     def _generate(question: str) -> str:
         prompt = CYPHER_GENERATION_PROMPT.format(
             schema=schema, question=question, limit=max_rows
         )
-        return _strip_code_fence(llm.invoke(prompt).content)
+        return _ask(prompt)
 
     def _repair(question: str, query: str, error: str) -> str:
         prompt = CYPHER_REPAIR_PROMPT.format(
             schema=schema, question=question, query=query, error=error
         )
-        return _strip_code_fence(llm.invoke(prompt).content)
+        return _ask(prompt)
 
     def cypher_node(state: AgentState) -> dict[str, Any]:
         question = state["question"]
@@ -999,6 +1073,23 @@ def build_supervisor_node(
     Returns:
         A LangGraph node that sets ``route``.
     """
+    allowed = (*available_tools, "synthesize")
+
+    # ROUTE_SCHEMA names all three tools, and this agent may have only two, so
+    # the enum is narrowed to what this agent was actually given. A schema the
+    # model cannot leave is a better guard than a check after the fact, and the
+    # check after the fact is kept anyway for the replies that arrive without
+    # having gone through the schema at all.
+    route_format = json_schema_format(
+        "routing_decision",
+        {
+            **ROUTE_SCHEMA,
+            "properties": {
+                **ROUTE_SCHEMA["properties"],
+                "next": {"type": "string", "enum": list(allowed)},
+            },
+        },
+    )
 
     def supervisor_node(state: AgentState) -> dict[str, Any]:
         trace = state.get("trace", [])
@@ -1010,14 +1101,29 @@ def build_supervisor_node(
             called=", ".join(trace) or "(none yet)",
             findings=_format_findings(state.get("findings", [])),
         )
-        decision = llm.invoke(rendered).content
+        decision = llm.invoke(rendered, response_format=route_format).content
 
-        # Read the decision from the end of the reply. A model that narrates
-        # before deciding mentions several tool names, and the last one is the
-        # one it settled on.
+        try:
+            chosen = json.loads(decision)["next"]
+        except (KeyError, TypeError, ValueError):
+            chosen = None
+        if chosen is not None:
+            # A name outside available_tools becomes synthesize rather than a
+            # call. graphrag_node is dropped from available_tools when the
+            # participant has no vector index, and routing there anyway would
+            # run a tool that can only report its own absence.
+            return {"route": chosen if chosen in allowed else "synthesize"}
+
+        # Nothing usable came back as JSON, so read the decision out of the
+        # reply's own words. This is what the node did before the schema
+        # existed, kept as the fallback because a participant who rewrites the
+        # prompt, or points the lab at an endpoint that does not honour
+        # response_format, should get the old behaviour rather than a crash.
+        # The last tool named wins: a model that narrates before deciding
+        # mentions several, and the last one is the one it settled on.
         chosen = "synthesize"
         best = -1
-        for tool in (*available_tools, "synthesize"):
+        for tool in allowed:
             position = decision.rfind(tool)
             if position > best:
                 best, chosen = position, tool

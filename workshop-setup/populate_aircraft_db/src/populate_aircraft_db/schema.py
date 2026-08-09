@@ -10,7 +10,6 @@ CONSTRAINTS: list[tuple[str, str]] = [
     ("System", "system_id"),
     ("Component", "component_id"),
     ("Sensor", "sensor_id"),
-    ("Reading", "reading_id"),
     ("Airport", "airport_id"),
     ("Flight", "flight_id"),
     ("Delay", "delay_id"),
@@ -30,8 +29,6 @@ CONSTRAINTS: list[tuple[str, str]] = [
 INDEXES: list[tuple[str, str]] = [
     ("MaintenanceEvent", "severity"),
     ("Flight", "aircraft_id"),
-    ("Reading", "sensor_id"),
-    ("Reading", "timestamp"),
     ("Removal", "aircraft_id"),
 ]
 

@@ -32,7 +32,7 @@ imports on its own.
 | File | What it is |
 |---|---|
 | `01_agent_memory.ipynb` | The 75 minute hands-on path. Adopt, seed, run the headline query, wire recall and remember, measure, redeploy |
-| `02_instructor_demos.ipynb` | Four run-and-read demos. Not on the participant path |
+| `02_instructor_demos.ipynb` | Four run-and-read demos. **Ships to every workspace**, and the instructor drives it. Not a participant exercise |
 | `memory.py` | The Databricks adapters, the recall and remember nodes, the seed helper, and the headline Cypher |
 
 `memory.py` is lab-provided code, not an exercise, for the same reason

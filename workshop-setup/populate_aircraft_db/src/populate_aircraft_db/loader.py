@@ -15,7 +15,6 @@ OPERATIONAL_LABELS = [
     "System",
     "Component",
     "Sensor",
-    "Reading",
     "Airport",
     "Flight",
     "Delay",
@@ -40,7 +39,6 @@ OPERATIONAL_RELATIONSHIP_TYPES = [
     "HAS_SYSTEM",
     "HAS_COMPONENT",
     "HAS_SENSOR",
-    "HAS_READING",
     "HAS_EVENT",
     "OPERATES_FLIGHT",
     "DEPARTS_FROM",
@@ -101,7 +99,6 @@ REQUIRED_CONSTRAINTS = [
     ("System", "system_id"),
     ("Component", "component_id"),
     ("Sensor", "sensor_id"),
-    ("Reading", "reading_id"),
     ("Airport", "airport_id"),
     ("Flight", "flight_id"),
     ("Delay", "delay_id"),
@@ -192,17 +189,6 @@ _NODE_DEFINITIONS: list[tuple[str, str, str]] = [
             s.type = row['type'],
             s.name = row['name'],
             s.unit = row['unit']
-        """,
-    ),
-    (
-        "Reading",
-        "nodes_readings.csv",
-        """
-        UNWIND $batch AS row
-        MERGE (r:Reading {reading_id: row['reading_id']})
-        SET r.sensor_id = row['sensor_id'],
-            r.timestamp = row['ts'],
-            r.value = toFloat(row['value'])
         """,
     ),
     (
@@ -331,16 +317,6 @@ _REL_DEFINITIONS: list[tuple[str, str, str]] = [
         MATCH (c:Component {component_id: row[':START_ID(Component)']})
         MATCH (m:MaintenanceEvent {event_id: row[':END_ID(MaintenanceEvent)']})
         MERGE (c)-[:HAS_EVENT]->(m)
-        """,
-    ),
-    (
-        "HAS_READING",
-        "nodes_readings.csv",
-        """
-        UNWIND $batch AS row
-        MATCH (s:Sensor {sensor_id: row['sensor_id']})
-        MATCH (r:Reading {reading_id: row['reading_id']})
-        MERGE (s)-[:HAS_READING]->(r)
         """,
     ),
     (
@@ -526,8 +502,9 @@ def load_operating_limits(driver: Driver, database: str, data_dir: Path) -> None
     which keeps these nodes to the property set the labs query.
 
     ``minValue`` and ``maxValue`` are written as floats, not as the text the CSV
-    holds, so that a limit comparison against ``Reading.value`` evaluates. See
-    :func:`_parse_operating_limit_bounds`.
+    holds, so that a limit comparison against a measured value evaluates. The
+    values themselves live in the lakehouse ``sensor_readings`` table, not in
+    this graph. See :func:`_parse_operating_limit_bounds`.
 
     Raises ``ValueError`` if a bound in the CSV is neither blank nor a number.
     """
@@ -889,13 +866,6 @@ def verify(
 
     orphan_queries = [
         (
-            "Readings without Sensor",
-            "MATCH (r:Reading) WHERE NOT (r)<-[:HAS_READING]-(:Sensor) "
-            "RETURN count(r) AS count",
-            {"Reading", "Sensor"},
-            {"HAS_READING"},
-        ),
-        (
             "Flights without Aircraft",
             "MATCH (f:Flight) WHERE NOT (f)<-[:OPERATES_FLIGHT]-(:Aircraft) "
             "RETURN count(f) AS count",
@@ -908,13 +878,6 @@ def verify(
             "RETURN count(c) AS count",
             {"Component", "System"},
             {"HAS_COMPONENT"},
-        ),
-        (
-            "Sensors without Readings",
-            "MATCH (s:Sensor) WHERE NOT (s)-[:HAS_READING]->(:Reading) "
-            "RETURN count(s) AS count",
-            {"Sensor", "Reading"},
-            {"HAS_READING"},
         ),
         (
             "Documents without Chunks",

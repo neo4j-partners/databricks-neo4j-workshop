@@ -1,0 +1,157 @@
+= Lab 5: The LangGraph Supervisor Agent
+
+Lab 4 Part B showed a supervisor built from a form. This lab builds the same routing behaviour in code, against your own graph, and deploys it as an endpoint you own. It is the lab the previous four have been assembling parts for: the Genie space from Part A, the fleet graph from Lab 2, and the GraphRAG retrievers from Lab 3, all reachable from one question.
+
+.**At a Glance**
+
+* **LangGraph** models the agent as a **state graph**: nodes that read and write a shared state object, and edges that decide what runs next.
+* **One supervisor node, three tool nodes.** `genie_node` for SQL over Delta telemetry, `cypher_node` for traversal over your own Aura instance, `graphrag_node` for a `VectorCypherRetriever` over the Lab 3 manual chunks.
+* **Every tool returns to the supervisor**, which is free to pick again. That edge is the difference between a supervisor and a router.
+* **The prompt is the artifact.** Two rules in it were each written to fix a measured failure.
+* **A direct Bolt driver**, not an MCP server. Part B's MCP connection is an admin-managed Unity Catalog object, and one per participant is not a thing a classroom can stand up.
+* **Deployment is its own beat.** Logged to Unity Catalog, served as an endpoint that authenticates as a **service principal** rather than as you.
+
+== The Shape of the Agent
+
+image::lab5-agent-topology.svg[The Lab 5 supervisor routing to a Genie node, a Cypher node and a GraphRAG node over the Databricks Lakehouse and your own Aura instance,align=center]
+
+A router picks one tool and is done. This supervisor sees what came back and gets to pick again, so a single question can use three tools in sequence with each choice informed by the last result. Nothing here writes to the graph.
+
+=== The three tools
+
+**`genie_node`** asks your Genie space, which writes SQL over the four Lakehouse tables and runs it. This is the only tool that can see a sensor reading. Your graph has `Sensor` nodes with no readings on them, because timestamped values at that volume belong in Delta, where scanning them is cheap.
+
+**`cypher_node`** generates Cypher from the question and runs it in a read transaction. The schema it is given is the one your graph actually has, which matters: a schema promising nodes that are not there produces queries returning zero rows and an agent that reports it found nothing. A failed query gets one retry with its error message attached, because most text-to-Cypher failures are a mistyped property or a relationship pointing the wrong way, and the error says which.
+
+**`graphrag_node`** is the Lab 3 retriever wrapped as a node. The question is embedded, the vector index returns the closest manual chunks, and a Cypher tail runs from each hit.
+
+.Why the Cypher tail is the point
+[%collapsible]
+====
+The tail walks sideways along `NEXT_CHUNK`, so a procedure split across a chunk boundary arrives whole, and upward through the `Document` to the aircraft the manual applies to. Neither of those facts is in the embedding. Both are one hop away in the graph. This is the concrete answer to "what does GraphRAG add to vector search", and it is why Lab 3 came before this one.
+====
+
+== Why the Prompt Is the Lab
+
+The wiring is about thirty lines and it is not the interesting part. Two of the tools end in a Neo4j traversal, so a supervisor that describes its tools by what they do at the *end* cannot tell them apart. It sends manual questions to Cypher, where they return nothing, because manual text is not a property you can filter on.
+
+The prompt therefore routes on where the question **starts**:
+
+* Starts with a name you could put in a `WHERE` clause, and `cypher_node` takes it.
+* Starts with a phrase you would search a manual for, and `graphrag_node` takes it.
+
+That single reframing is the lesson. The rest of this section is two rules that each exist because something specific went wrong.
+
+=== The direction rule
+
+An `AFFECTS_AIRCRAFT` arrow written backwards matched nothing and returned zero rows with no error, on an aircraft that has 23 maintenance events. The tool reported that it found none.
+
+.The fix, and why it is not the obvious one
+[%collapsible]
+====
+`AFFECTS_AIRCRAFT` and `AFFECTS_SYSTEM` both run **from** the `MaintenanceEvent` **to** the thing affected. A question naming an aircraft does not mean the arrow leaves the aircraft, so the events for a tail number are reached by matching `(:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(:Aircraft {tail_number: ...})`. Written the other way round it points away from the named noun.
+
+The obvious fix is to drop the arrow direction from the query and let it match either way. That was rejected. It teaches a Cypher habit Lab 1 spends its time arguing against, and it would make every traversal in the workshop quietly more expensive. The fix was nine lines of schema text in the prompt, stating the direction and naming the failure it prevents.
+
+**Fixing the prompt rather than the schema is the non-obvious call, and it is the one to take away.** A wrong answer from a text-to-Cypher tool is usually a gap in what the model was told about the graph, not a flaw in the graph.
+====
+
+=== The refusal rule
+
+Asked which aircraft had the highest average vibration, the tool answered with `maxValue` `3.0` from the `Vibration - B737-800` operating limit. That number is a takeoff ceiling every B737-800 shares, transcribed from a manual. It is not a reading, it is not an average, and it is not that aircraft's.
+
+.What the rule says, and why refusing is the right behaviour
+[%collapsible]
+====
+The prompt now tells `cypher_node` to return exactly `RETURN 'The graph holds no sensor readings.' AS cannot_answer` for any question about a measured value, and never to substitute a limit, a threshold or a ceiling for a measurement.
+
+Refusal is the useful behaviour because the supervisor is still holding the question. A refusal routes it to `genie_node`, which can answer it. A plausible wrong number ends the conversation with a confident falsehood, and nothing downstream can tell that it happened.
+
+`OperatingLimit` is a good trap precisely because it is well-formed data: exactly twenty canonical limits, never empty, never duplicated. The nearest number is always available, which is what makes "return the nearest number" such an attractive failure.
+====
+
+== Measured Routing
+
+Twelve questions, four per tool, each scored on the first tool the supervisor chose.
+
+[cols="2,1"]
+|===
+| Slice | Accuracy
+
+| Overall
+| 12/12 (100%)
+
+| `genie_node` questions
+| 4/4 (100%)
+
+| `cypher_node` questions
+| 4/4 (100%)
+
+| `graphrag_node` questions
+| 4/4 (100%)
+
+| **`cypher_node` against `graphrag_node` alone**
+| **8/8 (100%)**
+|===
+
+**The last row is the one that matters.** Both tools end in a graph traversal, so that pair is where a weak routing prompt fails first. Folding it into the overall average hides the one thing worth knowing.
+
+NOTE: Recorded 2026-08-08 from a full run of `01_langgraph_agent.ipynb`, against `SUPERVISOR_PROMPT` in `Lab_5_LangGraph_Agent/tools.py` as it stands today. These numbers are a claim about this workshop's prompt, so they go stale when someone edits it and not before. Section 9 of the notebook re-runs the measurement.
+
+.One limitation on these numbers
+[%collapsible]
+====
+The test graph ran Lab 3 with entity extraction switched off, so it held the twenty canonical `OperatingLimit` rows and no `ExtractedLimit`, `AircraftModel`, `SystemReference`, `ComponentReference`, `Fault` or `MaintenanceProcedure` nodes. A participant who runs Lab 3 with extraction on gets all of those. The routing numbers do not depend on those labels, but the run did not exercise them.
+====
+
+== The Anchor Question
+
+____
+Which engines are showing abnormal EGT readings, what maintenance history do those aircraft have, and what does the maintenance manual say to do about high EGT?
+____
+
+One question, three tools, one answer. It routed `genie_node`, then `cypher_node`, then `graphrag_node`, in a single pass.
+
+Genie named the engines carrying abnormal EGT. The graph returned the maintenance history for those aircraft, including a bearing wear fault with its corrective action. The manual closed with the guidance for high EGT: trend data for margin degradation, oil spectrographic analysis, fuel filter differential pressure, and a borescope of the HPT nozzle and blades, with corrective actions graded from minor to critical.
+
+No single store can answer that question. That is the whole argument of the workshop, in one prompt.
+
+== Credentials, and What Happens Without Them
+
+The notebook reads your Aura password from the secret scope Lab 3 wrote. **No plaintext password appears anywhere in Lab 5**, in a cell, in a config file, or in the logged model. The deployed endpoint gets the same secret through its environment block, resolved when the endpoint starts.
+
+The agent also degrades rather than failing. If the `maintenanceChunkEmbeddings` vector index is missing, because Lab 3 notebook 01 was skipped, the builder detects it and drops `graphrag_node` from the available tools instead of raising at import. The graph still compiles and the agent still answers from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change.
+
+== Deployment Is Not a Formality
+
+The second notebook logs the same graph to Unity Catalog as an MLflow `ResponsesAgent` and serves it as a Model Serving endpoint. The line worth understanding is who the endpoint is.
+
+**It authenticates as a service principal, not as you.** A notebook demo runs with your permissions and works because you happen to have them. An endpoint runs as its own identity, and every resource it touches has to be granted to that identity explicitly. That is the line between a notebook that works and a product that works for someone else.
+
+.Three things that follow from that, all measured
+[%collapsible]
+====
+**Resources and credentials are different mechanisms.** Databricks objects are declared at log time and granted to the serving principal from that list. Your Aura password cannot be declared that way, so it travels as a secret reference in the endpoint's environment block and resolves at startup.
+
+**A Genie space grant is not a SQL warehouse grant.** A model logged with the Genie space and not the warehouse underneath it deploys cleanly, routes correctly, and answers every sensor question with `is not authorized to use or monitor this SQL Endpoint`. Two resources, two grants.
+
+**Pin the requirements.** Inferred requirements read the cluster, and a cluster carrying the Lab 6 memory wheel produces a requirement that resolves from no index. The container then fails to build, about fifteen minutes after you stopped watching.
+====
+
+A first deploy takes roughly sixteen minutes, and the notebook polls and prints where it got to. It then asks the endpoint the same questions and scores the answers with MLflow's judges.
+
+The registered model name and the endpoint name come from `agent.py` rather than from a string you type, because Lab 6 redeploys **this** endpoint rather than standing up a second one.
+
+== Why a Bolt Driver Rather Than MCP
+
+Part B reached Neo4j through an MCP server registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance, and the wrong shape for a classroom: the connection is an admin object, one per participant instance is not something a workshop can provision, and the OAuth2 credential behind it belongs to whoever owns the server.
+
+Your instance is yours, your password is in your secret scope, and the Neo4j Python driver opens a Bolt session against it in one line. The governance story Part B tells is real, and it starts to pay when the graph is shared. It costs more than it returns when the graph has exactly one user.
+
+== Next Steps
+
+Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in your workspace, set `GENIE_SPACE_ID` to your own space, and run it. Then `02_deploy_and_evaluate.ipynb` puts it behind an endpoint.
+
+`tools.py` and `agent.py` sit next to the notebooks. They are worth opening in an editor rather than a cell, and `Lab_5_LangGraph_Agent/README.md` documents them.
+
+Then continue to Lab 6, which gives this agent memory in the same graph as the fleet.

@@ -185,14 +185,17 @@ uv run populate-aircraft-db load-operational
 
 ### Phase 1: Operational graph (from CSVs)
 
-**10 node types:** Aircraft, System, Component, Sensor, Reading, Airport, Flight, Delay, MaintenanceEvent, Removal
+**9 node types:** Aircraft, System, Component, Sensor, Airport, Flight, Delay, MaintenanceEvent, Removal
 
-**13 relationship types:** HAS_SYSTEM, HAS_COMPONENT, HAS_SENSOR, HAS_READING, HAS_EVENT, OPERATES_FLIGHT, DEPARTS_FROM, ARRIVES_AT, HAS_DELAY, AFFECTS_SYSTEM, AFFECTS_AIRCRAFT, HAS_REMOVAL, REMOVED_COMPONENT
+**12 relationship types:** HAS_SYSTEM, HAS_COMPONENT, HAS_SENSOR, HAS_EVENT, OPERATES_FLIGHT, DEPARTS_FROM, ARRIVES_AT, HAS_DELAY, AFFECTS_SYSTEM, AFFECTS_AIRCRAFT, HAS_REMOVAL, REMOVED_COMPONENT
 
 CSV files are read from `workshop-setup/aircraft_digital_twin_data/`.
 
-The sensor readings file is loaded into Neo4j as `Reading` nodes and linked
-from `Sensor` nodes with `HAS_READING`.
+The sensor readings file is not loaded into Neo4j. `nodes_readings.csv` holds
+155,520 measurements, and the dual-database design puts every one of them in
+the Databricks `sensor_readings` Delta table instead. `Sensor` nodes carry
+metadata only, so a question about a measured value routes to Genie rather
+than to Cypher.
 
 The removal data includes tracking, work order, technician, part/serial,
 warranty, priority, cost, installation, and shop-visit fields on `Removal`

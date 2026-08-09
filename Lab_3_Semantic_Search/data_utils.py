@@ -106,6 +106,77 @@ class DatabricksEmbeddings(Embedder):
 
 
 # =============================================================================
+# Chat Response Helpers
+# =============================================================================
+
+def extract_text(content: Any) -> str:
+    """Flatten a chat endpoint's message content down to plain text.
+
+    A hybrid reasoning model does not always answer with a string. When
+    ``databricks-claude-sonnet-5`` decides a prompt is worth thinking about,
+    ``choices[0].message.content`` comes back as a list of content parts: a
+    ``reasoning`` part carrying the thinking summary, then a ``text`` part
+    carrying the answer. Whether the model thinks depends on the prompt, so
+    the same code path sees both shapes on different calls.
+
+    Every caller in this workshop wants the answer and none of them want the
+    thinking, so this keeps the ``text`` parts in the order they arrived and
+    drops everything else. Parts that are not dicts, or that are missing the
+    keys, are skipped rather than raised on: a malformed part is not worth
+    failing a lab over.
+
+    Args:
+        content: The raw ``message.content`` value from a chat endpoint. It
+            may be a string, None, or a list of content parts.
+
+    Returns:
+        The plain text of the response, or an empty string when there is none.
+    """
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        texts = []
+        for part in content:
+            if not isinstance(part, dict) or part.get("type") != "text":
+                continue
+            text = part.get("text")
+            if isinstance(text, str):
+                texts.append(text)
+        return "".join(texts)
+    return str(content)
+
+
+def json_schema_format(name: str, schema: dict[str, Any]) -> dict[str, Any]:
+    """Wrap a JSON Schema in the response_format envelope FMAPI expects.
+
+    Asking a reasoning model for JSON in the prompt and hoping is not
+    reliable. Databricks structured outputs make the endpoint itself enforce
+    the shape, and they accept ``json_schema`` only: the ``json_object`` mode
+    other providers offer is not supported here. The schema has to be named
+    and marked strict, may hold at most 64 keys, and cannot use ``pattern``,
+    ``anyOf``, ``oneOf``, ``allOf``, or ``$ref``. Flat schemas work best.
+
+    One request cannot carry both ``response_format`` and ``tools``. This
+    workshop uses structured outputs and not tool calling, so that is a
+    constraint to know about rather than one to work around.
+
+    Args:
+        name: Short name for the schema, which the endpoint quotes back in
+            any validation error.
+        schema: The JSON Schema the model's response must satisfy.
+
+    Returns:
+        The dict to pass as the request's ``response_format`` field.
+    """
+    return {
+        "type": "json_schema",
+        "json_schema": {"name": name, "schema": schema, "strict": True},
+    }
+
+
+# =============================================================================
 # Databricks LLM
 # =============================================================================
 
@@ -122,26 +193,51 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
     Uses MLflow deployments client for API calls.
     """
 
-    def __init__(self, model_id: str = LLM_ENDPOINT):
+    def __init__(self, model_id: str = LLM_ENDPOINT, *, max_tokens: int = 4096) -> None:
         """Initialize the Databricks LLM provider.
 
         Args:
             model_id: The Databricks Foundation Model endpoint name.
+            max_tokens: Output token budget for every call this instance
+                makes. The default is 4096 rather than something smaller
+                because reasoning tokens count against max_tokens, so a
+                thinking response can spend most of the budget before it
+                reaches the text part and come back truncated.
         """
         LLMInterfaceV2.__init__(self, model_name=model_id)
         self.model_id = model_id
+        self.max_tokens = max_tokens
         self._client = mlflow.deployments.get_deploy_client("databricks")
 
-    def _predict(self, messages: list[dict[str, str]]) -> LLMResponse:
-        """Send messages to the Databricks endpoint and return the response."""
-        response = self._client.predict(
-            endpoint=self.model_id,
-            inputs={
-                "messages": messages,
-                "max_tokens": 2048,
-            },
-        )
-        content = response["choices"][0]["message"]["content"]
+    def _predict(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        response_format: dict[str, Any] | None = None,
+    ) -> LLMResponse:
+        """Send messages to the Databricks endpoint and return the response.
+
+        Args:
+            messages: Chat messages in role/content form.
+            response_format: Optional structured-output envelope from
+                json_schema_format(), which makes the endpoint enforce the
+                shape of the reply. Omitted from the request when None,
+                because the endpoint rejects the field if it is null.
+
+        Returns:
+            LLMResponse containing the response text.
+        """
+        inputs: dict[str, Any] = {
+            "messages": messages,
+            "max_tokens": self.max_tokens,
+        }
+        if response_format is not None:
+            inputs["response_format"] = response_format
+        response = self._client.predict(endpoint=self.model_id, inputs=inputs)
+        # LLMResponse.content is typed as a plain string, and a reasoning
+        # model hands back a list of content parts whenever it thinks, so
+        # flatten the raw content before it reaches the model.
+        content = extract_text(response["choices"][0]["message"]["content"])
         return LLMResponse(content=content)
 
     def invoke(
@@ -149,6 +245,8 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
         input: Union[str, List[LLMMessage]],
         message_history: Optional[Union[List[LLMMessage], Any]] = None,
         system_instruction: Optional[str] = None,
+        *,
+        response_format: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> LLMResponse:
         """Generate a response from the LLM.
@@ -161,6 +259,9 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
             input: Text prompt (V1) or list of LLMMessage dicts (V2).
             message_history: Optional previous messages (V1 only).
             system_instruction: Optional system message (V1 only).
+            response_format: Optional structured-output envelope from
+                json_schema_format(). Callers that need a machine-readable
+                answer pass one, and neither calling convention changes.
 
         Returns:
             LLMResponse containing the generated text.
@@ -170,7 +271,7 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
                 {"role": msg["role"], "content": msg["content"]}
                 for msg in input
             ]
-            return self._predict(messages)
+            return self._predict(messages, response_format=response_format)
 
         messages: list[dict[str, str]] = []
         if system_instruction:
@@ -181,19 +282,22 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
                 for msg in message_history
             )
         messages.append({"role": "user", "content": input})
-        return self._predict(messages)
+        return self._predict(messages, response_format=response_format)
 
     async def ainvoke(
         self,
         input: Union[str, List[LLMMessage]],
         message_history: Optional[Union[List[LLMMessage], Any]] = None,
         system_instruction: Optional[str] = None,
+        *,
+        response_format: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> LLMResponse:
         """Async version of invoke (runs synchronously)."""
         return self.invoke(
             input, message_history=message_history,
-            system_instruction=system_instruction, **kwargs,
+            system_instruction=system_instruction,
+            response_format=response_format, **kwargs,
         )
 
 

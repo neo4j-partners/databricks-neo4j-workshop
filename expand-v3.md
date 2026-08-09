@@ -320,10 +320,9 @@ Each says what the decision is, what the evidence is, and what it blocks.
   - The site stops at Lab 4 and carries pre-regeneration dataset numbers, and it publishes on every push to main.
   - Writing two lab pages is content creation, not drift repair, which is why the audit left it.
   - **Nothing else in the downstream-content work can be scoped until this is answered.**
-- **Do the Lab 6 instructor demos ship to participants, or stay instructor-only?**
-  - `02_instructor_demos.ipynb` is not in the Vocareum notebook list and no document mentions it.
-  - **If it ships,** it needs a list entry and a row in the Lab 6 README file table. **If it does not,** one sentence in that README stops the next reader asking.
-  - The four demos in it are the Lab 6 payoff, so this is not a formatting question. Blocks the Vocareum notebook list.
+- ~~**Do the Lab 6 instructor demos ship to participants, or stay instructor-only?**~~ **Decided by Ryan: it ships.** `02_instructor_demos.ipynb` lands in every workspace and the instructor drives it. It is not a participant exercise.
+  - Applied: `lab/course.env` now names it between the Lab 6 notebook and `memory.py`, and the Lab 6 README file table says so.
+  - The four demos in it are the Lab 6 payoff, which is why shipping it beat leaving it out of the upload.
 - **Enrich the Genie comment strings, or stop restating what the pipeline already wrote?**
   - The pipeline writes a comment, then the Genie provisioning stage overwrites it with a thinner one. Nothing errors, and every provisioned workspace ships the thinner comment.
   - **Comments are what Genie reads to write SQL, so this lands on the participant path in Lab 4.**

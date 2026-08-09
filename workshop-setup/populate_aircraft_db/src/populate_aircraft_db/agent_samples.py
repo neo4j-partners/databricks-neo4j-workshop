@@ -19,8 +19,7 @@ Node labels and properties:
 - Aircraft {aircraft_id, tail_number, icao24, model, manufacturer, operator}
 - System {system_id, aircraft_id, type, name}  (type: Engine, Avionics, Hydraulics)
 - Component {component_id, system_id, type, name}
-- Sensor {sensor_id, system_id, type, name, unit}  (type: EGT, Vibration, N1Speed, FuelFlow)
-- Reading {reading_id, sensor_id, timestamp, value}
+- Sensor {sensor_id, system_id, type, name, unit}  (type: EGT, Vibration, N1Speed, FuelFlow; metadata only, no measured values in this graph)
 - Airport {airport_id, name, city, country, iata, icao, lat, lon}
 - Flight {flight_id, flight_number, aircraft_id, operator, origin, destination, scheduled_departure, scheduled_arrival}
 - Delay {delay_id, cause, minutes}  (cause: Weather, Maintenance, Carrier, NAS)
@@ -40,7 +39,6 @@ Relationships:
 - (Aircraft)-[:HAS_SYSTEM]->(System)
 - (System)-[:HAS_COMPONENT]->(Component)
 - (System)-[:HAS_SENSOR]->(Sensor)
-- (Sensor)-[:HAS_READING]->(Reading)
 - (Component)-[:HAS_EVENT]->(MaintenanceEvent)
 - (MaintenanceEvent)-[:AFFECTS_SYSTEM]->(System)
 - (MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(Aircraft)

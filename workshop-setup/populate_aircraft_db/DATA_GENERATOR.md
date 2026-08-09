@@ -107,7 +107,7 @@ Defaults: 36 aircraft, seed 42, 90 days (2024-07-01 to 2024-09-28), 4-hour readi
 | Systems | 144 | yes | yes |
 | Components | 612 | yes | no |
 | Sensors | 288 | yes | yes |
-| Readings | 155,520 | yes | yes |
+| Readings | 155,520 | no | yes |
 | Airports | 40 | yes | no |
 | Flights | 14,543 | yes | no |
 | Delays | 5,541 | yes | no |
@@ -128,7 +128,7 @@ Fleet composition: 13 B737-800, 9 A320-200, 7 A321neo, 4 E190, 3 A220-300, sprea
 
 ## Neo4j graph schema
 
-### Node types (10)
+### Node types (9)
 
 | Label | Source CSV | Key properties |
 |-------|------------|----------------|
@@ -136,25 +136,25 @@ Fleet composition: 13 B737-800, 9 A320-200, 7 A321neo, 4 E190, 3 A220-300, sprea
 | `System` | `nodes_systems.csv` | `system_id`, `aircraft_id`, `type` (Engine, Avionics, Hydraulics), `name` |
 | `Component` | `nodes_components.csv` | `component_id`, `system_id`, `type`, `name` |
 | `Sensor` | `nodes_sensors.csv` | `sensor_id`, `system_id`, `type` (EGT, Vibration, N1Speed, FuelFlow), `name`, `unit` |
-| `Reading` | `nodes_readings.csv` | `reading_id`, `sensor_id`, `ts`, `value` |
 | `Airport` | `nodes_airports.csv` | `airport_id`, `name`, `city`, `iata`, `icao`, `lat`, `lon` |
 | `Flight` | `nodes_flights.csv` | `flight_id`, `flight_number`, `aircraft_id`, `origin`, `destination`, scheduled times |
 | `Delay` | `nodes_delays.csv` | `delay_id`, `cause` (Weather, Maintenance, NAS, Carrier), `minutes` |
 | `MaintenanceEvent` | `nodes_maintenance.csv` | `event_id`, `component_id`, `fault`, `severity` (MINOR, MAJOR, CRITICAL), `reported_at`, `corrective_action` |
 | `Removal` | `nodes_removals.csv` | `removal_id`, part/serial, work order, technician, warranty, cost, shop-visit fields |
 
+`nodes_readings.csv` is missing from that table on purpose. Its 155,520 measurements load into the Databricks `sensor_readings` Delta table and nowhere else, so this graph holds no measured sensor values at all. `Sensor` nodes are metadata. See [Databricks Delta Lake schema](#databricks-delta-lake-schema) below.
+
 `OperatingLimit` also loads from CSV, from `nodes_operating_limits.csv`: 20 documented takeoff thresholds, keyed on `limit_id`, four parameters for each of the five aircraft models.
 
 The Lab 3 enrichment adds further node types from the manuals: `Document`, `Chunk`, `AircraftModel`, `SystemReference`, `ComponentReference`, `Fault`, `MaintenanceProcedure`, `ExtractedLimit`. Limits the extractor reads out of the manual text land on `ExtractedLimit` rather than `OperatingLimit`, so the label means the 20 canonical CSV rows and nothing else.
 
-### Relationship types (13)
+### Relationship types (12)
 
 | Relationship | Pattern | Source CSV |
 |--------------|---------|------------|
 | `HAS_SYSTEM` | Aircraft → System | `rels_aircraft_system.csv` |
 | `HAS_COMPONENT` | System → Component | `rels_system_component.csv` |
 | `HAS_SENSOR` | System → Sensor | `rels_system_sensor.csv` |
-| `HAS_READING` | Sensor → Reading | derived from `nodes_readings.csv` |
 | `HAS_EVENT` | Component → MaintenanceEvent | `rels_component_event.csv` |
 | `AFFECTS_SYSTEM` | MaintenanceEvent → System | `rels_event_system.csv` |
 | `AFFECTS_AIRCRAFT` | MaintenanceEvent → Aircraft | `rels_event_aircraft.csv` |
