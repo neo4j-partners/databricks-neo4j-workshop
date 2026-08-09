@@ -73,7 +73,7 @@ SHARED_FOLDER = os.environ.get(
 NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     (
         "Lab_1_Aura_Setup",
-        ("01_aura_setup.ipynb",),
+        ("01_create_aura_instance.ipynb", "02_credentials_and_cypher.ipynb"),
         "Lab_1_Aura_Setup",
     ),
     (

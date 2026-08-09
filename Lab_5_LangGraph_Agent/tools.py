@@ -194,14 +194,23 @@ ROUTE_SCHEMA: dict[str, Any] = {
             "type": "string",
             "enum": ["genie_node", "cypher_node", "graphrag_node", "synthesize"],
         },
+        "task": {"type": "string"},
         "reason": {"type": "string"},
     },
-    "required": ["next", "reason"],
+    "required": ["next", "task", "reason"],
 }
 
 # No code reads reason. It is in the schema because a model that has to write
 # down why it picked a tool picks better, and because the free-text fallback in
 # build_supervisor_node needs the tool named somewhere in the reply.
+#
+# task is read, and it is the decomposition. The supervisor names the tool and
+# the single part of the question that tool should answer, in one reply, so a
+# three-part question arrives at each tool as the one part it can serve. It is
+# required rather than optional because a model given an optional field omits
+# it, and an omitted task silently restores the whole-question behaviour this
+# was added to remove. The fallback below fills it with the whole question when
+# the reply arrives as prose, which is the old behaviour and the safe default.
 
 CYPHER_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -216,10 +225,27 @@ CYPHER_SCHEMA: dict[str, Any] = {
 
 
 class Finding(TypedDict):
-    """One tool's answer to the current question."""
+    """One tool's answer to the current question.
+
+    Attributes:
+        tool: The node that produced ``content``.
+        content: What that node returned.
+        grounded: Whether ``content`` rests on data the node actually
+            retrieved. False when a tool ran and came back with nothing, or
+            failed, or answered out of the model's own knowledge.
+
+    ``grounded`` exists because ``tool`` alone is not a citation. ``tool`` says
+    who spoke; it can never be wrong, because it only records which node
+    emitted the text. A label that cannot be wrong looks like a check and is
+    not one. Measured on 2026-08-09: Genie found zero rows, wrote plausible
+    maintenance prose out of its own knowledge, and the synthesizer quoted it
+    as manual guidance under a ``Sources: genie_node`` line. Nothing in the
+    finding could have contradicted that. ``grounded`` is the field that can.
+    """
 
     tool: str
     content: str
+    grounded: bool
 
 
 class AgentState(TypedDict, total=False):
@@ -229,14 +255,25 @@ class AgentState(TypedDict, total=False):
         question: The participant's question, unchanged for the whole run.
         route: The supervisor's most recent decision. One of TOOL_NAMES or
             ``"synthesize"``.
+        task: The one part of the question the tool named by ``route`` should
+            answer. Set by the supervisor on every routing decision.
         trace: Tools called so far, in order. This is the routing record the
             measurement cell reads.
         findings: One entry per tool call.
         answer: The synthesized final answer.
+
+    ``task`` is the fix for a multi-part question reaching every tool whole.
+    Measured on 2026-08-09: the anchor question asks for readings, maintenance
+    history and a procedure in one sentence. Every tool received all three
+    clauses. cypher_node saw the readings clause first, correctly refused
+    because the graph holds no readings, and never reached the maintenance
+    clause it answers well in 17.6 seconds when asked alone. The route looked
+    perfect and a third of the answer came back as unanswerable.
     """
 
     question: str
     route: str
+    task: str
     trace: list[str]
     findings: list[Finding]
     answer: str
@@ -518,20 +555,38 @@ next. A typical order:
 ## Rules for choosing
 
   1. Call each tool at most once. A tool that has already run has given you
-     everything it has, and calling it again returns the same thing.
+     everything it has, and calling it again returns the same thing. Tools
+     already called are listed below and are not offered to you again.
   2. Choose synthesize as soon as every part of the question has a finding
      against it, even a partial finding. A partial answer beats another call
      that returns the same rows.
   3. Choose synthesize when the only part left is one no tool can answer.
   4. A question with one part needs one tool, then synthesize.
+  5. A finding marked [NO DATA RETRIEVED] came back empty. Treat that part of
+     the question as still unanswered, and do not count it as covered under
+     rule 2.
 
 ## What to answer with
 
-Reply with a JSON object holding exactly two fields:
+Reply with a JSON object holding exactly three fields:
 
   next    the one tool to call: genie_node, cypher_node, graphrag_node, or
           synthesize
+  task    the one part of the question that tool should answer, written as a
+          standalone question in the participant's own terms. Carry over any
+          aircraft, engine or system named elsewhere in the question, because
+          the tool sees only this text and not the rest. Give the whole
+          question when it has only one part, and when next is synthesize.
   reason  one sentence, naming that same tool, saying why it is the next one
+
+## Why task matters
+
+Each tool sees only what you put in task. A question that asks for readings,
+maintenance history and a procedure at once has three parts, and the tools
+answer one each. Sending all three to one tool is how a part gets lost: the
+graph holds no sensor readings, so cypher_node given the whole question
+answers the readings clause with a refusal and never reaches the maintenance
+history it could have returned.
 
 ## The question
 
@@ -551,9 +606,16 @@ SYNTHESIS_PROMPT = """\
 Answer the question from the findings below. The findings are the only source,
 so do not add facts from your own knowledge.
 
+A finding whose heading carries [NO DATA RETRIEVED] is not evidence. That tool
+ran and came back with nothing, so whatever text sits under the heading is the
+tool's own wording and not a fact from the lakehouse, the graph or a manual.
+Never state its content as fact and never put it behind a source. Say instead
+that the tool could not answer that part.
+
 Write the answer first, in prose, using every number and name the findings give
 you. Quote the actual values. Then, on a final line beginning 'Sources:', list
-which tool supplied which part.
+which tool supplied which part. Only findings without [NO DATA RETRIEVED] may
+appear on that line.
 
 If a finding answers a question that is close to the one asked but not exactly
 it, use the finding and say what it actually covers. Only say something is
@@ -582,22 +644,67 @@ Findings:
 # Shared helpers
 # =============================================================================
 
+# Appended to a finding's heading when the tool retrieved nothing. Read by the
+# supervisor and the synthesizer, both of which are told what it means.
+UNGROUNDED_MARK = "  [NO DATA RETRIEVED]"
+
 
 def _format_findings(findings: Sequence[Finding]) -> str:
-    """Render the findings list for a prompt."""
+    """Render the findings list for a prompt.
+
+    A finding that retrieved nothing is labelled as such in its own heading,
+    so the model reading this cannot treat "genie_node said it" and "the
+    lakehouse holds it" as the same claim.
+    """
     if not findings:
         return "(nothing gathered yet)"
     return "\n\n".join(
-        f"### {item['tool']}\n{item['content']}" for item in findings
+        f"### {item['tool']}{'' if item.get('grounded', True) else UNGROUNDED_MARK}"
+        f"\n{item['content']}"
+        for item in findings
     )
 
 
-def _record(state: AgentState, tool: str, content: str) -> dict[str, Any]:
-    """Build the state update a tool node returns."""
+def _record(
+    state: AgentState, tool: str, content: str, *, grounded: bool
+) -> dict[str, Any]:
+    """Build the state update a tool node returns.
+
+    Args:
+        state: The state the node was called with.
+        tool: The node recording this finding.
+        content: What the node produced.
+        grounded: Whether ``content`` rests on retrieved data. Keyword-only and
+            without a default on purpose: every call site has to decide, and a
+            new tool node cannot inherit a comfortable default by forgetting.
+    """
+    finding: Finding = {"tool": tool, "content": content, "grounded": grounded}
     return {
         "trace": [*state.get("trace", []), tool],
-        "findings": [*state.get("findings", []), {"tool": tool, "content": content}],
+        "findings": [*state.get("findings", []), finding],
     }
+
+
+def _clean_task(task: str | None, question: str) -> str:
+    """The sub-question to hand a tool, or the whole question if none is usable.
+
+    A model that honours the schema can still return an empty string or repeat
+    the whole question back. Both are fine; both mean "no decomposition", which
+    is the behaviour this had before ``task`` existed.
+    """
+    cleaned = (task or "").strip()
+    return cleaned or question
+
+
+def _task_for(state: AgentState) -> str:
+    """The text a tool node should work on.
+
+    The supervisor sets ``task`` to the one part of the question it wants this
+    tool to answer. It falls back to the whole question, which is what Lab 6's
+    own supervisor produces, since that one rewrites ``question`` and sets no
+    ``task``.
+    """
+    return state.get("task") or state["question"]
 
 
 def _rows_to_text(rows: Sequence[dict[str, Any]], max_rows: int) -> str:
@@ -699,7 +806,7 @@ def build_genie_node(
     """
 
     def genie_node(state: AgentState) -> dict[str, Any]:
-        question = state["question"]
+        question = _task_for(state)
         try:
             message = workspace_client.genie.start_conversation_and_wait(
                 space_id=space_id, content=question
@@ -709,9 +816,15 @@ def build_genie_node(
                 state,
                 "genie_node",
                 f"Genie space {space_id} could not be reached: {error}",
+                grounded=False,
             )
 
         parts: list[str] = []
+        # Set only when a query result comes back. Genie's prose arrives on the
+        # text attachment whether or not any SQL ran, and prose with no rows
+        # under it is the model's own knowledge. That is the case that produced
+        # invented maintenance guidance under a clean genie_node source line.
+        rows_read = False
         for attachment in message.attachments or []:
             if attachment.text is not None and attachment.text.content:
                 parts.append(attachment.text.content)
@@ -729,6 +842,7 @@ def build_genie_node(
             except Exception as error:  # noqa: BLE001 - reported, not raised
                 parts.append(f"The SQL ran but its rows could not be read: {error}")
             else:
+                rows_read = rows_read or _genie_result_has_rows(result)
                 parts.append(_format_genie_result(result, max_rows))
 
         # GenieMessage.content is the question that was sent, not the reply, so
@@ -741,9 +855,22 @@ def build_genie_node(
                 if detail
                 else "Genie returned no answer and no SQL for this question."
             )
-        return _record(state, "genie_node", "\n\n".join(parts))
+        return _record(
+            state, "genie_node", "\n\n".join(parts), grounded=rows_read
+        )
 
     return genie_node
+
+
+def _genie_result_has_rows(result: Any) -> bool:
+    """Whether a Genie statement result carries at least one row.
+
+    This is what makes a genie_node finding grounded. A Genie answer with no
+    rows under it is prose, and prose from a text-to-SQL tool is not evidence
+    about the lakehouse whatever it sounds like.
+    """
+    data = getattr(getattr(result, "statement_response", None), "result", None)
+    return bool(data is not None and data.data_array)
 
 
 def _format_genie_result(result: Any, max_rows: int) -> str:
@@ -773,6 +900,7 @@ def build_cypher_node(
     database: str,
     schema: str = GRAPH_SCHEMA,
     max_rows: int = 25,
+    query_limit: int = 100,
     repair_attempts: int = 1,
 ) -> Callable[[AgentState], dict[str, Any]]:
     """Build the node that writes and runs Cypher against the participant's Aura.
@@ -787,12 +915,23 @@ def build_cypher_node(
         llm: A ``data_utils.DatabricksLLM``.
         database: Neo4j database name.
         schema: Schema description handed to the LLM.
-        max_rows: Rows kept from the result set.
+        max_rows: Rows shown to the synthesizer. Beyond this the rendering says
+            how many more there were, so truncation for display is visible.
+        query_limit: LIMIT written into the generated Cypher.
         repair_attempts: How many times a failing query is sent back to the LLM
             with its error message.
 
     Returns:
         A LangGraph node.
+
+    ``max_rows`` used to be both numbers at once, at 25. That put LIMIT 25 in
+    the generated query, so the database returned at most 25 rows and nothing
+    downstream could tell a complete answer from a truncated one. Measured on
+    2026-08-09: the maintenance history of N10004 came back as 23 events and
+    read as complete. Two more events on that aircraft and the same answer
+    would have been quietly wrong. Splitting them means the query fetches more
+    than is shown, so hitting the ceiling is detectable, and hitting it is
+    reported rather than left to be inferred from a round number.
     """
     from neo4j import RoutingControl
 
@@ -824,7 +963,7 @@ def build_cypher_node(
 
     def _generate(question: str) -> str:
         prompt = CYPHER_GENERATION_PROMPT.format(
-            schema=schema, question=question, limit=max_rows
+            schema=schema, question=question, limit=query_limit
         )
         return _ask(prompt)
 
@@ -835,7 +974,7 @@ def build_cypher_node(
         return _ask(prompt)
 
     def cypher_node(state: AgentState) -> dict[str, Any]:
-        question = state["question"]
+        question = _task_for(state)
         query = _generate(question)
         last_error = ""
         for attempt in range(repair_attempts + 1):
@@ -855,15 +994,32 @@ def build_cypher_node(
                     state,
                     "cypher_node",
                     f"Cypher failed.\n\nQuery:\n{query}\n\nError: {last_error}",
+                    grounded=False,
                 )
             rows = [dict(record) for record in records]
+            # The query asked for query_limit rows and got exactly that many,
+            # so the graph may hold more that this answer does not cover. Say
+            # so rather than let a ceiling read as a total.
+            truncated = (
+                f"\n\nThis query returned exactly its LIMIT of {query_limit} "
+                "rows, so the graph may hold more than are listed here."
+                if len(rows) >= query_limit
+                else ""
+            )
             return _record(
                 state,
                 "cypher_node",
                 f"Cypher:\n{query}\n\nRows ({len(rows)}):\n"
-                f"{_rows_to_text(rows, max_rows)}",
+                f"{_rows_to_text(rows, max_rows)}{truncated}",
+                # A query that ran and returned no rows is still grounded: the
+                # empty set is a fact about the graph. A refusal is not, and
+                # the refusal queries return one row saying so, which is why
+                # this is not keyed on len(rows).
+                grounded=True,
             )
-        return _record(state, "cypher_node", f"Cypher failed: {last_error}")
+        return _record(
+            state, "cypher_node", f"Cypher failed: {last_error}", grounded=False
+        )
 
     return cypher_node
 
@@ -999,7 +1155,7 @@ def build_graphrag_node(
         message = MISSING_INDEX_MESSAGE.format(index=index_name)
 
         def graphrag_node_unavailable(state: AgentState) -> dict[str, Any]:
-            return _record(state, "graphrag_node", message)
+            return _record(state, "graphrag_node", message, grounded=False)
 
         graphrag_node_unavailable.available = False  # type: ignore[attr-defined]
         return graphrag_node_unavailable
@@ -1020,7 +1176,7 @@ def build_graphrag_node(
     def graphrag_node(state: AgentState) -> dict[str, Any]:
         try:
             response = rag.search(
-                state["question"],
+                _task_for(state),
                 retriever_config={"top_k": top_k},
                 return_context=True,
                 response_fallback="No relevant maintenance procedures found.",
@@ -1030,6 +1186,7 @@ def build_graphrag_node(
                 state,
                 "graphrag_node",
                 f"Manual retrieval failed: {error}",
+                grounded=False,
             )
         # retriever_result is absent when nothing cleared the similarity floor
         # and the fallback answered instead.
@@ -1042,6 +1199,10 @@ def build_graphrag_node(
             "graphrag_node",
             f"{response.answer}\n\n(from {len(items)} manual passages, "
             f"aircraft types: {sources or 'unknown'})",
+            # No passages means the response_fallback answered, or the LLM did.
+            # Either way no manual was read, so the answer is not manual
+            # guidance however much it reads like it.
+            grounded=bool(items),
         )
 
     graphrag_node.available = True  # type: ignore[attr-defined]
@@ -1075,44 +1236,65 @@ def build_supervisor_node(
     """
     allowed = (*available_tools, "synthesize")
 
-    # ROUTE_SCHEMA names all three tools, and this agent may have only two, so
-    # the enum is narrowed to what this agent was actually given. A schema the
-    # model cannot leave is a better guard than a check after the fact, and the
-    # check after the fact is kept anyway for the replies that arrive without
-    # having gone through the schema at all.
-    route_format = json_schema_format(
-        "routing_decision",
-        {
-            **ROUTE_SCHEMA,
-            "properties": {
-                **ROUTE_SCHEMA["properties"],
-                "next": {"type": "string", "enum": list(allowed)},
+    def _route_format(remaining: Sequence[str]) -> dict[str, Any]:
+        """Build the response format for one decision.
+
+        ROUTE_SCHEMA names all three tools, and this agent may have only two,
+        so the enum is narrowed to what this agent was actually given. It is
+        narrowed again per call to drop the tools that have already run: the
+        prompt asks for each tool at most once and nothing used to enforce
+        that, so cypher_node ran twice on one question and returned the
+        identical refusal both times. A schema the model cannot leave beats a
+        rule it can read and ignore. The check after the fact is kept anyway,
+        for replies that never went through the schema at all.
+        """
+        return json_schema_format(
+            "routing_decision",
+            {
+                **ROUTE_SCHEMA,
+                "properties": {
+                    **ROUTE_SCHEMA["properties"],
+                    "next": {"type": "string", "enum": list(remaining)},
+                },
             },
-        },
-    )
+        )
 
     def supervisor_node(state: AgentState) -> dict[str, Any]:
         trace = state.get("trace", [])
         if len(trace) >= max_tool_calls:
             return {"route": "synthesize"}
 
+        # Every tool has run, so there is nothing left to call.
+        remaining = tuple(t for t in allowed if t not in trace)
+        if remaining == ("synthesize",):
+            return {"route": "synthesize"}
+
+        question = state["question"]
         rendered = prompt.format(
-            question=state["question"],
+            question=question,
             called=", ".join(trace) or "(none yet)",
             findings=_format_findings(state.get("findings", [])),
         )
-        decision = llm.invoke(rendered, response_format=route_format).content
+        reply_format = _route_format(remaining)
+        decision = llm.invoke(rendered, response_format=reply_format).content
 
         try:
-            chosen = json.loads(decision)["next"]
+            reply = json.loads(decision)
+            chosen = reply["next"]
+            task = reply.get("task")
         except (KeyError, TypeError, ValueError):
-            chosen = None
+            chosen, task = None, None
+
         if chosen is not None:
             # A name outside available_tools becomes synthesize rather than a
             # call. graphrag_node is dropped from available_tools when the
             # participant has no vector index, and routing there anyway would
-            # run a tool that can only report its own absence.
-            return {"route": chosen if chosen in allowed else "synthesize"}
+            # run a tool that can only report its own absence. A tool already
+            # in the trace becomes synthesize for the same reason: it has
+            # given everything it has.
+            if chosen not in remaining:
+                return {"route": "synthesize", "task": question}
+            return {"route": chosen, "task": _clean_task(task, question)}
 
         # Nothing usable came back as JSON, so read the decision out of the
         # reply's own words. This is what the node did before the schema
@@ -1123,13 +1305,16 @@ def build_supervisor_node(
         # mentions several, and the last one is the one it settled on.
         chosen = "synthesize"
         best = -1
-        for tool in allowed:
+        for tool in remaining:
             position = decision.rfind(tool)
             if position > best:
                 best, chosen = position, tool
         if best < 0:
             chosen = "synthesize"
-        return {"route": chosen}
+        # No decomposition on this path. A prose reply has no field to read a
+        # sub-question out of, and inventing one by regular expression is how a
+        # question drifts. The whole question is the old behaviour and is safe.
+        return {"route": chosen, "task": question}
 
     return supervisor_node
 

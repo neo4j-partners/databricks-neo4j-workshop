@@ -344,9 +344,13 @@ SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
-# The database name AuraDB Free serves, and the one every scope written before
-# neo4j-database existed implies. read_neo4j_secrets falls back to it, and it is
-# the only place that fallback lives.
+# The name every scope written before neo4j-database existed implies.
+# read_neo4j_secrets falls back to it, and it is the only place that fallback
+# lives. It is a guess, not a rule: Aura names the database and often names it
+# after the instance ID, so an instance at f024ea61.databases.neo4j.io can serve
+# a database called f024ea61 and reject "neo4j" outright. Lab 1's
+# 02_credentials_and_cypher.ipynb detects the real name and stores it, which is
+# what keeps this fallback off the path for any scope written since.
 DEFAULT_NEO4J_DATABASE = "neo4j"
 
 # Databricks caps a scope name at 128 characters. The prefix plus its separator
@@ -399,14 +403,15 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
         # exception, a type this module cannot import to catch by name.
         raise RuntimeError(
             f"Could not read Neo4j credentials from secret scope '{scope}'. "
-            "Run 01_data_and_embeddings.ipynb first: it creates the scope and "
-            "stores the credentials there."
+            "Run Lab 1's 02_credentials_and_cypher.ipynb first: it creates the "
+            "scope and stores the credentials there."
         ) from error
 
     # The database key arrived after the other three, so a scope written before
-    # it exists holds three keys and dbutils raises on the fourth. That is a
-    # working scope, not a broken one: it belongs to an AuraDB Free instance,
-    # whose database is named neo4j. This is the one place that fallback lives.
+    # it exists holds three keys and dbutils raises on the fourth. Fall back to
+    # the common name rather than failing, which keeps those older scopes
+    # working. This is the one place that fallback lives. Re-running Lab 1's
+    # 02_credentials_and_cypher.ipynb writes the key and retires the guess.
     try:
         database = dbutils.secrets.get(scope, SECRET_KEY_NEO4J_DATABASE)
     except Exception:
@@ -435,8 +440,9 @@ class Neo4jConnection:
             uri: Neo4j URI (e.g., "neo4j+s://xxxxxxxx.databases.neo4j.io")
             username: Neo4j username (typically "neo4j")
             password: Neo4j password
-            database: Neo4j database name. Defaults to the AuraDB Free name,
-                which the secret scope's neo4j-database key overrides.
+            database: Neo4j database name. Defaults to the common name, which
+                the secret scope's neo4j-database key overrides. Aura does not
+                always call it neo4j, so prefer the stored value.
         """
         self.uri = uri
         self.username = username

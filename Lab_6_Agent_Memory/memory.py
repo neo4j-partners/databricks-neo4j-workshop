@@ -233,8 +233,8 @@ UNUSED_MEMORY_SUBSYSTEMS = ("facts", "consolidation", "read_audit", "geospatial"
 ENV_CREDENTIAL_NAMES = ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
 
 # The fourth variable, which is optional. An endpoint deployed from a scope
-# without a neo4j-database key does not carry it, and the AuraDB Free name
-# stands in.
+# without a neo4j-database key does not carry it, and the runtime asks the
+# instance which database it holds instead of assuming a name.
 ENV_DATABASE_NAME = "NEO4J_DATABASE"
 
 # How many past messages the recall node pulls in. Each one is a vector search

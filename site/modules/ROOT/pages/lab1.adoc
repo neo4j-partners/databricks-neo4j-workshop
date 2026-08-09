@@ -4,7 +4,7 @@ This is the first of six labs. The graph database you provision here is the foun
 
 IMPORTANT: There is one instance and no fallback. Every later lab reads and writes the instance you create here, so save the password where you can find it again. Losing it means redoing Labs 2 and 3.
 
-TIP: Ready to start? Open `Lab_1_Aura_Setup/01_aura_setup.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
+TIP: Ready to start? Open `Lab_1_Aura_Setup/01_create_aura_instance.ipynb` in your Databricks workspace, then `02_credentials_and_cypher.ipynb`. Every step lives in those two notebooks; this page is the background behind them.
 
 .**At a Glance**
 
@@ -132,4 +132,4 @@ The Aura console provides three tools you will use throughout the workshop:
 
 == Next Steps
 
-Open `Lab_1_Aura_Setup/01_aura_setup.ipynb` to provision your Neo4j Aura database and practice Cypher basics. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].
+Open `Lab_1_Aura_Setup/01_create_aura_instance.ipynb` to provision your Neo4j Aura database, then `02_credentials_and_cypher.ipynb` to store its credentials and practice Cypher basics. That second notebook is the only place in the workshop where you type a Neo4j password: it writes the credentials into a Databricks secret scope that every later lab reads. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].

@@ -22,7 +22,7 @@ import dlt
 from pyspark.sql.functions import (
     col, to_timestamp, trim, upper, when, lit, count, avg, max as spark_max,
     min as spark_min, sum as spark_sum, datediff, current_timestamp, expr,
-    concat, round as spark_round
+    concat, round as spark_round, regexp_replace
 )
 from pyspark.sql.types import DoubleType, IntegerType
 
@@ -291,10 +291,28 @@ def silver_systems():
 
 @dlt.table(
     name="silver_sensors",
-    comment="Sensors installed on aircraft systems measuring EGT, vibration, N1 speed, fuel flow"
+    comment="Sensors installed on aircraft systems measuring EGT, vibration, N1 speed, fuel flow. The unit column is ASCII: temperatures read C, not the degree sign the source CSV carries."
 )
 @dlt.expect_or_drop("valid_sensor_id", "sensor_id IS NOT NULL")
 def silver_sensors():
+    """Sensors, with the unit column normalised to ASCII.
+
+    The source CSV writes temperature units as ``°C`` with a degree sign. Genie
+    generating SQL against this table does not reproduce that character: it
+    writes ``unit = 'C'`` or ``LOWER(unit) = 'c'``, matches zero rows, and the
+    agent above it then reports flatly that no engine shows an abnormal EGT.
+    That answer is false. The same question with no unit filter finds over
+    4,980 abnormal readings on one engine of N10000 alone.
+
+    Stripping the degree sign here fixes it once, for every consumer, rather
+    than asking each query to spell a character the model will not emit. The
+    runner-up was a column comment telling Genie the format, which is cheaper
+    but only works for as long as the model reads and honours it.
+
+    The Neo4j side keeps ``°C`` on OperatingLimit. Nothing joins the two
+    databases on unit, so the two spellings do not have to agree, and the
+    graph's value is what the manuals print.
+    """
     return (
         dlt.read("bronze_sensors")
         .selectExpr(
@@ -305,6 +323,7 @@ def silver_sensors():
             "unit"
         )
         .withColumn("sensor_type", trim(col("sensor_type")))
+        .withColumn("unit", trim(regexp_replace(col("unit"), "°", "")))
         .dropDuplicates(["sensor_id"])
     )
 
