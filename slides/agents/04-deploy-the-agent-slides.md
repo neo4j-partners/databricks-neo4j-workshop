@@ -176,7 +176,7 @@ fifteen minutes after you stopped watching.
 
 ```python
 [
-    DatabricksGenieSpace(genie_space_id=...),      # the space genie_node asks
+    DatabricksGenieSpace(genie_agent_id=...),      # the space genie_node asks
     DatabricksSQLWarehouse(warehouse_id=...),      # where that SQL actually runs
     *[DatabricksTable(table_name=...) for ...],    # the gold tables the SQL reads
     DatabricksServingEndpoint(endpoint_name=...),  # the LLM

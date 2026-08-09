@@ -177,6 +177,6 @@ That is the closing argument of the workshop, and it is the argument xref:worksh
 
 == Next Steps
 
-Open `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your workspace, set `GENIE_SPACE_ID` to your own space, and run it. Lab 5's folder has to sit beside it, because this notebook imports Lab 5's tools rather than carrying a copy.
+Open `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your workspace, set `GENIE_AGENT_ID` to your own space, and run it. Lab 5's folder has to sit beside it, because this notebook imports Lab 5's tools rather than carrying a copy.
 
 `memory.py` sits next to the notebooks and is worth opening in an editor rather than a cell. `Lab_6_Agent_Memory/README.md` documents what it exports and the constraints that come with it.

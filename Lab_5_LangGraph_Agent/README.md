@@ -17,7 +17,7 @@ Builds the three nodes and carries the two prompts that matter.
 
 | Name | What it does |
 |---|---|
-| `build_genie_node` | Calls your Genie space. Needs `GENIE_SPACE_ID` |
+| `build_genie_node` | Calls your Genie space. Needs `GENIE_AGENT_ID` |
 | `build_cypher_node` | Text to Cypher, run in a read transaction, one retry with the error attached |
 | `build_graphrag_node` | `VectorCypherRetriever` over `maintenanceChunkEmbeddings`. Returns a self-explaining stub if the index is missing, rather than raising |
 | `SUPERVISOR_PROMPT` | Routes on where a question *starts*, not on what a tool does at the end |

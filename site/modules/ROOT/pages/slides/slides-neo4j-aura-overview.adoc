@@ -1,7 +1,7 @@
 = Neo4j Aura: Cloud Graph Database (Slides)
 
 ++++
-<iframe src="../_attachments/slides/platform-overview/01-neo4j-aura-overview-slides.html"
+<iframe src="../_attachments/slides/platform-overview/04-neo4j-aura-overview-slides.html"
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++

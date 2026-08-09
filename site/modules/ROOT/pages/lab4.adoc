@@ -193,6 +193,6 @@ Neither column is the right answer in general. Part B is faster to stand up and 
 
 == Next Steps
 
-Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` to build your Genie space, and keep the space ID it gives you. Lab 5 reads it as `GENIE_SPACE_ID`, and losing it means rebuilding the space.
+Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` to build your Genie space, and keep the space ID it gives you. Lab 5 reads it as `GENIE_AGENT_ID`, and losing it means rebuilding the space.
 
 Then watch Part B, and continue to Lab 5, where the supervisor becomes code you own.

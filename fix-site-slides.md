@@ -454,7 +454,7 @@ There are six, and they total 1,049 lines.
 
   **DECIDED:** Add it, and merge it with the eight-versus-four item below into one beat. They are the same idea twice. The lesson: what you *hide* from Genie shapes its answers as much as what you show it, and the comments in `lab/workshop.py` are written to be read by a model.
 
-- **The Genie space ID.** Participants copy the 32-character ID out of the room URL because everyone titles their space differently, and Lab 5 and Lab 6 both read `GENIE_SPACE_ID`. **Procedure, so it lives in the notebook.** The site's job is one line saying Lab 4 produces a value Lab 5 consumes.
+- **The Genie space ID.** Participants copy the 32-character ID out of the room URL because everyone titles their space differently, and Lab 5 and Lab 6 both read `GENIE_AGENT_ID`. **Procedure, so it lives in the notebook.** The site's job is one line saying Lab 4 produces a value Lab 5 consumes.
 
   **DECIDED:** One line on the site, procedure in the notebook. This is the second cross-lab handoff after the Lab 3 secret scope, so name it as one: Lab 4 produces a value, Lab 5 consumes it, and losing it costs a rebuild.
 
@@ -870,3 +870,26 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 > **Recoverable** with `git show d7faca2:slides/docs/<file>`.
 >
 > **Six live references removed**, not two. `slides/README.md` had a whole "Participant Reference Docs" section linking two of them, which would have been broken links. `slides/organize.md` carried four entries treating them as kept reference docs; its three inventory rows now record the deletion the way that file already records `overview-databricks-neo4j/SUMMARY.md`. `worklog/docs-audit.md:325` lost its citation. The `docs/` comment in `slides/build-slides.sh` is retired. **Historical STATUS records in this document, at the Aura Agents sweep and the diagram collapse, were left**, because they correctly describe edits made when those files existed.
+
+> **STATUS: `platform-overview/` renumbered folder-local, 2026-08-09.** Four decks shared the `01-` prefix, so the folder sorted alphabetically by title and put the workshop opener **last**, behind three decks that assume you have already seen it.
+>
+> **The prefixes were a fossil of an abandoned global sequence.** Somebody started renumbering per folder, finished `retrieval-patterns/` (01-04) and `agents/` (01-05), and stopped. `platform-overview/` collided because all four decks were `01` under the old scheme and nobody split them.
+>
+> **The new order matches the order `site/nav.adoc` already publishes**, so the folder and the site now agree:
+>
+> | Was | Now |
+> | --- | --- |
+> | `01-workshop-over.md` | `01-workshop-overview-slides.md` |
+> | `01-databricks-neo4j-integration-slides.md` | `02-databricks-neo4j-integration-slides.md` |
+> | `01-intro-databricks-neo4j-slides.md` | `03-intro-databricks-neo4j-slides.md` |
+> | `01-neo4j-aura-overview-slides.md` | `04-neo4j-aura-overview-slides.md` |
+>
+> **The opener also gained the `-slides` suffix**, which it was the only deck in the repository to lack, and which was free while the file was being renamed anyway.
+>
+> **`site/nav.adoc` needed no change.** The wrapper filenames under `site/modules/ROOT/pages/slides/` are already topic-free (`slides-workshop-overview.adoc`), so only each wrapper's `iframe src` moved. Four wrappers, four one-line edits. `slides/organize.md` took 71 path updates across 55 lines, which is its job as the deck catalogue.
+>
+> **The other four folders were left alone, deliberately.** `genai-foundations/` starts at 02, `graph-ml/` at 03, `kg-construction/` runs 07 and 09, `background/governance/` has no number at all. Renumbering them looks tidy but **erases information**: the 07/09 gaps are what tell you 05, 06 and 08 moved to `background/`. That is a separate and larger call.
+>
+> **Verified.** `build-slides.sh` emits 24 decks with the four new `platform-overview` names; `npm run build` is warning-free; all 24 wrapper `iframe src` values resolve to a file in `build/site/`.
+>
+> **Historical records keep the old paths**, same rule as the `slides/docs/` deletion: `expand.md`, `svg-png.md`, `worklog/docs-audit.md` and the earlier STATUS blocks in this document correctly describe the tree as it stood when they were written.

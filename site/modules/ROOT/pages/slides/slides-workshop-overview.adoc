@@ -1,7 +1,7 @@
 = Neo4j and Databricks Workshop (Slides)
 
 ++++
-<iframe src="../_attachments/slides/platform-overview/01-workshop-over.html"
+<iframe src="../_attachments/slides/platform-overview/01-workshop-overview-slides.html"
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++

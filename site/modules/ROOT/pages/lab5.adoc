@@ -150,7 +150,7 @@ Your instance is yours, your password is in your secret scope, and the Neo4j Pyt
 
 == Next Steps
 
-Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in your workspace, set `GENIE_SPACE_ID` to your own space, and run it. Then `02_deploy_and_evaluate.ipynb` puts it behind an endpoint.
+Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in your workspace, set `GENIE_AGENT_ID` to your own space, and run it. Then `02_deploy_and_evaluate.ipynb` puts it behind an endpoint.
 
 `tools.py` and `agent.py` sit next to the notebooks. They are worth opening in an editor rather than a cell, and `Lab_5_LangGraph_Agent/README.md` documents them.
 

@@ -114,11 +114,11 @@ ENV_NEO4J_PASSWORD = "NEO4J_PASSWORD"
 ENV_NEO4J_DATABASE = "NEO4J_DATABASE"
 
 # Everything that is not a credential travels as model config instead, logged
-# with the model. genie_space_id in particular has to agree with the space
+# with the model. genie_agent_id in particular has to agree with the space
 # build_resources declares at log time, and both come off the same notebook
 # variable rather than out of two places that can drift.
 DEFAULT_CONFIG: dict[str, Any] = {
-    "genie_space_id": "",
+    "genie_agent_id": "",
     "neo4j_database": "",
     "llm_endpoint": LLM_ENDPOINT,
     "embedding_endpoint": EMBEDDING_ENDPOINT,
@@ -144,7 +144,7 @@ GOLD_TABLES = (
 )
 
 
-def build_resources(genie_space_id: str, warehouse_id: str) -> list[Any]:
+def build_resources(genie_agent_id: str, warehouse_id: str) -> list[Any]:
     """Every Databricks thing the endpoint is allowed to reach.
 
     The serving principal starts with access to nothing, and MLflow grants it
@@ -170,7 +170,7 @@ def build_resources(genie_space_id: str, warehouse_id: str) -> list[Any]:
     )
 
     return [
-        DatabricksGenieSpace(genie_space_id=genie_space_id),
+        DatabricksGenieSpace(genie_agent_id=genie_agent_id),
         DatabricksSQLWarehouse(warehouse_id=warehouse_id),
         *[
             DatabricksTable(table_name=f"{GOLD_SCHEMA}.{table}")
@@ -380,10 +380,10 @@ def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
     from databricks.sdk import WorkspaceClient
     from langgraph.graph import END, START, StateGraph
 
-    genie_space_id = config.get("genie_space_id") or ""
-    if not genie_space_id:
+    genie_agent_id = config.get("genie_agent_id") or ""
+    if not genie_agent_id:
         raise RuntimeError(
-            "No 'genie_space_id' in the model config. The agent was logged "
+            "No 'genie_agent_id' in the model config. The agent was logged "
             "without one, so genie_node has nothing to ask."
         )
     missing = [
@@ -409,7 +409,7 @@ def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
     llm = get_llm(config.get("llm_endpoint", LLM_ENDPOINT))
     embedder = get_embedder(config.get("embedding_endpoint", EMBEDDING_ENDPOINT))
 
-    genie_node = build_genie_node(genie_space_id, WorkspaceClient())
+    genie_node = build_genie_node(genie_agent_id, WorkspaceClient())
     cypher_node = build_cypher_node(driver, llm, database=database)
     graphrag_node = build_graphrag_node(
         driver, llm, embedder, database=database, top_k=config.get("top_k", 3)
