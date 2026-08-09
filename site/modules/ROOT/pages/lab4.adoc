@@ -11,20 +11,20 @@ Lab 3 built a knowledge graph from maintenance documentation and enabled semanti
 
 .**At a Glance**
 
-* **Agents** use the ReAct pattern (Reason + Act): perceive, reason, call tools, observe results, repeat
+* **Agents** run the ReAct loop: perceive, reason, call tools, observe results, repeat
 * **Genie Agent** translates natural language to SQL for sensor telemetry analytics over Delta tables. **This is what you build**
 * **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher). **Optional demo**
-* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both. **Optional demo, and Lab 5 rebuilds this in code**
-* One agent per platform prevents idiom mixing (SQL thinks in rows/aggregations, Cypher thinks in paths/patterns)
+* **Supervisor Agent**, built in Agent Bricks, routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both. **Optional demo, and Lab 5 rebuilds this in code**
+* One agent per platform stops the two idioms mixing. SQL thinks in rows and aggregations, Cypher thinks in paths and patterns
 
-== What Are Agents
+== What an Agent Is
 
-An AI agent is more than a language model answering questions. It perceives its environment (the user's question, available tools, conversation history), reasons about what to do, takes action by calling tools, and returns a response. These four stages run in a loop: after observing the result of one action, the agent can reason again and take another.
+An AI agent is more than a language model answering questions. It perceives its environment, meaning the user's question, the available tools and the conversation history. It reasons about what to do, takes action by calling tools, and returns a response. These four stages run in a loop: after observing the result of one action, the agent can reason again and take another.
 
 .The ReAct pattern
 [%collapsible]
 ====
-This loop is the **ReAct pattern** (Reason + Act). The agent receives a question, reasons about which tool fits, executes it, observes the result, and decides whether to respond or continue with another tool call. A question like "Find aircraft with high vibration and show their maintenance history" triggers multiple cycles: the agent reasons that it needs sensor data first, calls one tool, observes the result, reasons that it now needs maintenance records, calls a second tool, and synthesizes both into a final answer.
+This loop is the **ReAct pattern**, short for reason and act. The agent receives a question, reasons about which tool fits, executes it, observes the result, and decides whether to respond or continue with another tool call. A question like "Find aircraft with high vibration and show their maintenance history" triggers multiple cycles: the agent reasons that it needs sensor data first, calls one tool, observes the result, reasons that it now needs maintenance records, calls a second tool, and synthesizes both into a final answer.
 ====
 
 Tools are what give agents their capabilities. Each tool has a description that the agent matches against the user's question during the reasoning phase. The quality of these descriptions directly affects routing accuracy.
@@ -49,7 +49,7 @@ It spans the full lifecycle:
 
 Unity Catalog provides governance across all of these capabilities, so that models, tools, data, and agent endpoints share a single permission and lineage model.
 
-Rather than a single product, Mosaic AI is the layer that the agent-specific tools build on. Genie uses Mosaic AI's model serving infrastructure to run its compound AI pipeline. Agent Bricks deploys agents to Mosaic AI's serverless compute and monitors them through MLflow tracing. The platform handles the operational concerns (model hosting, authentication, scaling, observability) so that agent development can focus on the reasoning and tool-calling logic that makes each agent useful.
+Rather than a single product, Mosaic AI is the layer that the agent-specific tools build on. Genie uses Mosaic AI's model serving infrastructure to run its compound AI pipeline. Agent Bricks deploys agents to Mosaic AI's serverless compute and monitors them through MLflow tracing. The platform handles the operational concerns of model hosting, authentication, scaling and observability, so that agent development can focus on the reasoning and tool-calling logic that makes each agent useful.
 ====
 
 === Genie
@@ -108,7 +108,7 @@ When a user asks "What is the average EGT temperature for aircraft N95040A?", Ge
 
 The Neo4j agent is purpose-built for connected data: paths, multi-hop traversals, cycle detection, shared-attribute matching. It inspects every node label, relationship type, and property key before querying, so the graph's schema becomes a constraint that guides generation rather than a suggestion to ignore. Every generated query is read-only.
 
-The agent accesses Neo4j through MCP (Model Context Protocol), an open standard that exposes data sources as tools any agent framework can discover and call. The server used in this lab exposes two MCP tools:
+The agent accesses Neo4j through the Model Context Protocol, an open standard that exposes data sources as tools any agent framework can discover and call. The rest of this workshop uses **MCP** for short. The server used in this lab exposes two MCP tools:
 
 * **`get_neo4j_schema`** introspects the live database using APOC, returning a token-efficient representation of every node label, relationship type, and property key.
 * **`read_neo4j_cypher`** executes read-only Cypher queries with parameterized inputs.

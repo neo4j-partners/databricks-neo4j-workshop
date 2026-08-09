@@ -37,7 +37,7 @@ RETURN s.name, c.name, m.description, m.event_date
 ORDER BY m.event_date DESC
 ----
 
-The architecture treats Databricks and Neo4j as complementary systems connected through governed data pipelines. Counting stays in SQL. Following connections moves to the graph. Questions that span both route to specialized agents. See xref:lab4.adoc[Lab 4] for how the supervisor implements this routing.
+The split follows the shape of the question. Counting stays in SQL. Following connections moves to the graph. Questions that span both route to specialized agents. See xref:lab4.adoc[Lab 4] for how the supervisor implements this routing.
 
 == Lakehouse Architecture
 
@@ -45,9 +45,9 @@ The architecture treats Databricks and Neo4j as complementary systems connected 
 
 Data moves through three progressive refinement layers:
 
-* **Bronze** is the raw landing zone. Aircraft CSV files arrive from cloud storage (S3, ADLS Gen2, GCS) with no transformation. This is the system of record for what was ingested and when.
+* **Bronze** is the raw landing zone. Aircraft CSV files arrive from cloud storage such as S3, ADLS Gen2 or GCS, with no transformation. This is the system of record for what was ingested and when.
 * **Silver** is the curation layer. Schema enforcement catches malformed records, column renaming normalizes conventions, and type casting ensures consistency. Silver tables are governed and ready for downstream consumers, including the Neo4j Spark Connector. Graph-bound data gets its last quality check here before projection.
-* **Gold** is where graph intelligence feeds back into the lakehouse. Graph algorithm results (PageRank scores for component importance, community detection clusters for related maintenance events, degree centrality counts across the fleet topology) write back from Neo4j as columns in gold tables. These join with sensor telemetry and fleet metadata that never left the lakehouse to produce maintenance alerts, risk scores, and ML feature tables.
+* **Gold** is where graph intelligence feeds back into the lakehouse. Graph algorithm results write back from Neo4j as columns in gold tables: PageRank scores for component importance, community detection clusters for related maintenance events, and degree centrality counts across the fleet topology. These join with sensor telemetry and fleet metadata that never left the lakehouse to produce maintenance alerts, risk scores, and ML feature tables.
 
 === Delta Lake
 
@@ -55,7 +55,7 @@ Delta Lake provides ACID transactions, schema enforcement, and time travel on to
 
 == The Spark Connector
 
-The Neo4j Spark Connector is the Databricks-certified bridge for bulk data movement. It reads silver Delta tables and writes them as graph nodes and relationships. The transformation follows a consistent pattern: table rows become nodes with column values as properties, foreign keys become relationships, and shared attribute values (like an airport code appearing on multiple flights) become shared nodes that make hidden connections explicit. The connector also reads from Neo4j back into DataFrames for validation and bidirectional data flow.
+The Neo4j Spark Connector is the Databricks-certified bridge for bulk data movement. It reads silver Delta tables and writes them as graph nodes and relationships. The transformation follows a consistent pattern: table rows become nodes with column values as properties, foreign keys become relationships, and shared attribute values become shared nodes that make hidden connections explicit. An airport code appearing on many flights is one of those. The connector also reads from Neo4j back into DataFrames for validation and bidirectional data flow.
 
 See xref:lab2.adoc[Lab 2] for a hands-on walkthrough loading the aircraft digital twin data, including the specific transformation patterns for each entity type.
 
@@ -93,7 +93,7 @@ The virtual graph suits exploration and analysis over data that already lives in
 
 === Knowledge Graph Construction
 
-Maintenance manuals, technical bulletins, and regulatory filings pass through a knowledge graph construction pipeline. Documents split into chunks, embedding models convert chunk text into vectors, and LLM-based entity extraction pulls structured nodes from the text. The `neo4j-graphrag-python` library's SimpleKGPipeline handles this pipeline using the Neo4j Python driver directly (chunking and entity extraction are not Spark operations). Extracted entities cross-link to the operational graph built by the data pipeline, bridging maintenance knowledge and fleet structure.
+Maintenance manuals, technical bulletins, and regulatory filings pass through a knowledge graph construction pipeline. Documents split into chunks, embedding models convert chunk text into vectors, and LLM-based entity extraction pulls structured nodes from the text. The `neo4j-graphrag-python` library's SimpleKGPipeline handles this pipeline using the Neo4j Python driver directly, because chunking and entity extraction are single-machine work rather than Spark operations. Extracted entities cross-link to the operational graph built by the data pipeline, bridging maintenance knowledge and fleet structure.
 
 === Data Analytics: Graph as Co-Processor
 
@@ -162,7 +162,7 @@ Databricks provides the agent development and serving stack through Mosaic AI, f
 
 * **Foundation models** through the AI Gateway handle embedding generation for vector search and the reasoning layer that agents use to select tools and synthesize answers.
 * **Genie** translates natural language into governed SQL against any data registered in Unity Catalog. Domain experts configure Genie Agents with curated table sets, domain terminology, and example queries. In this architecture, Genie handles the sensor telemetry half of the multi-agent system: questions about averages, trends, and fleet-wide comparisons route to Genie, which generates SQL against the lakehouse. All generated queries are read-only.
-* **Agent Bricks** is the control plane for deploying and orchestrating agents. The supervisor agent pattern is configurable through the workspace UI: register sub-agents (Genie Agents, MCP servers, Unity Catalog functions), provide capability descriptions, and the supervisor routes questions based on their nature. Agents package with MLflow, register in Unity Catalog, and deploy to Model Serving endpoints that scale automatically. Built-in tracing and feedback collection through the Review App support production monitoring.
+* **Agent Bricks** is the control plane for deploying and orchestrating agents. The supervisor agent pattern is configurable through the workspace UI: register sub-agents, which can be Genie Agents, MCP servers or Unity Catalog functions, provide a capability description for each, and the supervisor routes questions based on their nature. Agents package with MLflow, register in Unity Catalog, and deploy to Model Serving endpoints that scale automatically. Built-in tracing and feedback collection through the Review App support production monitoring.
 
 See xref:lab4.adoc[Lab 4] for the hands-on implementation of Genie, the Neo4j MCP agent, and the supervisor.
 

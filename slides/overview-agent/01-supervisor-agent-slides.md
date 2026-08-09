@@ -82,11 +82,7 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 - **Lab 4** gave you a Genie Agent: natural language to SQL over the Lakehouse telemetry
 - **None of the three answers a real question alone.** This lab builds what decides which one to reach for
 
-<!--
-Nothing here is new data, and the routing decision is the hard
-part. Lab 4's compound agent demo built this from a form in Agent
-Bricks; this lab writes it in code, with the rule visible.
--->
+<!-- Nothing here is new data, and the routing decision is the hard part. Lab 4's compound agent demo built this from a form in Agent Bricks; this lab writes it in code, with the rule visible. -->
 
 ---
 
@@ -96,14 +92,7 @@ Bricks; this lab writes it in code, with the rule visible.
 
 Nothing in this graph writes to Neo4j.
 
-<!--
-Five nodes and one decision. The supervisor picks a tool or picks
-synthesize. Every tool reports back to the supervisor rather than
-answering. Synthesize ends the run.
-
-Point at the arrows coming back up from the tools. That is the
-slide's only real content, and the next slides unpack it.
--->
+<!-- Five nodes, one decision: the supervisor picks a tool or picks synthesize. Every tool reports back rather than answering; point at those arrows, the slide's real content. -->
 
 ---
 
@@ -115,19 +104,7 @@ slide's only real content, and the next slides unpack it.
 - **Every tool edge points back to the supervisor.** It sees the result and can pick again, so one question can reach two stores
 - **The decision returns as JSON**, constrained by a schema, not read out of prose
 
-<!--
-The Sensor nodes carry no reading values, by design from Lab 2:
-timestamped values at that volume belong in Delta. That single fact
-is why every measurement question routes to Genie.
-
-A supervisor with a loop back to itself will call the same tool
-three times if nothing stops it, because calling again always feels
-safer than answering. MAX_TOOL_CALLS is the backstop, not the rule;
-the prompt's stopping instruction is the rule. ROUTE_SCHEMA
-constrains the reply to a next field and a reason field. No code
-reads reason, but a model that has to write down why it picked a
-tool picks better.
--->
+<!-- No Reading nodes in Neo4j is a Lab 2 design choice, so every measurement question routes to Genie. MAX_TOOL_CALLS is the backstop; the prompt's stopping rule is what actually works. ROUTE_SCHEMA forces a reason field nobody reads, because writing one down sharpens the choice. -->
 
 ---
 
@@ -144,21 +121,14 @@ builder.add_node("synthesize", synthesize_node)
 
 builder.add_edge(START, "supervisor")
 builder.add_conditional_edges("supervisor", route_from_supervisor, {...})
-
 for tool_name in ("genie_node", "cypher_node", "graphrag_node"):
     builder.add_edge(tool_name, "supervisor")
-
 builder.add_edge("synthesize", END)
 ```
 
 State is a `TypedDict`: `question`, `route`, `trace`, `findings`, `answer`.
 
-<!--
-About thirty lines, and not the interesting part of the lab. Show
-it, then move on. Each node is a plain callable that takes the
-state and returns the part that changed. trace is the ordered list
-of tools called, the record the routing measurement reads later.
--->
+<!-- Not the interesting part of the lab. Each node returns what changed; trace is the ordered list of tools called, read later by the routing measurement. -->
 
 ---
 
@@ -174,7 +144,7 @@ MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)
 OPTIONAL MATCH (doc)-[:APPLIES_TO]->(a:Aircraft)-[:HAS_SYSTEM]->(s:System)
 ```
 
-That is the GraphRAG tail. Neither the neighboring passage nor the aircraft a manual applies to is in the embedding; both are one hop away.
+That is the GraphRAG tail: the passage and the aircraft are one hop away, not in the embedding.
 
 **Describing tools by what they do at the end cannot tell these two apart.** Route on where the question starts instead:
 
@@ -182,20 +152,8 @@ That is the GraphRAG tail. Neither the neighboring passage nor the aircraft a ma
 |---|---|---|
 | "What maintenance events did N10004 have?" | `cypher_node` | N10004 is a node |
 | "What is the procedure for an EGT exceedance?" | `graphrag_node` | A phrase in a manual, not a node |
-| "How do I troubleshoot engine vibration?" | `graphrag_node` | A procedure lives in the text |
 
-<!--
-This is the central problem of the lab. The Cypher tail is exactly
-what makes graphrag_node worth having, and also what makes routing
-hard. That is the concrete answer to what GraphRAG adds to vector
-search, and why Lab 3 came before this one.
-
-The reframing is the lesson: stop describing what the tool does,
-describe what the question looks like when it arrives. The example
-pairs are how a routing prompt gets tuned: take a question that
-went to the wrong tool, work out which sentence should have caught
-it, add the pair, rerun the measurement.
--->
+<!-- The Cypher tail is what makes graphrag_node worth having, and also what makes routing hard. Tune the prompt by adding the pair that went to the wrong tool, then rerun the measurement. -->
 
 ---
 
@@ -212,26 +170,13 @@ it, add the pair, rerun the measurement.
 (:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(:Aircraft {tail_number: 'N10004'})
 ```
 
-**Rule Two, never substitute a limit for a measurement.** Asked for the aircraft with the highest average vibration, `cypher_node` answered with an `OperatingLimit.maxValue`: a shared ceiling, not a reading. The rule: for any measured-value question, return exactly
+**Rule Two, never substitute a limit for a measurement.** Asked for the aircraft with the highest average vibration, `cypher_node` answered with an `OperatingLimit.maxValue`: a shared ceiling, not a reading. For any measured-value question, return exactly:
 
 ```cypher
 RETURN 'The graph holds no sensor readings.' AS cannot_answer
 ```
 
-so the supervisor routes to `genie_node` instead of ending on a confident, wrong number.
-
-<!--
-Zero rows with no error is the worst failure mode a text-to-Cypher
-tool has: the query is valid, the database is healthy, and the
-answer is confidently empty. The fix was nine lines of schema text
-in the prompt, not an undirected pattern; an undirected match would
-have shipped a habit Lab 1 spends its time arguing against.
-
-OperatingLimit is a good trap because it is well-formed data, never
-empty, always nearby. The rule does not say "be careful"; it gives
-the exact string to return, which the synthesis prompt can
-recognize and carry through instead of papering over.
--->
+<!-- Zero rows with no error is the worst failure mode: valid query, healthy database, confidently empty answer. Fixed with schema text in the prompt, not an undirected pattern, which would have shipped a habit Lab 1 argues against. The refusal string is exact, so synthesis can recognize it instead of papering over a limit. -->
 
 ---
 
@@ -242,21 +187,11 @@ Twelve questions, four per tool, scored on the first tool the supervisor chose.
 | Slice | Accuracy |
 |---|---|
 | Overall | 12/12 (100%) |
-| `genie_node` questions | 4/4 (100%) |
-| `cypher_node` questions | 4/4 (100%) |
-| `graphrag_node` questions | 4/4 (100%) |
 | **`cypher_node` vs `graphrag_node` alone** | **8/8 (100%)** |
 
 Recorded 2026-08-08 from a full run of `01_langgraph_agent.ipynb`, against `SUPERVISOR_PROMPT` as it stands today. These numbers go stale the moment someone edits the prompt.
 
-<!--
-The last row is the one that matters. Both tools end in a graph
-traversal, so that pair is where a weak routing prompt fails
-first. Say the caveat out loud: a routing number without a date
-and a prompt version is decoration. Section 9 of the notebook
-reproduces it, and participants should rerun it after editing
-anything.
--->
+<!-- Both tools end in a graph traversal, so that pair is where routing fails first. A number without a date and a prompt version is decoration; Section 9 of the notebook reproduces it. -->
 
 ---
 
@@ -295,13 +230,7 @@ aircraft's history, the manual returns the procedure.
 - **The notebook drops it from `available_tools`,** and the routing schema's enum narrows to the tools that actually exist
 - **The graph still compiles and still answers** from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change
 
-<!--
-An agent whose tool set is discovered at build time degrades; an
-agent whose tool set is assumed at import time fails. Narrowing the
-enum is the part worth copying: a better guard than checking the
-model's answer afterward, because the model cannot name a tool it
-was never offered.
--->
+<!-- Tool sets discovered at build time degrade; assumed at import time they fail. The model cannot name a tool it was never offered. -->
 
 ---
 
@@ -312,13 +241,7 @@ was never offered.
 - **Your instance is yours.** Your password is in the secret scope Lab 3 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
 - **The governance story pays when the graph is shared.** It costs more than it returns when the graph has exactly one user
 
-<!--
-Do not present this as MCP being wrong; that demo's architecture is
-correct for the problem it solves. The question is who else reads
-the graph. Credentials note: on the normal path, no plaintext
-password is typed anywhere in Lab 5. The driver helper reads the
-scope, uses the values, and drops them.
--->
+<!-- Not MCP being wrong, just the wrong shape for one user. No plaintext password is typed anywhere in Lab 5's normal path. -->
 
 ---
 
@@ -334,16 +257,7 @@ scope, uses the values, and drops them.
 | Where do secrets live? | A secret scope, referenced, never copied |
 | What is auditable? | A Unity Catalog model version and an MLflow trace per request |
 
-<!--
-This is the thesis: nothing about the agent's logic changes when it
-is deployed, only who is asking. In the notebook, every call runs
-as the participant. On the endpoint, every call runs as a principal
-created for the endpoint, granted nothing by default.
-
-Put the reviewer table early on purpose. It is the slide a reviewer
-would ask you to build, and the rest of this section is that table
-expanded.
--->
+<!-- Nothing about the agent's logic changes, only who is asking. This reviewer table is the one to build early; the rest of this section expands it. -->
 
 ---
 
@@ -364,84 +278,28 @@ set_model(AGENT)
 - **`ResponsesAgent`** is the interface Model Serving speaks: one request in, output items out
 - **`set_model(AGENT)`** makes the file the model rather than a library beside it
 
-<!--
-A LangGraph object cannot be handed to Model Serving; it has to be
-rebuilt from nothing on a machine nobody logged into. predict_stream
-exists so a streaming client still works, even though every node
-here returns a whole finding at the end. Connections open on the
-first request, not at load time: a container that fails on load
-restarts and fails again with the reason buried in build logs; one
-that fails on first request answers with the reason.
--->
+<!-- A LangGraph object must be rebuilt from nothing on a machine no one logged into. Connections open on the first request, not at load, so a failure answers with its reason instead of hiding in build logs. -->
 
 ---
 
-## Register to Unity Catalog
+## Register to Unity Catalog: Resources vs Credentials
 
 ```python
 mlflow.set_registry_uri("databricks-uc")
-
 logged = mlflow.pyfunc.log_model(
     name="agent",
-    python_model="agent.py",             # models-from-code, not a pickle
-    code_paths=["tools.py", "../Lab_3_Semantic_Search/data_utils.py"],
-    model_config=MODEL_CONFIG,           # everything that is not a credential
-    resources=RESOURCES,                 # everything the endpoint may reach
-    pip_requirements=PIP_REQUIREMENTS,   # pinned, not inferred
+    python_model="agent.py",           # models-from-code, not a pickle
+    resources=RESOURCES,               # everything the endpoint may reach
+    pip_requirements=PIP_REQUIREMENTS, # pinned, not inferred
     registered_model_name=UC_MODEL_NAME,
 )
 ```
 
-- **The agent becomes a versioned, governed artifact**, with a three-part Unity Catalog name
-- **`python_model="agent.py"` stores the source file.** A reviewer can read exactly what will run
-- **Pin the requirements.** An inferred one can carry a local version segment nothing can resolve
+- **Databricks objects are declared and granted:** `DatabricksGenieSpace`, `DatabricksSQLWarehouse`, `DatabricksTable`, `DatabricksServingEndpoint`. A Genie grant is not a warehouse grant
+- **Everything else is a credential and travels as a reference:** `NEO4J_PASSWORD` arrives as `{{secrets/<scope>/neo4j-password}}`
+- **The trap:** log the Genie Agent without its warehouse and it deploys cleanly. Every sensor question then fails, `not authorized to use or monitor this SQL Endpoint`
 
-<!--
-Models-from-code matters for review as well as reliability: the
-artifact contains agent.py and tools.py as source, nothing had to
-survive being serialized. Inferred requirements read the notebook's
-own environment; a cluster carrying the Lab 6 memory wheel produces
-an unresolvable requirement, and the container fails to build about
-fifteen minutes after you stopped watching.
--->
-
----
-
-## Resources vs Credentials
-
-Databricks objects are declared and granted. Everything else is a credential, and travels as a reference.
-
-```python
-RESOURCES = [
-    DatabricksGenieSpace(genie_space_id=...),
-    DatabricksSQLWarehouse(warehouse_id=...),      # a Genie grant is not a warehouse grant
-    DatabricksTable(table_name=...),
-    DatabricksServingEndpoint(endpoint_name=...),  # the LLM and the embedding model
-]
-
-ENVIRONMENT_VARS = {
-    "NEO4J_URI":      "{{secrets/<scope>/neo4j-uri}}",
-    "NEO4J_PASSWORD": "{{secrets/<scope>/neo4j-password}}",
-}
-```
-
-**The trap:** a model logged with the Genie Agent but not its warehouse deploys and routes cleanly. Every sensor question then fails, `not authorized to use or monitor this SQL Endpoint`.
-
-<!--
-Aura is not a Databricks object; it cannot be granted, so it has to
-travel as an environment variable. dbutils does not exist in a
-serving container: notebook 01 reads the password with
-dbutils.secrets.get, and that call cannot exist in the served
-agent, which is why agent.py reads os.environ instead. The control
-plane resolves the reference when the endpoint starts, so the
-password is never in the notebook, MLflow, or the endpoint's own
-configuration.
-
-The warehouse omission fails late and quietly: not at deploy, not
-at routing. The endpoint comes up healthy, graph and manual
-questions work, and only telemetry breaks, naming a component the
-participant never explicitly configured.
--->
+<!-- Models-from-code means agent.py ships as source, not a pickle. Aura cannot be granted, so it travels as an environment variable resolved at startup; dbutils does not exist in a serving container, which is why agent.py reads os.environ instead. The warehouse omission fails late and quietly: healthy endpoint, broken telemetry only. -->
 
 ---
 
@@ -470,17 +328,7 @@ results = mlflow.genai.evaluate(
 
 **Low `Correctness` with `routing` at 1.0 is a prompt or data problem. Low `routing` is a supervisor problem.**
 
-<!--
-Set the experiment before deploying, or the endpoint works and
-produces no traces. scale_to_zero means the first question after a
-quiet period is slow, not a failure.
-
-routing is a plain Python function comparing expected tools against
-the trace: no judge needed for something the trace already states.
-predict_fn calls the deployed endpoint with the serving principal's
-permissions, which is the whole point of evaluating after
-deployment rather than before.
--->
+<!-- Set the experiment before deploying, or the endpoint produces no traces. routing needs no judge; predict_fn scores the deployed endpoint's own permissions, not a notebook copy. -->
 
 ---
 
@@ -496,15 +344,7 @@ AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
 - **A registered model name is scoped to its catalog**, so it is the same for everyone
 - **A serving endpoint name is unique across the account**, so it carries the participant's slug, taken from the same secret scope the credentials come from
 
-<!--
-Two derivations of who the participant is could drift; one cannot,
-which is why the endpoint name and the credentials both trace back
-to the same secret scope. Serving endpoint names are limited to
-sixty-three characters, so the slug is truncated to fit. The
-practical instruction for the room: do not rename these. Lab 6
-calls the same function with the same scope and expects the same
-endpoint back.
--->
+<!-- Endpoint name and credentials trace to the same secret scope so they cannot drift. Do not rename these: Lab 6 expects the same endpoint back. -->
 
 ---
 
@@ -516,11 +356,4 @@ endpoint back.
 - **Deployed, the graph becomes an endpoint** with its own identity: resources declared and granted, credentials referenced, the model logged as readable source
 - **That endpoint is a building block, too:** registered as a serving endpoint, it is what an Agent Bricks Supervisor can route to alongside a Genie Agent with no orchestration code, the same shape Lab 4's instructor demo showed over MCP
 
-<!--
-If one thing survives the day, make it the routing reframing:
-describe the question, not the tool. The deployed endpoint is not
-the end of the story either. Because it is a Unity Catalog model
-behind a served endpoint, anything that can call an endpoint,
-including a no-code Agent Bricks Supervisor, can compose it with
-other agents the same way this lab composed three tools.
--->
+<!-- If one thing survives the day: describe the question, not the tool. A no-code Agent Bricks Supervisor can compose this endpoint with other agents the same way the lab composed three tools. -->

@@ -309,7 +309,7 @@ Aura is the foundation this workshop builds GraphRAG on.
 
 - **Built-in vector indexes** for embeddings, the same index type Lab 3 uses over maintenance manual chunks
 - **Cypher** as the query language for graph-context retrieval
-- **Graph traversal** for relationship reasoning: not just what matches, but what it connects to
+- **Graph traversal** for relationship reasoning: a match plus everything it connects to
 - **APIs** for integration with LLM frameworks
 
 Store the knowledge graph once. Query it for structure, for meaning, or for both.

@@ -46,9 +46,7 @@ The memory library hangs conversations off `(:Entity {name, type})` nodes. Left 
 
 image::lab6-memory-graph.svg[Lab 6 memory graph,align=center]
 
-Adoption is what puts the conversation half and the fleet half on the same node.
-
-Adoption writes to nodes you already have, which makes it the one step in the workshop that changes data an earlier lab loaded. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and xref:lab6-instructions.adoc#cleaning-up[the instructions] show it along with the guard that keeps a memory cleanup from taking your fleet with it.
+Writing to nodes an earlier lab loaded makes this the one step in the workshop that changes existing data. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and xref:lab6-instructions.adoc#cleaning-up[the instructions] show it along with the guard that keeps a memory cleanup from taking your fleet with it.
 
 .Why the lab adopts `Aircraft` and refuses four other labels
 [%collapsible]
@@ -196,7 +194,7 @@ Memory adds no Databricks resource to the endpoint, because it writes to Aura, a
 
 The lab installs `neo4j-agent-memory` from a wheel on a Unity Catalog volume, built from a fork, rather than from PyPI. The released version drops most `MENTIONS` edges when it extracts entities, with no exception and no warning, and `MENTIONS` is the edge the query above walks. The fork fixes that, and the fix has not gone upstream yet.
 
-If you reproduce this at work, that decides whether you wait for a release or carry a patch yourself. The library is pre-1.0 and changes quickly, so treat an upgrade as a code change with its own test pass rather than a version bump.
+Reproducing this at work leaves you the same choice: wait for the fix to reach a release, or carry the patch yourself. The library is pre-1.0 and changes quickly, so treat an upgrade as a code change with its own test pass rather than a version bump.
 
 Use explicit mentions whether or not the defect is fixed. Naming the entities yourself removes a model call from the critical path, the result is exact, and an agent already knows what its tools just touched. Use LLM extraction for text nobody has parsed yet.
 

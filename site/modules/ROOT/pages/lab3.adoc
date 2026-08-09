@@ -43,7 +43,7 @@ An LLM reads each chunk and extracts entities: regulations, thresholds, procedur
 .Schema design and entity resolution
 [%collapsible]
 ====
-* **Schema design.** SimpleKGPipeline supports three schema modes: User-Provided (you define the entity and relationship types), Extracted (the LLM discovers the schema), and Free (no constraints). This workshop uses User-Provided because the aircraft domain has known entity types (Aircraft, System, Component, Sensor, MaintenanceEvent) and known relationship patterns. Constraining extraction to these types produces a consistent, queryable graph.
+* **Schema design.** SimpleKGPipeline supports three schema modes. **User-Provided** means you define the entity and relationship types. **Extracted** lets the LLM discover the schema. **Free** applies no constraints at all. This workshop uses User-Provided because the aircraft domain has known entity types (Aircraft, System, Component, Sensor, MaintenanceEvent) and known relationship patterns. Constraining extraction to these types produces a consistent, queryable graph.
 * **Entity resolution.** The same real-world component can surface under different names ("HP Turbine," "High-pressure Turbine," "HPT"). Entity resolution merges these duplicates so that queries return complete results. Without it, maintenance event counts and relationship traversals silently miss data.
 ====
 
