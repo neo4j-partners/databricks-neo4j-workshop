@@ -96,7 +96,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 1: Label Every File
 
-**Status: Complete** — see File Inventory section below.
+**Status: Complete.** See the File Inventory section below.
 
 **Goal:** Every slide file has a written label stating its topic cluster, audience level, and primary use case example.
 
@@ -110,7 +110,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 2: Decide the Target Folder Structure
 
-**Status: Complete** — see Target Structure section below.
+**Status: Complete.** See the Target Structure section below.
 
 **Goal:** A confirmed list of topic folders with a one-line description of what belongs in each.
 
@@ -133,7 +133,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 
 ### Phase 3: Consolidate Redundant Files
 
-**Status: Complete** — SUMMARY.md marked redundant. All five multi-cluster files reviewed; no content merging needed.
+**Status: Complete.** SUMMARY.md marked redundant. All five multi-cluster files reviewed; no content merging needed.
 
 **Goal:** Each topic has exactly one canonical slide file. Redundant files are either merged into the canonical file or marked for deletion.
 
@@ -292,23 +292,23 @@ Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` an
 
 **Format:** Marp = presentation slide deck | Reference = participant reference doc, no Marp | Outline = planning or narrative arc, not a deliverable slide deck | Admin = README or meta doc
 
-**Depth:** overview | practitioner | deep dive | — (not applicable)
+**Depth:** overview | practitioner | deep dive | n/a (not applicable)
 
-**Track:** Workshop = on the workshop delivery path | Background = kept and maintained, moved off the workshop path under `background/` | — (not a deck)
+**Track:** Workshop = on the workshop delivery path | Background = kept and maintained, moved off the workshop path under `background/` | n/a (not a deck)
 
 | File | Format | Track | Topic Cluster | Depth | Use Case | Notes |
 |------|--------|-------|---------------|-------|----------|-------|
-| `README.md` | Admin | — | meta | — | — | Build and usage instructions for the slides directory. Not a slide file. |
+| `README.md` | Admin | n/a | meta | n/a | n/a | Build and usage instructions for the slides directory. Not a slide file. |
 | `platform-overview/01-intro-databricks-neo4j-slides.md` | Marp | Workshop | platform overview * | deep dive | fraud | * Also covers governance (Spark Connector, bidirectional data flow) and knowledge graph construction (graph modeling decisions). Fraud and portfolio lens; distinct from the aircraft angle of other platform files. |
 | `agents/02-power-of-graphrag-slides.md` | Marp | Workshop | agents and multi-agent systems * | deep dive | fraud | * Also covers GenAI foundations (LLM limitations). Most detailed treatment of Genie, Neo4j MCP, and the multi-agent supervisor. Use case corrected from aircraft to fraud: the worked example is regulations, thresholds, and account transfers. |
 | `graph-ml/03-graph-enrichment-slides.md` | Marp | Workshop | graph ML and enrichment | deep dive | portfolio | GDS algorithms, feature engineering, MLflow lift comparison, bidirectional data loop, incremental sync with Change Data Feed. |
 | `graph-ml/04-future-graph-enrichment-slides.md` | Marp | Workshop | graph ML and enrichment * | deep dive | portfolio | * Also covers agents (agentic enrichment loop, multi-agent supervisor for gap detection). Overlaps with 03 on incremental sync. |
 | `background/governance/auth-sync-slides.md` | Marp | Background | governance and integration | deep dive | generic | Unique content: four authorization sync patterns between Unity Catalog and Neo4j, plus the semantic layer data model, plus the JDBC federation status update it opens with. No substantial overlap with other files. Partner and internal briefing rather than a teaching deck, which is why it sits on the Background track. |
-| `docs/slides.md` | Outline | — | graph ML and enrichment | — | portfolio | Narrative arc and section flow notes for the graph enrichment decks now in `graph-ml/`. Not a deliverable slide file. |
-| `docs/building-knowledge-graphs.md` | Reference | — | knowledge graph construction | practitioner | aircraft | Participant reference doc combining the five KG construction decks, now split across `background/kg-construction/05`, `06`, `08` and `kg-construction/07`, `09`. Content is covered by those five Marp files; this serves a different delivery format. |
-| `docs/overview-and-genai-foundations.md` | Reference | — | GenAI foundations * | overview / practitioner | aircraft | * Also covers platform overview (workshop overview, digital twin). Participant reference doc combining `platform-overview/01-workshop-over.md` and `genai-foundations/02`, `03`, `04`. Serves a different delivery format than those four Marp files. |
+| `docs/slides.md` | Outline | n/a | graph ML and enrichment | n/a | portfolio | Narrative arc and section flow notes for the graph enrichment decks now in `graph-ml/`. Not a deliverable slide file. |
+| `docs/building-knowledge-graphs.md` | Reference | n/a | knowledge graph construction | practitioner | aircraft | Participant reference doc combining the five KG construction decks, now split across `background/kg-construction/05`, `06`, `08` and `kg-construction/07`, `09`. Content is covered by those five Marp files; this serves a different delivery format. |
+| `docs/overview-and-genai-foundations.md` | Reference | n/a | GenAI foundations * | overview / practitioner | aircraft | * Also covers platform overview (workshop overview, digital twin). Participant reference doc combining `platform-overview/01-workshop-over.md` and `genai-foundations/02`, `03`, `04`. Serves a different delivery format than those four Marp files. |
 | `platform-overview/01-databricks-neo4j-integration-slides.md` | Marp | Workshop | platform overview * | overview | aircraft | * Also covers agents (MCP, multi-agent supervisor) and governance (semantic layer, JDBC federation). Most complete single-file overview of the full partnership. |
-| `overview-databricks-neo4j/SUMMARY.md` | Reference | — | platform overview | overview | aircraft | Deleted in Phase 4, no current path. Was a condensed plain-text summary of `platform-overview/01-databricks-neo4j-integration-slides.md`. No unique content. |
+| `overview-databricks-neo4j/SUMMARY.md` | Reference | n/a | platform overview | overview | aircraft | Deleted in Phase 4, no current path. Was a condensed plain-text summary of `platform-overview/01-databricks-neo4j-integration-slides.md`. No unique content. |
 | `platform-overview/01-neo4j-aura-overview-slides.md` | Marp | Workshop | platform overview | overview | generic | Neo4j Aura managed cloud: what Aura is, why a graph database, the value of Aura for GenAI, graph analytics in Explore, and the three tools (Query Workspace, Explore, Dashboards). Description corrected: the deck carries no Aura Agents content. No substantial overlap with other files. |
 | `platform-overview/01-workshop-over.md` | Marp | Workshop | platform overview | overview | aircraft | Workshop opener: digital twin definition, the dataset's entity types, dual-database architecture, shared vs personal infrastructure. Distinct role as the workshop entry point. |
 | `genai-foundations/02-genai-and-limitations-slides.md` | Marp | Workshop | GenAI foundations | overview | generic | LLM strengths and three core limitations (hallucination, knowledge cutoff, relationship blindness). Clean standalone file. |
@@ -326,7 +326,7 @@ Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` an
 | `agents/01-from-retrievers-to-agents-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | Four agent components, tools, ReAct pattern, multi-tool example. Bridges the retrieval patterns cluster to agents. |
 | `agents/03-langgraph-supervisor-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | The Lab 5 supervisor in LangGraph. What the earlier labs supply, the shape of the graph, the three tool nodes (Genie, Cypher over the participant's own Aura instance, GraphRAG over the manuals), routing as a loop rather than a one-shot decision, the two prompt rules that fix the routing failures, measured routing, and why the Cypher node uses a Bolt driver rather than MCP. |
 | `agents/04-deploy-the-agent-slides.md` | Marp | Workshop | agents and multi-agent systems | practitioner | aircraft | Taking the same graph to Model Serving. What changes when the endpoint runs as its own service principal, the MLflow `ResponsesAgent` wrapper, registering to Unity Catalog, declaring resources against referencing credentials, deploy and wait, scoring the deployed endpoint, and why the object names are a contract Lab 6 depends on. |
-| `agents/05-agent-memory-slides.md` | — | Workshop | agents and multi-agent systems | — | — | Does not exist on disk. Planned to cover Lab 6 agent memory in Neo4j: a recall step before the supervisor, a remember step after it, redeploying the same endpoint. No contents to catalogue yet. |
+| `agents/05-agent-memory-slides.md` | n/a | Workshop | agents and multi-agent systems | n/a | n/a | Does not exist on disk. Planned to cover Lab 6 agent memory in Neo4j: a recall step before the supervisor, a remember step after it, redeploying the same endpoint. No contents to catalogue yet. |
 
 **Multi-cluster files (flagged for review in Phase 3):**
 
@@ -426,22 +426,22 @@ These are content gaps to address in a future content phase, not part of the reo
 **Goal:** Address the 10 issues and 6 gaps documented in Phase 5.
 
 **Fixing:**
-- Stale title slide in `01-neo4j-aura-overview-slides.md`
-- Stale "Next: Microsoft Agent Framework" pointer in `agents/08`
-- Sequence-dependent openings in `genai-foundations/03` and `04`
-- Use case mismatch in all four `retrieval-patterns/` files and `agents/08` (finance to aircraft)
-- Sort order in `agents/` by renaming `08-from-retrievers-to-agents-slides.md` to `01-`
-- Webinar partnership recap slides in `graph-ml/03` and `graph-ml/04`
+- Stale title slide in `platform-overview/01-neo4j-aura-overview-slides.md`
+- Stale "Next: Microsoft Agent Framework" pointer in the from-retrievers-to-agents deck
+- Sequence-dependent openings in `genai-foundations/03-traditional-rag-slides.md` and `genai-foundations/04-context-and-rag-slides.md`
+- Use case mismatch in all four `retrieval-patterns/` files and the from-retrievers-to-agents deck (finance to aircraft)
+- Sort order in `agents/` by renaming `08-from-retrievers-to-agents-slides.md` to `agents/01-from-retrievers-to-agents-slides.md`
+- Webinar partnership recap slides in `graph-ml/03-graph-enrichment-slides.md` and `graph-ml/04-future-graph-enrichment-slides.md`
 - Gap: add `GraphRAG` class slides to `retrieval-patterns/01-retrievers-overview-slides.md`
 - Gap: add Databricks Vector Search slide to `retrieval-patterns/01-retrievers-overview-slides.md`
-- Gap: expand Aura Agents content in `platform-overview/01-neo4j-aura-overview-slides.md`
 
 **Not fixing:**
-- Four `01-` prefix files in `platform-overview/` — naming, not content; renaming would break history and links
-- Content overlap on incremental sync in `graph-ml/` — editorial decision deferred
-- LangGraph agent framework slides — insufficient workshop-specific content to write accurately
-- JDBC federation standalone intro — content already covered in `background/governance/auth-sync-slides.md`
-- Genie Space setup/configuration — covered in workshop notebooks, not slides
+- Four `01-` prefix files in `platform-overview/`: naming, not content; renaming would break history and links
+- Content overlap on incremental sync in `graph-ml/`: editorial decision deferred
+- JDBC federation standalone intro: content already covered in `background/governance/auth-sync-slides.md`
+- Genie Space setup/configuration: covered in workshop notebooks, not slides
+
+**Superseded by later work:** the "no LangGraph slides" gap was later closed by `agents/03-langgraph-supervisor-slides.md` and `agents/04-deploy-the-agent-slides.md`, which were written after this phase.
 
 **Done when:** All items above marked complete. No new content errors introduced.
 
@@ -453,9 +453,12 @@ These are content gaps to address in a future content phase, not part of the reo
 
 The decks currently mix workshop instruction, webinar content, and deep technical reference. Tagging each file by its intended delivery context would help clarify what gets used when:
 
-- **Workshop labs**: `overview-knowledge-graph/`, `overview-retrievers/`, `overview-databricks-neo4j/`
-- **Webinar / conference talks**: `databricks-in-depth/01`, `02`, `03`, `04`
+- **Workshop labs**: `platform-overview/`, `genai-foundations/`, `kg-construction/`, `retrieval-patterns/`, `agents/`
+- **Webinar / conference talks**: `platform-overview/01-intro-databricks-neo4j-slides.md`, `agents/02-power-of-graphrag-slides.md`, `graph-ml/03-graph-enrichment-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md`
 - **Internal / partner deep dives**: `background/governance/auth-sync-slides.md`
+- **Background, kept but off the workshop path**: `background/kg-construction/05-building-knowledge-graphs-slides.md`, `background/kg-construction/06-schema-design-slides.md`, `background/kg-construction/08-entity-resolution-slides.md`
+
+The `background/` folder is this idea already partly acted on: the decks under it are maintained but not delivered in the workshop run.
 
 ### 2. By Topic Cluster
 
@@ -463,28 +466,28 @@ A natural grouping by subject area:
 
 | Cluster | Files |
 |---------|-------|
-| Data Engineering | `databricks-in-depth/01`, Medallion Architecture, Spark Connector, incremental sync |
-| GenAI Foundations | `overview-knowledge-graph/02`, `03`, `04` |
-| Knowledge Graph Construction | `overview-knowledge-graph/05`, `06`, `07`, `08`, `09` |
-| Retrieval and Agents | `overview-retrievers/01`-`04`, `08` |
-| Multi-Agent Architecture | `databricks-in-depth/02`, `overview-databricks-neo4j/01` (agent sections) |
-| Graph ML and Feature Engineering | `databricks-in-depth/03`, `04` |
+| Data Engineering | `platform-overview/01-intro-databricks-neo4j-slides.md`, Medallion Architecture, Spark Connector, incremental sync |
+| GenAI Foundations | `genai-foundations/02-genai-and-limitations-slides.md`, `genai-foundations/03-traditional-rag-slides.md`, `genai-foundations/04-context-and-rag-slides.md` |
+| Knowledge Graph Construction | `background/kg-construction/05-building-knowledge-graphs-slides.md`, `background/kg-construction/06-schema-design-slides.md`, `kg-construction/07-chunking-slides.md`, `background/kg-construction/08-entity-resolution-slides.md`, `kg-construction/09-vectors-slides.md` |
+| Retrieval and Agents | `retrieval-patterns/01`-`04`, `agents/01-from-retrievers-to-agents-slides.md` |
+| Multi-Agent Architecture | `agents/02-power-of-graphrag-slides.md`, `agents/03-langgraph-supervisor-slides.md`, `agents/04-deploy-the-agent-slides.md`, `platform-overview/01-databricks-neo4j-integration-slides.md` (agent sections) |
+| Graph ML and Feature Engineering | `graph-ml/03-graph-enrichment-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md` |
 | Governance | `background/governance/auth-sync-slides.md` |
 
 ### 3. By Depth Level
 
-- **Level 1 (conceptual)**: `overview-databricks-neo4j/01`, `overview-knowledge-graph/01-workshop-over`, `02`
-- **Level 2 (practitioner)**: `overview-knowledge-graph/03`-`09`, `overview-retrievers/`
-- **Level 3 (technical deep dive)**: `databricks-in-depth/01`-`04`, `auth-sync`
+- **Level 1 (conceptual)**: `platform-overview/01-databricks-neo4j-integration-slides.md`, `platform-overview/01-workshop-over.md`, `platform-overview/01-neo4j-aura-overview-slides.md`, `genai-foundations/02-genai-and-limitations-slides.md`
+- **Level 2 (practitioner)**: `genai-foundations/03`, `04`, `kg-construction/`, `background/kg-construction/`, `retrieval-patterns/`, `agents/01`, `agents/03`, `agents/04`
+- **Level 3 (technical deep dive)**: `platform-overview/01-intro-databricks-neo4j-slides.md`, `agents/02-power-of-graphrag-slides.md`, `graph-ml/03`, `graph-ml/04`, `background/governance/auth-sync-slides.md`
 
 ### 4. Redundancy Audit
 
 Several topics appear in multiple decks with slightly different framing. A redundancy pass would identify which version to keep as the canonical source and which to remove or consolidate:
 
-- GraphRAG: covered in `databricks-in-depth/02`, `overview-knowledge-graph/04`, `overview-databricks-neo4j/01`
-- Multi-agent supervisor: covered in `databricks-in-depth/02`, `04`, `overview-databricks-neo4j/01`
-- Spark Connector: covered in `databricks-in-depth/01`, `03`, `04`, `overview-databricks-neo4j/01`
-- Graph feature engineering enrichment loop: overlaps between `03` and `04` in `databricks-in-depth/`
+- GraphRAG: covered in `agents/02-power-of-graphrag-slides.md`, `genai-foundations/04-context-and-rag-slides.md`, `platform-overview/01-databricks-neo4j-integration-slides.md`
+- Multi-agent supervisor: covered in `agents/02-power-of-graphrag-slides.md`, `agents/03-langgraph-supervisor-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md`, `platform-overview/01-databricks-neo4j-integration-slides.md`
+- Spark Connector: covered in `platform-overview/01-intro-databricks-neo4j-slides.md`, `graph-ml/03-graph-enrichment-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md`, `platform-overview/01-databricks-neo4j-integration-slides.md`
+- Graph feature engineering enrichment loop: overlaps between `graph-ml/03-graph-enrichment-slides.md` and `graph-ml/04-future-graph-enrichment-slides.md`
 
 ### 5. Sequential Story Arc
 
@@ -494,11 +497,14 @@ The decks do not currently share a single narrative spine. Mapping them to a lea
 Why graphs? → What is Neo4j Aura? → Why LLMs fail alone? → Traditional RAG →
 Context ROT → GraphRAG solution → Building KGs → Schema → Chunking →
 Entity Resolution → Vectors → Retrievers → Agents → Multi-agent systems →
+LangGraph supervisor → Deployment → Agent memory →
 Graph ML → Enrichment loops → Authorization
 ```
+
+Building KGs, Schema, Entity Resolution and Authorization now sit under `background/`, so the workshop run skips them and the spine above is the full-library arc rather than the delivered one. Agent memory has no deck yet.
 
 Checking whether any slide deck assumes knowledge not yet introduced would identify sequencing problems.
 
 ### 6. Use Case Coverage
 
-The current decks use two primary use cases: aircraft digital twins and financial fraud detection. Mapping which topics are demonstrated with which use case, and which topics have no concrete example, would surface gaps where a worked example would help.
+The current decks use three use cases: aircraft digital twins across the workshop path, financial fraud in `platform-overview/01-intro-databricks-neo4j-slides.md` and `agents/02-power-of-graphrag-slides.md`, and portfolios and asset managers in both `graph-ml/` decks. Mapping which topics are demonstrated with which use case, and which topics have no concrete example, would surface gaps where a worked example would help.
