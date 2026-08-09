@@ -204,13 +204,28 @@ MISSING_CREDENTIAL_MESSAGE = (
 )
 
 
+def _participant_slug(scope: str) -> str:
+    """Strip the ``fleet-ops-`` prefix off a secret scope name.
+
+    The slug is taken from the scope rather than derived from the user again,
+    so the endpoint, the model and the scope cannot disagree about who a
+    participant is. Lab 6 calls the two functions below with the same scope and
+    gets the same two names back, which is what makes a redeploy a redeploy.
+
+    Args:
+        scope: Scope name from ``tools.secret_scope_name``.
+
+    Returns:
+        The participant's slug, lowercase and hyphen-separated.
+    """
+    from data_utils import SECRET_SCOPE_PREFIX
+
+    prefix = f"{SECRET_SCOPE_PREFIX}-"
+    return scope[len(prefix) :] if scope.startswith(prefix) else scope
+
+
 def endpoint_name(scope: str) -> str:
     """Name this participant's serving endpoint, from their secret scope.
-
-    The slug is taken from the scope rather than derived again, so the endpoint
-    and the scope cannot disagree about who a participant is. Lab 6 calls this
-    with the same scope and gets the same endpoint back, which is what makes a
-    redeploy a redeploy.
 
     Args:
         scope: Scope name from ``tools.secret_scope_name``.
@@ -218,11 +233,31 @@ def endpoint_name(scope: str) -> str:
     Returns:
         The serving endpoint name.
     """
-    from data_utils import SECRET_SCOPE_PREFIX
+    return f"{AGENT_ENDPOINT_PREFIX}-{_participant_slug(scope)[:_MAX_ENDPOINT_SLUG]}"
 
-    prefix = f"{SECRET_SCOPE_PREFIX}-"
-    slug = scope[len(prefix) :] if scope.startswith(prefix) else scope
-    return f"{AGENT_ENDPOINT_PREFIX}-{slug[:_MAX_ENDPOINT_SLUG]}"
+
+def model_name(scope: str) -> str:
+    """Name this participant's registered model, from their secret scope.
+
+    One model per participant, in the shared ``agents`` schema. The alternative
+    is one model everyone registers into, which works exactly once: whoever
+    logs first owns it, and every participant after them needs MODIFY on a
+    model somebody else owns. A model each needs one privilege on the schema,
+    CREATE MODEL, which ``infrastructure_statements`` in lab/workshop.py grants
+    to the class.
+
+    The slug is hyphen-separated and a Unity Catalog name is not, so the
+    hyphens become underscores here. Nothing else about it changes, so the
+    model and the endpoint still name the same participant.
+
+    Args:
+        scope: Scope name from ``tools.secret_scope_name``.
+
+    Returns:
+        The three-level Unity Catalog model name.
+    """
+    slug = _participant_slug(scope)[:_MAX_MODEL_SLUG].replace("-", "_")
+    return f"{AGENT_SCHEMA}.{AGENT_MODEL_PREFIX}_{slug}"
 
 
 def export_neo4j_env(dbutils: Any, scope: str) -> tuple[str, ...]:

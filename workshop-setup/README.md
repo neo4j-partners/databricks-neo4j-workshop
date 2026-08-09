@@ -24,7 +24,7 @@ disagree with the notebooks the participants are running.
 | Object | Created by | Called from |
 |--------|-----------|-------------|
 | SQL warehouse `shared_warehouse` | `voclab.py warehouse-ensure` | `lab/workspace_init.sh` |
-| Catalog `databricks-neo4j-workshop`, the `aircraft`, `aircraft_pipeline` and `agents` schemas, the `raw_data` volume, and the ten grants that reach them | `workshop.provision_infrastructure` | `lab/workspace_init.sh`, through `voc_python workshop.py provision` |
+| Catalog `databricks-neo4j-workshop`, the `aircraft`, `aircraft_pipeline` and `agents` schemas, the `raw_data` volume, and the seven grants that reach them, six reads plus `CREATE MODEL` on `agents` for Lab 5 | `workshop.provision_infrastructure` | `lab/workspace_init.sh`, through `voc_python workshop.py provision` |
 | The 29 courseware files in the volume, 23 CSVs, 5 maintenance manuals and the `neo4j-agent-memory` wheel Lab 6 installs | `workshop.provision_data` | same |
 | `/Shared/workshop/dlt_fleet_etl` and the `Fleet Digital Twin ETL` pipeline, run to completion | `workshop.provision_pipeline` | same |
 | The eight gold tables in `aircraft` | published by that pipeline | same |

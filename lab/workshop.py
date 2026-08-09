@@ -155,11 +155,18 @@ GOLD_TABLES = (
 # created by Lab 5 in a participant's notebook, reading their names from here.
 #
 # Registered under the workshop catalog so a teardown of the catalog takes the
-# model with it, in the pipeline schema's sibling rather than the gold schema so
+# models with it, in the pipeline schema's sibling rather than the gold schema so
 # a participant browsing gold tables for a Genie Agent still sees eight.
 AGENT_SCHEMA = os.environ.get("WORKSHOP_AGENT_SCHEMA", "agents")
-AGENT_MODEL_NAME = "fleet_ops_assistant"
-AGENT_MODEL_FULL_NAME = f"{CATALOG}.{AGENT_SCHEMA}.{AGENT_MODEL_NAME}"
+
+# A prefix rather than a name. Lab 5 suffixes it with the participant's
+# identifier, so a cohort registers one model each into this schema rather than
+# thirty versions of one model. That is not tidiness. A single shared model is
+# owned by whoever registers first, and every participant after them fails on
+# the version they try to add unless the class also holds MODIFY on somebody
+# else's model. One model each costs one privilege, CREATE MODEL on this schema,
+# granted in infrastructure_statements below.
+AGENT_MODEL_PREFIX = "fleet_ops_assistant"
 
 # Serving endpoint names are account-unique, not catalog-scoped, so a shared
 # workspace needs one per participant. Lab 5 suffixes this with the participant's
@@ -284,11 +291,23 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     step. The tuple keeps its third field because ``run_statements`` is shared
     with ``genie_statements``, not because anything below may be refused.
 
-    Every grant here is a read. ``USE_CATALOG``, ``USE_SCHEMA``, ``READ_VOLUME``,
-    and the ``SELECT`` grants in ``genie_statements``, and nothing else. No lab
-    writes to this catalog: Labs 2 and 3 read the volume and the gold tables and
-    write their results to the participant's own Aura instance, and Lab 4 Part A
-    builds a Genie Agent, which needs ``SELECT`` and no more. Keep it that way.
+    Every grant here is a read but one. ``USE_CATALOG``, ``USE_SCHEMA``,
+    ``READ_VOLUME``, and the ``SELECT`` grants in ``genie_statements``: Labs 2
+    and 3 read the volume and the gold tables and write their results to the
+    participant's own Aura instance, and Lab 4 Part A builds a Genie Agent,
+    which needs ``SELECT`` and no more.
+
+    The exception is ``CREATE MODEL`` on the ``agents`` schema, which Lab 5
+    needs and which is the whole reason that schema exists. It is scoped as
+    narrowly as the privilege can be: one schema that holds nothing but
+    participants' own models, and no ``MODIFY``, so a participant can create
+    their model and add versions to it and cannot touch anyone else's. Lab 5
+    names one model per participant to keep it that way, in ``model_name`` in
+    ``Lab_5_LangGraph_Agent/agent.py``. Do not widen this to ``MODIFY`` or
+    ``ALL PRIVILEGES``; if a participant cannot register, the name is wrong, not
+    the grant.
+
+    Nothing else here should become a write.
     A ``GRANT CREATE CONNECTION ON METASTORE TO account users`` used to sit at
     the end of this list, so that whoever built the Lab 4 Part B MCP connection
     by hand could do it without metastore admin. It was removed on 2026-08-08:
@@ -361,6 +380,11 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
         (
             "grant use agent schema",
             f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{AGENT_SCHEMA}` TO {GRANTEE}",
+            True,
+        ),
+        (
+            "grant create model on agent schema",
+            f"GRANT CREATE MODEL ON SCHEMA {catalog}.`{AGENT_SCHEMA}` TO {GRANTEE}",
             True,
         ),
     ]

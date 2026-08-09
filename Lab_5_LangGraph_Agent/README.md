@@ -59,9 +59,15 @@ logged beside it.
 `FleetOpsAgent` is the class Lab 6 subclasses. It does it in `memory_agent.py`,
 which notebook 01 of Lab 6 writes out with `%%writefile` rather than shipping on
 disk, so read that cell to see the subclass. The registered model
-name and the endpoint name are constants here rather than strings a participant
-types, because Lab 6 redeploys **this** endpoint rather than creating a second
-one. Renaming either breaks Lab 6.
+name and the endpoint name come from `model_name()` and `endpoint_name()` here
+rather than from strings a participant types, because Lab 6 redeploys **this**
+endpoint rather than creating a second one. Renaming either breaks Lab 6.
+
+Both derive from the participant's secret scope, so a shared workshop workspace
+gets one model and one endpoint per person. The endpoint has to be per person,
+because endpoint names are unique across the account. The model is per person so
+that thirty participants are not all registering versions into one model the
+first of them owns.
 
 ## Cross-lab imports, and why the folders must stay siblings
 

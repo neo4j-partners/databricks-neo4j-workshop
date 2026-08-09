@@ -318,14 +318,15 @@ results = mlflow.genai.evaluate(
 ## The Names Are a Contract
 
 ```python
-UC_MODEL_NAME = "databricks-neo4j-workshop.agents.fleet_ops_assistant"
-AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
+model_name(scope)     # databricks-neo4j-workshop.agents.fleet_ops_assistant_<you>
+endpoint_name(scope)  # fleet-ops-assistant-<you>
 ```
 
-- **Constants in `agent.py`**, not strings a participant types. Renaming either breaks Lab 6, which redeploys *this* endpoint with memory added rather than standing up a second one
-- **A registered model name is scoped to its catalog**, so it is the same for everyone. A serving endpoint name is unique across the account, so it carries the participant's slug, taken from the same secret scope the credentials come from
+- **Functions in `agent.py`**, not strings a participant types. Renaming either breaks Lab 6, which redeploys *this* endpoint with memory added rather than standing up a second one
+- **Both carry the participant's slug**, taken from the same secret scope the credentials come from. The endpoint has to: its name is unique across the account. The model does too, so that thirty people are not registering versions into one model the first of them owns
+- **One write privilege pays for it:** `CREATE MODEL` on the `agents` schema, granted to the class at provisioning time. No `MODIFY`, so nobody can touch anybody else's model
 
-<!-- Endpoint name and credentials trace to the same secret scope so they cannot drift. Do not rename these: Lab 6 expects the same endpoint back. -->
+<!-- Model name, endpoint name and credentials all trace to the same secret scope so they cannot drift. Do not rename these: Lab 6 expects the same model and endpoint back. -->
 
 ---
 
