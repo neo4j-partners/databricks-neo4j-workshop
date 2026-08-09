@@ -146,7 +146,7 @@ That is the GraphRAG tail: the passage and the aircraft are one hop away, not in
 | Question | Route | Why |
 |---|---|---|
 | "What maintenance events did N10004 have?" | `cypher_node` | N10004 is a node |
-| "What is the procedure for an EGT exceedance?" | `graphrag_node` | A phrase in a manual, not a node |
+| "What is the procedure for an EGT exceedance?" | `graphrag_node` | EGT, Exhaust Gas Temperature, is a phrase in a manual, not a node |
 
 <!-- The Cypher tail is what makes graphrag_node worth having, and also what makes routing hard. Tune the prompt by adding the pair that went to the wrong tool, then rerun the measurement. -->
 
@@ -198,7 +198,7 @@ Recorded 2026-08-08 from a full run of `01_langgraph_agent.ipynb`, against `SUPE
 
 1. **Genie** named the engines carrying abnormal EGT
 2. **The graph** returned the maintenance history for those aircraft, including a bearing wear fault with its corrective action
-3. **The manual** closed with the guidance for high EGT: trend data for margin degradation, oil spectrographic analysis, fuel filter differential pressure, and a borescope of the HPT nozzle and blades
+3. **The manual** closed with the guidance for high EGT: trend data for margin degradation, oil spectrographic analysis, fuel filter differential pressure, and a borescope camera inspection of the HPT, the High-Pressure Turbine, nozzle and blades
 
 One question, three tools, one answer. **No single store can answer it.**
 
@@ -324,7 +324,7 @@ endpoint_name(scope)  # fleet-ops-assistant-<you>
 
 - **Functions in `agent.py`**, not strings a participant types. Renaming either breaks Lab 6, which redeploys *this* endpoint with memory added rather than standing up a second one
 - **Both carry the participant's slug**, taken from the same secret scope the credentials come from. The endpoint has to: its name is unique across the account. The model does too, so that thirty people are not registering versions into one model the first of them owns
-- **One write privilege pays for it:** `CREATE MODEL` on the `agents` schema, granted to the class at provisioning time. No `MODIFY`, so nobody can touch anybody else's model
+- **Two write privileges pay for it:** `CREATE MODEL` on the `agents` schema to register, and `CREATE TABLE` on the same schema because every `agents.deploy` creates inference tables beside the model. Both granted to the class at provisioning time. No `MODIFY`, so nobody can touch anybody else's model
 
 <!-- Model name, endpoint name and credentials all trace to the same secret scope so they cannot drift. Do not rename these: Lab 6 expects the same model and endpoint back. -->
 

@@ -328,7 +328,7 @@ Aura is the foundation this workshop builds GraphRAG on.
 
 Store the knowledge graph once. Query it for structure, for meaning, or for both.
 
-<!-- The bridge into the rest of the workshop: one database holding both the structured fleet graph and the semantic layer over the maintenance manuals, queryable together. -->
+<!-- The bridge into the rest of the workshop: one database holding both the structured aircraft graph and the semantic layer over the maintenance manuals, queryable together. -->
 
 ---
 

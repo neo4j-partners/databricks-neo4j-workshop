@@ -157,6 +157,10 @@ GOLD_TABLES = (
 # Registered under the workshop catalog so a teardown of the catalog takes the
 # models with it, in the pipeline schema's sibling rather than the gold schema so
 # a participant browsing gold tables for a Genie Agent still sees eight.
+#
+# The models are not the only thing that lands here. Every agents.deploy creates
+# AI Gateway inference tables beside the model it serves, in this schema, which
+# is why infrastructure_statements grants CREATE TABLE as well as CREATE MODEL.
 AGENT_SCHEMA = os.environ.get("WORKSHOP_AGENT_SCHEMA", "agents")
 
 # A prefix rather than a name. Lab 5 suffixes it with the participant's
@@ -291,21 +295,34 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     step. The tuple keeps its third field because ``run_statements`` is shared
     with ``genie_statements``, not because anything below may be refused.
 
-    Every grant here is a read but one. ``USE_CATALOG``, ``USE_SCHEMA``,
+    Every grant here is a read but two. ``USE_CATALOG``, ``USE_SCHEMA``,
     ``READ_VOLUME``, and the ``SELECT`` grants in ``genie_statements``: Labs 2
     and 3 read the volume and the gold tables and write their results to the
     participant's own Aura instance, and Lab 4 Part A builds a Genie Agent,
     which needs ``SELECT`` and no more.
 
-    The exception is ``CREATE MODEL`` on the ``agents`` schema, which Lab 5
-    needs and which is the whole reason that schema exists. It is scoped as
-    narrowly as the privilege can be: one schema that holds nothing but
-    participants' own models, and no ``MODIFY``, so a participant can create
-    their model and add versions to it and cannot touch anyone else's. Lab 5
-    names one model per participant to keep it that way, in ``model_name`` in
+    The exceptions are both on the ``agents`` schema, and both belong to Lab 5,
+    which is the whole reason that schema exists.
+
+    ``CREATE MODEL`` is the one Lab 5 registers with. It is scoped as narrowly
+    as the privilege can be: one schema that holds nothing but participants'
+    own models, and no ``MODIFY``, so a participant can create their model and
+    add versions to it and cannot touch anyone else's. Lab 5 names one model
+    per participant to keep it that way, in ``model_name`` in
     ``Lab_5_LangGraph_Agent/agent.py``. Do not widen this to ``MODIFY`` or
     ``ALL PRIVILEGES``; if a participant cannot register, the name is wrong, not
     the grant.
+
+    ``CREATE TABLE`` is the one Lab 5 deploys with, and it is not optional.
+    ``agents.deploy`` always enables AI Gateway inference tables, and it creates
+    them in the model's own catalog and schema, which is this one. The
+    ``databricks-agents`` API has no flag that turns them off, so a class
+    holding ``CREATE MODEL`` alone logs its model and then fails the deploy with
+    ``Insufficient permission to create tables in
+    'databricks-neo4j-workshop.agents'``. The scope is the same as above: a
+    participant owns the tables their own deploy creates and holds nothing on
+    anybody else's, because no ``MODIFY`` or ``SELECT`` is granted on the
+    schema.
 
     Nothing else here should become a write.
     A ``GRANT CREATE CONNECTION ON METASTORE TO account users`` used to sit at
@@ -385,6 +402,11 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
         (
             "grant create model on agent schema",
             f"GRANT CREATE MODEL ON SCHEMA {catalog}.`{AGENT_SCHEMA}` TO {GRANTEE}",
+            True,
+        ),
+        (
+            "grant create table on agent schema",
+            f"GRANT CREATE TABLE ON SCHEMA {catalog}.`{AGENT_SCHEMA}` TO {GRANTEE}",
             True,
         ),
     ]

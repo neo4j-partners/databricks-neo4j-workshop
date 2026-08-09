@@ -401,7 +401,7 @@ embeddings pipeline and still get graph enrichment.
 
 > "Which engines are showing abnormal EGT readings, what maintenance history do those aircraft have, and what does the maintenance manual say to do about high EGT?"
 
-- **Abnormal EGT readings:** Genie Agent over Lakehouse sensor telemetry
+- **Abnormal EGT readings:** Genie Agent over Lakehouse sensor telemetry. EGT is Exhaust Gas Temperature
 - **Maintenance history:** Vector Cypher Retriever, traversing from aircraft to their maintenance events
 - **What the manual says:** Vector Retriever, semantic search over manual chunks
 

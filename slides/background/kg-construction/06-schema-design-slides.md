@@ -171,7 +171,7 @@ Without patterns, the LLM might create nonsensical relationships like:
 | Aircraft | Individual aircraft with tail number and model |
 | System | Engine, Avionics, or Hydraulics system |
 | Component | Turbine, Compressor, Pump, etc. |
-| Sensor | EGT, Vibration, N1Speed, FuelFlow monitors |
+| Sensor | EGT (Exhaust Gas Temperature), Vibration, N1Speed (fan speed, % of rated), FuelFlow monitors |
 | MaintenanceEvent | Faults with severity (MINOR, MAJOR, CRITICAL) |
 
 ---

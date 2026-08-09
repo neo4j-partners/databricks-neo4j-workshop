@@ -26,7 +26,7 @@ IMPORTANT: These need `Lab_6_Agent_Memory/01_agent_memory.ipynb` to have run, in
 | The turns, in order
 
 | `(:Message)-[:MENTIONS]\->(:Aircraft)`
-| The edge that crosses into the graph. The `Aircraft` is Lab 2's node
+| The edge that crosses into the aircraft. The `Aircraft` is Lab 2's node
 
 | `(:ReasoningTrace)-[:HAS_STEP]\->(:ReasoningStep)`
 | What the agent did, one step per decision. Instructor demo only
@@ -62,7 +62,7 @@ RETURN count(r) AS mentions_to_aircraft
 
 == Who Asked About What
 
-The simplest crossing query. Start in memory, end on a graph node.
+The simplest crossing query. Start in memory, end on an `Aircraft` node.
 
 [source,cypher]
 ----

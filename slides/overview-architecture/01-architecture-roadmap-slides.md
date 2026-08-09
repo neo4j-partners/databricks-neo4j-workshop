@@ -39,7 +39,7 @@ Aircraft Digital Twins with Neo4j and Databricks
 - **Add** semantic search with vector embeddings and GraphRAG retrievers
 - **Query** sensor telemetry in natural language with a Databricks Genie Agent
 - **Build** a LangGraph supervisor that routes across Genie, Cypher over your own graph, and GraphRAG
-- **Give** that agent memory stored in the same graph as the fleet data
+- **Give** that agent memory stored in the same graph as the Aircraft Digital Twin
 - **Watch** the instructor build the same routing with no code in Agent Bricks over a governed Neo4j MCP connection
 
 <!--
@@ -353,7 +353,7 @@ Each participant gets their own environment to work in.
 | **Personal Aura Instance** | Your own Neo4j database, created in Lab 1 and used by every required lab after it |
 | **Databricks Workspace** | Clone notebooks and run them on a shared cluster to build your graph and agents |
 
-**Every required lab uses your own instance.** Lab 2 loads the fleet into it, Lab 3 adds the maintenance manual and vector indexes, Lab 5 queries it, and Lab 6 writes agent memory back to it. A broken load shows up in the next lab, which is the point.
+**Every required lab uses your own instance.** Lab 2 loads the graph into it, Lab 3 adds the maintenance manual and vector indexes, Lab 5 queries it, and Lab 6 writes agent memory back to it. A broken load shows up in the next lab, which is the point.
 
 **Lab 4's compound agent demo is optional** and runs against a separate instance. You need no credential, no MCP connection, and no setup for it.
 

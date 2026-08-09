@@ -42,7 +42,7 @@ so nobody in the room thinks they need to build what follows.
 ## Lab 4 Part B: An Instructor Demo
 
 - **The instructor builds this, not you:** a Supervisor Agent in Databricks Agent Bricks, over Neo4j MCP
-- **Against the instructor's own Aura instance:** loaded ahead of class with the full fleet dataset
+- **Against the instructor's own Aura instance:** loaded ahead of class with the full Aircraft Digital Twin
 - **You watch, you don't build:** no MCP connection and no OAuth credential enter your workspace
 - **Lab 5 is your path:** the same routing, in code, against the Aura instance you set up in Lab 1
 
@@ -79,7 +79,7 @@ Agent Bricks uses it as a subagent with no custom orchestration code.
 ## Beyond the Graph: Reaching the Lakehouse
 
 - **The knowledge graph reaches graph data:** aircraft, systems, components, maintenance events, flights
-- **The lakehouse holds the rest:** sensor telemetry, recorded every four hours over ninety days, in Delta tables
+- **The lakehouse holds the rest:** sensor telemetry such as EGT, Exhaust Gas Temperature, recorded every four hours over ninety days, in Delta tables
 - **The graph can't compute SQL:** "average EGT for engine AC5 this month" lives in the lakehouse
 - **Answering both halves needs more than one query engine**
 

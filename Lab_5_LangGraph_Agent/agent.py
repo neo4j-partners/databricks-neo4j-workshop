@@ -103,6 +103,11 @@ __all__ = [
 # them a PERMISSION_DENIED on the version they try to add. A model each means
 # the schema needs one write privilege granted to the class, CREATE MODEL, and
 # no one can touch anyone else's.
+#
+# CREATE TABLE on the same schema is granted alongside it, and for a reason that
+# has nothing to do with the names: agents.deploy always creates AI Gateway
+# inference tables in the model's own schema, with no way to turn them off, so a
+# class holding CREATE MODEL alone logs the model and then fails the deploy.
 AGENT_SCHEMA = "databricks-neo4j-workshop.agents"
 AGENT_MODEL_PREFIX = "fleet_ops_assistant"
 AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"

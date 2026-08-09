@@ -89,7 +89,7 @@ Lab 6 builds exactly that:
 
 - A **recall node** reads what the graph already knows about an aircraft before the supervisor answers
 - A **remember node** writes new facts back afterward
-- Both writes land as **nodes and relationships** in the same graph that holds the fleet data, not a separate log a different team owns
+- Both writes land as **nodes and relationships** in the same graph that holds the Aircraft Digital Twin, not a separate log a different team owns
 
 Governance is not bolted on afterward. It lives in the same graph as the data.
 
@@ -101,7 +101,7 @@ Governance is not bolted on afterward. It lives in the same graph as the data.
 
 Answering this needs three stores at once:
 
-- **Telemetry** for the EGT readings themselves, in the Databricks Lakehouse
+- **Telemetry** for the EGT, Exhaust Gas Temperature, readings themselves, in the Databricks Lakehouse
 - **The graph** for the maintenance history behind each aircraft
 - **The manuals** for the procedure, retrieved by GraphRAG
 
@@ -115,7 +115,7 @@ By the end of the workshop, you will have built and deployed exactly this:
 
 - A **LangGraph supervisor agent** routing across a Genie Agent, Cypher over your own Neo4j Aura instance, and GraphRAG retrieval over maintenance manuals
 - Deployed to **Databricks Model Serving** for production hosting
-- Extended with **persistent memory**, written back into the same Neo4j graph as the fleet data
+- Extended with **persistent memory**, written back into the same Neo4j graph as the Aircraft Digital Twin
 - Built end to end on your own Aura instance, not a shared demo
 
 The demo you are about to see is the artifact you will build.

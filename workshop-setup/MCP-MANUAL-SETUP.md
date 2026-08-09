@@ -26,8 +26,10 @@ The privilege is not automated either, and that is deliberate.
 `GRANT CREATE CONNECTION ON METASTORE TO account users` so that whoever
 performed this procedure could do it without metastore admin. That grant was
 removed on 2026-08-08: it handed thirty participants a metastore-wide create
-privilege for a step only an administrator performs, and everything
-`workshop.py` grants now is a read.
+privilege for a step only an administrator performs. Nothing `workshop.py`
+grants now reaches past the workshop catalog, and the only two writes among them
+are `CREATE MODEL` and `CREATE TABLE` on the `agents` schema, which Lab 5 needs
+to register its model and to deploy it.
 
 So the administrator doing this needs `CREATE CONNECTION` in their own right,
 and does not get it by signing in. Step 0 below is how it is obtained, once.
