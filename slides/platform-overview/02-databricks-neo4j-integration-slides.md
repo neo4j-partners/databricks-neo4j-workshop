@@ -183,11 +183,11 @@ This means an AI agent on Databricks can **explore and query Neo4j on its own** 
 - Analysts spend significantly more time finding and understanding data than actually analyzing it
 - AI agents can write SQL, but struggle to know **which table to query** or **what a column means**
 - Unity Catalog governs access, but treats relationships as join paths — not **first-class semantic connections**
-- The graph can fill this gap: a **semantic layer** that maps business meaning onto physical data
+- The graph can fill this gap: a **semantic map** that maps business meaning onto physical data
 
 ---
 
-## Building a Semantic Layer
+## Building a Semantic Map
 
 - **Sync Unity Catalog metadata into Neo4j**: catalogs, schemas, tables, columns as a connected graph
 - Layer on **domain knowledge**: business concepts mapped to physical assets, metric definitions, authoritative sources
@@ -196,7 +196,7 @@ This means an AI agent on Databricks can **explore and query Neo4j on its own** 
 
 ---
 
-## Neo4j as a Semantic Layer
+## Neo4j as a Semantic Map
 
 - Analysts discover data faster through **business concepts** instead of hunting through schemas
 - Agents use **GraphRAG patterns on metadata** — semantic search for a business concept, then traverse the graph to find related schemas, tables, and columns

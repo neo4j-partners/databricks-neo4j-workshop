@@ -38,7 +38,7 @@ One supervisor, three tools, one question that needs all of them
 
 - **Lab 2 gave you a fleet graph:** aircraft, systems, components, flights, maintenance history, in your own Aura instance
 - **Lab 3 gave you the manuals:** chunked, embedded, with a retriever that walks out from a matched passage
-- **Lab 4 Part A gave you a Genie Agent:** natural language to SQL over the Lakehouse telemetry
+- **Lab 4 gave you a Genie Agent:** natural language to SQL over the Lakehouse telemetry
 - **None of the three answers a real question on its own.** This lab builds the thing that decides which one to reach for
 
 <!--
@@ -46,9 +46,10 @@ Nothing here is new data. Every store the agent touches was built
 in an earlier lab. What is new is the routing decision, and that
 decision turns out to be the hard part.
 
-Lab 4 Part B built the same routing behaviour from a form in Agent
-Bricks. This lab writes it in code, against the participant's own
-graph, with the routing rule visible and editable.
+Lab 4's optional compound agent demo built the same routing
+behaviour from a form in Agent Bricks. This lab writes it in code,
+against the participant's own graph, with the routing rule visible
+and editable.
 -->
 
 ---
@@ -375,15 +376,15 @@ cannot name a tool it was never offered.
 
 ## Why a Bolt Driver Rather Than MCP
 
-- **Part B reached Neo4j through an MCP server** registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance
+- **The Lab 4 demo reached Neo4j through an MCP server** registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance
 - **It is the wrong shape for a classroom.** The connection is an admin object, one per participant instance is not something a workshop can provision, and the OAuth2 credential behind it belongs to whoever owns the server
 - **Your instance is yours.** Your password is in the secret scope Lab 3 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
 - **The governance story starts to pay when the graph is shared.** It costs more than it returns when the graph has exactly one user
 
 <!--
-Do not present this as MCP being wrong. Part B's architecture is
-correct for the problem it solves, and participants saw it work.
-The question is who else is reading the graph.
+Do not present this as MCP being wrong. That demo's architecture is
+correct for the problem it solves. The question is who else is
+reading the graph.
 
 Credentials note while you are here: on the normal path no plaintext
 password is typed anywhere in Lab 5. The driver helper reads the

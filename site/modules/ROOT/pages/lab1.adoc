@@ -29,7 +29,7 @@ Each Component node carries properties like name and type. Each HAS_EVENT relati
 .How graphs compare to relational databases
 [%collapsible]
 ====
-Where relational databases represent connections implicitly through foreign keys and join tables, graphs make them explicit and traversable. Questions that require following chains of connections become single traversal patterns rather than nested JOINs or complex nested joins.
+Relational databases represent connections implicitly, through foreign keys and join tables. Graphs store them explicitly, as relationships you can traverse. A question that follows a chain of connections becomes a single traversal pattern in Cypher, where SQL needs a nested join per hop.
 ====
 
 image::lab1-property-graph.svg[Aircraft Digital Twin property graph showing Aircraft, System, and Maintenance nodes connected by typed relationships]
@@ -101,14 +101,14 @@ The Aircraft Digital Twin spans two platforms. Neo4j holds the topology: how air
 
 Neo4j Aura is a fully managed cloud graph database service. It provides the Neo4j graph engine without the operational overhead of running infrastructure: automatic backups, high availability, and deployment across AWS, GCP, and Azure. Each participant provisions their own Aura instance to hold the Aircraft Digital Twin graph. That one instance carries through the whole workshop: Lab 2 loads it, Lab 3 enriches it, and Labs 5 and 6 query and write to it.
 
-.What AuraDB Free gives you, and what it does not
+.The limits of AuraDB Free
 [%collapsible]
 ====
-The workshop runs on **AuraDB Free**, not the 14-day trial and not Professional. Free never expires, so nothing goes away between sessions.
+The workshop runs on **AuraDB Free**, not the 14-day trial and not Professional. Free never expires, so your instance is still there between sessions.
 
-It holds up to **200,000 nodes and 400,000 relationships**. Everything the labs load fits comfortably: the fleet graph is a small fraction of that, because the sensor readings live in Databricks rather than in Neo4j.
+It holds up to **200,000 nodes and 400,000 relationships**. Everything the labs load fits well inside that, because the sensor readings live in Databricks rather than in Neo4j.
 
-The one thing Free does not have is **Graph Data Science**, the library of algorithms like PageRank and community detection. Nothing required depends on it. xref:lab2.adoc[Lab 2]'s `02_gds_knn_aircraft.ipynb` and the GDS appendix are take-home material: read them during the workshop, run them later on an instance that has the plugin.
+Free does not include **Graph Data Science**, the library of algorithms like PageRank and community detection. No required lab uses it. xref:lab2.adoc[Lab 2]'s `02_gds_knn_aircraft.ipynb` and the GDS appendix are take-home material: read them during the workshop, run them later on an instance that has the plugin.
 ====
 
 .Vector search and AI capabilities

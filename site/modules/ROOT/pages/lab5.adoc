@@ -1,15 +1,15 @@
 = Lab 5: The LangGraph Supervisor Agent
 
-Lab 4 Part B showed a supervisor built from a form. This lab builds the same routing behaviour in code, against your own graph, and deploys it as an endpoint you own. It is the lab the previous four have been assembling parts for: the Genie Agent from Part A, the fleet graph from Lab 2, and the GraphRAG retrievers from Lab 3, all reachable from one question.
+Lab 4's optional demo showed a supervisor built from a form. This lab builds the same routing behaviour in code, against your own graph, and deploys it as your own endpoint. It uses the pieces the previous four labs produced: the Genie Agent from Lab 4, the fleet graph from Lab 2 and the GraphRAG retrievers from Lab 3, all reachable from one question.
 
 .**At a Glance**
 
 * **LangGraph** models the agent as a **state graph**: nodes that read and write a shared state object, and edges that decide what runs next.
 * **One supervisor node, three tool nodes.** `genie_node` for SQL over Delta telemetry, `cypher_node` for traversal over your own Aura instance, `graphrag_node` for a `VectorCypherRetriever` over the Lab 3 manual chunks.
-* **Every tool returns to the supervisor**, which is free to pick again. That edge is the difference between a supervisor and a router.
-* **The routing rules live in the prompt.** Two of them were each written to fix a measured failure.
-* **A direct Bolt driver**, not an MCP server. Part B's MCP connection is an admin-managed Unity Catalog object, and one per participant is not a thing a classroom can stand up.
-* **Deployment is its own beat.** Logged to Unity Catalog, served as an endpoint that authenticates as a **service principal** rather than as you.
+* **Every tool returns to the supervisor**, which can then pick another tool. That return edge is what makes this a supervisor rather than a router.
+* **The routing rules live in the prompt.** Two of them were each written to fix a specific failure seen in testing.
+* **A direct Bolt driver**, not an MCP server. The demo's MCP connection is an admin-managed Unity Catalog object, and one per participant is not a thing a classroom can stand up.
+* **Deployment is a separate step.** The agent is logged to Unity Catalog and served as an endpoint that authenticates as a **service principal** rather than as you.
 
 == The Shape of the Agent
 
@@ -25,35 +25,35 @@ A router picks one tool and is done. This supervisor sees what came back and get
 
 **`graphrag_node`** is the Lab 3 retriever wrapped as a node. The question is embedded, the vector index returns the closest manual chunks, and a Cypher tail runs from each hit.
 
-.Why the Cypher tail is the point
+.What the Cypher tail adds
 [%collapsible]
 ====
-The tail walks sideways along `NEXT_CHUNK`, so a procedure split across a chunk boundary arrives whole, and upward through the `Document` to the aircraft the manual applies to. Neither of those facts is in the embedding. Both are one hop away in the graph. This is the concrete answer to "what does GraphRAG add to vector search", and it is why Lab 3 came before this one.
+The tail walks sideways along `NEXT_CHUNK`, so a procedure split across a chunk boundary arrives whole, and upward through the `Document` to the aircraft the manual applies to. Neither of those facts is in the embedding, and both are one hop away in the graph. That is what GraphRAG adds over plain vector search, and it is why Lab 3 comes before this lab.
 ====
 
 == Routing Lives in the Prompt
 
-The wiring is about thirty lines. What decides which tool runs is not in it. Two of the tools end in a Neo4j traversal, so a supervisor that describes its tools by what they do at the *end* cannot tell them apart. It sends manual questions to Cypher, where they return nothing, because manual text is not a property you can filter on.
+The wiring is about thirty lines of Python. The prompt is what decides which tool runs. Two of the three tools end in a Neo4j traversal, so a prompt that describes its tools by what they do at the *end* cannot tell those two apart. It sends manual questions to Cypher, where they return nothing, because manual text is not a property you can filter on.
 
-The prompt therefore routes on where the question **starts**:
+The prompt routes on where the question **starts** instead:
 
-* Starts with a name you could put in a `WHERE` clause, and `cypher_node` takes it.
-* Starts with a phrase you would search a manual for, and `graphrag_node` takes it.
+* If it starts with a name you could put in a `WHERE` clause, `cypher_node` takes it.
+* If it starts with a phrase you would search a manual for, `graphrag_node` takes it.
 
-That single reframing is the lesson. The rest of this section is two rules that each exist because something specific went wrong.
+The two rules below were each added after a specific failure. Both are worth reading before you write your own routing prompt.
 
 === The direction rule
 
 An `AFFECTS_AIRCRAFT` arrow written backwards matched nothing and returned zero rows with no error, on an aircraft that has 23 maintenance events. The tool reported that it found none.
 
-.The fix, and why it is not the obvious one
+.The fix, and the simpler one that was rejected
 [%collapsible]
 ====
-`AFFECTS_AIRCRAFT` and `AFFECTS_SYSTEM` both run **from** the `MaintenanceEvent` **to** the thing affected. A question naming an aircraft does not mean the arrow leaves the aircraft, so the events for a tail number are reached by matching `(:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(:Aircraft {tail_number: ...})`. Written the other way round it points away from the named noun.
+`AFFECTS_AIRCRAFT` and `AFFECTS_SYSTEM` both run **from** the `MaintenanceEvent` **to** the thing affected. A question naming an aircraft does not mean the arrow leaves the aircraft, so the events for a tail number are reached by matching `(:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(:Aircraft {tail_number: ...})`. Written the other way round, the arrow points away from the named noun.
 
-The obvious fix is to drop the arrow direction from the query and let it match either way. That was rejected. It teaches a Cypher habit Lab 1 spends its time arguing against, and it would make every traversal in the workshop quietly more expensive. The fix was nine lines of schema text in the prompt, stating the direction and naming the failure it prevents.
+The simpler fix is to drop the arrow direction from the query and let it match either way. That was rejected, because it teaches a Cypher habit Lab 1 argues against and it makes every traversal in the workshop more expensive. The fix used instead is nine lines of schema text in the prompt, stating the direction and naming the failure it prevents.
 
-**Fixing the prompt rather than the schema is the non-obvious call, and it is the one to take away.** A wrong answer from a text-to-Cypher tool is usually a gap in what the model was told about the graph, not a flaw in the graph.
+**The fix belongs in the prompt, not the graph.** A wrong answer from a text-to-Cypher tool is usually a gap in what the model was told about the graph rather than a flaw in the graph itself.
 ====
 
 === The refusal rule
@@ -70,7 +70,7 @@ Refusal is the useful behaviour because the supervisor is still holding the ques
 `OperatingLimit` is a good trap precisely because it is well-formed data: exactly twenty canonical limits, never empty, never duplicated. The nearest number is always available, which is what makes "return the nearest number" such an attractive failure.
 ====
 
-== Measured Routing
+== Routing Accuracy
 
 Twelve questions, four per tool, each scored on the first tool the supervisor chose.
 
@@ -122,20 +122,20 @@ The notebook reads your Aura password from the secret scope Lab 3 wrote. **On th
 
 The agent also degrades rather than failing. If the `maintenanceChunkEmbeddings` vector index is missing, because Lab 3 notebook 01 was skipped, the builder detects it and drops `graphrag_node` from the available tools instead of raising at import. The graph still compiles and the agent still answers from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change.
 
-== Deployment Is Not a Formality
+== Deploying the Agent
 
-The second notebook logs the same graph to Unity Catalog as an MLflow `ResponsesAgent` and serves it as a Model Serving endpoint. The line worth understanding is who the endpoint is.
+The second notebook logs the same graph to Unity Catalog as an MLflow `ResponsesAgent` and serves it as a Model Serving endpoint. The part to understand is which identity the endpoint runs as.
 
-**It authenticates as a service principal, not as you.** A notebook demo runs with your permissions and works because you happen to have them. An endpoint runs as its own identity, and every resource it touches has to be granted to that identity explicitly. That is the line between a notebook that works and a product that works for someone else.
+**It authenticates as a service principal, not as you.** In the notebook, the agent reaches Genie, the warehouse and the tables because your own account already has access to them. The endpoint has its own identity, and that identity starts with access to nothing. Every resource the agent touches has to be granted to it.
 
-.Three things that follow from that, all measured
+.Three things that follow from that
 [%collapsible]
 ====
-**Resources and credentials are different mechanisms.** Databricks objects are declared at log time and granted to the serving principal from that list. Your Aura password cannot be declared that way, so it travels as a secret reference in the endpoint's environment block and resolves at startup.
+**Databricks resources and outside credentials are handled two different ways.** The Databricks objects the agent uses, meaning the Genie Agent, the SQL warehouse, the eight gold tables and the two model endpoints, are listed at log time in `build_resources`. Databricks grants the serving principal access to each item on that list. Aura is not a Databricks object, so it cannot go on the list. It is passed as environment variables holding `{{secrets/<scope>/<key>}}` references, which the endpoint resolves from your secret scope when it starts.
 
-**A Genie Agent grant is not a SQL warehouse grant.** A model logged with the Genie Agent and not the warehouse underneath it deploys cleanly, routes correctly, and answers every sensor question with `is not authorized to use or monitor this SQL Endpoint`. Two resources, two grants.
+**Granting the Genie Agent does not grant the SQL warehouse under it.** A model logged with the Genie Agent but not the warehouse deploys fine and routes correctly, then answers every sensor question with `is not authorized to use or monitor this SQL Endpoint`. They are two separate resources and each needs its own entry in the list.
 
-**Pin the requirements.** Inferred requirements read the cluster, and a cluster carrying the Lab 6 memory wheel produces a requirement that resolves from no index. The container then fails to build, about fifteen minutes after you stopped watching.
+**Pin the requirements.** If you let MLflow infer them, it reads the packages installed on the cluster. A cluster carrying the Lab 6 memory wheel produces a requirement that pip cannot find, so the container fails to build about fifteen minutes later.
 ====
 
 A first deploy takes roughly sixteen minutes, and the notebook polls and prints where it got to. It then asks the endpoint the same questions and scores the answers with MLflow's judges.
@@ -144,9 +144,9 @@ The registered model name and the endpoint name come from `agent.py` rather than
 
 == Why a Bolt Driver Rather Than MCP
 
-Part B reached Neo4j through an MCP server registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance, and the wrong shape for a classroom: the connection is an admin object, one per participant instance is not something a workshop can provision, and the OAuth2 credential behind it belongs to whoever owns the server.
+Lab 4's optional demo reached Neo4j through an MCP server registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance, and the wrong shape for a classroom: the connection is an admin object, one per participant instance is not something a workshop can provision, and the OAuth2 credential behind it belongs to whoever owns the server.
 
-Your instance is yours, your password is in your secret scope, and the Neo4j Python driver opens a Bolt session against it in one line. The governance story Part B tells is real, and it starts to pay when the graph is shared. It costs more than it returns when the graph has exactly one user.
+Your instance is yours, your password is in your secret scope, and the Neo4j Python driver opens a Bolt session against it in one line. The governance story that demo tells is real, and it starts to pay when the graph is shared. It costs more than it returns when the graph has exactly one user.
 
 == Next Steps
 

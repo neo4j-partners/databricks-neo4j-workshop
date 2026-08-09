@@ -2,7 +2,7 @@
 
 > **This section is optional.** It requires a hosted Neo4j MCP server and the Unity Catalog connection that fronts it, both of which are outside the scope of the workshop. The instructor demos it.
 >
-> **Why it is here.** It takes the Genie agent you built in the lab and makes it one half of a compound AI agent. A supervisor sits above it and a second agent queries Neo4j over MCP, so one question box reaches both the Lakehouse and the graph. Agent Bricks Multi-Agent Supervisor gets there through configuration alone, with no code. A Unity Catalog HTTP connection using OAuth2 M2M against a hosted MCP server is what governed agent access to Neo4j looks like in production.
+> **Why it is here.** It takes the Genie agent you built in the lab and makes it one half of a compound AI agent. A supervisor sits above it and a second agent queries Neo4j over MCP, so one question box reaches both the Lakehouse and the graph. Agent Bricks Supervisor Agent gets there through configuration alone, with no code. A Unity Catalog HTTP connection using OAuth2 M2M against a hosted MCP server is what governed agent access to Neo4j looks like in production.
 >
 > **[Lab 5](../Lab_5_LangGraph_Agent)** builds the same routing in code, against your own graph, and it is where the lab continues.
 >
@@ -59,37 +59,46 @@ Which aircraft had critical maintenance events?
 
 ---
 
-## Step 2: Create the Multi-Agent Supervisor
+## Step 2: Create the Supervisor Agent
 
-### 2.1 Navigate to Agent Bricks
+### 2.1 Create the agent
 
 1. In the left navigation pane, click **Agents**
-2. Find the **Multi-Agent Supervisor** tile
-3. Click **Build**
+2. Click **Create Agent**
+3. Select **Supervisor Agent**
 
-### 2.2 Configure Basic Settings
+The agent is created immediately and opens its configuration page. Everything that
+follows happens on that one page: subagents in the left side pane, **Instructions**
+and **Description** below them, and a chat pane on the right for testing. There is no
+separate build-then-deploy step.
+
+### 2.2 Configure basic settings
 
 1. **Name:** `Aircraft Intelligence Hub [YOUR_INITIALS]`
    - Example: `Aircraft Intelligence Hub RK`
-2. **Description:**
+2. **Description:** this is shown to users and used for search.
    ```
    Intelligent coordinator for aircraft analytics combining sensor telemetry
    data from Unity Catalog with knowledge graph relationships from Neo4j.
    ```
 
+> **Code execution comes for free.** Every supervisor includes a sandboxed code
+> execution tool by default, so it can run Python, SQL or shell to compute over what
+> the subagents return. Nothing to enable, and nothing to add under **Tools and
+> sub-agents**. The sandbox has no internet access and no data access of its own.
+
 ---
 
 ## Step 3: Add the Neo4j Graph Agent
 
-### 3.1 Add and Configure the External MCP Server
+### 3.1 Add and configure the external MCP server
 
-1. Under **Tools and sub-agents** in the left side pane, click **External MCP server**
-2. From the **Unity Catalog connection** dropdown, select `neo4j_agentcore_mcp`
-3. The **Agent Name** `mcp-neo4j-agentcore-mcp` will auto-populate
-
-![MCP Connection Configuration](../site/modules/ROOT/images/lab4-mcp-connection.png)
-
-4. In the **Describe the content** field, paste the following. The supervisor uses this description to decide which agent handles each question, so detail matters:
+1. Under **Tools and sub-agents** in the left side pane, click **External MCP server**.
+   The search bar at the top of the pane finds it too.
+2. From the dropdown that appears, select the `neo4j_agentcore_mcp` Unity Catalog connection
+3. The agent name `mcp-neo4j-agentcore-mcp` auto-populates
+4. Click the subagent tile to open its **Description**, and paste the block below. The
+   supervisor reads this to decide which subagent handles each question, so detail matters:
 
 ```
 Queries the Neo4j knowledge graph to explore aircraft relationships, topology, and operational data.
@@ -131,7 +140,7 @@ DO NOT USE FOR:
 
 ## Step 4: Add the Genie Agent
 
-### 4.1 Add Genie Agent
+### 4.1 Add the Genie Agent
 
 1. Under **Tools and sub-agents** in the left side pane, click **Genie Agent**
 2. From the dropdown that appears, select the demo workspace's own Genie Agent,
@@ -143,11 +152,11 @@ DO NOT USE FOR:
 > the agent's URL, after `/genie/rooms/`. Substitute your own id if you built the
 > demo agent yourself rather than reusing `aircraft-genie`.
 
-### 4.2 Configure the Genie Subagent
+### 4.2 Configure the Genie subagent
 
 1. **Agent Name:** `sensor_data_agent`
    - Edit the auto-populated name if needed
-2. **Description:**
+2. Click the subagent tile to open its **Description**, and paste:
 
 ```
 Analyzes aircraft sensor telemetry data using SQL queries over Unity Catalog tables.
@@ -186,21 +195,13 @@ DO NOT USE FOR:
 
 ---
 
-## Step 5: Create the Agent
+## Step 5: Set the Supervisor Instructions
 
-Click **Create Agent** to deploy the supervisor.
+The subagent descriptions above tell the supervisor what each one is good for. The
+**Instructions** field tells it how to behave: the routing policy, the multi-step
+plans, and the rules for writing an answer.
 
-> **Note:** Deployment may take several minutes to complete. The status will update when ready.
-
----
-
-## Step 6: Configure Supervisor Instructions
-
-### 6.1 Set Supervisor Instructions
-
-1. Scroll to the bottom of the agent configuration page
-2. Expand the **Optional** section
-3. In the **Instructions** field, enter the following:
+In the left side panel, below **Tools and sub-agents**, paste this into **Instructions**:
 
 ```
 # Aircraft Intelligence Hub - Routing Instructions
@@ -278,21 +279,18 @@ For questions that need BOTH sources, process sequentially:
 4. If a query cannot be answered by either agent, explain what data would be needed
 ```
 
-### 6.2 Save Changes
-
-Click **Update Agent** to save the instructions.
-
 ---
 
-## Step 7: Test the Multi-Agent System
+## Step 6: Test the Supervisor
 
-### 7.1 Start Testing
+### 6.1 Start testing
 
-Once deployment completes:
-1. Use the **Test your Agent** panel on the right side of the Build tab
-2. Or click **Open in Playground** for expanded testing with AI Judge features
+Once the supervisor finishes initializing:
+1. Chat with it in the pane on the right side of the configuration page
+2. Or click **Open in Playground**. With AI assistive features enabled, Playground adds
+   **AI Judge** and **Synthetic task generation**
 
-### 7.2 Test Single-Agent Routing
+### 6.2 Test single-agent routing
 
 **Test 1: Sensor Analytics (should route to sensor_data_agent)**
 ```
@@ -318,7 +316,7 @@ Compare average vibration readings between Boeing and Airbus aircraft
 ```
 Verify: Returns grouped statistics by manufacturer
 
-### 7.3 Test Multi-Agent Queries
+### 6.3 Test multi-agent queries
 
 **Test 5: Combined Query**
 ```
@@ -342,33 +340,42 @@ Expected behavior:
 
 ---
 
-## Step 8: Improve Through Feedback
+## Step 7: Improve Through Feedback
 
-### 8.1 Add Example Questions
+Supervisor Agent retrains itself on labeled feedback, so routing mistakes get corrected
+without editing the Instructions block.
 
-1. Navigate to the **Examples** tab
-2. Click **+ Add** to introduce test questions
-3. Enter questions that represent common user queries
+### 7.1 Add example questions
 
-### 8.2 Share with Subject Matter Experts
+1. Open the **Examples** tab
+2. Click **+ Add**
+3. Type the question into the **Add a question** modal, then click **Add**
+4. Repeat for each question worth evaluating. The kebab menu on a question deletes it
 
-1. Share the configuration page link with domain experts
-2. Grant experts `CAN_MANAGE` permission on the supervisor
-3. Ensure experts have appropriate access to each subagent
+### 7.2 Share with subject matter experts
 
-### 8.3 Add Guidelines
+1. Share a link to the agent's configuration page with your domain experts
+2. In the upper right corner, click the kebab menu, then **Manage permissions**, and
+   grant the experts **Can Manage**
+3. Give them access to each subagent as well: the Genie Agent and its Unity Catalog
+   objects, and `USE CONNECTION` on `neo4j_agentcore_mcp`
 
-1. Select each example question
-2. Add **Guidelines** labels that refine routing behavior
-3. Test again to validate improvements
-4. Click **Update Agent** to save changes
+> **Partial access degrades quietly.** An expert with access to no subagent gets the
+> conversation ended. An expert with access to some subagents gets steered away from
+> the ones they cannot reach, rather than an error.
+
+### 7.3 Add guidelines
+
+1. Click an example question
+2. Add **Guidelines** in the panel that appears. They apply as soon as they are saved
+3. Test again, in the configuration page or in Playground
 
 ---
 
-## Step 9: Optional - Query the Endpoint Programmatically
+## Step 8: Optional - Query the Endpoint Programmatically
 
-1. Click **See Agent status** or **Open in Playground**
-2. Select **Get code** to retrieve API examples
+1. On the agent page, click **Endpoint** for the endpoint details
+2. Or click **Open in playground**, then **Get code**
 3. Choose between **Curl API** or **Python API**
 
 Example Python usage:
@@ -408,7 +415,7 @@ The demo shows a multi-agent system that combines two purpose-built data platfor
 ## Troubleshooting
 
 ### "Agent not responding"
-- Check MCP connection status in **Catalog** > **Connections**
+- Check MCP connection status in **Catalog** > **External connections**
 - Verify Neo4j instance is running
 - Test Genie Agent independently in AI Playground
 - Ensure user has `USE CONNECTION` permission on the MCP connection
@@ -433,7 +440,7 @@ The demo shows a multi-agent system that combines two purpose-built data platfor
 ### "Permission denied"
 - For Genie Agent: User needs access to the agent AND underlying data tables
 - For MCP server: User needs `USE CONNECTION` permission on the Unity Catalog connection
-- For supervisor: User needs `CAN QUERY` permission on the agent endpoint
+- For supervisor: User needs **Can Query**, granted from the kebab menu on the **Agents** page
 
 ---
 
@@ -487,7 +494,7 @@ Extensions worth showing or mentioning during the demo:
 
 ## References
 
-- [Multi-Agent Supervisor Documentation](https://docs.databricks.com/aws/en/generative-ai/agent-bricks/multi-agent-supervisor)
-- [External MCP Servers](https://docs.databricks.com/aws/en/generative-ai/mcp/external-mcp)
-- [Agent Bricks Overview](https://docs.databricks.com/aws/en/generative-ai/agent-bricks/)
+- [Supervisor Agent](https://docs.databricks.com/aws/en/agents/agent-bricks/multi-agent-supervisor)
+- [Connect agents to third-party tools with MCP Services](https://docs.databricks.com/aws/en/agents/mcp-tools/mcp-services)
+- [Agent Bricks Overview](https://docs.databricks.com/aws/en/agents/agent-bricks/)
 - [Unity Catalog Connections](https://docs.databricks.com/en/data-governance/unity-catalog/index.html)

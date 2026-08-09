@@ -48,7 +48,7 @@ copy_assets() {
   # workshop topic folder and as ../../databricks-in-depth/ from background/.
   # Both resolve to the same place, so one copy serves both.
   mkdir -p "$OUT/databricks-in-depth"
-  cp databricks-in-depth/*.svg "$OUT/databricks-in-depth/"
+  cp databricks-in-depth/*.svg databricks-in-depth/*.png "$OUT/databricks-in-depth/"
 
   # site/modules/ROOT/images/, reached as ../../site/modules/ROOT/images/.
   # Copied whole rather than file by file so that adding an image reference to a

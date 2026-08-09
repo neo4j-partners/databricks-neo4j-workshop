@@ -123,8 +123,8 @@ Shared resources are pre-configured by administrators so participants can focus 
 | Resource | Description |
 |----------|-------------|
 | **Databricks Data & Tables** | CSV files in Unity Catalog Volume and pre-created Lakehouse tables |
-| **Instructor Demo Aura Instance** | Fully populated Neo4j database behind the Lab 4 Part B demo. Participants never connect to it |
-| **Neo4j MCP Server** | External MCP server against the demo instance, used only in the Part B demo |
+| **Instructor Demo Aura Instance** | Fully populated Neo4j database behind the optional Lab 4 compound agent demo. Participants never connect to it |
+| **Neo4j MCP Server** | External MCP server against the demo instance, used only in that optional demo |
 | **Databricks MCP Connection** | That MCP server registered in Unity Catalog, in the instructor's workspace |
 
 ---
@@ -140,7 +140,7 @@ Each participant gets their own environment to work in:
 
 **Every required lab uses your own instance.** Lab 2 loads the fleet into it, Lab 3 adds the maintenance manual and vector indexes, Lab 5 queries it, and Lab 6 writes agent memory back to it. A broken load shows up in the next lab, which is the point.
 
-**Lab 4 Part B is an instructor demo** against a separate instance. You need no credential, no MCP connection, and no setup for it.
+**Lab 4's compound agent demo is optional** and runs against a separate instance. You need no credential, no MCP connection, and no setup for it.
 
 ---
 

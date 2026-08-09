@@ -2,12 +2,12 @@
 
 Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, hourly-scale readings over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
 
-== What You Build, and the Optional Demo Beside It
+== What You Build in This Lab
 
-* **The lab is the Genie Agent.** You build it over the Lakehouse telemetry, attach four gold tables to it, and ask it questions. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie Agent ID that Lab 5 and Lab 6 both consume.
-* **The compound AI agent is optional.** A no-code Supervisor Agent in Agent Bricks puts the Genie Agent and a Neo4j MCP agent behind one question box. It is optional because it needs a hosted MCP server and the Unity Catalog connection that fronts it, both outside the scope of the workshop. The instructor demos it. The procedure is in `Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`.
+* **You build the Genie Agent.** It runs over the Lakehouse telemetry, with four gold tables attached. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie Agent ID that Lab 5 and Lab 6 both use.
+* **The compound AI agent is an optional instructor demo.** A no-code Supervisor Agent in Agent Bricks puts the Genie Agent and a Neo4j MCP agent behind one question box. It stays optional because it needs a hosted MCP server and the Unity Catalog connection that fronts it, both outside the scope of the workshop. The procedure is in `Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`.
 
-**Neither one is the workshop's final architecture.** Lab 5 is, and it reaches the same routing behaviour in code against your own graph, with no MCP server needed. The demo exists to show what the no-code path looks like and what it costs, which is a contrast worth seeing before you write the code version.
+**Lab 5 is the workshop's final architecture.** It builds the same routing behaviour in code, against your own graph, with no MCP server. Watching the demo first shows you the no-code version of that routing and what it takes to run, so you can compare the two when you write the code.
 
 .**At a Glance**
 
@@ -92,7 +92,7 @@ The Supervisor Agent supports up to 20 subagents of four types: Genie Agents for
 
 == Specialized Agents for Different Data Structures
 
-Two schemas, two query languages, and two sets of conventions in one prompt dilute focus. An agent that only knows about graph structure writes precise graph queries; an agent that knows about both starts mixing idioms. SQL thinks in rows, filters, and aggregations. Cypher thinks in paths, patterns, and traversals. The architecture separates concerns: one agent per platform, a supervisor to coordinate them.
+Putting two schemas, two query languages and two sets of conventions in one prompt makes the agent worse at both. An agent that knows only the graph writes precise graph queries. An agent that knows both starts mixing idioms, because SQL works in rows, filters and aggregations while Cypher works in paths, patterns and traversals. So the architecture uses one agent per platform, with a supervisor to coordinate them.
 
 === Genie Agent: Sensor Telemetry Analytics
 
@@ -119,15 +119,13 @@ Write operations are hidden entirely, so agents can never modify production data
 
 A supervisor agent sits above both specialists and routes questions based on their nature.
 
-image::lab-architecture-overview.svg[An Agent Bricks supervisor routing to Genie and a Neo4j MCP agent]
-
 The supervisor does not answer questions itself. It reads the question, determines which data shape it targets, and routes to the right specialist. For questions that span both platforms, it decomposes the question into sub-tasks, sends each to the appropriate agent, and synthesizes a single answer.
 
-NOTE: The diagram above is the **optional demo**, not the workshop's destination. You build the Genie Agent. The supervisor and its Neo4j MCP agent sit outside the scope of the workshop, because they need a hosted MCP server and the Unity Catalog connection that fronts it. The instructor demos them. Lab 5 is where you build this routing yourself, in code, against your own graph.
+NOTE: This supervisor is the **optional demo**, not the workshop's destination. You build the Genie Agent. The supervisor and its Neo4j MCP agent sit outside the scope of the workshop, because they need a hosted MCP server and the Unity Catalog connection that fronts it. The instructor demos them. Lab 5 is where you build this routing yourself, in code, against your own graph.
 
 === The demo and Lab 5, side by side
 
-The same routing behaviour reached two ways. This contrast is the reason the demo is worth watching rather than skipping.
+The same routing behaviour, built two ways.
 
 [cols="1,2,2"]
 |===
@@ -150,7 +148,7 @@ The same routing behaviour reached two ways. This contrast is the reason the dem
 | A new tool is a Python function and a node, and the supervisor prompt gets a line
 |===
 
-Neither column is the right answer in general. Agent Bricks is faster to stand up and easier to hand to a non-engineer; Lab 5 is what you reach for when the routing rules themselves need testing, review and a git history.
+Each column suits a different situation. Agent Bricks is faster to stand up and easier to hand to a non-engineer. Lab 5's approach is the one to use when the routing rules themselves need testing, review and a git history.
 
 == Query Routing Strategy
 
@@ -193,4 +191,4 @@ Neither column is the right answer in general. Agent Bricks is faster to stand u
 
 Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` to build your Genie Agent, and keep the agent ID it gives you. Lab 5 reads it as `GENIE_AGENT_ID`, and losing it means rebuilding the agent.
 
-Then continue to Lab 5, where the supervisor becomes code you own. If the instructor runs the optional compound agent demo, watch it first.
+Then continue to Lab 5, where you write the supervisor yourself in Python. If the instructor runs the optional compound agent demo, watch it first.

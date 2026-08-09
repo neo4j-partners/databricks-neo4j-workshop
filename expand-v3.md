@@ -6,6 +6,8 @@ Replaces `expand-v2.md`, which is deleted. Same facts, rewritten to be read.
 
 **Status date:** 2026-08-09. Every claim below was checked against files on disk or against a job run, not inferred.
 
+**Lab 4 no longer has parts, as of 2026-08-09.** The lab is the Genie Agent, and the compound agent over Neo4j MCP is an optional demo in [`Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`](Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md), which is `PART_B.md` renamed. It is optional because it needs a hosted MCP server, which is outside the scope of the workshop, rather than because it is instructor-only. Read "Part A" below as the lab itself and "Part B" as that optional demo.
+
 **Three things a reader should know before starting:**
 
 - **Lab 5 works end to end, deployed.** All three tools answer through a Model Serving endpoint, including the Genie tool that was failing on authorization.

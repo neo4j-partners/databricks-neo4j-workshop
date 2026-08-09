@@ -24,7 +24,7 @@ The lab is two notebooks in `Lab_6_Agent_Memory/`:
 
 * **Lab 5 completed and deployed.** xref:lab5.adoc[Lab 5] builds `tools.py`, `agent.py` and the Model Serving endpoint this lab redeploys. Section 10 updates that endpoint rather than creating a second one, so the registered model and the endpoint have to exist first.
 * **Three lab folders, siblings in your workspace.** `memory.py` imports the embedder and the secret helpers from `Lab_3_Semantic_Search/data_utils.py`, and the agent state, the routing schema and the supervisor prompt from `Lab_5_LangGraph_Agent/tools.py`. It carries no copies. Keep `Lab_3_Semantic_Search`, `Lab_5_LangGraph_Agent` and `Lab_6_Agent_Memory` beside each other and `ensure_labs_on_path()` finds both on its own.
-* **`GENIE_AGENT_ID` set to your own agent.** The value from Lab 4 Part A, the same one you used in Lab 5. Take it out of the URL: `https://<workspace>/genie/rooms/<GENIE_AGENT_ID>`.
+* **`GENIE_AGENT_ID` set to your own agent.** The value from Lab 4, the same one you used in Lab 5. Take it out of the URL: `https://<workspace>/genie/rooms/<GENIE_AGENT_ID>`.
 * **`WAREHOUSE_ID` from your Genie Agent settings.** Section 10 declares it as a resource. Without it the redeployed endpoint routes sensor questions correctly and then cannot run the SQL.
 * **The secret scope from Lab 1 notebook 02.** It holds your Aura URI, username, password and database name. The scope name is derived from `current_user()`, so there is nothing to copy across from the other notebooks.
 * **The fleet graph from Lab 2.** Adoption needs `Aircraft` nodes to adopt, and the headline query needs `MaintenanceEvent` nodes to cross into.

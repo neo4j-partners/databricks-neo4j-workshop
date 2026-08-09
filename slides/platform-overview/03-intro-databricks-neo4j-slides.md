@@ -167,16 +167,32 @@ together.
 
 ## The Intelligence Platform — Data Flow
 
-![Intelligence Platform Data Flow](../databricks-in-depth/intelligence-platform-flow.svg)
+![Intelligence Platform Data Flow](../databricks-in-depth/spark-connector-virtual-graph.png)
 
 <!--
-The same four stages visualized as a data flow. Stages 1-2 flow
-left to right (Databricks to Neo4j): Silver tables through the
-Spark Connector become graph nodes; unstructured docs through the
-KG Builder become embeddings and entities. Stage 3 reverses: graph
-insights flow back to Gold tables. Stage 4 spans both: the
-multi-agent supervisor routes to Genie (SQL) and the Neo4j MCP
-agent (Cypher).
+The Medallion Architecture with Neo4j attached to it. Structured
+and unstructured sources land in Bronze as raw staging. Bronze
+feeds Silver, the cleaned and conformed Delta tables, and Silver
+is the layer everything else reads from.
+
+Two arrows leave Silver. The Neo4j Spark Connector batch-loads
+Silver tables into the Neo4j Enterprise Knowledge Graph as nodes
+and relationships. The dashed arrow coming back is graph
+enrichment: algorithm results, community scores, and derived
+relationships written back into Silver so they become ordinary
+columns other consumers can join on. That round trip is the point.
+Silver feeds the graph, the graph feeds Silver.
+
+Silver also flows down to Gold, the curated business analytics
+layer.
+
+The Neo4j Virtual Graph on the lower right is a composite, logical
+view rather than a second copy of the data. Silver and Gold tables
+project into it, and the dashed line from the Enterprise Knowledge
+Graph shows composite graphs stitching the materialized graph and
+the lakehouse tables into one queryable surface. An agent asking a
+Cypher question does not need to know which side a given property
+physically lives on.
 -->
 
 ---

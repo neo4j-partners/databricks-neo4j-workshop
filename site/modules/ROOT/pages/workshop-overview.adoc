@@ -44,7 +44,7 @@ The labs build on each other, moving from a single graph database to a full mult
 * **Lab 1** provisions Neo4j Aura and introduces Cypher, the graph query language.
 * **Lab 2** loads the Aircraft Digital Twin into Neo4j from Databricks using the Spark Connector.
 * **Lab 3** adds semantic search: chunk the maintenance manual, generate embeddings, and build GraphRAG retrievers.
-* **Lab 4** builds a Genie Agent for sensor analytics in Part A, and shows a no-code Agent Bricks supervisor as an instructor demo in Part B.
+* **Lab 4** builds a Genie Agent for sensor analytics, with an optional demo that turns it into a no-code Agent Bricks compound agent.
 * **Lab 5** writes the supervisor yourself in LangGraph, over Genie, your own graph and the Lab 3 retrievers, then deploys it to Model Serving.
 * **Lab 6** gives that agent memory in Neo4j, so conversation history and maintenance history sit in one graph and one query can cross both.
 
@@ -56,7 +56,7 @@ image::lab5-agent-topology.svg[The Lab 5 supervisor routing to a Genie node, a C
 
 Routing is a loop, not a one-shot decision. Every tool returns its result to the supervisor, which is free to pick another tool before it answers. That is how one question reaches both stores.
 
-Lab 4 shows the same routing idea reached a second way, without code. The instructor builds a **Supervisor Agent in Databricks Agent Bricks** over a Genie Agent and a governed Neo4j MCP connection, and you watch. That is Part B, an instructor demo rather than the destination, and xref:lab4.adoc[Lab 4] puts the two approaches side by side.
+Lab 4 shows the same routing idea reached a second way, without code. A **Supervisor Agent in Databricks Agent Bricks** sits over a Genie Agent and a governed Neo4j MCP connection. That is an optional demo rather than the destination, since the MCP server behind it is outside the scope of the workshop, and xref:lab4.adoc[Lab 4] puts the two approaches side by side.
 
 == Labs
 
@@ -105,11 +105,11 @@ Every required lab reads and writes the **one AuraDB Free instance you create in
 | Labs 1, 2, 3
 | Yours
 
-| Lab 4 Part A
+| Lab 4
 | None. Genie queries Unity Catalog
 
-| Lab 4 Part B
-| None of yours. The instructor's demo instance, in a demo the instructor runs
+| Lab 4, optional demo
+| None of yours. The instructor's demo instance
 
 | Labs 5, 6
 | Yours
@@ -146,7 +146,7 @@ Every required lab reads and writes the **one AuraDB Free instance you create in
 | The code-first supervisor you write in Lab 5
 
 | **Agent Bricks: Supervisor Agent**
-| No-code multi-agent supervisor. Shown in the Lab 4 Part B demo
+| No-code multi-agent supervisor. Shown in the optional Lab 4 demo
 
 | **Neo4j Agent Memory**
 | Conversation memory stored as a graph beside the fleet data, in Lab 6

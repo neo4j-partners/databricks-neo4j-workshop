@@ -62,9 +62,9 @@
 
 * **Incremental Sync with Change Data Feed**: Keeping Neo4j and Databricks aligned without full reloads. Delta Lake's Change Data Feed captures only changed rows; a Spark Structured Streaming job pushes deltas to Neo4j via the Spark Connector. Costs stay proportional to change volume. Covered in: `graph-ml/03-graph-enrichment-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md`
 
-* **Neo4j as a Semantic Layer**: Syncing Unity Catalog metadata into Neo4j so business concepts connect to physical tables and columns as a traversable graph. Improves data discovery and boosts text-to-SQL accuracy by giving agents structured domain context. Covered in: `platform-overview/02-databricks-neo4j-integration-slides.md`
+* **Neo4j as a Semantic Map**: Syncing Unity Catalog metadata into Neo4j so business concepts connect to physical tables and columns as a traversable graph. Improves data discovery and boosts text-to-SQL accuracy by giving agents structured domain context. Covered in: `platform-overview/02-databricks-neo4j-integration-slides.md`
 
-* **Authorization Sync**: Patterns for aligning access privileges between Unity Catalog and Neo4j when both systems hold overlapping data. Four approaches: shared identity provider, shared IdP plus a semantic layer, UC as source of truth pushing to Neo4j, and Neo4j as source of truth pushing to UC. Covered in: `background/governance/auth-sync-slides.md`
+* **Authorization Sync**: Patterns for aligning access privileges between Unity Catalog and Neo4j when both systems hold overlapping data. Four approaches: shared identity provider, shared IdP plus a semantic map, UC as source of truth pushing to Neo4j, and Neo4j as source of truth pushing to UC. Covered in: `background/governance/auth-sync-slides.md`
 
 * **Aircraft Digital Twin**: The workshop's running use case. A multi-model aircraft fleet modeled in both Neo4j and Databricks, with topology and maintenance in Neo4j and time-series sensor telemetry in Databricks. Illustrates the dual-database pattern with real query examples. Covered in: `platform-overview/01-workshop-overview-slides.md`, `platform-overview/02-databricks-neo4j-integration-slides.md`
 
@@ -125,7 +125,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 4. Retrieval patterns (Vector, Vector Cypher, Text2Cypher retrievers)
 5. Agents and multi-agent systems (Genie, MCP, supervisor, ReAct)
 6. Graph ML and enrichment (GDS, feature engineering, enrichment loop)
-7. Governance and integration (auth sync, JDBC federation, semantic layer)
+7. Governance and integration (auth sync, JDBC federation, semantic map)
 
 **Done when:** The Target Structure section lists every proposed folder with its canonical file and lists which existing files are redundant for that folder.
 
@@ -152,7 +152,7 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 | `platform-overview/03-intro-databricks-neo4j-slides.md` | No action | Canonical for platform-overview (fraud lens). Cross-cluster governance content (JDBC) is not covered by auth-sync-slides; stays in file. |
 | `agents/02-power-of-graphrag-slides.md` | No action | Canonical for agents. LLM limitations intro is two slides, fully covered by `genai-foundations/02-genai-and-limitations-slides.md`. No merge needed. |
 | `graph-ml/04-future-graph-enrichment-slides.md` | No action | Canonical for graph ML. Agents content is application-specific to enrichment; not a duplicate of any agents canonical. |
-| `platform-overview/02-databricks-neo4j-integration-slides.md` | No action | Canonical for platform-overview (aircraft lens). Cross-cluster content (semantic layer, JDBC, MCP overview) is complementary to dedicated canonicals, not duplicative. |
+| `platform-overview/02-databricks-neo4j-integration-slides.md` | No action | Canonical for platform-overview (aircraft lens). Cross-cluster content (semantic map, JDBC, MCP overview) is complementary to dedicated canonicals, not duplicative. |
 
 ---
 
@@ -222,7 +222,7 @@ Every topic from the Key Topics Summary has at least one canonical file that cov
 | MLflow experiment tracking | `graph-ml/03-graph-enrichment-slides.md` |
 | Agentic graph enrichment | `graph-ml/04-future-graph-enrichment-slides.md` |
 | Incremental sync with Change Data Feed | `graph-ml/03-graph-enrichment-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md` |
-| Neo4j as semantic layer | `platform-overview/02-databricks-neo4j-integration-slides.md`, `background/governance/auth-sync-slides.md` (Background) |
+| Neo4j as semantic map | `platform-overview/02-databricks-neo4j-integration-slides.md`, `background/governance/auth-sync-slides.md` (Background) |
 | Authorization sync | `background/governance/auth-sync-slides.md` (Background) |
 | Aircraft digital twin | `platform-overview/01-workshop-overview-slides.md`, `platform-overview/02-databricks-neo4j-integration-slides.md` |
 | Financial fraud detection | `platform-overview/03-intro-databricks-neo4j-slides.md`, `background/governance/auth-sync-slides.md` (Background) |
@@ -304,11 +304,11 @@ Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` an
 | `agents/02-power-of-graphrag-slides.md` | Marp | Workshop | agents and multi-agent systems * | deep dive | fraud | * Also covers GenAI foundations (LLM limitations). Most detailed treatment of Genie, Neo4j MCP, and the multi-agent supervisor. Use case corrected from aircraft to fraud: the worked example is regulations, thresholds, and account transfers. |
 | `graph-ml/03-graph-enrichment-slides.md` | Marp | Workshop | graph ML and enrichment | deep dive | portfolio | GDS algorithms, feature engineering, MLflow lift comparison, bidirectional data loop, incremental sync with Change Data Feed. |
 | `graph-ml/04-future-graph-enrichment-slides.md` | Marp | Workshop | graph ML and enrichment * | deep dive | portfolio | * Also covers agents (agentic enrichment loop, multi-agent supervisor for gap detection). Overlaps with 03 on incremental sync. |
-| `background/governance/auth-sync-slides.md` | Marp | Background | governance and integration | deep dive | generic | Unique content: four authorization sync patterns between Unity Catalog and Neo4j, plus the semantic layer data model, plus the JDBC federation status update it opens with. No substantial overlap with other files. Partner and internal briefing rather than a teaching deck, which is why it sits on the Background track. |
+| `background/governance/auth-sync-slides.md` | Marp | Background | governance and integration | deep dive | generic | Unique content: four authorization sync patterns between Unity Catalog and Neo4j, plus the semantic map data model, plus the JDBC federation status update it opens with. No substantial overlap with other files. Partner and internal briefing rather than a teaching deck, which is why it sits on the Background track. |
 | `docs/slides.md` | Outline | n/a | graph ML and enrichment | n/a | portfolio | Deleted 2026-08-09, no current path. Was a 15-line narrative arc for the graph enrichment decks, already realized in `graph-ml/03-graph-enrichment-slides.md`. Never a deliverable slide file. |
 | `docs/building-knowledge-graphs.md` | Reference | n/a | knowledge graph construction | practitioner | aircraft | Deleted 2026-08-09, no current path. Was 79% verbatim duplicate of the five KG construction decks now at `background/kg-construction/05`, `06`, `08` and `kg-construction/07`, `09`. No unique content. |
 | `docs/overview-and-genai-foundations.md` | Reference | n/a | GenAI foundations * | overview / practitioner | aircraft | Deleted 2026-08-09, no current path. Was 74% verbatim duplicate of `platform-overview/01-workshop-overview-slides.md` and `genai-foundations/02`, `03`, `04`, and had drifted: it still carried the "Hourly-scale" telemetry error after the deck was corrected. |
-| `platform-overview/02-databricks-neo4j-integration-slides.md` | Marp | Workshop | platform overview * | overview | aircraft | * Also covers agents (MCP, multi-agent supervisor) and governance (semantic layer, JDBC federation). Most complete single-file overview of the full partnership. |
+| `platform-overview/02-databricks-neo4j-integration-slides.md` | Marp | Workshop | platform overview * | overview | aircraft | * Also covers agents (MCP, multi-agent supervisor) and governance (semantic map, JDBC federation). Most complete single-file overview of the full partnership. |
 | `overview-databricks-neo4j/SUMMARY.md` | Reference | n/a | platform overview | overview | aircraft | Deleted in Phase 4, no current path. Was a condensed plain-text summary of `platform-overview/02-databricks-neo4j-integration-slides.md`. No unique content. |
 | `platform-overview/04-neo4j-aura-overview-slides.md` | Marp | Workshop | platform overview | overview | generic | Neo4j Aura managed cloud: what Aura is, why a graph database, the value of Aura for GenAI, graph analytics in Explore, and the three tools (Query Workspace, Explore, Dashboards). Description corrected: the deck carries no Aura Agents content. No substantial overlap with other files. |
 | `platform-overview/01-workshop-overview-slides.md` | Marp | Workshop | platform overview | overview | aircraft | Workshop opener: digital twin definition, the dataset's entity types, dual-database architecture, shared vs personal infrastructure. Distinct role as the workshop entry point. |
@@ -353,7 +353,7 @@ slides/
   agents/                   Workshop  (ReAct, Genie, MCP, LangGraph supervisor, deployment)
   graph-ml/                 Workshop  (GDS, feature engineering, enrichment loop, MLflow)
   background/
-    governance/             Background  (authorization sync, semantic layer, JDBC federation)
+    governance/             Background  (authorization sync, semantic map, JDBC federation)
     kg-construction/        Background  (SimpleKGPipeline, schema design, entity resolution)
   docs/                     Not built  (long-form participant reference docs and one outline, not Marp)
   images/                   Not built  (shared image assets)
@@ -367,7 +367,7 @@ slides/
 
 | Cluster | Track | File | Role |
 |---------|-------|------|------|
-| platform-overview | Workshop | `platform-overview/02-databricks-neo4j-integration-slides.md` | Most complete overview of the full partnership: dual-database, Spark Connector, GraphRAG, MCP, semantic layer, and multi-agent routing. Primary file for webinars and conference talks. |
+| platform-overview | Workshop | `platform-overview/02-databricks-neo4j-integration-slides.md` | Most complete overview of the full partnership: dual-database, Spark Connector, GraphRAG, MCP, semantic map, and multi-agent routing. Primary file for webinars and conference talks. |
 | platform-overview | Workshop | `platform-overview/01-workshop-overview-slides.md` | Workshop entry point with digital twin definition, the dataset's entity types, and shared vs personal infrastructure. Serves a different role than the file above; keep separately. |
 | platform-overview | Workshop | `platform-overview/04-neo4j-aura-overview-slides.md` | Unique focus on the managed cloud product: what Aura is, the value of Aura for GenAI, graph analytics in Explore, and the Query Workspace, Explore, and Dashboards tools. No overlap with other platform files; keep separately. |
 | platform-overview | Workshop | `platform-overview/03-intro-databricks-neo4j-slides.md` | Deeper engineering perspective through fraud and portfolio lens. Assign to platform-overview/ for now; spans multiple clusters, flag for potential split in a future phase. |
@@ -439,6 +439,142 @@ These are content gaps to address in a future content phase, not part of the reo
 **Superseded by later work:** the "no LangGraph slides" gap was later closed by `agents/03-langgraph-supervisor-slides.md` and `agents/04-deploy-the-agent-slides.md`, which were written after this phase.
 
 **Done when:** All items above marked complete. No new content errors introduced.
+
+---
+
+### Phase 7: Reorganize into Eight Decks
+
+**Status: Approved, not started.**
+
+**Goal:** Replace the seventeen workshop slide files with eight decks that follow the run of show, one deck per folder, one file per deck.
+
+Phase 7 supersedes the Target Structure and Canonical Files tables above. Those describe the six-folder layout this phase replaces.
+
+#### Why
+
+Measured against the sibling workshop at `/Users/ryanknight/projects/aws/neo4j-bedrock-graphrag-workshop/slides`, which runs eight decks totalling 1,876 lines:
+
+- **Deck count and size:** seventeen workshop files here, 126 to 956 lines each. Four of them share an `01-` prefix and sort together.
+- **Deck names:** `02-databricks-neo4j-integration` names a file. `The Business Case for GraphRAG` names what the audience gets.
+- **Opening:** the sibling opens on the cost of a wrong answer, then hero questions, then a live demo of the finished build. This workshop opens on "What You'll Build".
+- **Hero question:** the sibling repeats the same two questions in decks 1, 3, and 6. The anchor question here appears once, at `agents/03-langgraph-supervisor-slides.md:330`.
+- **Use case:** the sibling uses SEC 10-K throughout. This workshop uses aircraft on the path, fraud in two decks, and portfolio in two more.
+- **Graph introduction:** the sibling has a dedicated Knowledge Graph Foundations deck covering nodes, Cypher, and the schema before any GraphRAG. This workshop has none. Graph basics are spread across `platform-overview/02`, `03`, and `04`.
+
+#### The Eight Decks
+
+Folder convention is `overview-<topic>/01-<topic>-slides.md`, one file per folder. This retires the `01-` prefix collision and the numeric sort problem recorded as issues 2 and 7 in Phase 5.
+
+| # | Deck | Built from |
+|---|------|-----------|
+| 1 | **The Business Case for GraphRAG** | New. Plus `genai-foundations/02`, `agents/02:36`, `platform-overview/01` What You'll Build |
+| 2 | **Workshop Architecture and Roadmap** | `platform-overview/01` + `02`, plus salvage items 1, 2, 3, 6 |
+| 3 | **Knowledge Graph Foundations** | New. Plus `platform-overview/04` whole, `02` appendix, salvage items 4 and 5 |
+| 4 | **GraphRAG Foundations** | `genai-foundations/03` + `04`, `kg-construction/09` + `07`, `agents/02:55` to `:174` |
+| 5 | **GraphRAG Retriever Patterns** | `retrieval-patterns/01` to `04` merged, 787 lines to about 290 |
+| 6 | **The Supervisor Agent and Deployment** | `agents/01` + `03` + `04` |
+| 7 | **Agent Memory with Neo4j** | `agents/05`, trimmed 539 to about 280 |
+| 8 | **Neo4j MCP and Agent Bricks** | `agents/02:218` to `:383`, reframed as the Lab 4 Part B instructor demo |
+
+**Hero question.** The anchor question at `agents/03:330`, on abnormal EGT readings routed through Genie, then the graph, then the manual, becomes the hero question. It opens deck 1 and recurs in decks 5, 6, and 8.
+
+**Opening demo.** Deck 1 closes on a single "Opening Demo" slide carrying instructor notes in an HTML comment. Building the deck requires no live endpoint.
+
+#### Deleted
+
+One file, `platform-overview/03-intro-databricks-neo4j-slides.md`. 762 lines, 38 slides. Six slides are salvaged first, listed below. The remaining 32 are the fraud use case, the ELT walkthrough, and four appendices.
+
+Fifteen files are consumed rather than deleted. Their paths go away and their content moves into a new deck: `platform-overview/01`, `02`, `04`; `genai-foundations/02`, `03`, `04`; `kg-construction/07`, `09`; `retrieval-patterns/01` to `04`; `agents/01`, `03`, `04`, `05`.
+
+#### Salvage Manifest
+
+Lift these six out of `platform-overview/03` before it goes.
+
+| Source | Lands |
+|--------|-------|
+| `03:111` The Medallion Architecture | Deck 2, one slide, rebuilt |
+| `03:168` The Intelligence Platform Data Flow, plus `spark-connector-virtual-graph.png` | Deck 2, full bleed |
+| `03:200` Neo4j Connection Patterns by Platform Stage | Deck 2, verbatim |
+| `03:432` Design Decision: Relationship Types vs. Properties | Deck 3, verbatim |
+| `03:605` and `03:654` The Same Question, Two Languages | Deck 3, converted to aircraft |
+| `03:286` and `03:589` Data Intelligence, Graph Intelligence, or Both, plus the Decision Table | Deck 2 |
+
+The sixth item was added during review. The SQL versus Cypher decision table covering hop count, query shape, result type, latency, and volume exists nowhere else in the repository, so deleting the deck would lose it silently.
+
+The fifth item is a three-hop `USED_DEVICE|REGISTERED_AT*1..3` traversal set against a four-CTE SQL block. The aircraft rewrite needs a variable-depth path over the real Lab 2 schema, along the lines of every aircraft within three hops of the component that failed on a given tail number, through shared systems and maintenance events. Check the join tables against the loaded graph before writing the SQL.
+
+#### Shelved
+
+Three files move to `background/` unchanged, off the build path. Shelving keeps them readable, so decks 1, 4, and 8 copy slides out of `agents/02` rather than inheriting them.
+
+| File | Destination |
+|------|-------------|
+| `agents/02-power-of-graphrag-slides.md` | `background/agents/` |
+| `graph-ml/03-graph-enrichment-slides.md` | `background/graph-ml/` |
+| `graph-ml/04-future-graph-enrichment-slides.md` | `background/graph-ml/` |
+
+This closes Phase 5 issues 8, 10, and 11, all three of which were use case or overlap problems in decks that no longer sit on the workshop path.
+
+#### How `agents/02` Splits
+
+| Slide | Goes to |
+|-------|---------|
+| `36` Why Agents? LLM Limitations in the Enterprise | Deck 1. One-line recap in deck 4 |
+| `55` Embeddings and Vector Search | Deck 4 |
+| `83` From Documents to Searchable Chunks | Deck 4 |
+| `112` From Chunks to Graph Structure | Deck 4 |
+| `145` What the Knowledge Graph Contains | Deck 4 |
+| `174` GraphRAG: Graph-Enriched Retrieval | Deck 4 |
+| `218` Beyond GraphRAG: Reaching the Lakehouse | Deck 8 |
+| `241` Specialized Agents for Different Data Structures | Deck 8 |
+| `267` Databricks Genie: Natural Language to SQL | Deck 8 |
+| `300` Neo4j Graph Agent: Natural Language to Cypher | Deck 8 |
+| `326` How the Graph Agent Reaches Neo4j | Deck 8 |
+| `355` Neo4j MCP Tools | Deck 8, verbatim, already use case neutral |
+| `383` Multi-Agent Supervisor: Routing to the Right Platform | Deck 8 |
+| `408` The Intelligence Platform Is Active | Dropped. Closing slide for a deck that no longer exists |
+
+The deck 4 block is AML flavored. Slide `145` draws `(:Regulation) (:Threshold) (:Procedure)` cross-linked to `(:Account)-[:TRANSFERRED_TO]->(:Account)`. The aircraft target is already established at `agents/03:153`: `(:Document)-[:APPLIES_TO]->(:Aircraft)-[:HAS_SYSTEM]->(:System)` beneath the same Chunk and NEXT_CHUNK layer. Same diagram shape, mechanical swap. Deck 8 slides `267` through `383` are platform mechanics rather than use case and carry over with light edits. Slides `218` and `241` are the fraud-framed pair.
+
+#### Unused Assets to Adopt
+
+`slides/aircraft/` holds six SVGs that no deck references today. Deck 3 needed diagrams drawn, and five of them already exist in the right use case.
+
+| Asset | Lands |
+|-------|-------|
+| `aircraft-digital-twin-property-graph.svg` | Deck 3, the nodes and relationships slide |
+| `knowledge-graph-structure.svg` | Deck 3, the schema slide |
+| `step1-flat-tables-foreign-keys.svg`, `step2-spark-connector-mapping.svg`, `step3-connected-graph.svg` | Deck 3, a three-slide tables-become-graphs sequence |
+| `graphrag-retrieval-flow.svg` | Deck 4, replacing the portfolio version both `graph-ml/` decks use |
+
+`databricks-in-depth/spark-connector-virtual-graph.png` is untracked and needs a `git add`. It shows the Virtual Graph and composite graphs, which no lab builds, so deck 2 should frame it as where the pattern goes in production rather than as workshop architecture.
+
+#### Loss Audit
+
+Every slide in the deleted deck, and where it went.
+
+| Dropped from `platform-overview/03` | Verdict |
+|---|---|
+| Better Together, Data Intelligence Meets Graph Intelligence, the two platform slides | Covered. `platform-overview/02` carries "Why Combine" and "What Each Platform Brings", both bound for deck 2 |
+| Building the Intelligence Platform, line 142 | Covered by the deck 2 architecture slide |
+| ELT: Lakehouse to Graph, Raw Data to Governed Delta, The Neo4j Spark Connector, Loading the Graph, Validation Through Spark Reads | Covered. The `platform-overview/02` appendix carries "Tables Become Graphs" and "The Neo4j Spark Connector", both bound for deck 3. The load and validate code is Lab 2 notebook material |
+| Graph Insights Flow Back to the Lakehouse | Covered by `graph-ml/03` and `04`, which are shelved rather than deleted |
+| Financial fraud: working example, fraud ring, graph components, transaction tables to fraud graph, synthetic identity, first-party rings, bust-out | Dropped deliberately. This is the use case mismatch being removed |
+| Debugging: When Relationships Fail to Create | Dropped. Lab 2 troubleshooting belongs in the site docs, not a deck |
+| Decision framework appendices, lines 568 and 589 | Rescued by salvage item 6 |
+
+Image check: both images the deleted deck references survive. `spark-connector-virtual-graph.png` moves to deck 2, and `fraud-ring-dual-architecture.svg` is still referenced at `background/governance/auth-sync-slides.md:183`. No orphans.
+
+Final tally: 21 slide files in, 8 workshop decks and 7 background decks out. One file deleted, 32 of its 38 slides dropped on purpose.
+
+#### Build and Docs Changes
+
+- **`build-slides.sh`:** `WORKSHOP_TOPICS` becomes the eight `overview-*` folder names. `background` gains `agents/` and `graph-ml/` subdirectories, which Marp already recurses into. `copy_assets` gains `slides/aircraft/`, which no deck reaches today.
+- **Deck depth:** the shelved `graph-ml/` decks emit one directory deeper once under `background/`, so their `../databricks-in-depth/` reference needs a third dot segment. See the depth note at the top of `build-slides.sh`.
+- **`README.md`:** the Slide Decks section is rewritten to list the eight decks in run of show order with a one-line description each.
+- **Gallery:** the sibling workshop generates `build/index.html` from a deck list in `scripts/build-slides.mjs` holding a title and description per deck. That gallery is the artifact this reorganization is modeled on. Adding one here is optional and out of scope for Phase 7, since this repository publishes through Antora instead.
+
+**Done when:** Eight `overview-*` folders exist with one deck each, `platform-overview/03` is deleted with all six salvage items placed, the three shelved files sit under `background/`, `build-slides.sh` and `README.md` match the new layout, and every deck builds with no broken image links.
 
 ---
 

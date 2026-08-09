@@ -29,7 +29,7 @@ ol > li {
 
 # Authorization Sync Between Unity Catalog and Neo4j
 
-Bridging two privilege models through a common semantic layer
+Bridging two privilege models through a common semantic map
 
 ---
 
@@ -173,7 +173,7 @@ A user who can query a materialized Person table in UC but cannot
 traverse Person nodes in Neo4j will either be blocked from
 legitimate work or will access data they shouldn't. The two
 systems have no shared understanding of what their data means.
-Bridging this gap requires a common semantic layer.
+Bridging this gap requires a common semantic map.
 -->
 
 ---
@@ -194,14 +194,14 @@ chain detection, fraud ring discovery, and multi-hop traversal.
 
 A Customer is a row in the customers table on the Lakehouse side
 and a Customer node with HAS_SSN, HAS_PHONE, and OWNS
-relationships on the graph side. Without a shared semantic layer,
+relationships on the graph side. Without a shared semantic map,
 every integration between the two systems must rediscover and
 re-encode these mappings independently.
 -->
 
 ---
 
-## What Is a Semantic Layer?
+## What Is a Semantic Map?
 
 - **Declarative description** of what your data means, placed on top of the data
 - **Any consumer shares** a common understanding of how data should be interpreted
@@ -209,7 +209,7 @@ re-encode these mappings independently.
 - **Built as a graph** connecting business concepts to UC tables and Neo4j labels
 
 <!--
-The term "semantic layer" carries many definitions across the
+The term "semantic map" carries many definitions across the
 industry. This proposal uses the one from Jesús Barrasa's Going
 Meta series: a declarative description of what your data means,
 placed on top of the data so that any consumer shares a common
@@ -226,7 +226,7 @@ relationship types, and properties on the other.
 
 ---
 
-## The Semantic Layer Data Model
+## The Semantic Map Data Model
 
 ```
 (:Concept {name: "Portfolio"})
@@ -340,10 +340,10 @@ the graph schema grows and access policies become more granular.
 
 ---
 
-## Pattern 2: Shared IdP Plus Semantic Layer
+## Pattern 2: Shared IdP Plus Semantic Map
 
 - **Access policies defined at the business concept level**, not per-system
-- **Semantic layer encodes the mapping** between business concepts and both privilege models
+- **Semantic map encodes the mapping** between business concepts and both privilege models
 - **Sync process traverses the graph** to derive system-specific privileges automatically
 - **Schema changes propagate** through existing `GOVERNED_BY` relationships
 
@@ -358,7 +358,7 @@ syntax of either system.
 Instead of an admin reasoning about UC tables and Neo4j labels
 simultaneously, the admin defines access at the concept level and
 the graph-driven sync process handles the translation. When the
-graph schema changes, the semantic layer update propagates through
+graph schema changes, the semantic map update propagates through
 existing GOVERNED_BY relationships automatically.
 -->
 
@@ -382,7 +382,7 @@ CREATE (ap)-[:GRANTED_TO]->(g)
 <!--
 AccessPolicy nodes link to business concepts via GOVERNED_BY and
 to IdP groups via GRANTED_TO. A sync process traverses from the
-AccessPolicy node through the semantic layer to derive
+AccessPolicy node through the semantic map to derive
 system-specific privileges for both UC and Neo4j.
 
 For Neo4j, the concept name is the label: the process issues
@@ -426,7 +426,7 @@ directly to the label.
 PBAC rules can be encoded as AccessCondition nodes linked to the
 policy. A condition like region equals EU on Portfolio translates
 to both a Neo4j PBAC rule on Portfolio nodes and a UC row filter
-on the materialized table. The semantic layer provides the column
+on the materialized table. The semantic map provides the column
 name and the table it lives on, so the sync process can generate
 both commands.
 -->
@@ -522,13 +522,13 @@ mapping is lossy in both directions.
 
 ## Choosing a Pattern
 
-| Consideration | Pattern 1: Shared IdP | Pattern 2: IdP + Semantic Layer | Pattern 3: UC to Neo4j | Pattern 4: Neo4j to UC |
+| Consideration | Pattern 1: Shared IdP | Pattern 2: IdP + Semantic Map | Pattern 3: UC to Neo4j | Pattern 4: Neo4j to UC |
 |---|---|---|---|---|
 | Sync job required | No | Yes | Yes | Yes |
-| Source of truth | Identity provider | Semantic layer graph | Unity Catalog | Neo4j |
+| Source of truth | Identity provider | Semantic map graph | Unity Catalog | Neo4j |
 | Consistency | Immediate (on auth) | Eventually consistent | Eventually consistent | Eventually consistent |
-| Property-level control | Manual Neo4j config | Derived from semantic layer | Via UC column masks (lossy) | Via generated UC column masks |
-| Relationship privileges | Manual Neo4j config | Derived from semantic layer edges | No natural mapping | No natural mapping |
+| Property-level control | Manual Neo4j config | Derived from semantic map | Via UC column masks (lossy) | Via generated UC column masks |
+| Relationship privileges | Manual Neo4j config | Derived from semantic map edges | No natural mapping | No natural mapping |
 | Operational overhead | Low | Medium | Medium | Medium |
 
 <!--
@@ -578,21 +578,21 @@ lineage graph. The patterns above provide the enforcement layer.
 ## Authorization Sync: The Combined Picture
 
 - **Pattern 1 (Shared IdP):** simplest, no sync job, but manual mapping and coarse-grained
-- **Pattern 2 (Semantic Layer):** graph-derived privileges, handles relationships and PBAC, requires semantic layer maintenance
+- **Pattern 2 (Semantic Map):** graph-derived privileges, handles relationships and PBAC, requires semantic map maintenance
 - **Pattern 3 (UC to Neo4j):** UC-governed environments, scheduled push, lossy on column masks
 - **Pattern 4 (Neo4j to UC):** graph-governed environments, scheduled push, lossy on PBAC
-- **Semantic layer** relocates complexity from admin reasoning to graph traversal
+- **Semantic map** relocates complexity from admin reasoning to graph traversal
 
 <!--
 The four patterns form a spectrum from simple to comprehensive.
 Pattern 1 is the starting point for organizations that already
 centralize identity management and can express access as coarse
 group membership. Pattern 2 is the most complete solution but
-requires building and maintaining the semantic layer. Patterns 3
+requires building and maintaining the semantic map. Patterns 3
 and 4 fit when one system clearly owns the privilege model and
 the other should follow.
 
-The semantic layer is the key architectural decision. It serves
+The semantic map is the key architectural decision. It serves
 authorization sync, but also powers semantic search, metric
 lineage, and data discovery across both platforms. The
 authorization patterns build on that foundation.

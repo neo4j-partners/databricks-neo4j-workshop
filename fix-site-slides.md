@@ -4,6 +4,8 @@ What is wrong, what is missing, and what has to be added on the two surfaces tha
 
 **Source of truth:** the lab folders on disk, then `expand-v3.md` section 3, and its outstanding question on whether the Antora site is regenerated or delinked. `expand.md` is reasoning only. Where the site and a lab folder disagree, the lab folder is right.
 
+**Lab 4 no longer has parts, as of 2026-08-09.** The lab is the Genie Agent, and the compound agent over Neo4j MCP is an optional demo in [`Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`](Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md), which is `PART_B.md` renamed. The site and slide edits this document ordered have since been swept again to drop the Part A and Part B framing. Read "Part A" below as the lab itself and "Part B" as that optional demo.
+
 **Why now:** `README.md` line 1 links the published site, and `.github/workflows/deploy-antora.yml` publishes on every push to `main`.
 
 **Status:** every decision is made. This is a work order, not a proposal. One empirical unknown remains, the AuraDB Free index cap, and it is step 0.
@@ -29,7 +31,7 @@ What is wrong, what is missing, and what has to be added on the two surfaces tha
 
 - **Dataset counts come out.** No reading counts, no node counts, no per-label tables on the site or in the decks. **Two numbers survive** and both are structural rather than statistical: **zero** `Reading` nodes in Neo4j, and the 200,000 node / 400,000 relationship caps.
 - **Drop every mention of Aura Agents.** Not part of this workshop.
-- **The four participant-facing lab READMEs go away**, along with `PART_A.md`. Labs 5 and 6 keep their READMEs as module documentation, because those folders ship Python. `PART_B.md` stays as the instructor's demo script.
+- **The four participant-facing lab READMEs go away**, along with `PART_A.md`. Labs 5 and 6 keep their READMEs as module documentation, because those folders ship Python. `OPTIONAL_COMPOUND_AGENT_DEMO.md` stays as the instructor's demo script.
 - **Three build-output slide folders get deleted.** `aircraft/` and `databricks-in-depth/` stay: they hold diagram sources, not decks.
 
 ### What gets fixed
@@ -111,9 +113,9 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
   **DECIDED:** Keep both on the site. The target is the Neo4j Query browser, so a notebook is the wrong home, and a participant with Cypher open in one tab wants the queries in another. They are the one thing the split does not swallow.
 
-- **The lab-folder markdown becomes ambiguous.** `Lab_1_Aura_Setup/README.md`, `Lab_4_Compound_AI_Agents/PART_A.md` and `PART_B.md` currently hold the procedure that the notebooks also hold. After the split, are they the instructor's copy, or dead weight?
+- **The lab-folder markdown becomes ambiguous.** `Lab_1_Aura_Setup/README.md`, `Lab_4_Compound_AI_Agents/PART_A.md` and `OPTIONAL_COMPOUND_AGENT_DEMO.md` currently hold the procedure that the notebooks also hold. After the split, are they the instructor's copy, or dead weight?
 
-  **DECIDED:** Split the difference, because these two files are not alike. **`PART_B.md` stays** as the instructor's build script for the demo, since no participant notebook can carry it and somebody has to build the thing on stage. **`PART_A.md` goes**, because `04_genie_agent.ipynb` already carries it and carries it better. Same rule as the READMEs: keep it only if a participant notebook cannot hold it.
+  **DECIDED:** Split the difference, because these two files are not alike. **`OPTIONAL_COMPOUND_AGENT_DEMO.md` stays** as the instructor's build script for the demo, since no participant notebook can carry it and somebody has to build the thing on stage. **`PART_A.md` goes**, because `04_genie_agent.ipynb` already carries it and carries it better. Same rule as the READMEs: keep it only if a participant notebook cannot hold it.
 
 ### Do the per-lab READMEs survive? Answer: mostly no.
 
@@ -714,10 +716,10 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 > **Not fixed, and it is now wrong: `slides/organize.md` paths.** Step 3 deleted `overview-knowledge-graph/`, `overview-databricks-neo4j/` and `overview-retrievers/`, and roughly 60 lines of this inventory still cite files by those paths. It is an internal planning document, not a participant surface, and **step 10 rewrites the deck inventory anyway**, so the repair belongs there rather than as an unscoped edit here. Flagging it so it is not forgotten.
 >
 > **Verified.** `npm run build:html` in `slides/` then `npm run build` in `site/`, both clean.
-5. **Collapse the four participant-facing lab READMEs into their notebooks**, delete `PART_A.md`, keep `PART_B.md`, and shrink the Lab 5 and Lab 6 READMEs to module documentation. Cut the root `README.md` to about 30 lines of pointers, which also retires its two tier mentions and its count.
+5. **Collapse the four participant-facing lab READMEs into their notebooks**, delete `PART_A.md`, keep `OPTIONAL_COMPOUND_AGENT_DEMO.md`, and shrink the Lab 5 and Lab 6 READMEs to module documentation. Cut the root `README.md` to about 30 lines of pointers, which also retires its two tier mentions and its count.
 > **STATUS: DONE, except the Lab 5 and Lab 6 README shrink, which moves to step 8.**
 >
-> **Six files deleted:** the four participant-facing lab READMEs, `Lab_1_Aura_Setup/Aura_Free_Trial.md`, and `Lab_4_Compound_AI_Agents/PART_A.md`. `PART_B.md` kept, as decided. `Aura_Free_Trial.md` was checked against `01_aura_setup.ipynb` before deleting and was already fully folded in; the detail is in the Lab 1 status block above.
+> **Six files deleted:** the four participant-facing lab READMEs, `Lab_1_Aura_Setup/Aura_Free_Trial.md`, and `Lab_4_Compound_AI_Agents/PART_A.md`. `OPTIONAL_COMPOUND_AGENT_DEMO.md` kept, as decided. `Aura_Free_Trial.md` was checked against `01_aura_setup.ipynb` before deleting and was already fully folded in; the detail is in the Lab 1 status block above.
 >
 > **Two salvages, both landed before the delete.** The instruction to check each README for content the notebook does not have was worth following twice:
 > - Lab 2's README held five troubleshooting cases the notebook never covered, and pointers to `SAMPLE_QUERIES.md`, `aura-explore.md` and `data-exploring.md`. Both are now cells in `01_aircraft_etl_to_neo4j.ipynb`: a new `lab2-troubleshooting` markdown cell before `next-steps`, and a "Go deeper on your own" table inside `next-steps`.
@@ -812,7 +814,7 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 > - **`04_genie_agent.ipynb` contradicted itself on the telemetry grain.** The step 7 no-counts edit made cell `step1-header` say `Hourly-scale`, while cell `explore-readings` says 155,520 rows and cells `step3-instructions` and `partb-genie-subagent` both say every 4 hours. Those last two are Genie prompt text, where the grain is load-bearing. Reverted to `Telemetry every 4 hours over 90 days`. **The no-counts rule stops at a prompt block.** The site and slides keep the hedged wording, which is the split the rule intends.
 > - **`Lab_5_LangGraph_Agent/README.md` named the wrong file.** It said Lab 6's `memory.py` subclasses `FleetOpsAgent`. `memory.py` imports only `data_utils` and `tools`. The subclass is in `memory_agent.py`, which `01_agent_memory.ipynb` writes out with `%%writefile`. Claim inherited from the old README and re-asserted in the rewrite.
 > - **`lab5.adoc` overclaimed on credentials.** `No plaintext password appears anywhere in Lab 5` is false on the documented recovery path: notebook 01 carries a commented-out fallback cell. Scoped to the normal path and the fallback named.
-> - **Lab 4's duration disagreed.** Root README 30 + 10 = 40, `workshop-overview.adoc` 75, the notebook 30 + 20 = 50, `PART_B.md` 20. **Ryan's answer: 40.** The site row is now 40 and Part B is 10 in both notebook cells and in `PART_B.md`. The 20-minute figure was the instructor demo's own runtime estimate, so **check it against a real run before class.**
+> - **Lab 4's duration disagreed.** Root README 30 + 10 = 40, `workshop-overview.adoc` 75, the notebook 30 + 20 = 50, `OPTIONAL_COMPOUND_AGENT_DEMO.md` 20. **Ryan's answer: 40.** The site row is now 40 and Part B is 10 in both notebook cells and in `OPTIONAL_COMPOUND_AGENT_DEMO.md`. The 20-minute figure was the instructor demo's own runtime estimate, so **check it against a real run before class.**
 > - **The Aura instance table omitted Appendix A**, the one entry that needs an instance the participant does not have. Row added.
 > - **`site/README.md` undercounted the slide build.** It said two output directories and named them without their `slides/` prefix; `build:assets` writes a third. Now three, correctly pathed, pointing at the section that explains the odd one. `Two consumers, one directory` also headed a three-row table.
 > - **`appendix-a.adoc` said `most` of `gds-exploring.md` is ordinary Cypher.** Actual: 20 of 35 blocks plain, 15 call `gds.`. Now `many`.

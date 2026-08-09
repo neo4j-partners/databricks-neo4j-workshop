@@ -55,7 +55,7 @@ AI agents and multi-agent systems. Two files: `01-from-retrievers-to-agents-slid
 Graph Data Science and graph feature engineering. Two files: GDS algorithms, MLflow lift comparison, and bidirectional data loop; and the agentic graph enrichment loop with confidence scoring and ontology validation.
 
 ### `governance/`
-Authorization sync and the semantic layer. One file covering four patterns for aligning access privileges between Unity Catalog and Neo4j.
+Authorization sync and the semantic map. One file covering four patterns for aligning access privileges between Unity Catalog and Neo4j.
 
 ---
 

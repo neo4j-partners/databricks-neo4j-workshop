@@ -14,9 +14,9 @@ TIP: Ready to start? Open `Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.i
 
 == From the Lakehouse to the Graph
 
-Not everything moves to the graph. Aggregates, metrics, logs, and documents stay in Delta where they belong. Only the subset with connection patterns worth traversing projects into Neo4j. The Lakehouse remains the system of record; the graph is a projection of the connections that matter.
+Only part of the Lakehouse moves to the graph. Aggregates, metrics, logs and documents stay in Delta. What projects into Neo4j is the subset whose connections you want to traverse. The Lakehouse stays the system of record, and the graph is a projection of those connections.
 
-The mapping from tables to graph follows a few recurring patterns, and the value compounds as the mappings get more structural.
+The mapping from tables to graph follows a few recurring patterns. The later patterns in the list below save more work than the earlier ones.
 
 The three diagrams below walk through this transformation using the aircraft data from Notebook 01.
 
@@ -93,7 +93,7 @@ Graph-derived metrics become columns in Delta Gold tables, available for dashboa
 * **Louvain community detection** clusters tightly connected entities into groups.
 * **Degree centrality** counts connections as ML features.
 
-Once in Delta Lake, these insights join with operational data that never left the Lakehouse. This is the Gold layer in action: graph intelligence enriching data intelligence.
+Once in Delta Lake, these scores join with operational data that never left the Lakehouse. That join happens in the Gold layer, where the graph-derived columns sit beside the columns Databricks computed.
 ====
 
 == Databricks Compute and Notebooks
@@ -128,19 +128,19 @@ The whole shape, once the notebook finishes:
 (Aircraft) -[:HAS_REMOVAL]-> (Removal) -[:REMOVED_COMPONENT]-> (Component)
 ----
 
-`HAS_LIMIT` is easy to overlook and Lab 5 leans on it directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares. The join works on a plain string because the units match on both sides by design: `EGT` is `°C` in the sensor metadata and `°C` in the limit table, `N1Speed` is `% RPM` in both.
+Lab 5 uses `HAS_LIMIT` directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares the two. The comparison works on a plain string because the units match on both sides by design: `EGT` is `°C` in the sensor metadata and `°C` in the limit table, and `N1Speed` is `% RPM` in both.
 
-== What Lab 2 Does Not Load
+== Sensor Readings Stay in Databricks
 
-**No `Reading` nodes reach Neo4j. Zero.** The sensor telemetry stays in Delta, and that is the entire dual-database argument in one fact rather than an opinion about it. The graph holds the things worth traversing: which aircraft, which system, which sensor, which limit, which maintenance event. The readings themselves are a columnar aggregation workload, so they stay where aggregation is cheap.
+**Lab 2 loads no `Reading` nodes into Neo4j.** The sensor telemetry stays in Delta. Neo4j gets the things worth traversing: which aircraft, which system, which sensor, which limit, which maintenance event. The readings are a columnar aggregation workload, and Delta scans them cheaply.
 
-This is why Lab 4 needs a Genie Agent at all, and why Lab 5's agent has to route rather than pick one backend. A question about EGT trends cannot be answered by traversal, and a question about which components a fault cascaded into cannot be answered by SQL.
+This split is why Lab 4 uses a Genie Agent and why Lab 5's agent routes between backends instead of picking one. Traversal cannot answer a question about EGT trends. SQL cannot answer a question about which components a fault cascaded into.
 
-== The Load Is Destructive by Design
+== The Load Clears the Database First
 
-The notebook runs with `CLEAR_DATABASE = True`, and that is a contract rather than a workaround. Nodes are written in Append mode, a plain `CREATE`, which never replaces an existing node. Appending twice would give you two of everything. Wiping first is what makes the load repeatable, so a participant who gets halfway and stops can start the notebook again from the top and land in a known state.
+The notebook runs with `CLEAR_DATABASE = True`. Nodes are written in Append mode, a plain `CREATE`, which never replaces an existing node, so running the load twice would give you two of everything. Clearing first is what makes the load repeatable: a participant who gets halfway and stops can start the notebook again from the top and land in a known state.
 
-The cost is that your Aura instance is not a place to keep anything else. Re-running Lab 2 deletes whatever Lab 3 or Lab 6 wrote alongside it.
+The cost is that your Aura instance cannot hold anything else you want to keep. Re-running Lab 2 deletes whatever Lab 3 or Lab 6 wrote alongside it.
 
 == Key Concepts
 
@@ -152,6 +152,6 @@ The cost is that your Aura instance is not a place to keep anything else. Re-run
 
 Run `01_aircraft_etl_to_neo4j.ipynb` to load the graph. Once the data is in, see xref:lab2-sample-queries.adoc[Sample Queries] for hands-on Cypher to explore it.
 
-Then continue to xref:lab3.adoc[Lab 3: Semantic Search], which adds the maintenance manual to the graph you just built. Lab 3 is the prerequisite for xref:lab4.adoc[Lab 4] Part A and for Lab 5, where the agent that queries all of this gets built.
+Then continue to xref:lab3.adoc[Lab 3: Semantic Search], which adds the maintenance manual to the graph you just built. Lab 3 is the prerequisite for xref:lab4.adoc[Lab 4] and for Lab 5, where the agent that queries all of this gets built.
 
 The optional `02_gds_knn_aircraft.ipynb` needs Graph Data Science, which AuraDB Free does not carry, so it does not run on your workshop instance. Read it, skip running it. The same applies to Appendix A.

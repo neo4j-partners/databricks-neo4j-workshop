@@ -13,7 +13,7 @@ TIP: Ready to start? Jump to the xref:lab6-instructions.adoc[Lab 6 Instructions]
 * **Adopt `Aircraft` and nothing else.** Adoption overwrites `type`, and four other labels already use that property for something.
 * **Explicit mentions, not LLM extraction.** An agent already knows which entities its tools touched, so it can name them instead of paying a model to rediscover them.
 * **Memory is routing context for the supervisor, not a fourth tool.** Nobody asks memory a question, and `recall` runs once per question rather than once per tool call.
-* **It rewrites the question, not only the route.** Two measured failures forced that, and both are below.
+* **It rewrites the question, not only the route.** Two failures seen in testing forced that, and both are below.
 * **This is the first lab that writes to your graph.** Everything it writes is removable, adoption included, and the instructions show how.
 
 == The Shape of the Agent
