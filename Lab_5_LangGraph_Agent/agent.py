@@ -9,9 +9,10 @@ those two assumptions removed:
   endpoint is deployed with ``NEO4J_URI``, ``NEO4J_USERNAME`` and
   ``NEO4J_PASSWORD`` bound to ``{{secrets/<scope>/<key>}}`` references, so the
   password is resolved by the serving control plane and never written down.
+  ``NEO4J_DATABASE`` travels the same way when the scope carries it.
 - **Everything else arrives as model config**, logged beside the model, so the
   Genie space the endpoint may reach is fixed at log time and matches the
-  ``DatabricksGenieSpace`` resource declared in the same call.
+  resource list :func:`build_resources` declares in the same call.
 
 The nodes themselves come from ``tools.py`` unchanged. Only the wiring is
 repeated here, and it is repeated rather than shared because Section 7 of the
@@ -62,6 +63,9 @@ __all__ = [
     "AGENT_ENDPOINT_PREFIX",
     "AGENT",
     "DEFAULT_CONFIG",
+    "GOLD_SCHEMA",
+    "GOLD_TABLES",
+    "ENV_NEO4J_DATABASE",
     "ENV_NEO4J_PASSWORD",
     "ENV_NEO4J_URI",
     "ENV_NEO4J_USERNAME",
@@ -69,10 +73,12 @@ __all__ = [
     "UC_MODEL_NAME",
     "AgentRuntime",
     "FleetOpsAgent",
+    "build_resources",
     "build_runtime",
     "endpoint_name",
     "export_neo4j_env",
     "resolve_database",
+    "scope_has_key",
     "serving_environment_vars",
 ]
 
@@ -98,16 +104,19 @@ AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
 # allowed to be longer than that on its own.
 _MAX_ENDPOINT_SLUG = 63 - len(AGENT_ENDPOINT_PREFIX) - 1
 
-# The three names the endpoint's environment block binds to secret references.
-# They are read here and nowhere else, so a rename is one edit.
+# The names the endpoint's environment block binds to secret references. They
+# are read here and nowhere else, so a rename is one edit. The first three are
+# required. The fourth carries the database name, and an endpoint without it
+# falls back to asking the instance which database it holds.
 ENV_NEO4J_URI = "NEO4J_URI"
 ENV_NEO4J_USERNAME = "NEO4J_USERNAME"
 ENV_NEO4J_PASSWORD = "NEO4J_PASSWORD"
+ENV_NEO4J_DATABASE = "NEO4J_DATABASE"
 
 # Everything that is not a credential travels as model config instead, logged
-# with the model. genie_space_id in particular has to agree with the
-# DatabricksGenieSpace resource declared at log time, and config keeps the two
-# in one cell rather than in two places that can drift.
+# with the model. genie_space_id in particular has to agree with the space
+# build_resources declares at log time, and both come off the same notebook
+# variable rather than out of two places that can drift.
 DEFAULT_CONFIG: dict[str, Any] = {
     "genie_space_id": "",
     "neo4j_database": "",
@@ -116,6 +125,61 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "top_k": 3,
     "max_tool_calls": MAX_TOOL_CALLS,
 }
+
+# The lakehouse side of the agent, named here because Lab 5 notebook 02 and
+# Lab 6 both have to declare the same list and a second copy is a second thing
+# to forget. GOLD_SCHEMA and GOLD_TABLES mirror CATALOG, LAKEHOUSE_SCHEMA and
+# GOLD_TABLES in lab/workshop.py, which is where the workshop's object names
+# are defined.
+GOLD_SCHEMA = "databricks-neo4j-workshop.aircraft"
+GOLD_TABLES = (
+    "aircraft",
+    "systems",
+    "sensors",
+    "sensor_readings",
+    "flights",
+    "maintenance_events",
+    "fleet_readiness",
+    "sensor_health",
+)
+
+
+def build_resources(genie_space_id: str, warehouse_id: str) -> list[Any]:
+    """Every Databricks thing the endpoint is allowed to reach.
+
+    The serving principal starts with access to nothing, and MLflow grants it
+    exactly this list at log time. Four kinds of thing are on it: the Genie
+    space, the warehouse Genie's SQL actually runs on, the eight gold tables
+    that SQL reads, and the two model endpoints that generate text and embed.
+
+    The Genie space alone is the tempting short list, and it deploys cleanly
+    and then fails at request time with an authorization error naming the SQL
+    endpoint. Declaring a space grants the space, not what is underneath it.
+
+    Aura is not here and cannot be: it is not a Databricks resource. It travels
+    as a credential instead, through :func:`serving_environment_vars`.
+
+    ``mlflow.models.resources`` is imported inside the function because this is
+    a log-time API and the serving container never calls it.
+    """
+    from mlflow.models.resources import (
+        DatabricksGenieSpace,
+        DatabricksServingEndpoint,
+        DatabricksSQLWarehouse,
+        DatabricksTable,
+    )
+
+    return [
+        DatabricksGenieSpace(genie_space_id=genie_space_id),
+        DatabricksSQLWarehouse(warehouse_id=warehouse_id),
+        *[
+            DatabricksTable(table_name=f"{GOLD_SCHEMA}.{table}")
+            for table in GOLD_TABLES
+        ],
+        DatabricksServingEndpoint(endpoint_name=SUPERVISOR_MODEL),
+        DatabricksServingEndpoint(endpoint_name=EMBEDDING_MODEL),
+    ]
+
 
 MISSING_CREDENTIAL_MESSAGE = (
     "This agent could not open its Neo4j connection, so no tool ran.\n\n"
@@ -153,9 +217,9 @@ def endpoint_name(scope: str) -> str:
 def export_neo4j_env(dbutils: Any, scope: str) -> tuple[str, ...]:
     """Copy the Lab 3 secret scope into this process's environment.
 
-    The notebook needs the same three variables the endpoint will get, so that
-    what it tests locally is what gets deployed. The values are read, written
-    to ``os.environ`` and dropped inside this call, so no notebook cell binds a
+    The notebook needs the same variables the endpoint will get, so that what
+    it tests locally is what gets deployed. The values are read, written to
+    ``os.environ`` and dropped inside this call, so no notebook cell binds a
     password to a name of its own.
 
     Args:
@@ -169,7 +233,35 @@ def export_neo4j_env(dbutils: Any, scope: str) -> tuple[str, ...]:
     os.environ[ENV_NEO4J_URI] = credentials["uri"]
     os.environ[ENV_NEO4J_USERNAME] = credentials["username"]
     os.environ[ENV_NEO4J_PASSWORD] = credentials["password"]
-    return (ENV_NEO4J_URI, ENV_NEO4J_USERNAME, ENV_NEO4J_PASSWORD)
+    os.environ[ENV_NEO4J_DATABASE] = credentials["database"]
+    return (
+        ENV_NEO4J_URI,
+        ENV_NEO4J_USERNAME,
+        ENV_NEO4J_PASSWORD,
+        ENV_NEO4J_DATABASE,
+    )
+
+
+def scope_has_key(scope: str, key: str) -> bool:
+    """Report whether a secret scope carries a key, without reading its value.
+
+    ``list_secrets`` returns key names and timestamps, never values. A
+    ``{{secrets/...}}`` reference to a key that is absent fails when Model
+    Serving applies the endpoint configuration, so a scope written before
+    ``neo4j-database`` existed has to be detected rather than assumed.
+
+    Args:
+        scope: Scope name from ``tools.secret_scope_name``.
+        key: The key to look for.
+
+    Returns:
+        True when the scope holds that key.
+    """
+    from databricks.sdk import WorkspaceClient
+
+    return any(
+        entry.key == key for entry in WorkspaceClient().secrets.list_secrets(scope)
+    )
 
 
 def serving_environment_vars(scope: str) -> dict[str, str]:
@@ -180,6 +272,10 @@ def serving_environment_vars(scope: str) -> dict[str, str]:
     the password exists only inside the container and never appears in the
     notebook, in MLflow, or in the endpoint's own configuration.
 
+    Three references are always built. The database is added only when the
+    scope holds ``neo4j-database``, so an older three-key scope still deploys;
+    an endpoint without it asks the instance which database it holds.
+
     Args:
         scope: Scope name from ``tools.secret_scope_name``.
 
@@ -187,16 +283,22 @@ def serving_environment_vars(scope: str) -> dict[str, str]:
         A mapping suitable for ``agents.deploy(environment_vars=...)``.
     """
     from data_utils import (
+        SECRET_KEY_NEO4J_DATABASE,
         SECRET_KEY_NEO4J_PASSWORD,
         SECRET_KEY_NEO4J_URI,
         SECRET_KEY_NEO4J_USERNAME,
     )
 
-    return {
+    environment = {
         ENV_NEO4J_URI: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_URI}}}}}",
         ENV_NEO4J_USERNAME: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_USERNAME}}}}}",
         ENV_NEO4J_PASSWORD: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_PASSWORD}}}}}",
     }
+    if scope_has_key(scope, SECRET_KEY_NEO4J_DATABASE):
+        environment[ENV_NEO4J_DATABASE] = (
+            f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_DATABASE}}}}}"
+        )
+    return environment
 
 
 # =============================================================================
@@ -232,7 +334,8 @@ def resolve_database(driver: Any, requested: str = "") -> str:
 
     Args:
         driver: A connected ``neo4j.Driver``.
-        requested: Database name from the model config, or empty to resolve.
+        requested: Database name from the model config or from the
+            ``NEO4J_DATABASE`` environment variable, or empty to resolve.
 
     Returns:
         The database name to pass as ``database_``.
@@ -252,8 +355,9 @@ def resolve_database(driver: Any, requested: str = "") -> str:
     if len(names) == 1:
         return names[0]
     raise RuntimeError(
-        f"Cannot choose a Neo4j database among {names}. Set 'neo4j_database' "
-        "in the model config to the one this agent should query."
+        f"Cannot choose a Neo4j database among {names}. Store the one this "
+        "agent should query as the 'neo4j-database' key in your secret scope, "
+        "then redeploy."
     )
 
 
@@ -295,7 +399,12 @@ def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
         os.environ[ENV_NEO4J_USERNAME],
         os.environ[ENV_NEO4J_PASSWORD],
     )
-    database = resolve_database(driver, config.get("neo4j_database") or "")
+    # The model config wins when it names a database, then the environment
+    # variable the endpoint carries from the secret scope, then the instance.
+    database = resolve_database(
+        driver,
+        config.get("neo4j_database") or os.environ.get(ENV_NEO4J_DATABASE, ""),
+    )
 
     llm = get_llm(config.get("supervisor_model", SUPERVISOR_MODEL))
     embedder = get_embedder(config.get("embedding_model", EMBEDDING_MODEL))

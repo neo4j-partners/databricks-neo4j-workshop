@@ -223,6 +223,12 @@ SECRET_SCOPE_PREFIX = "fleet-ops"
 SECRET_KEY_NEO4J_URI = "neo4j-uri"
 SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
+SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
+
+# The database name AuraDB Free serves, and the one every scope written before
+# neo4j-database existed implies. read_neo4j_secrets falls back to it, and it is
+# the only place that fallback lives.
+DEFAULT_NEO4J_DATABASE = "neo4j"
 
 # Databricks caps a scope name at 128 characters. The prefix plus its separator
 # take 10, leaving this much for the user slug.
@@ -258,13 +264,13 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
         scope: Scope name from secret_scope_name().
 
     Returns:
-        Dict with uri, username, and password keys.
+        Dict with uri, username, password, and database keys.
 
     Raises:
-        RuntimeError: The scope or one of its keys is missing.
+        RuntimeError: The scope or one of its three credential keys is missing.
     """
     try:
-        return {
+        credentials = {
             "uri": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_URI),
             "username": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_USERNAME),
             "password": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_PASSWORD),
@@ -278,6 +284,17 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
             "stores the credentials there."
         ) from error
 
+    # The database key arrived after the other three, so a scope written before
+    # it exists holds three keys and dbutils raises on the fourth. That is a
+    # working scope, not a broken one: it belongs to an AuraDB Free instance,
+    # whose database is named neo4j. This is the one place that fallback lives.
+    try:
+        database = dbutils.secrets.get(scope, SECRET_KEY_NEO4J_DATABASE)
+    except Exception:
+        database = ""
+    credentials["database"] = database.strip() or DEFAULT_NEO4J_DATABASE
+    return credentials
+
 
 # =============================================================================
 # Neo4j Connection
@@ -286,14 +303,21 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
 class Neo4jConnection:
     """Manages Neo4j database connection."""
 
-    def __init__(self, uri: str, username: str, password: str, database: str = "neo4j"):
+    def __init__(
+        self,
+        uri: str,
+        username: str,
+        password: str,
+        database: str = DEFAULT_NEO4J_DATABASE,
+    ):
         """Initialize and connect to Neo4j.
 
         Args:
             uri: Neo4j URI (e.g., "neo4j+s://xxxxxxxx.databases.neo4j.io")
             username: Neo4j username (typically "neo4j")
             password: Neo4j password
-            database: Neo4j database name (default "neo4j")
+            database: Neo4j database name. Defaults to the AuraDB Free name,
+                which the secret scope's neo4j-database key overrides.
         """
         self.uri = uri
         self.username = username

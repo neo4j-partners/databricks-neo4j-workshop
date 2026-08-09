@@ -132,7 +132,9 @@ PIPELINE_NAME = "Fleet Digital Twin ETL"
 DLT_NOTEBOOK_WORKSPACE_PATH = "/Shared/workshop/dlt_fleet_etl"
 
 # The eight gold tables, in the order a reader meets them: the fleet, what is on
-# it, what it did, then the two summaries Lab 4 asks Genie about.
+# it, what it did, then a per-aircraft and a per-sensor summary. All eight are
+# granted to participants. Only six carry comments, for the reason written above
+# TABLE_COMMENTS below.
 GOLD_TABLES = (
     "aircraft",
     "systems",
@@ -171,6 +173,11 @@ AGENT_SECRET_SCOPE_PREFIX = "fleet-ops"
 AGENT_SECRET_KEY_NEO4J_URI = "neo4j-uri"
 AGENT_SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 AGENT_SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
+
+# The database inside that instance. AuraDB Free serves one named neo4j, and a
+# scope written before this key existed has no fourth key at all, so Lab 3 falls
+# back to that name. Multi-database instances need it set.
+AGENT_SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
 # The model behind the supervisor's routing decision, and behind GraphRAG answer
 # generation in Lab 3. One name so the two cannot diverge.
@@ -355,6 +362,27 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     ]
 
 
+# The comments below cover six of the eight gold tables. `fleet_readiness` and
+# `sensor_health` are described nowhere, on purpose.
+#
+# A table with no comment is a table Genie is far less likely to reach for, and
+# that is the outcome wanted here. Every question Lab 4 puts to a Genie space is
+# either a time window or a grouping by a fleet attribute, and both summaries
+# collapse time and carry neither model nor operator, so neither can answer one.
+# They only add a second plausible path to a question the four base tables
+# already answer.
+#
+# `sensor_health.health_status` is worse than merely unhelpful. The rule that
+# sets it, in lab/courseware/dlt_fleet_etl.py, calls a sensor ANOMALY when its
+# p95 exceeds avg + 2*stddev. For anything close to a normal distribution the
+# p95 sits at about avg + 1.645*stddev, so that test can never pass. Measured
+# across all 288 sensors: 284 WARNING, 4 NORMAL, 0 ANOMALY. A comment
+# advertising an ANOMALY status to Genie would send a room of participants
+# hunting for rows that cannot exist, and Genie would report the empty result as
+# a fact about the fleet.
+#
+# Both tables still appear in GOLD_TABLES and still get the SELECT grant below,
+# so a participant browsing the catalog sees the whole gold layer.
 TABLE_COMMENTS = (
     ("aircraft", "Fleet of aircraft with tail numbers, models, and operators"),
     ("systems", "Aircraft systems including engines, avionics, and hydraulics"),
@@ -371,8 +399,6 @@ TABLE_COMMENTS = (
         "Flight operations with aircraft, route, schedule, and total delay minutes",
     ),
     ("maintenance_events", "Maintenance events with fault details and severity"),
-    ("fleet_readiness", "Per-aircraft fleet readiness with mission status"),
-    ("sensor_health", "Per-sensor health summary with anomaly detection"),
 )
 
 COLUMN_COMMENTS = (
@@ -388,16 +414,6 @@ COLUMN_COMMENTS = (
         "Reading timestamp (4-hour intervals, 6 readings per sensor per day)",
     ),
     ("sensor_readings", "value", "Sensor reading value in the sensor unit"),
-    (
-        "fleet_readiness",
-        "readiness_status",
-        "MISSION READY, DEGRADED, or NOT MISSION READY",
-    ),
-    (
-        "sensor_health",
-        "health_status",
-        "NORMAL, WARNING, or ANOMALY based on 2-sigma deviation",
-    ),
 )
 
 

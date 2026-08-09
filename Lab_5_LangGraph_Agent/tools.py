@@ -292,6 +292,17 @@ Facts that change the query you write:
     points the arrow away from the named noun and matches nothing, returning
     zero rows with no error, even though N10004 has 23 maintenance events and
     more of them than any other aircraft in the fleet.
+  - A question about which components have had maintenance events is answered
+    by the Component to MaintenanceEvent edge, not by the System. Match
+    (:Component)-[:HAS_EVENT]->(:MaintenanceEvent), constrain that event with
+    -[:AFFECTS_AIRCRAFT]->(:Aircraft {tail_number: ...}), and RETURN DISTINCT
+    the component. Walking MaintenanceEvent to System and back down through
+    HAS_COMPONENT instead returns every component those systems contain,
+    including the ones that never had an event, so it answers a looser question
+    than the one asked. There is no AFFECTS_COMPONENT relationship either, and
+    writing one matches nothing and returns zero rows with no error.
+    MaintenanceEvent does carry component_id as a property, but HAS_EVENT is
+    the join to use.
   - minValue and maxValue are both FLOAT. Compare them directly.
   - minValue is null on ten of the twenty, because a vibration or speed limit
     is a ceiling with no floor. Check ol.minValue IS NOT NULL before comparing

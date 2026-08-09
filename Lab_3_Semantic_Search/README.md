@@ -50,17 +50,18 @@ Combine vector similarity with keyword-based fulltext search for more robust ret
 
 ## Configuration
 
-Notebook 01 is the one place you type your Neo4j credentials. Its Configuration cell takes the URI, username, and password from Lab 1, and the cell after it writes all three into a Databricks secret scope:
+Notebook 01 is the one place you type your Neo4j credentials. Its Configuration cell takes the URI, username, password, and database name from Lab 1, and the cell after it writes all four into a Databricks secret scope:
 
 | Key | Value |
 |-----|-------|
 | `neo4j-uri` | Your Aura connection URI |
 | `neo4j-username` | Usually `neo4j` |
 | `neo4j-password` | Your password from Lab 1 |
+| `neo4j-database` | Leave it as `neo4j` on AuraDB Free. Only a multi-database instance needs another name |
 
 The scope is named `fleet-ops-<your user>`, derived from `current_user()`. Scope names are unique per workspace rather than per user, so the per-participant suffix keeps a shared workshop workspace from colliding. Notebook 01 prints the resolved name when it runs.
 
-Notebooks 02 and 03 derive the same name and read the three values with `dbutils.secrets.get`. No plaintext password appears in either one. Lab 5 reads the same scope when it deploys the agent, which is why notebook 01 creates it even though notebook 01 could work without it.
+Notebooks 02 and 03 derive the same name and read the values with `dbutils.secrets.get`. A scope created before `neo4j-database` existed holds three keys, and the database name falls back to `neo4j` rather than failing. No plaintext password appears in either one. Lab 5 reads the same scope when it deploys the agent, which is why notebook 01 creates it even though notebook 01 could work without it.
 
 Two things to expect:
 

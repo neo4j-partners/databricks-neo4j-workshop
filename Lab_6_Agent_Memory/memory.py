@@ -108,6 +108,7 @@ ensure_labs_on_path()
 from data_utils import (  # noqa: E402
     DEFAULT_EMBEDDING_MODEL,
     DEFAULT_LLM_MODEL,
+    DEFAULT_NEO4J_DATABASE,
     read_neo4j_secrets,
     secret_scope_name,
 )
@@ -123,6 +124,7 @@ __all__ = [
     "EMBEDDING_DIMENSIONS",
     "EMBEDDING_MODEL",
     "ENV_CREDENTIAL_NAMES",
+    "ENV_DATABASE_NAME",
     "FLEET_ONLY_QUERY",
     "HEADLINE_QUERY",
     "HTTPX_REQUIREMENT",
@@ -208,6 +210,11 @@ EMBEDDING_DIMENSIONS = 1024
 # its mlflow.models.set_model() call, and a notebook that imports memory.py
 # should not be declaring itself a model.
 ENV_CREDENTIAL_NAMES = ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
+
+# The fourth variable, which is optional. An endpoint deployed from a scope
+# without a neo4j-database key does not carry it, and the AuraDB Free name
+# stands in.
+ENV_DATABASE_NAME = "NEO4J_DATABASE"
 
 # How many past messages the recall node pulls in. Each one is a vector search
 # hit, and the whole search costs 3.4 to 5.0 seconds regardless of limit, so
@@ -530,7 +537,7 @@ def build_memory_settings(
     username: str,
     password: str,
     *,
-    database: str = "neo4j",
+    database: str = DEFAULT_NEO4J_DATABASE,
     entity_types: Sequence[str] = ("AIRCRAFT",),
 ) -> Any:
     """Build ``MemorySettings`` pointed at the participant's Aura instance.
@@ -611,7 +618,7 @@ class MemorySession:
         username: str,
         password: str,
         *,
-        database: str = "neo4j",
+        database: str = DEFAULT_NEO4J_DATABASE,
         expected_uri_prefix: str | None = None,
     ) -> MemorySession:
         """Connect to Aura and return an open session.
@@ -645,10 +652,10 @@ class MemorySession:
     def open_from_env(
         cls,
         *,
-        database: str = "neo4j",
+        database: str | None = None,
         expected_uri_prefix: str | None = None,
     ) -> MemorySession:
-        """Connect using the three environment variables serving provides.
+        """Connect using the environment variables serving provides.
 
         A Model Serving container has no ``dbutils`` and no notebook user, so
         Lab 5's ``agent.py`` deploys the endpoint with ``NEO4J_URI``,
@@ -658,7 +665,8 @@ class MemorySession:
         endpoint needs no new secrets and no new environment block.
 
         Args:
-            database: Neo4j database name.
+            database: Neo4j database name. Read from ``NEO4J_DATABASE`` when
+                omitted, falling back to the AuraDB Free name.
             expected_uri_prefix: Passed to :func:`guard_write_target`.
 
         Returns:
@@ -681,7 +689,11 @@ class MemorySession:
             uri,
             username,
             password,
-            database=database,
+            database=(
+                database
+                or os.environ.get(ENV_DATABASE_NAME, "").strip()
+                or DEFAULT_NEO4J_DATABASE
+            ),
             expected_uri_prefix=expected_uri_prefix,
         )
 
@@ -692,20 +704,20 @@ class MemorySession:
         scope: str | None = None,
         *,
         spark: Any = None,
-        database: str = "neo4j",
+        database: str | None = None,
         expected_uri_prefix: str | None = None,
     ) -> MemorySession:
         """Connect using the credentials Lab 3 notebook 01 stored.
 
-        The three values are read, used and dropped inside this call, so
-        nothing in the notebook binds a password to a name. Same scope, same
-        keys and same helpers as Lab 5.
+        The values are read, used and dropped inside this call, so nothing in
+        the notebook binds a password to a name. Same scope, same keys and same
+        helpers as Lab 5.
 
         Args:
             dbutils: The notebook's dbutils handle.
             scope: Scope name. Derived from ``current_user()`` when omitted.
             spark: Active SparkSession, required when ``scope`` is omitted.
-            database: Neo4j database name.
+            database: Neo4j database name. Read from the scope when omitted.
             expected_uri_prefix: Passed to :func:`guard_write_target`.
 
         Returns:
@@ -723,7 +735,7 @@ class MemorySession:
             credentials["uri"],
             credentials["username"],
             credentials["password"],
-            database=database,
+            database=database or credentials["database"],
             expected_uri_prefix=expected_uri_prefix,
         )
 
