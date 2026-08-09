@@ -1,0 +1,88 @@
+= Slide Decks
+
+Every deck is embedded on its own page. Each page also carries an **Open full screen** link, which is the better way to present or to read one on a small screen.
+
+.**At a Glance**
+* **Eight workshop decks**, in the order an instructor presents them.
+* **Seven background decks**, deeper material that no lab depends on.
+* **Decks are built, not committed.** `slides/build-slides.sh` renders the Markdown sources into HTML, and CI runs it before every publish.
+
+== Workshop Decks
+
+[cols="2,3,1"]
+|===
+| Deck | Covers | Pairs With
+
+| xref:slides/slides-business-case.adoc[1. The Business Case for GraphRAG]
+| Why connected data beats another table, and what it is worth
+| xref:part1-graph-foundations.adoc[Part 1]
+
+| xref:slides/slides-architecture-roadmap.adoc[2. Workshop Architecture and Roadmap]
+| The dual-database split and where each lab lands in it
+| xref:part1-graph-foundations.adoc[Part 1]
+
+| xref:slides/slides-knowledge-graph-foundations.adoc[3. Knowledge Graph Foundations]
+| Nodes, relationships, properties, and Cypher
+| xref:lab1.adoc[Lab 1], xref:lab2.adoc[Lab 2]
+
+| xref:slides/slides-graphrag-foundations.adoc[4. GraphRAG Foundations]
+| Chunking, embeddings, and what the graph adds to retrieval
+| xref:lab3.adoc[Lab 3]
+
+| xref:slides/slides-retriever-patterns.adoc[5. GraphRAG Retriever Patterns]
+| Vector, hybrid and `VectorCypherRetriever`, and when each wins
+| xref:lab3.adoc[Lab 3]
+
+| xref:slides/slides-supervisor-agent.adoc[6. The Supervisor Agent and Deployment]
+| LangGraph state graphs, routing, and Model Serving
+| xref:lab5.adoc[Lab 5]
+
+| xref:slides/slides-agent-memory.adoc[7. Agent Memory with Neo4j]
+| Storing conversation history beside the domain graph
+| xref:lab6.adoc[Lab 6]
+
+| xref:slides/slides-mcp-agent-bricks.adoc[8. Neo4j MCP and Agent Bricks]
+| The no-code supervisor and the governed MCP connection behind it
+| xref:lab4.adoc[Lab 4], instructor demo
+|===
+
+== Additional Background
+
+No lab depends on these. They go deeper on topics the workshop only touches.
+
+[cols="2,3,1"]
+|===
+| Deck | Covers | Pairs With
+
+| xref:slides/slides-power-of-graphrag.adoc[Activating the Intelligence Platform with GraphRAG]
+| The wider platform argument behind the workshop
+| xref:index.adoc[Overview]
+
+| xref:slides/slides-building-knowledge-graphs.adoc[From Documents to Knowledge Graphs]
+| Extracting entities and relationships out of raw text
+| xref:lab3.adoc[Lab 3]
+
+| xref:slides/slides-schema-design.adoc[Schema Design in SimpleKGPipeline]
+| Constraining an extractor with a schema, and why it matters
+| xref:lab3.adoc[Lab 3]
+
+| xref:slides/slides-entity-resolution.adoc[Entity Resolution]
+| Deciding when two extracted entities are the same thing
+| xref:lab3.adoc[Lab 3]
+
+| xref:slides/slides-graph-enrichment.adoc[Graph Feature Engineering with Neo4j GDS and Databricks]
+| Turning algorithm output into ML features
+| xref:appendix-a.adoc[Appendix A]
+
+| xref:slides/slides-future-graph-enrichment.adoc[Beyond Entity Extraction]
+| Where graph enrichment goes next
+| xref:appendix-a.adoc[Appendix A]
+
+| xref:slides/slides-auth-sync.adoc[Authorization Sync Between Unity Catalog and Neo4j]
+| Carrying Unity Catalog permissions across into the graph
+| xref:databricks-platform.adoc[Platform]
+|===
+
+== Next Steps
+
+Return to the xref:index.adoc[workshop overview], or start at xref:part1-graph-foundations.adoc[Part 1: Graph Foundations].

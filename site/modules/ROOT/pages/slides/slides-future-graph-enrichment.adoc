@@ -5,3 +5,5 @@
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++
+
+link:../_attachments/slides/background/graph-ml/04-future-graph-enrichment-slides.html[Open full screen^] | xref:slides.adoc[All decks]

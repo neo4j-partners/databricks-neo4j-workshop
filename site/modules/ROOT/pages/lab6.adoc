@@ -14,7 +14,7 @@ TIP: Ready to start? Open `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your Dat
 * **Explicit mentions, not LLM extraction.** An agent already knows which entities its tools touched, so it can name them instead of paying a model to rediscover them.
 * **Memory is routing context for the supervisor, not a fourth tool.** Nobody asks memory a question, and `recall` runs once per question rather than once per tool call.
 * **It rewrites the question, not only the route.** Two failures seen in testing forced that, and both are below.
-* **This is the first lab that writes to your graph.** Everything it writes is removable, adoption included, and the instructions show how.
+* **This is the first lab that writes to your graph.** Everything it writes is removable, adoption included, and the notebook's final section shows how.
 
 == The Shape of the Agent
 
@@ -202,7 +202,9 @@ Use explicit mentions whether or not the defect is fixed. Naming the entities yo
 
 Databricks holds the telemetry, because timestamped values at that volume are cheap to scan there. Neo4j holds the topology, the history and now the memory. The same test decided all three placements: memory is relationship-rich, low-volume data whose value is in what it connects to, so it goes in the graph. Put it anywhere else and every question spanning both halves needs an export and a string match.
 
-xref:workshop-overview.adoc[The overview] opens with that same test.
+xref:index.adoc[The overview] opens with that same test.
+
+Slides for this lab: xref:slides/slides-agent-memory.adoc[Agent Memory with Neo4j].
 
 == Next Steps
 

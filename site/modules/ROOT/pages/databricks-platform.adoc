@@ -2,7 +2,7 @@
 
 Databricks and Neo4j are complementary platforms connected through governed data pipelines. Databricks governs and refines data at scale and answers aggregation questions through SQL. Neo4j makes the connections between entities explicit and answers traversal questions through Cypher. Delta Lake serves as the interchange format between them, the Spark Connector moves data in both directions, and Mosaic AI powers the agents that route questions to the right engine.
 
-This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the five integration patterns that carry data and queries between the systems. For the dataset this architecture operates on and the lab roadmap, see the xref:workshop-overview.adoc[Workshop Overview]. For hands-on implementation, see xref:lab2.adoc[Lab 2] (Spark Connector ETL), xref:lab3.adoc[Lab 3] (semantic search), and xref:lab4.adoc[Lab 4] (agents).
+This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the five integration patterns that carry data and queries between the systems. The xref:index.adoc[workshop overview] has the dataset this architecture operates on and the lab roadmap. For hands-on implementation, see xref:lab2.adoc[Lab 2] for Spark Connector ETL, xref:lab3.adoc[Lab 3] for semantic search, and xref:lab4.adoc[Lab 4] for agents.
 
 == Two Platforms, Two Query Shapes
 
@@ -188,4 +188,4 @@ Agent memory plugs into Agent Bricks the same way the other sub-agents do. The s
 
 == Next Steps
 
-Continue to the xref:workshop-overview.adoc[Workshop Overview] for the dataset and lab roadmap, or jump to xref:lab1.adoc[Lab 1: Neo4j Aura Setup] to begin the hands-on labs.
+Continue to the xref:index.adoc[workshop overview] for the dataset and lab roadmap, or jump to xref:part1-graph-foundations.adoc[Part 1: Graph Foundations] to begin the hands-on labs.

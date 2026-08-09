@@ -144,6 +144,8 @@ The cost is that your Aura instance cannot hold anything else you want to keep. 
 2. **Nodes first, relationships second** ensures endpoints exist before connections are created
 3. **Cypher queries from Databricks** verify data loaded correctly by checking node and relationship counts against source row counts
 
+Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[Knowledge Graph Foundations].
+
 == Next Steps
 
 Run `01_aircraft_etl_to_neo4j.ipynb` to load the graph. Once the data is in, see xref:lab2-sample-queries.adoc[Sample Queries] for hands-on Cypher to explore it.

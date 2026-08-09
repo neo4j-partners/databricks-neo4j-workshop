@@ -1,0 +1,35 @@
+= Part 3: Agents
+
+Parts 1 and 2 built the two stores and the retrievers over them. Part 3 puts an agent in front, so a person asks one question and the agent decides which store answers it.
+
+.**At a Glance**
+* **Lab 4 builds the Genie Agent**, natural language to SQL over the Lakehouse telemetry. It is the tool Lab 5's supervisor calls for anything time-series.
+* **Lab 5 is the workshop's final architecture.** You write the supervisor in LangGraph over three tools, then deploy it to Model Serving as a service principal.
+* **Lab 6 gives it memory**, stored in the same Aura instance as the fleet, so one Cypher query can cross conversation history and maintenance history.
+* **Two routes to the same behaviour.** Lab 4 carries an optional instructor demo of the no-code Agent Bricks version. Lab 5 is the code version you own.
+* **About three and a half hours** across the three labs.
+
+== Labs in This Part
+
+[cols="1,3,1"]
+|===
+| Lab | Description | Duration
+
+| xref:lab4.adoc[Lab 4]
+| Compound AI Agents: Genie + Supervisor
+| 40 min
+
+| xref:lab5.adoc[Lab 5]
+| The LangGraph Supervisor Agent, built and deployed
+| 90 min
+
+| xref:lab6.adoc[Lab 6]
+| Agent Memory in Neo4j
+| 75 min
+|===
+
+Slides for this part: xref:slides/slides-supervisor-agent.adoc[The Supervisor Agent and Deployment], xref:slides/slides-agent-memory.adoc[Agent Memory with Neo4j] and xref:slides/slides-mcp-agent-bricks.adoc[Neo4j MCP and Agent Bricks].
+
+== Next Steps
+
+Start with xref:lab4.adoc[Lab 4: Compound AI Agents]. After Lab 6, xref:production-path.adoc[From Workshop to Production] covers what changes when this system carries real traffic.

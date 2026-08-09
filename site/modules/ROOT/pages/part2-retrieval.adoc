@@ -1,0 +1,27 @@
+= Part 2: Retrieval
+
+Part 1 gave the graph structure. Part 2 gives it text. The maintenance manuals get chunked, embedded and linked back to the fleet nodes they describe, so a question can be answered from documentation and topology at once.
+
+.**At a Glance**
+* **Chunks and embeddings land in the same graph as the fleet.** Document and Chunk nodes sit beside Aircraft and Component, connected rather than stored apart.
+* **That connection is what makes it GraphRAG.** Plain vector search returns the chunk. A graph retriever returns the chunk plus the component it names and the maintenance history of that component.
+* **Three retriever shapes**, from plain vector search up to `VectorCypherRetriever`, which is the one Lab 5's agent uses.
+* **Embeddings come from Databricks**, the `databricks-bge-large-en` serving endpoint at 1024 dimensions.
+* **About 45 minutes.**
+
+== Labs in This Part
+
+[cols="1,3,1"]
+|===
+| Lab | Description | Duration
+
+| xref:lab3.adoc[Lab 3]
+| Semantic Search with GraphRAG
+| 45 min
+|===
+
+Slides for this part: xref:slides/slides-graphrag-foundations.adoc[GraphRAG Foundations] and xref:slides/slides-retriever-patterns.adoc[GraphRAG Retriever Patterns].
+
+== Next Steps
+
+Work through xref:lab3.adoc[Lab 3: Semantic Search], then continue to xref:part3-agents.adoc[Part 3: Agents], where the retrievers you build here become one of the supervisor's three tools.

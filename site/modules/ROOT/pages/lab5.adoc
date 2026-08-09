@@ -2,6 +2,8 @@
 
 Lab 4's optional demo showed a supervisor built from a form. This lab builds the same routing behaviour in code, against your own graph, and deploys it as your own endpoint. It uses the pieces the previous four labs produced: the Genie Agent from Lab 4, the fleet graph from Lab 2 and the GraphRAG retrievers from Lab 3, all reachable from one question.
 
+TIP: Ready to start? Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in your Databricks workspace, then `02_deploy_and_evaluate.ipynb`. Every step lives in those two notebooks; this page is the background behind them.
+
 .**At a Glance**
 
 * **LangGraph** models the agent as a **state graph**: nodes that read and write a shared state object, and edges that decide what runs next.
@@ -147,6 +149,8 @@ The registered model name and the endpoint name come from `agent.py` rather than
 Lab 4's optional demo reached Neo4j through an MCP server registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance, and the wrong shape for a classroom: the connection is an admin object, one per participant instance is not something a workshop can provision, and the OAuth2 credential behind it belongs to whoever owns the server.
 
 Your instance is yours, your password is in your secret scope, and the Neo4j Python driver opens a Bolt session against it in one line. The governance the demo shows is worth the setup once an instance has several users and several agents reaching it. With one user and one agent, it costs more than it returns.
+
+Slides for this lab: xref:slides/slides-supervisor-agent.adoc[The Supervisor Agent and Deployment].
 
 == Next Steps
 

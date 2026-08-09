@@ -4,6 +4,8 @@ WARNING: **You cannot run these notebooks on your workshop instance.** Graph Dat
 
 The graph you built in Lab 2 answers questions about what is connected to what. Graph algorithms answer a different kind of question: "which aircraft behave like each other", "which airport would hurt most if it closed", and "which faults cluster together across the fleet". Those answers are computed from the shape of the graph rather than read out of it.
 
+TIP: Taking this home? The notebooks are in `Appendix_A_GDS_Graph_Analytics/`, one folder per algorithm family. Every step lives in them; this page is the background behind them.
+
 .**At a Glance**
 * **Three algorithm families**, one folder each: community detection, centrality, and similarity.
 * **Every one needs Lab 2 notebook 01** to have loaded the fleet, plus the GDS plugin, which AuraDB Free does not have.
@@ -78,6 +80,8 @@ That loop runs in both directions. Databricks sends sensor telemetry into the gr
 | Lab 2 `02_gds_knn_aircraft.ipynb`
 | The Node Similarity notebook only, whose comparison queries assume it has run
 |===
+
+Slides for this appendix: xref:slides/slides-graph-enrichment.adoc[Graph Feature Engineering with Neo4j GDS and Databricks].
 
 == Next Steps
 

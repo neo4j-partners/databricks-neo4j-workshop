@@ -4,7 +4,7 @@
 
 Build an AI agent that answers natural language questions about a commercial aviation fleet, over two databases at once. Neo4j Aura holds the fleet's relationships and its maintenance manuals, the Databricks Lakehouse holds the sensor telemetry, and a supervisor you write in LangGraph routes each question to whichever can answer it. Lab 6 then puts the agent's memory in the graph beside the fleet data.
 
-Start at the [Workshop Overview](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/workshop-overview.html), then work through the labs in order.
+Start at the [workshop overview](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/index.html), then work through the labs in order.
 
 ## The labs
 

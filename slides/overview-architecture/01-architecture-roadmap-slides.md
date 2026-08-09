@@ -108,8 +108,9 @@ The workshop models a multi-model aviation fleet over 90 operational days:
 | Airports | Route network |
 
 <!--
-Sensor Readings, roughly 155,000 rows, is the one entity that lives
-in Databricks. Every other row in this table has a home in the graph.
+Sensor Readings is the one entity that lives in Databricks, and it is
+the highest-volume one by a wide margin. Every other row in this table
+has a home in the graph.
 -->
 
 ---

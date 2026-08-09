@@ -79,7 +79,7 @@ Agent Bricks uses it as a subagent with no custom orchestration code.
 ## Beyond the Graph: Reaching the Lakehouse
 
 - **The knowledge graph reaches graph data:** aircraft, systems, components, maintenance events, flights
-- **The lakehouse holds the rest:** sensor telemetry, about 155,000 rows in Delta tables
+- **The lakehouse holds the rest:** sensor telemetry, recorded every four hours over ninety days, in Delta tables
 - **The graph can't compute SQL:** "average EGT for engine AC5 this month" lives in the lakehouse
 - **Answering both halves needs more than one query engine**
 

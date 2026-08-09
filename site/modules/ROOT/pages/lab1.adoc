@@ -89,12 +89,12 @@ These entities connect through typed relationships that reflect real-world struc
 
 A question like "Which components caused flight delays for aircraft N95040A?" requires traversing from Aircraft through Flight to Delay, then back through MaintenanceEvent to Component. That multi-hop traversal is what the graph handles natively.
 
-image::dual-database-architecture.svg[Dual-database architecture showing Neo4j and Databricks working together for the Aircraft Digital Twin]
-
 .Dual-database architecture
 [%collapsible]
 ====
 The Aircraft Digital Twin spans two platforms. Neo4j holds the topology: how aircraft, systems, components, flights, and maintenance events connect. Databricks holds the volume: high-frequency sensor telemetry, fleet-wide aggregations, and governed Delta tables. Aircraft, systems, and sensors exist in both databases as join points, enabling queries that combine graph traversal with analytical computation.
+
+xref:index.adoc#how-the-data-splits-across-platforms[The overview] has the diagram and the table-by-table split.
 ====
 
 == Neo4j Aura
@@ -129,6 +129,8 @@ The Aura console provides three tools you will use throughout the workshop:
 * **Query Workspace** is a developer environment for writing and executing Cypher queries with syntax highlighting, auto-completion, and saved query collections. You will use this to verify data loads and explore results.
 * **Explore**, powered by Neo4j Bloom, provides visual graph exploration through an interactive canvas. Search for nodes by label or property, expand their relationships, and discover patterns visually. Natural language search translates questions into graph queries without writing Cypher.
 * **Dashboards** offer low-code data visualization including bar charts, geographic maps, and 3D graph visualizations for presenting graph data to non-technical stakeholders.
+
+Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[Knowledge Graph Foundations].
 
 == Next Steps
 

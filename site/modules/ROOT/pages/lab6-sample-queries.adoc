@@ -1,0 +1,144 @@
+= Sample Cypher Queries: Memory and Fleet
+
+Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore what Lab 6 wrote into the same graph as the fleet.
+
+IMPORTANT: These need `Lab_6_Agent_Memory/01_agent_memory.ipynb` to have run, including the adoption step. Adoption is what makes `ac` in the memory half and `ac` in the fleet half the same node. Without it every query below that crosses the two halves returns nothing.
+
+== What the Memory Half Looks Like
+
+[cols="2,4"]
+|===
+| Label or relationship | What it holds
+
+| `(:User)`
+| A technician. `identifier` is the name the agent was given
+
+| `(:Conversation)`
+| One session. `session_id` is what the notebook sets per run
+
+| `(:Message)`
+| One turn, question or answer, in `content`
+
+| `(:User)-[:HAS_CONVERSATION]\->(:Conversation)`
+| Who was talking
+
+| `(:Conversation)-[:HAS_MESSAGE]\->(:Message)`
+| The turns, in order
+
+| `(:Message)-[:MENTIONS]\->(:Aircraft)`
+| The edge that crosses into the fleet. The `Aircraft` is Lab 2's node
+
+| `(:ReasoningTrace)-[:HAS_STEP]\->(:ReasoningStep)`
+| What the agent did, one step per decision. Instructor demo only
+
+| `(:ReasoningStep)-[:TOUCHED]\->(:Aircraft)`
+| Which entity a step reached. Instructor demo only
+|===
+
+'''
+
+== Counting What Memory Wrote
+
+Written as a top-level `UNION` rather than a `CALL` subquery, because the memory library's `session.cypher()` rejects `CALL {`: a subquery is allowed to write, and the guard cannot tell that this one does not.
+
+[source,cypher]
+----
+MATCH (n:User)         RETURN 'User' AS label, count(n) AS count
+UNION
+MATCH (n:Conversation) RETURN 'Conversation' AS label, count(n) AS count
+UNION
+MATCH (n:Message)      RETURN 'Message' AS label, count(n) AS count
+----
+
+The count that matters is the next one. It is zero on a graph where adoption did not run.
+
+[source,cypher]
+----
+MATCH (:Message)-[r:MENTIONS]->(:Aircraft)
+RETURN count(r) AS mentions_to_aircraft
+----
+
+'''
+
+== Who Asked About What
+
+The simplest crossing query. Start in memory, end on a fleet node.
+
+[source,cypher]
+----
+MATCH (u:User)-[:HAS_CONVERSATION]->(:Conversation)-[:HAS_MESSAGE]->(m:Message)
+      -[:MENTIONS]->(ac:Aircraft)
+RETURN ac.tail_number AS aircraft, collect(DISTINCT u.identifier) AS who
+ORDER BY aircraft
+----
+
+'''
+
+== Your Own Sessions
+
+Replace the parameter with the identifier the notebook set for you.
+
+[source,cypher]
+----
+MATCH (u:User {identifier: $me})-[:HAS_CONVERSATION]->(c:Conversation)
+      -[:HAS_MESSAGE]->(m:Message)
+RETURN c.session_id AS session, count(m) AS messages
+ORDER BY session
+----
+
+'''
+
+== The Shift Handover
+
+The query the lab is built around. It reads the conversation half and the maintenance half in one pass, and neither half says on its own what the pair says together.
+
+[source,cypher]
+----
+MATCH (u:User)-[:HAS_CONVERSATION]->(:Conversation)-[:HAS_MESSAGE]->(m:Message)
+      -[:MENTIONS]->(ac:Aircraft)
+WITH ac, collect(DISTINCT u.identifier) AS technicians, collect(m.content) AS said
+OPTIONAL MATCH (ac)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)
+WITH ac, technicians, said,
+     count(ev) AS events,
+     count(CASE WHEN ev.severity = 'CRITICAL' THEN 1 END) AS critical
+RETURN ac.tail_number AS aircraft, size(technicians) AS crew, technicians,
+       events, critical, said
+ORDER BY size(technicians) DESC, critical DESC
+----
+
+**What to read in the output.** An aircraft several technicians asked about, whose maintenance record shows no critical events, is the interesting row. Either the crew is seeing something the record has not caught, or several people each spent a shift on the same dead end. A supervisor wants to know about both, and neither column shows it alone.
+
+**Why it is one query and not two.** `ac` is bound in the memory half on the first line and reused in the fleet half on the fourth. Same node, no join key, no federation. Without adoption those would be two entities that happen to share a name, and joining them means exporting both sides and matching strings, which is where the tail number `N10011` and the tail number `n10011 ` stop matching each other.
+
+'''
+
+== The Audit Trail
+
+Reasoning traces come from `02_instructor_demos.ipynb`, so this returns rows only on an instance where that notebook ran.
+
+[source,cypher]
+----
+MATCH (:ReasoningTrace)-[:HAS_STEP]->(s:ReasoningStep)-[:USES_TOOL]->(tc:ToolCall)
+MATCH (s)-[:TOUCHED]->(ac:Aircraft)
+RETURN ac.tail_number AS aircraft, tc.tool_name AS tool,
+       tc.status AS status, s.observation AS observation
+ORDER BY tc.tool_name
+----
+
+Two questions a log line cannot answer. **Which agent decisions touched this aircraft**, because the traversal starts at `ac` and every step that reached it is one hop away. And **which of those failed**, because `tc.status` is on the tool call and `s.observation` records what came back.
+
+NOTE: `TOUCHED` hangs off the `ReasoningStep`, not off the `ToolCall`. The traversal is step to entity for the audit, and step to call for the mechanics.
+
+'''
+
+== Try These Yourself
+
+Each one is a variation on the handover query above.
+
+* Which technicians asked about aircraft that later had a `CRITICAL` event?
+* Which **systems** draw questions that the maintenance record disagrees with?
+* Is any aircraft mentioned by nobody and failing constantly?
+
+== Next Steps
+
+Return to xref:lab6.adoc[Lab 6] for what these queries mean, or read xref:production-path.adoc[From Workshop to Production] for what changes when memory carries real traffic.

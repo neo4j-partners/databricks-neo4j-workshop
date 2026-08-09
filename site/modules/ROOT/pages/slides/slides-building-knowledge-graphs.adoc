@@ -5,3 +5,5 @@
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++
+
+link:../_attachments/slides/background/kg-construction/05-building-knowledge-graphs-slides.html[Open full screen^] | xref:slides.adoc[All decks]

@@ -2,6 +2,8 @@
 
 Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, hourly-scale readings over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
 
+TIP: Ready to start? Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
+
 == What You Build in This Lab
 
 * **You build the Genie Agent.** It runs over the Lakehouse telemetry, with four gold tables attached. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie Agent ID that Lab 5 and Lab 6 both use.
@@ -186,6 +188,8 @@ Each column suits a different situation. Agent Bricks is faster to stand up and 
 * "Find aircraft with high EGT readings and show their recent maintenance history"
 * "Which engines have above-average vibration, and what components were recently serviced?"
 * "Compare sensor trends for aircraft that had delays versus those that didn't"
+
+Slides for this lab: xref:slides/slides-mcp-agent-bricks.adoc[Neo4j MCP and Agent Bricks].
 
 == Next Steps
 

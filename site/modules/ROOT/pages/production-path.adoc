@@ -1,0 +1,92 @@
+= From Workshop to Production
+
+The agent you deployed in Labs 5 and 6 is real: a Model Serving endpoint, authenticating as a service principal, routing across two governed stores. What separates it from a production system is not the architecture. It is the tier it runs on, where the writes happen, and what happens when a tool fails.
+
+.**At a Glance**
+* **The architecture carries over.** Supervisor plus tools, credentials as secret references, resources declared at log time. None of that changes.
+* **AuraDB Free does not.** It is the first thing to replace, and it changes what the graph can do rather than only how much it holds.
+* **Memory on the hot path is a teaching choice.** Production moves the write off the turn.
+* **The pinned fork is a dependency you own** until the fix reaches a release.
+
+== What Changes First
+
+[cols="1,2,2"]
+|===
+| Concern | In the workshop | In production
+
+| Graph tier
+| AuraDB Free, 200,000 nodes and 400,000 relationships, no Graph Data Science
+| A paid Aura tier, or self-managed. Graph algorithms and larger schemas become available
+
+| Memory writes
+| On the hot path, during the turn, so you can watch them
+| Off the turn, asynchronously. You trade freshness for latency
+
+| Agent memory library
+| A pinned wheel built from a fork, on a Unity Catalog volume
+| Your own build pipeline for that wheel, or the upstream release once the `MENTIONS` fix lands
+
+| Endpoint
+| One per participant, redeployed in place by Lab 6
+| Sized for concurrency, with scale-to-zero decided by traffic shape
+
+| Evaluation
+| MLflow judges run once, at the end of Lab 5
+| A scheduled eval on a maintained dataset, gating every deploy
+
+| Data load
+| A one-time Spark Connector write in Lab 2
+| A scheduled pipeline, with the graph as one more sink beside the Delta tables
+|===
+
+== Latency Is a Design Decision
+
+Lab 6 measured the cost of memory: about 3 to 5 seconds to recall, about 11 seconds to write, roughly 15 seconds added per exchange. That is a good trade for a shift-handover agent, where questions are few and carried context matters. It is a bad trade for a high-volume endpoint answering one-shot lookups.
+
+The lab writes during the turn so the write is visible and debuggable. Production moves it off the turn, which replaces "why is this slow?" with "how far behind is memory right now?". Pick the question you would rather answer.
+
+== Degrade, Do Not Fail
+
+Lab 5's agent already does one thing production systems need: when the `maintenanceChunkEmbeddings` vector index is missing, the builder drops `graphrag_node` from the tool list instead of raising at import. The graph still compiles and the agent answers from the other two tools.
+
+Extend that to every tool. A supervisor that loses one backend should answer from the rest and say what it could not reach, rather than returning an error for the whole question.
+
+== Credentials and Identity
+
+The split Lab 5 sets up is the production split, so nothing here needs redesign:
+
+* **Databricks objects** go in `build_resources` at log time. The Genie Agent, the SQL warehouse, the gold tables and the model endpoints each need their own entry. Granting the Genie Agent does not grant the warehouse under it.
+* **Outside credentials** go in the environment block as `{{secrets/<scope>/<key>}}` references, resolved when the endpoint starts. Aura is not a Databricks object, so it cannot go on the resource list.
+* **Pin the requirements** rather than letting MLflow infer them from the cluster. Inference reads whatever is installed, which is how a cluster carrying the memory wheel produces a requirement pip cannot find and a container that fails fifteen minutes later.
+
+== Governance at Scale
+
+Lab 5 uses a direct Bolt driver rather than the MCP connection Lab 4's demo shows, because one Unity Catalog HTTP connection per participant is not something a classroom provisions. That trade reverses as you grow.
+
+Once an instance has several users and several agents reaching it, the governed MCP connection is worth its setup: one admin-managed object, OAuth2 M2M auth, and access that Unity Catalog can audit. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers carrying Unity Catalog permissions across into the graph.
+
+== Watch the Index Count, Not the Node Count
+
+On a constrained instance the node cap is rarely what stops you. The memory library installs a schema of its own on first connect, on a graph that already carries Lab 3's vector index. `memory.py` names the four memory subsystems the lab never writes to, and the library then skips their indexes and constraints entirely.
+
+Keep doing that in any deployment where index quota is limited. Declare the subsystems you use, and the rest cost nothing.
+
+== Where to Read Next
+
+**Neo4j**
+
+* https://neo4j.com/docs/aura/[Aura tiers and limits]
+* https://neo4j.com/docs/graph-data-science/current/[Graph Data Science], the plugin xref:appendix-a.adoc[Appendix A] needs
+* https://neo4j.com/docs/spark/current/[Spark Connector], for scheduled loads
+* https://github.com/neo4j/mcp[Neo4j MCP Server]
+
+**Databricks**
+
+* https://docs.databricks.com/aws/en/machine-learning/model-serving/[Model Serving], for sizing and scale-to-zero
+* https://docs.databricks.com/aws/en/generative-ai/agent-evaluation/[Agent Evaluation], for scheduled eval
+* https://docs.databricks.com/en/data-governance/unity-catalog/[Unity Catalog]
+* https://docs.databricks.com/aws/en/security/secrets/[Secret scopes]
+
+== Next Steps
+
+Revisit xref:lab5.adoc[Lab 5] for the deployment mechanics and xref:lab6.adoc[Lab 6] for the memory trade-offs, or take xref:appendix-a.adoc[Appendix A] home and run the graph algorithms on an instance that carries the plugin.

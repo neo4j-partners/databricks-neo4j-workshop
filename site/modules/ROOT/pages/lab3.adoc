@@ -113,6 +113,8 @@ After completing this lab, you can ask questions like:
 * "When should I replace the fuel filter?"
 * "What oil analysis levels indicate bearing wear?"
 
+Slides for this lab: xref:slides/slides-graphrag-foundations.adoc[GraphRAG Foundations] and xref:slides/slides-retriever-patterns.adoc[GraphRAG Retriever Patterns].
+
 == Next Steps
 
 Run `01_data_and_embeddings.ipynb`, then `02_graphrag_retrievers.ipynb`, then `03_hybrid_retrievers.ipynb` if time allows. Once the notebooks have run, see xref:lab3-sample-queries.adoc[Sample Queries] to explore the GraphRAG structures in the Neo4j Query workspace, or proceed to xref:lab4.adoc[Lab 4: Compound AI Agents].
