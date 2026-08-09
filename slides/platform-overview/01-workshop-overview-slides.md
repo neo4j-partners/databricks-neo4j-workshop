@@ -38,7 +38,7 @@ Build AI Agents and Knowledge Graphs with Neo4j and Databricks
 
 - **Load** aircraft fleet data into a Neo4j knowledge graph using the Spark Connector
 - **Add** semantic search with vector embeddings and GraphRAG retrievers
-- **Query** sensor telemetry in natural language with a Databricks Genie space
+- **Query** sensor telemetry in natural language with a Databricks Genie Agent
 - **Build** a LangGraph supervisor that routes across Genie, Cypher over your own graph, and GraphRAG
 - **Give** that agent memory stored in the same graph as the fleet data
 - **Watch** the instructor build the same routing with no code in Agent Bricks over a governed Neo4j MCP connection

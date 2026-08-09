@@ -284,7 +284,7 @@ table names, column descriptions, primary/foreign key relationships.
 Column-level context is intelligently filtered so only relevant
 metadata reaches the model.
 
-Domain experts configure Genie Spaces: curated sets of tables with
+Domain experts configure Genie Agents: curated sets of tables with
 JOIN definitions, up to 100 plain-text instructions teaching domain
 terminology and business rules, and example SQL queries that Genie
 selects from when they match the user's question. When a response
@@ -391,7 +391,7 @@ A **supervisor agent** sits above both specialists and routes questions based on
                 +--- Supervisor ---+
                 |                  |
                 v                  v
-        Genie Space Agent    Neo4j MCP Agent
+        Genie Agent          Neo4j MCP Agent
         (Lakehouse / SQL)    (Graph / Cypher)
 ```
 

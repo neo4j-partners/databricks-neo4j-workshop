@@ -134,7 +134,7 @@ The whole shape, once the notebook finishes:
 
 **No `Reading` nodes reach Neo4j. Zero.** The sensor telemetry stays in Delta, and that is the entire dual-database argument in one fact rather than an opinion about it. The graph holds the things worth traversing: which aircraft, which system, which sensor, which limit, which maintenance event. The readings themselves are a columnar aggregation workload, so they stay where aggregation is cheap.
 
-This is why Lab 4 needs a Genie space at all, and why Lab 5's agent has to route rather than pick one backend. A question about EGT trends cannot be answered by traversal, and a question about which components a fault cascaded into cannot be answered by SQL.
+This is why Lab 4 needs a Genie Agent at all, and why Lab 5's agent has to route rather than pick one backend. A question about EGT trends cannot be answered by traversal, and a question about which components a fault cascaded into cannot be answered by SQL.
 
 == The Load Is Destructive by Design
 

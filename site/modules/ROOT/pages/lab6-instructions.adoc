@@ -1,0 +1,706 @@
+= Lab 6 Instructions: Agent Memory
+
+Work through `Lab_6_Agent_Memory/01_agent_memory.ipynb` and give the Lab 5 agent a memory that lives in the same Aura instance as the fleet graph. You adopt your `Aircraft` nodes as memory entities, seed a week of shift conversation, run the one query that needs both halves of the graph, wire a `recall` node and a `remember` node either side of the Lab 5 supervisor, measure what they bought, and redeploy the endpoint Lab 5 created.
+
+TIP: For concepts and background, see xref:lab6.adoc[Lab 6: Agent Memory].
+
+IMPORTANT: This is the first lab that writes to your graph. Adoption relabels nodes you already have, and the memory library adds nodes of its own. Everything here is removable, and <<cleaning-up,Cleaning Up>> at the end of this page shows how. Read the dry run before you commit anything.
+
+The lab is two notebooks in `Lab_6_Agent_Memory/`:
+
+* `01_agent_memory.ipynb`: the participant path, roughly 75 minutes.
+* `02_instructor_demos.ipynb`: four run-and-read demos the instructor drives. Not an exercise.
+
+== What You'll Learn
+
+* **Adopt an existing graph.** Add the `:Entity` label to your `Aircraft` nodes so a remembered aircraft is the same node Lab 2 loaded.
+* **Write explicit mentions.** Hand the library the entities a message touches instead of paying a model to rediscover them.
+* **Query across both halves.** One `MATCH` from a technician's question to a maintenance record, with no join key.
+* **Wire recall and remember.** Two nodes either side of the Lab 5 supervisor, and one extra field in the routing reply.
+* **Measure the cost.** The same agent built twice, once without memory, scored on questions that need context.
+* **Redeploy in place.** The same Model Serving endpoint Lab 5 created, now with memory, and no new secrets.
+
+== Prerequisites
+
+* **Lab 5 completed and deployed.** xref:lab5.adoc[Lab 5] builds `tools.py`, `agent.py` and the Model Serving endpoint this lab redeploys. Section 10 updates that endpoint rather than creating a second one, so the registered model and the endpoint have to exist first.
+* **Three lab folders, siblings in your workspace.** `memory.py` imports the embedder and the secret helpers from `Lab_3_Semantic_Search/data_utils.py`, and the agent state, the routing schema and the supervisor prompt from `Lab_5_LangGraph_Agent/tools.py`. It carries no copies. Keep `Lab_3_Semantic_Search`, `Lab_5_LangGraph_Agent` and `Lab_6_Agent_Memory` beside each other and `ensure_labs_on_path()` finds both on its own.
+* **`GENIE_AGENT_ID` set to your own agent.** The value from Lab 4 Part A, the same one you used in Lab 5. Take it out of the URL: `https://<workspace>/genie/rooms/<GENIE_AGENT_ID>`.
+* **`WAREHOUSE_ID` from your Genie Agent settings.** Section 10 declares it as a resource. Without it the redeployed endpoint routes sensor questions correctly and then cannot run the SQL.
+* **The secret scope from Lab 1 notebook 02.** It holds your Aura URI, username, password and database name. The scope name is derived from `current_user()`, so there is nothing to copy across from the other notebooks.
+* **The fleet graph from Lab 2.** Adoption needs `Aircraft` nodes to adopt, and the headline query needs `MaintenanceEvent` nodes to cross into.
+
+NOTE: The memory client reaches the same two Foundation Model endpoints Labs 3 and 5 use, `databricks-bge-large-en` for embeddings and `databricks-claude-sonnet-5` for the extractor. No new models, no new database, and no new Databricks resource.
+
+== 1. Install the Pinned Wheel
+
+`neo4j-agent-memory` installs from a wheel on a Unity Catalog volume rather than from PyPI. The released version drops most of the `MENTIONS` edges Step 6 depends on, silently, with no error.
+
+[source,python]
+----
+%pip install /Volumes/databricks-neo4j-workshop/aircraft/raw_data/neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl httpx>=0.27.0
+----
+
+[source,python]
+----
+dbutils.library.restartPython()
+----
+
+`restartPython()` restarts the Python process and every variable you have defined disappears, which is why this is the first cell rather than the third.
+
+== 2. Configure the Notebook
+
+Two values to fill in, and one that decides who you are in the memory.
+
+[source,python]
+----
+# ==================================================
+# CONFIGURATION - replace GENIE_AGENT_ID with yours
+# ==================================================
+
+GENIE_AGENT_ID = ""
+WAREHOUSE_ID = ""
+
+# Who you are, for the memory. The headline query in Section 6 counts distinct
+# technicians, so this is what makes you the sixth one.
+MY_USER_ID = "tech:you"
+
+import sys
+
+sys.path.insert(0, ".")
+
+from memory import ensure_labs_on_path
+
+lab3_dir, lab5_dir = ensure_labs_on_path()
+
+from data_utils import read_neo4j_secrets, secret_scope_name
+
+SECRET_SCOPE = secret_scope_name(spark)
+
+# Same scope and same key as Lab 3 and Lab 5. The database name is one of
+# the four keys Lab 1 notebook 02 stored.
+NEO4J_DATABASE = read_neo4j_secrets(dbutils, SECRET_SCOPE)["database"]
+----
+
+`ensure_labs_on_path()` is the check that the three folders are siblings. It raises `FileNotFoundError` naming the directories it searched if one of them has moved.
+
+== 3. Connect the Memory Client
+
+A `MemoryClient` connects to the same Aura instance holding your fleet graph. Not a second database.
+
+[source,python]
+----
+from memory import EMBEDDING_ENDPOINT, LLM_ENDPOINT, MemorySession
+
+# The password is read, used, and dropped inside this call, so it never lands in
+# a notebook variable. Same scope and same keys as Lab 3 and Lab 5.
+session = MemorySession.open_from_secrets(
+    dbutils, SECRET_SCOPE, database=NEO4J_DATABASE
+)
+----
+
+`neo4j-agent-memory` has never heard of Databricks and does not need to. It asks for three `Protocol` implementations, and `memory.py` supplies `MemoryEmbeddings` and `MemoryLLM`, which satisfy them by calling the Foundation Model endpoints you have used since Lab 3.
+
+NOTE: First connect takes about 20 seconds. The library creates 25 indexes and 9 constraints, five of them vector indexes sized from the embedding model's 1024 dimensions. Its full schema is 33 and 12, and `memory.py` names the four subsystems this lab never writes so the library leaves those out. It happens once per database, not once per session.
+
+.Why the session holds its own event loop
+[%collapsible]
+====
+`neo4j-agent-memory` is async from top to bottom and a notebook cell is not. `asyncio.run(...)` per call opens and closes a loop each time, and the Neo4j driver inside the client binds to the loop that created it, so the next cell would get a driver attached to a loop that no longer exists.
+
+`MemorySession` keeps one loop alive on a background thread for the whole notebook. `session.run(coro)` hands work to it and blocks until the answer comes back, which is why every cell below reads like ordinary code.
+====
+
+== 4. Adopt the Fleet Graph
+
+This is the step that makes the lab work, and the one that writes to nodes you already have.
+
+Your graph holds `(:Aircraft {tail_number: 'N10004'})`. The memory library attaches conversations to `(:Entity {name, type})` nodes. Left alone it creates its own `N10004` beside yours, and you are back to two stores joined by string comparison in Python.
+
+=== Dry run first, every time
+
+[source,python]
+----
+from memory import ADOPT_LABEL_TO_TYPE, ADOPT_NAME_PROPERTY, adoption_dry_run, describe_adoption_report
+
+print(f"Would adopt: {ADOPT_LABEL_TO_TYPE}")
+print(f"Name from:   {ADOPT_NAME_PROPERTY}\n")
+
+report = adoption_dry_run(session)
+print(describe_adoption_report(report))
+print(f"\ndry_run={report.dry_run}, nothing was written")
+----
+
+=== Watch it refuse the four destructive labels
+
+Adoption sets `n.type` unconditionally. `System`, `Component`, `Sensor` and `Document` already carry a meaningful `type`, holding values like `Turbine` and `Engine` that Lab 2 and Lab 4 queries filter on. Adopt them and every one becomes the string `COMPONENT` or `SYSTEM`, with no error and no warning. `memory.py` refuses them by name.
+
+[source,python]
+----
+from memory import DESTRUCTIVE_ADOPTION_LABELS
+
+print("Labels adoption would damage:\n")
+for label, (count, holds) in sorted(DESTRUCTIVE_ADOPTION_LABELS.items()):
+    print(f"  {label:<10} {count:>4} nodes, type currently holds {holds}")
+
+try:
+    adoption_dry_run(session, label_to_type={"Aircraft": "AIRCRAFT", "Component": "COMPONENT"})
+except ValueError as error:
+    print(f"\nRefused, as it should be:\n\n{error}")
+----
+
+=== Commit
+
+36 aircraft, about three seconds. Idempotent: a second run reports them as already adopted rather than doing anything.
+
+[source,python]
+----
+from memory import adopt_aircraft
+
+report = adopt_aircraft(session)
+print(describe_adoption_report(report))
+print(f"\nmigrated={report.total_migrated}  already_adopted={report.total_already_adopted}")
+----
+
+Then check one node carries both sets of properties:
+
+[source,python]
+----
+rows = session.cypher(
+    """
+    MATCH (ac:Aircraft:Entity {tail_number: $tail})
+    RETURN labels(ac) AS labels, ac.tail_number AS tail_number,
+           ac.model AS model, ac.name AS memory_name, ac.type AS memory_type
+    """,
+    {"tail": "N10004"},
+)
+----
+
+== 5. Seed a Week of Shift History
+
+Memory is only interesting once there is some. `SEED_MESSAGES` replays a week of maintenance shift conversation: five technicians, five sessions, ten messages.
+
+Extraction is explicit rather than automatic. Automatic costs an extra model call per message, about 9.2 seconds each. Explicit is about 5.6 seconds and exact, and it wins for an agent because an agent already knows which entities its tools touched. Here it is a regular expression, because tail numbers have a format.
+
+[source,python]
+----
+from memory import SEED_MESSAGES, aircraft_mentions
+
+sample = SEED_MESSAGES[1].content
+print(f"Message:  {sample}\n")
+print("Mentions:", [(ref.name, ref.type, ref.label) for ref in aircraft_mentions(sample)])
+----
+
+[source,python]
+----
+from memory import seed_memory
+
+def show(index, total, mentions):
+    print(f"  [{index:>2}/{total}] {mentions} mention(s) linked")
+
+linked = seed_memory(session, on_progress=show)
+print(f"\n{linked} mentions linked across {len(SEED_MESSAGES)} messages")
+----
+
+NOTE: One message at a time is deliberate and takes about a minute. `add_messages_batch` is the fast path and it takes no `explicit_mentions` argument at all, so batching would mean either paying for automatic extraction or getting no mentions. The mentions are the entire lab.
+
+Count what that built:
+
+[source,python]
+----
+rows = session.cypher(
+    """
+    MATCH (n:User)         RETURN 'User' AS label, count(n) AS count
+    UNION
+    MATCH (n:Conversation) RETURN 'Conversation' AS label, count(n) AS count
+    UNION
+    MATCH (n:Message)      RETURN 'Message' AS label, count(n) AS count
+    """
+)
+
+edges = session.cypher(
+    "MATCH (:Message)-[r:MENTIONS]->(:Aircraft) RETURN count(r) AS mentions_to_aircraft"
+)
+----
+
+The last row is the one to read. `Message` nodes point at your `Aircraft` nodes.
+
+IMPORTANT: `session.cypher()` is read-only by design and rejects a write before the round trip. It also rejects `CALL {`, because a subquery is allowed to write and the guard cannot tell that this one does not, which is why the counts above are a top-level `UNION`.
+
+== 6. Run the Query That Needs Both Halves
+
+Three queries over the same graph, in order.
+
+**The fleet graph alone**, ranked by critical maintenance events. This is what a maintenance dashboard shows you.
+
+[source,python]
+----
+from memory import FLEET_ONLY_QUERY
+
+for row in session.cypher(FLEET_ONLY_QUERY, {"limit": 6}):
+    print(f"  {row['aircraft']}  events={row['events']:<3} critical={row['critical']}")
+----
+
+**The conversation memory alone**, ranked by how many different technicians asked. This is what a memory product with no domain graph shows you.
+
+[source,python]
+----
+from memory import MEMORY_ONLY_QUERY
+
+for row in session.cypher(MEMORY_ONLY_QUERY, {"limit": 6}):
+    print(f"  {row['aircraft']}  technicians={row['technicians']}  mentions={row['mentions']}")
+----
+
+Find `N10011` in both. It is near the bottom of the first and at the top of the second. **Three technicians independently pulled the EGT trend on an aircraft the maintenance record says is healthy.** Neither list says that alone.
+
+**Both halves, one statement:**
+
+[source,cypher]
+----
+// 1. Conversation memory: which aircraft are technicians actually asking about
+MATCH (u:User)-[:HAS_CONVERSATION]->(c:Conversation)-[:HAS_MESSAGE]->(m:Message)
+      -[:MENTIONS]->(ac:Aircraft)
+WITH ac,
+     count(DISTINCT u)              AS technicians,
+     collect(DISTINCT u.identifier) AS who,
+     count(DISTINCT m)              AS mentions
+WHERE technicians >= $min_technicians
+
+// 2. Same node, fleet graph: what maintenance actually found
+MATCH (ac)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)-[:AFFECTS_SYSTEM]->(sys:System)
+RETURN ac.tail_number                                       AS aircraft,
+       technicians,
+       who                                                  AS asked_by,
+       mentions,
+       count(ev)                                            AS events,
+       count(CASE WHEN ev.severity = 'CRITICAL' THEN 1 END) AS critical,
+       collect(DISTINCT sys.type)[0..4]                     AS systems
+ORDER BY technicians DESC, critical DESC
+----
+
+[source,python]
+----
+from memory import HEADLINE_QUERY
+
+for row in session.cypher(HEADLINE_QUERY, {"min_technicians": 2}):
+    print(
+        f"  {row['aircraft']}  asked_by={row['technicians']} {row['asked_by']}\n"
+        f"           events={row['events']} critical={row['critical']} systems={row['systems']}\n"
+    )
+----
+
+The point is the `(ac)` on the second `MATCH`. It is bound in the memory half and reused in the fleet half. Same node, no join key, no federation, no second query. Without adoption that `ac` would be a memory entity that happens to share a name with your aircraft.
+
+== 7. Wire Recall and Remember Around the Agent
+
+First see what `recall` finds on its own:
+
+[source,python]
+----
+from memory import build_recall_node
+
+recall_node = build_recall_node(session)
+
+print(recall_node({"question": "what is the EGT margin doing on N10011?"})["recalled"])
+----
+
+The question names no technician and no shift, and recall still finds the three separate conversations about that aircraft's EGT margin. That is semantic search over message content, not a keyword match.
+
+Then build the Lab 5 graph with two extra nodes in it. `recall` runs before the supervisor, `remember` after synthesis, and the three tools are untouched.
+
+[source,python]
+----
+from databricks.sdk import WorkspaceClient
+from langgraph.graph import END, START, StateGraph
+
+from tools import (
+    LLM_ENDPOINT,
+    TOOL_NAMES,
+    build_cypher_node,
+    build_genie_node,
+    build_graphrag_node,
+    build_synthesize_node,
+    get_embedder,
+    get_llm,
+    open_driver_from_secrets,
+    route_from_supervisor,
+)
+from memory import (
+    EMBEDDING_ENDPOINT,
+    MemoryAgentState,
+    build_memory_supervisor_node,
+    build_remember_node,
+)
+
+driver = open_driver_from_secrets(dbutils, SECRET_SCOPE)
+llm = get_llm(LLM_ENDPOINT)
+embedder = get_embedder(EMBEDDING_ENDPOINT)
+
+genie_node = build_genie_node(GENIE_AGENT_ID, WorkspaceClient())
+cypher_node = build_cypher_node(driver, llm, database=NEO4J_DATABASE)
+graphrag_node = build_graphrag_node(driver, llm, embedder, database=NEO4J_DATABASE)
+
+available = tuple(
+    name for name in TOOL_NAMES
+    if name != "graphrag_node" or getattr(graphrag_node, "available", False)
+)
+
+builder = StateGraph(MemoryAgentState)
+builder.add_node("recall", recall_node)
+builder.add_node("supervisor", build_memory_supervisor_node(llm, available_tools=available))
+builder.add_node("genie_node", genie_node)
+builder.add_node("cypher_node", cypher_node)
+builder.add_node("graphrag_node", graphrag_node)
+builder.add_node("synthesize", build_synthesize_node(llm))
+builder.add_node("remember", build_remember_node(session, default_user=MY_USER_ID))
+
+builder.add_edge(START, "recall")
+builder.add_edge("recall", "supervisor")
+builder.add_conditional_edges(
+    "supervisor",
+    route_from_supervisor,
+    {
+        "genie_node": "genie_node",
+        "cypher_node": "cypher_node",
+        "graphrag_node": "graphrag_node",
+        "synthesize": "synthesize",
+    },
+)
+for tool_name in TOOL_NAMES:
+    builder.add_edge(tool_name, "supervisor")
+builder.add_edge("synthesize", "remember")
+builder.add_edge("remember", END)
+
+agent = builder.compile()
+----
+
+The helper that asks it one question prints the rewritten question as well as the route, because `state["question"]` is not always the question that went in:
+
+[source,python]
+----
+def ask(question, session_id="lab6-session-01", user=None):
+    """Ask the memory-enabled agent one question."""
+    state = agent.invoke({
+        "question": question,
+        "trace": [],
+        "findings": [],
+        "session_id": session_id,
+        "user_identifier": user or MY_USER_ID,
+    })
+    print(f"Q: {question}")
+    if state.get("asked"):
+        print(f"   resolved:  {state['question']}")
+    print(f"   route:     {' -> '.join(state.get('trace', [])) or '(straight to synthesis)'}")
+    print(f"   remembered: {state.get('remembered', 0)} mention(s)\n")
+    print(state.get("answer", ""))
+    return state
+----
+
+NOTE: You will see a Neo4j deprecation warning naming `db.index.vector.queryNodes`. It works on Aura's current version; the library has not moved off it yet.
+
+== 8. Ask the Question Lab 5 Could Not Answer
+
+Two questions. The second contains the word *that* and nothing else to go on.
+
+[source,python]
+----
+first = ask("What does the maintenance history look like for N10011?")
+----
+
+[source,python]
+----
+# No tail number anywhere in this question.
+second = ask("Are there any vibration readings I should worry about on that aircraft?")
+----
+
+Read the `resolved:` line. The question that reached the tools names `N10011`, and you never typed it. Two nodes had to cooperate: `recall` found the first exchange before the supervisor saw the question, and the supervisor rewrote the question from it. Recall alone is not enough, because the tools are handed the question text, so memory that only changes the route still sends the word "that" to Genie.
+
+Continuity survives a session change, because `recall` searches every session rather than only the current one:
+
+[source,python]
+----
+third = ask(
+    "Which aircraft has the team been most concerned about lately?",
+    session_id="lab6-session-02",
+)
+----
+
+Then check that you are in the memory too:
+
+[source,python]
+----
+for row in session.cypher(
+    """
+    MATCH (u:User {identifier: $me})-[:HAS_CONVERSATION]->(c:Conversation)
+          -[:HAS_MESSAGE]->(m:Message)
+    RETURN c.session_id AS session, count(m) AS messages
+    ORDER BY session
+    """,
+    {"me": MY_USER_ID},
+):
+    print(f"  {row['session']:<20} {row['messages']} messages")
+----
+
+== 9. Measure What Memory Bought
+
+"It seems better" is not a measurement. Build the same agent twice, once without the memory nodes, and run both over questions that need context. The comparison is fair because everything else is identical: same tools, same model, same routing rule, same synthesis prompt.
+
+[source,python]
+----
+from tools import build_supervisor_node
+
+# The Lab 5 agent, rebuilt here so the comparison is like for like.
+plain = StateGraph(MemoryAgentState)
+plain.add_node("supervisor", build_supervisor_node(llm, available_tools=available))
+plain.add_node("genie_node", genie_node)
+plain.add_node("cypher_node", cypher_node)
+plain.add_node("graphrag_node", graphrag_node)
+plain.add_node("synthesize", build_synthesize_node(llm))
+plain.add_edge(START, "supervisor")
+plain.add_conditional_edges(
+    "supervisor",
+    route_from_supervisor,
+    {
+        "genie_node": "genie_node",
+        "cypher_node": "cypher_node",
+        "graphrag_node": "graphrag_node",
+        "synthesize": "synthesize",
+    },
+)
+for tool_name in TOOL_NAMES:
+    plain.add_edge(tool_name, "supervisor")
+plain.add_edge("synthesize", END)
+memory_off = plain.compile()
+----
+
+Each evaluation pair is a setup question followed by one that depends on it. The scorer requires the expected aircraft to appear **and no other aircraft to appear**, because an answer confidently about the wrong aircraft can still name the right one in passing.
+
+[source,python]
+----
+EVAL_PAIRS = [
+    (
+        "What does the maintenance history look like for N10011?",
+        "Are there any vibration readings I should worry about on that aircraft?",
+        "N10011",
+    ),
+    (
+        "Tell me about the EGT exceedance on N10004.",
+        "Which system was that on?",
+        "N10004",
+    ),
+]
+
+TAIL_NUMBERS = {"N10000", "N10004", "N10011", "N10021"}
+
+def resolved(answer, expected):
+    """True when the answer named the right aircraft and no other one."""
+    wrong = {tail for tail in TAIL_NUMBERS - {expected} if tail in answer}
+    return expected in answer and not wrong
+----
+
+IMPORTANT: Print the answer text and read it. A count of two is not a benchmark. The failure worth catching is not a wrong answer, it is a confident answer to a question the agent did not understand, and a substring test cannot tell those apart.
+
+Memory costs about 3 to 5 seconds for `recall`, about 11 seconds for `remember`, so roughly 15 seconds per exchange and two `Message` nodes. xref:lab6.adoc[The concept page] argues about when that is worth paying.
+
+== 10. Redeploy the Endpoint
+
+Lab 5 deployed this agent to a Model Serving endpoint. You are redeploying **that** endpoint rather than creating a second one. An endpoint per participant is the tightest quota in the workshop.
+
+The serving container has no `dbutils` and no notebook user, and Lab 5's `agent.py` already solved that: the endpoint carries `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` and `NEO4J_DATABASE` as secret references resolved by the serving control plane. Memory reads the same four through `MemorySession.open_from_env()`, so this redeploy needs no new secrets.
+
+A `%%writefile memory_agent.py` cell writes the served module. `MemoryFleetOpsAgent` subclasses Lab 5's `FleetOpsAgent` and overrides one method, `_ensure_runtime`, to build the memory-enabled graph. It is generated in the notebook rather than checked in beside it so you can read the whole model in one screen.
+
+[source,python]
+----
+import mlflow
+
+from agent import (
+    DEFAULT_CONFIG,
+    UC_MODEL_NAME,
+    build_resources,
+    endpoint_name,
+    serving_environment_vars,
+)
+from memory import WHEEL_PATH
+
+ENDPOINT_NAME = endpoint_name(SECRET_SCOPE)
+mlflow.set_registry_uri("databricks-uc")
+
+with mlflow.start_run(run_name="lab6-memory-agent"):
+    logged = mlflow.pyfunc.log_model(
+        name="memory_agent",
+        python_model="memory_agent.py",
+        model_config={**{k: v for k, v in DEFAULT_CONFIG.items()},
+                      "genie_agent_id": GENIE_AGENT_ID},
+        resources=build_resources(GENIE_AGENT_ID, WAREHOUSE_ID),
+        code_paths=[
+            "memory.py",
+            f"{lab5_dir}/tools.py",
+            f"{lab5_dir}/agent.py",
+            f"{lab3_dir}/data_utils.py",
+        ],
+        pip_requirements=[
+            "mlflow",
+            "langgraph",
+            "neo4j",
+            "neo4j-graphrag",
+            "databricks-sdk",
+            "httpx>=0.27.0",
+            WHEEL_PATH,
+        ],
+        registered_model_name=UC_MODEL_NAME,
+    )
+
+MODEL_VERSION = logged.registered_model_version
+----
+
+Three things that call must get right, and all three are easy to miss.
+
+* **`resources` is the same list Lab 5 declared.** Memory adds no Databricks resource, because it writes to Aura, and Aura is a credential rather than a resource. Leave the argument off and the redeployed endpoint loses the Genie Agent and the warehouse version 1 had.
+* **`code_paths` needs `memory.py`.** The container gets no workspace files it was not handed. Miss it and the endpoint fails at first request, not at build time.
+* **`pip_requirements` needs the wheel path.** The version `0.5.1.dev1+mentions` resolves from no index anywhere, so MLflow's inferred requirements cannot install it.
+
+Then deploy to the endpoint Lab 5 created:
+
+[source,python]
+----
+from databricks import agents
+
+agents.deploy(
+    UC_MODEL_NAME,                   # the same name Lab 5 registered
+    MODEL_VERSION,                   # the version the cell above just made
+    endpoint_name=ENDPOINT_NAME,     # the endpoint Lab 5 created
+    environment_vars=serving_environment_vars(SECRET_SCOPE),
+    scale_to_zero=True,
+    tags={"lab": "6", "memory": "on"},
+)
+----
+
+`endpoint_name` is what does the pointing. Leave it off and `agents.deploy` invents a name from the model, which is how you end up with two endpoints and a quota error. Redeploying takes 10 to 15 minutes. Do not wait for it.
+
+== Closing the Session
+
+The memory client holds an event loop on a background thread, and the driver holds a connection pool. Close both.
+
+[source,python]
+----
+session.close()
+driver.close()
+----
+
+[#cleaning-up]
+== Cleaning Up
+
+Everything this lab wrote is removable, including the adoption. Nothing below is part of the participant path, and you can skip it entirely if you want to keep poking at what you built.
+
+The one rule that governs all of it: **`MemorySession.cypher()` is read-only by design and rejects a write before the round trip.** Cleanup Cypher therefore runs through a plain driver, which is the pattern the Cleanup cell of `02_instructor_demos.ipynb` uses.
+
+[source,python]
+----
+from tools import open_driver_from_secrets
+
+driver = open_driver_from_secrets(dbutils, SECRET_SCOPE)
+----
+
+=== The labels the memory library owns here
+
+`User`, `Conversation` and `Message` come from `remember` and from `seed_memory`. `Preference`, `ReasoningTrace`, `ReasoningStep`, `ToolCall` and `Tool` come from the instructor demos. Bare `Entity` nodes appear when a message mentions a tail number that is not in your fleet, because the library creates the entity it was told to link to.
+
+=== Clearing one session
+
+Deleting a conversation's messages and then the conversation node leaves every other session, the seeded shift history and the fleet graph alone.
+
+[source,python]
+----
+CLEAR_SESSION = [
+    "MATCH (:Conversation {session_id: $session_id})-[:HAS_MESSAGE]->(m:Message) "
+    "DETACH DELETE m",
+    "MATCH (c:Conversation {session_id: $session_id}) DETACH DELETE c",
+]
+
+for statement in CLEAR_SESSION:
+    summary = driver.execute_query(
+        statement, session_id="lab6-session-01", database_=NEO4J_DATABASE
+    )[2]
+    print(f"  deleted {summary.counters.nodes_deleted}")
+----
+
+`DETACH DELETE` removes the `MENTIONS` edges along with the messages. The `Aircraft` nodes on the far end of those edges are untouched.
+
+=== Clearing everything the memory library wrote
+
+IMPORTANT: A naive `MATCH (n:Entity) DETACH DELETE n` **deletes your fleet**. Adoption added the `:Entity` label to your real `Aircraft` nodes, so that pattern matches all 36 of them along with their flights, systems and maintenance edges. The delete has to exclude every adopted fleet label, and in this lab that is `Aircraft`.
+
+The last statement is the one that needs the guard:
+
+[source,cypher]
+----
+MATCH (e:Entity) WHERE NOT e:Aircraft
+DETACH DELETE e
+----
+
+Run them one at a time through the driver, the way the Cleanup cell of `02_instructor_demos.ipynb` does, and print what each removed:
+
+[source,python]
+----
+CLEANUP = [
+    "MATCH (m:Message) DETACH DELETE m",
+    "MATCH (c:Conversation) DETACH DELETE c",
+    "MATCH (u:User) DETACH DELETE u",
+    "MATCH (p:Preference) DETACH DELETE p",
+    "MATCH (tc:ToolCall) DETACH DELETE tc",
+    "MATCH (s:ReasoningStep) DETACH DELETE s",
+    "MATCH (t:ReasoningTrace) DETACH DELETE t",
+    "MATCH (t:Tool) DETACH DELETE t",
+    # Adopted Aircraft carry :Entity too, so they have to be excluded by label.
+    "MATCH (e:Entity) WHERE NOT e:Aircraft DETACH DELETE e",
+]
+
+for statement in CLEANUP:
+    summary = driver.execute_query(statement, database_=NEO4J_DATABASE)[2]
+    print(f"  {statement.split()[1]:<22} deleted {summary.counters.nodes_deleted}")
+----
+
+The guard is what the order depends on. Run the deletes first, while your `Aircraft` nodes still carry `:Entity`, and `WHERE NOT e:Aircraft` is doing real work. Reverse adoption first instead and no aircraft carries `:Entity` any more, so the guard becomes redundant rather than wrong. Either order is safe. Dropping the guard is not.
+
+NOTE: The library's own vector indexes and constraints stay on the instance. Deleting the nodes does not drop the schema, and leaving it costs nothing except index quota. Reconnecting a memory client recreates it in any case.
+
+=== Reversing adoption
+
+Adoption does not create anything, so undoing it is not a delete. It strips a label and three properties.
+
+`adopt_existing_graph` runs one statement per label, and its whole write is `SET n:Entity, n.type = $type, n.id = coalesce(n.id, computed_id), n.name = coalesce(n.name, n.<name_property>)`. The label and those three properties are the entire footprint.
+
+[source,cypher]
+----
+MATCH (n:Aircraft:Entity)
+REMOVE n:Entity, n.type, n.id, n.name
+RETURN count(n) AS reverted
+----
+
+[source,python]
+----
+REVERSE_ADOPTION = """
+MATCH (n:Aircraft:Entity)
+REMOVE n:Entity, n.type, n.id, n.name
+RETURN count(n) AS reverted
+"""
+
+records = driver.execute_query(REVERSE_ADOPTION, database_=NEO4J_DATABASE)[0]
+print(f"  reverted {records[0]['reverted']} aircraft")
+driver.close()
+----
+
+Two things to know before you run it.
+
+* **`type` is safe to remove and the other two carry a condition.** `type` is set unconditionally, and `Aircraft` nodes have no `type` of their own, which is why `Aircraft` is the only label this lab adopts. `id` and `name` are set with `coalesce`, so adoption preserves any value that was already there. The fleet loader gives `Aircraft` nodes `aircraft_id`, `tail_number`, `icao24`, `model`, `manufacturer` and `operator`, and neither `id` nor `name`, so removing all three is safe on this graph. On a graph whose `Aircraft` nodes already carried an `id` or a `name`, removing them would delete your data rather than the library's.
+* **Nothing else is stripped.** The instructor demos' `APPLIES_TO` edges from a `Preference` to an aircraft, and the `TOUCHED` edges from a `ReasoningStep`, are removed by the `DETACH DELETE` of those nodes above rather than by this statement.
+
+Reversal is idempotent in the same way adoption is. Run it twice and the second run matches nothing.
+
+== Next Steps
+
+Read xref:lab6.adoc[Lab 6: Agent Memory] for the argument behind each of these steps, including why adoption is limited to one label, what the two recall defects were, and what memory costs.
+
+`memory.py` sits next to the notebooks and is worth opening in an editor rather than a cell. `Lab_6_Agent_Memory/README.md` documents what it exports and the constraints that come with it.
+
+`02_instructor_demos.ipynb` ships to every workspace and shows the two memory layers this notebook never writes: corrections that supersede an earlier belief, preferences scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes.

@@ -497,11 +497,11 @@ There are six, and they total 1,049 lines.
 
 - **The three tools, one line each.** `genie_node` for SQL over Delta telemetry, `cypher_node` for traversal over the participant's own Aura instance, `graphrag_node` for a `VectorCypherRetriever` over the Lab 3 manual chunks.
 
-- **The routing lesson, which is the lab.** `cypher_node` and `graphrag_node` sit close together because the GraphRAG retriever has a Cypher tail. **The measured routing numbers go on the site.** They are the strongest evidence in the repository. Routing accuracy differs from dataset counts: it is a claim about the workshop's own quality, and it goes stale only when the prompt changes.
+- **The routing lesson.** `cypher_node` and `graphrag_node` sit close together because the GraphRAG retriever has a Cypher tail. **The measured routing numbers go on the site.** They are the strongest evidence in the repository. Routing accuracy differs from dataset counts: it is a claim about the workshop's own quality, and it goes stale only when the prompt changes.
 
   **DECIDED:** Put them on the site. The no-counts rule was aimed at dataset facts that drift on every regeneration; a routing accuracy figure is a measurement of this workshop's own quality and it moves only when someone edits the prompt. State it with the date it was measured and the prompt version, which is what makes a number honest rather than decorative.
 
-- **The prompt is the artifact.** Two rules earned their place from measured failures. The refusal rule: never substitute a limit, threshold or ceiling for a measurement. The direction rule: an `AFFECTS_AIRCRAFT` arrow written backwards was fixed with nine lines of schema text rather than by dropping the arrow, because dropping it teaches a Cypher habit Lab 1 spends its time arguing against.
+- **The routing rules live in the prompt.** Two of them earned their place from measured failures. The refusal rule: never substitute a limit, threshold or ceiling for a measurement. The direction rule: an `AFFECTS_AIRCRAFT` arrow written backwards was fixed with nine lines of schema text rather than by dropping the arrow, because dropping it teaches a Cypher habit Lab 1 spends its time arguing against.
 
   **DECIDED:** Add both rules with the failure that produced each one. A prompt rule with its bug attached is a lesson; the same rule without it is a wall of text nobody reads. The direction rule is the better of the two to lead with, because "we fixed the prompt rather than the schema" is the non-obvious call.
 

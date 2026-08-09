@@ -586,12 +586,16 @@ def build_memory_settings(
     and its validator accepts anything satisfying the Protocol, which is the
     whole extension point.
 
-    ``entity_types`` is deliberately short. Entities the library creates take
-    a label derived from their type, so an entity of type ``SYSTEM`` becomes
-    ``:System:Entity`` and collides with the fleet's own ``System`` label. A
-    ``MATCH (s:System)`` in Lab 2 or Lab 4 would then return conversation
-    artifacts next to real systems. One type, ``AIRCRAFT``, matched to the
-    one label this lab adopts, keeps that from happening.
+    ``entity_types`` is deliberately short. On its automatic extraction path
+    the library adds the type verbatim as a second label, so an entity of
+    type ``SYSTEM`` becomes ``:Entity:SYSTEM``. Neo4j labels are case
+    sensitive, so that does not break ``MATCH (s:System)`` in Lab 2 or Lab 4.
+    What it leaves is an instance carrying both ``:System`` and ``:SYSTEM``,
+    holding unrelated things and differing only in case, which is a graph
+    nobody can read six months later. One type, ``AIRCRAFT``, matched to the
+    one label this lab adopts, keeps that off the instance. On the
+    explicit-mentions path this lab actually uses, the library adds no type
+    label at all: ``MERGE (e:Entity {name, type})`` and nothing more.
 
     ``skip_subsystems`` is the other deliberate narrowing. The four named
     there cover memory this lab never writes, and each one costs indexes on

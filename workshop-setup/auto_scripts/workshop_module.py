@@ -2,11 +2,11 @@
 
 ``lab/workshop.py`` is this course's one definition of its Databricks objects:
 the catalog, the four schemas, the volume, the DLT pipeline, the eight gold
-tables and the comments a Genie space reads. The Vocareum hook calls it, and the
+tables and the comments a Genie Agent reads. The Vocareum hook calls it, and the
 two admin scripts beside this file call it too, which is the whole point. The
 previous arrangement had a second copy of the catalog name, the schema names and
 eighteen COMMENT statements living in ``src/databricks_setup/``; those two copies
-diverged once already and the symptom was a Genie space answering plausibly
+diverged once already and the symptom was a Genie Agent answering plausibly
 rather than correctly.
 
 There is no ``sys.path`` trick that finds ``voclab.py``, so this does not try

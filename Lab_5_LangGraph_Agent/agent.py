@@ -6,12 +6,12 @@ A Model Serving container has none of that. This module is the same agent with
 those two assumptions removed:
 
 - **Credentials arrive as environment variables**, not from ``dbutils``. The
-  endpoint is deployed with ``NEO4J_URI``, ``NEO4J_USERNAME`` and
-  ``NEO4J_PASSWORD`` bound to ``{{secrets/<scope>/<key>}}`` references, so the
-  password is resolved by the serving control plane and never written down.
-  ``NEO4J_DATABASE`` travels the same way when the scope carries it.
+  endpoint is deployed with ``NEO4J_URI``, ``NEO4J_USERNAME``,
+  ``NEO4J_PASSWORD`` and ``NEO4J_DATABASE`` bound to
+  ``{{secrets/<scope>/<key>}}`` references, so the password is resolved by the
+  serving control plane and never written down. All four are required.
 - **Everything else arrives as model config**, logged beside the model, so the
-  Genie space the endpoint may reach is fixed at log time and matches the
+  Genie Agent the endpoint may reach is fixed at log time and matches the
   resource list :func:`build_resources` declares in the same call.
 
 The nodes themselves come from ``tools.py`` unchanged. Only the wiring is
@@ -112,7 +112,7 @@ ENV_NEO4J_PASSWORD = "NEO4J_PASSWORD"
 ENV_NEO4J_DATABASE = "NEO4J_DATABASE"
 
 # Everything that is not a credential travels as model config instead, logged
-# with the model. genie_agent_id in particular has to agree with the space
+# with the model. genie_agent_id in particular has to agree with the agent
 # build_resources declares at log time, and both come off the same notebook
 # variable rather than out of two places that can drift.
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -146,12 +146,12 @@ def build_resources(genie_agent_id: str, warehouse_id: str) -> list[Any]:
 
     The serving principal starts with access to nothing, and MLflow grants it
     exactly this list at log time. Four kinds of thing are on it: the Genie
-    space, the warehouse Genie's SQL actually runs on, the eight gold tables
+    Agent, the warehouse Genie's SQL actually runs on, the eight gold tables
     that SQL reads, and the two model endpoints that generate text and embed.
 
-    The Genie space alone is the tempting short list, and it deploys cleanly
+    The Genie Agent alone is the tempting short list, and it deploys cleanly
     and then fails at request time with an authorization error naming the SQL
-    endpoint. Declaring a space grants the space, not what is underneath it.
+    endpoint. Declaring an agent grants the agent, not what is underneath it.
 
     Aura is not here and cannot be: it is not a Databricks resource. It travels
     as a credential instead, through :func:`serving_environment_vars`.
@@ -167,7 +167,10 @@ def build_resources(genie_agent_id: str, warehouse_id: str) -> list[Any]:
     )
 
     return [
-        DatabricksGenieSpace(genie_agent_id=genie_agent_id),
+        # The MLflow class and its keyword still carry Genie's former name.
+        # Databricks renamed the product to Genie Agent; the resource API did
+        # not follow, so the keyword stays genie_space_id.
+        DatabricksGenieSpace(genie_space_id=genie_agent_id),
         DatabricksSQLWarehouse(warehouse_id=warehouse_id),
         *[
             DatabricksTable(table_name=f"{GOLD_SCHEMA}.{table}")

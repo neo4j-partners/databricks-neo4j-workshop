@@ -176,7 +176,7 @@ fifteen minutes after you stopped watching.
 
 ```python
 [
-    DatabricksGenieSpace(genie_agent_id=...),      # the space genie_node asks
+    DatabricksGenieSpace(genie_space_id=...),      # the agent genie_node asks
     DatabricksSQLWarehouse(warehouse_id=...),      # where that SQL actually runs
     *[DatabricksTable(table_name=...) for ...],    # the gold tables the SQL reads
     DatabricksServingEndpoint(endpoint_name=...),  # the LLM
@@ -184,11 +184,11 @@ fifteen minutes after you stopped watching.
 ]
 ```
 
-**The trap: a Genie space grant is not a SQL warehouse grant.**
+**The trap: a Genie Agent grant is not a SQL warehouse grant.**
 
-- A model logged with the space and not the warehouse **deploys cleanly and routes correctly**
+- A model logged with the agent and not the warehouse **deploys cleanly and routes correctly**
 - Then every sensor question comes back `is not authorized to use or monitor this SQL Endpoint`
-- **Declaring a space grants the space, not what is underneath it.** Two resources, two grants
+- **Declaring an agent grants the agent, not what is underneath it.** Two resources, two grants
 
 <!--
 Four kinds of thing are on the list, and the list lives in

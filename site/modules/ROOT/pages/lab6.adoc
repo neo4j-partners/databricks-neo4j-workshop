@@ -4,6 +4,8 @@ The Lab 5 agent answers one question at a time. Ask it about `N10011`, then ask 
 
 That last part is the whole lab. Most memory products keep conversations in a store of their own, so "which aircraft do people keep asking about" and "which aircraft is actually failing" end up in two systems joined by hand. Here a remembered aircraft **is** the `Aircraft` node Lab 2 loaded, and one `MATCH` walks from a technician's question to a maintenance record.
 
+TIP: Ready to start? Jump to the xref:lab6-instructions.adoc[Lab 6 Instructions] for the step-by-step walkthrough.
+
 .**At a Glance**
 
 * **Two nodes added, three tools untouched.** `recall` before the supervisor, `remember` after synthesis. The supervisor is Lab 5's node with a `\{recalled}` block in front of its prompt.
@@ -12,7 +14,7 @@ That last part is the whole lab. Most memory products keep conversations in a st
 * **Explicit mentions, not LLM extraction.** An agent already knows which entities its tools touched, so it can name them instead of paying a model to rediscover them.
 * **Memory is routing context for the supervisor, not a fourth tool.** Nobody asks memory a question, and `recall` runs once per question rather than once per tool call.
 * **It rewrites the question, not only the route.** Two measured failures forced that, and both are below.
-* **This is the first lab that writes to your graph.** Everything it writes is removable except the adoption, which is designed to cost nothing.
+* **This is the first lab that writes to your graph.** Everything it writes is removable, adoption included, and the instructions show how.
 
 == The Shape of the Agent
 
@@ -42,7 +44,11 @@ The memory library wants to hang conversations off `(:Entity {name, type})` node
 
 **Adoption** stops that. It adds the `:Entity` label and the library's `id`, `type` and `name` properties to nodes you already have. Afterwards there is one `N10004`: still an `Aircraft` with its flights and maintenance events, and now also an entity a message can point at.
 
-Adoption writes to nodes you already have, which makes it the one irreversible step in the workshop. Run the dry run, read the counts, then commit.
+image::lab6-memory-graph.svg[Lab 6 memory graph,align=center]
+
+The conversation half and the fleet half meet on one node, and adoption is what puts them there.
+
+Adoption writes to nodes you already have, which makes it the one step in the workshop that changes data an earlier lab loaded. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and xref:lab6-instructions.adoc#cleaning-up[the instructions] show it along with the guard that keeps a memory cleanup from taking your fleet with it.
 
 .Why the lab adopts `Aircraft` and refuses four other labels
 [%collapsible]
@@ -53,7 +59,7 @@ The obvious move is to adopt everything: `System`, `Component`, `Sensor`, `Docum
 
 `Aircraft` has no `type` of its own, so adopting it overwrites nothing, and the headline query below needs `Aircraft` and nothing else. `memory.py` refuses the other four by name rather than trusting the notebook to get it right, and the notebook shows the refusal on purpose before it shows the successful adoption.
 
-The same reasoning constrains what memory is allowed to create. Entities the library writes take a label derived from their type, so an entity of type `SYSTEM` becomes `:System:Entity` and collides with the fleet's own label. The lab declares one entity type, `AIRCRAFT`, matched to the one label it adopts.
+The same reasoning constrains what memory is allowed to create, though less sharply than it first looks. On its automatic extraction path the library adds an entity's type verbatim as a second label, so an entity of type `SYSTEM` becomes `:Entity:SYSTEM`. Neo4j labels are case sensitive, so that does not break `MATCH (s:System)`. What it leaves is an instance carrying both `:System` and `:SYSTEM`, differing only in case and holding unrelated things, which is a graph nobody can read six months later. The lab declares one entity type, `AIRCRAFT`, matched to the one label it adopts. On the explicit-mentions path the lab actually uses, the library adds no type label at all.
 ====
 
 == The Headline Query
@@ -121,7 +127,32 @@ The scorer now requires the expected aircraft to appear and no other aircraft to
 
 Neo4j also publishes an earlier taxonomy that borrows LangGraph's semantic, episodic and procedural split. The workshop uses the one above because it is what the code participants run is built on.
 
-The participant notebook writes short-term memory only. Long term and reasoning are shown in `02_instructor_demos.ipynb`, an instructor-driven notebook that ships to every workspace: a correction that supersedes an earlier belief rather than contradicting it, a preference scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes. The last of those is the one to watch, because it turns routing from a fixed prompt into something that improves with use, and its audit query walks from an aircraft back through tool calls to the reasoning that produced them.
+The participant notebook writes short-term memory only. Long term and reasoning are shown in `02_instructor_demos.ipynb`, an instructor-driven notebook that ships to every workspace: a correction that supersedes an earlier belief rather than contradicting it, a preference scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes. The last of those is the one to watch, because it turns routing from a fixed prompt into something that improves with use.
+
+== Going Further: Reasoning Traces
+
+Short term is what the team said. Long term is what the agent knows. The third layer records what the agent **did**, and it is the layer a vector store has nowhere to put.
+
+`neo4j-agent-memory` writes a `ReasoningTrace` per task, ordered `ReasoningStep` nodes under it by `HAS_STEP`, a `ToolCall` per step by `USES_TOOL`, and a `TOUCHED` edge from the step to every entity that step reached. Demo 4 records one trace by hand: a `cypher_node` call that failed, because the graph holds no time series, then a `genie_node` call that worked.
+
+Reading it back is one query.
+
+[source,cypher]
+----
+MATCH (:ReasoningTrace)-[:HAS_STEP]->(s:ReasoningStep)-[:USES_TOOL]->(tc:ToolCall)
+MATCH (s)-[:TOUCHED]->(ac:Aircraft)
+RETURN ac.tail_number AS aircraft, tc.tool_name AS tool,
+       tc.status AS status, s.observation AS observation
+ORDER BY tc.tool_name
+----
+
+Walking that path answers two questions at once, and neither is answerable from a log line. **Which agent decisions touched this aircraft**, because the traversal starts at `ac` and every step that reached it is one hop away. And **which of them failed**, because `tc.status` is on the tool call and `s.observation` says what came back. An incident review that begins "why did the agent say that about `N10011`" is a traversal rather than a support ticket.
+
+NOTE: `TOUCHED` hangs off the `ReasoningStep`, not off the `ToolCall`. The traversal is step to entity for the audit and step to call for the mechanics.
+
+`MATCH (s)-[:TOUCHED]->(ac:Aircraft)` only resolves because the participant notebook adopted the fleet's `Aircraft` nodes. Without adoption the library would have written its own `N10011` entity and the pattern returns nothing, which is the headline query's lesson arriving from a different direction.
+
+The library also keeps a running score per tool, `total_calls`, `successful_calls` and `failed_calls` on a `Tool` node, updated on every call. That is what a routing policy could read instead of a prompt.
 
 == What Memory Costs
 
@@ -177,6 +208,6 @@ That is the closing argument of the workshop, and it is the argument xref:worksh
 
 == Next Steps
 
-Open `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your workspace, set `GENIE_AGENT_ID` to your own space, and run it. Lab 5's folder has to sit beside it, because this notebook imports Lab 5's tools rather than carrying a copy.
+Continue to xref:lab6-instructions.adoc[Lab 6 Instructions] to work through the notebook step by step, from the pinned install to the redeploy, and to remove everything it wrote afterwards.
 
 `memory.py` sits next to the notebooks and is worth opening in an editor rather than a cell. `Lab_6_Agent_Memory/README.md` documents what it exports and the constraints that come with it.

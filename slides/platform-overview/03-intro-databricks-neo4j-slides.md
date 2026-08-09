@@ -78,7 +78,7 @@ slides break down what each platform actually does.
 - **Governs** documents, images, unstructured files
 - **Databricks SQL** at petabyte scale, real-time streaming, data science
 - **Unity Catalog** (unified governance across data and AI), **Delta Lake** (open lakehouse storage), **Lakebase** (integrated OLTP)
-- **Mosaic AI** (agent systems), **AI/BI Genie** (conversational analytics), **Agent Bricks** (agent control plane)
+- **Mosaic AI** (agent systems), **Genie** (conversational analytics), **Agent Bricks** (agent control plane)
 
 <!--
 Databricks handles structured, semi-structured, and unstructured data.

@@ -11,7 +11,7 @@ objects and the hooks call it.
 Read that as an instruction rather than a description. A second copy of the
 table definitions is how this repository already broke once: the retired copy
 under `auto_scripts/` defined four gold tables where the current definition
-publishes eight, and the symptom was a Genie space that answered plausibly
+publishes eight, and the symptom was a Genie Agent that answered plausibly
 rather than correctly, which is the hardest class of workshop failure to notice
 in a room of thirty people. Provisioning the workshop by hand alongside the
 hooks does not produce a spare. It produces a second catalog whose tables
@@ -342,7 +342,7 @@ clear the graph with `MATCH (n) DETACH DELETE n`.
 **Genie answers plausibly rather than correctly**
 The table and column comments are what it grounds against, and
 `provision_genie` applies them. Confirm the eight gold tables carry comments
-before adding sample questions to the space.
+before adding sample questions to the agent.
 
 **Gold tables missing after a clean provision**
 They are the DLT pipeline's output. `workshop.py` waits on the update to a 900

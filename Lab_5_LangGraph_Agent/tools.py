@@ -788,7 +788,7 @@ def build_genie_node(
     *,
     max_rows: int = 20,
 ) -> Callable[[AgentState], dict[str, Any]]:
-    """Build the node that asks a Genie space a question.
+    """Build the node that asks a Genie Agent a question.
 
     Genie answers in two pieces. A text response, and zero or more attachments
     holding the SQL it generated plus that SQL's result set. Both are useful to
@@ -796,7 +796,7 @@ def build_genie_node(
     computed, and the rows are the numbers.
 
     Args:
-        space_id: The Genie space to ask. Each participant creates their own in
+        space_id: The Genie Agent to ask. Each participant creates their own in
             Lab 4 Part A, so this comes from the notebook's configuration cell.
         workspace_client: A ``databricks.sdk.WorkspaceClient``.
         max_rows: Rows of the result set to keep.
@@ -815,7 +815,7 @@ def build_genie_node(
             return _record(
                 state,
                 "genie_node",
-                f"Genie space {space_id} could not be reached: {error}",
+                f"Genie Agent {space_id} could not be reached: {error}",
                 grounded=False,
             )
 
@@ -1382,8 +1382,10 @@ def open_driver_from_secrets(
 ) -> Any:
     """Open a Neo4j driver from the participant's secret scope.
 
-    The three credential values are read, used, and dropped inside this
-    function, so nothing in the notebook binds a password to a name.
+    The credential values are read, used, and dropped inside this function, so
+    nothing in the notebook binds a password to a name. A driver spans the whole
+    instance, so the database name plays no part here. Call
+    ``read_neo4j_secrets`` when a query needs it.
 
     Args:
         dbutils: The notebook's dbutils handle.

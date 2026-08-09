@@ -30,7 +30,7 @@ manifest.
 | SQL warehouse | `shared_warehouse` |
 
 Bronze and silver stay in `aircraft_pipeline` without `SELECT`, so a participant
-browsing Catalog, or picking tables for a Genie space, sees the eight gold
+browsing Catalog, or picking tables for a Genie Agent, sees the eight gold
 tables and nothing else.
 
 ### The eight gold tables
@@ -39,7 +39,7 @@ Published into `aircraft` by the `Fleet Digital Twin ETL` pipeline, in the order
 a reader meets them: the fleet, what is on it, what it did, then the two
 summaries Lab 4 asks Genie about.
 
-| Table | Comment the Genie space reads |
+| Table | Comment the Genie Agent reads |
 |-------|-------------------------------|
 | `aircraft` | Fleet of aircraft with tail numbers, models, and operators |
 | `systems` | Aircraft systems including engines, avionics, and hydraulics |
@@ -52,7 +52,7 @@ summaries Lab 4 asks Genie about.
 
 Ten column comments go on top of those, and eight `GRANT SELECT` statements
 follow. The comments are the reason a SQL warehouse is provisioned at all: Lab 4
-asks the space questions in English, and a space with no comments answers
+asks the agent questions in English, and an agent with no comments answers
 plausibly rather than correctly. `workshop.genie_statements()` is the list, and
 it is the only list.
 

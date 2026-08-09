@@ -156,7 +156,7 @@ Neo4j can also be registered as a **JDBC connection in Unity Catalog**, making g
 **How it works:**
 - A JDBC connection to Neo4j is configured in Unity Catalog with the Neo4j JDBC driver
 - The driver **automatically translates SQL into Cypher** — so users and tools write SQL, and Neo4j executes it as a graph query
-- Graph data can be queried directly or **materialized as Delta tables** for use in dashboards and Genie spaces
+- Graph data can be queried directly or **materialized as Delta tables** for use in dashboards and Genie Agents
 
 **Why it matters:**
 - **Unified governance** — graph data is managed under the same Unity Catalog access controls and lineage as everything else
@@ -215,9 +215,9 @@ This means an AI agent on Databricks can **explore and query Neo4j on its own** 
 
 ---
 
-## The Genie Space Agent
+## The Genie Agent
 
-The first agent lives entirely in Databricks and is built using **Genie Space**.
+The first agent lives entirely in Databricks and is built using **Genie Agent**.
 
 **What it does:** Answers questions about sensor readings and telemetry — anything that lives in Lakehouse tables.
 
@@ -262,12 +262,12 @@ The **supervisor** is an agent that sits above the other two and routes question
                 ┌─── Supervisor ───┐
                 |                  |
                 v                  v
-        Genie Space Agent    Neo4j MCP Agent
+        Genie Agent          Neo4j MCP Agent
         (Lakehouse / SQL)    (Graph / Cypher)
 ```
 
 It decides based on the nature of the question:
-- **Numbers and trends** → Genie Space Agent
+- **Numbers and trends** → Genie Agent
 - **Relationships and structure** → Neo4j MCP Agent
 - **Both needed** → Calls each agent in sequence, then combines the answers
 
@@ -312,7 +312,7 @@ There is another way to build this. Instead of connecting Neo4j as an MCP server
 
 ## Combining the Deployed Agent with Genie
 
-Once the Neo4j agent is running as a serving endpoint, you combine it with a Genie space subagent using the **Databricks Agent Bricks: Supervisor Agent** — built entirely through the workspace UI, no custom orchestration code required.
+Once the Neo4j agent is running as a serving endpoint, you combine it with a Genie Agent subagent using the **Databricks Agent Bricks: Supervisor Agent** — built entirely through the workspace UI, no custom orchestration code required.
 
 ```
                     User Question
@@ -321,7 +321,7 @@ Once the Neo4j agent is running as a serving endpoint, you combine it with a Gen
             ┌─── Supervisor Agent ───┐
             |           (no code)          |
             v                              v
-   Neo4j Agent Endpoint          Genie Space Agent
+   Neo4j Agent Endpoint          Genie Agent
    (deployed via MLflow)         (Lakehouse / SQL)
 ```
 

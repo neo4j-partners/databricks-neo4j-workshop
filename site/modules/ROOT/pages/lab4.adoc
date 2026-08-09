@@ -2,21 +2,19 @@
 
 Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, hourly-scale readings over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
 
-== Part A You Build, Part B You Watch
+== What You Build, and the Optional Demo Beside It
 
-This lab has two halves and they are not the same kind of exercise.
+* **The lab is the Genie Agent.** You build it over the Lakehouse telemetry, attach four gold tables to it, and ask it questions. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie Agent ID that Lab 5 and Lab 6 both consume.
+* **The compound AI agent is optional.** A no-code Supervisor Agent in Agent Bricks puts the Genie Agent and a Neo4j MCP agent behind one question box. It is optional because it needs a hosted MCP server and the Unity Catalog connection that fronts it, both outside the scope of the workshop. The instructor demos it. The procedure is in `Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`.
 
-* **Part A is yours.** You build a Genie space over the Lakehouse telemetry, attach four gold tables to it, and ask it questions. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie space ID that Lab 5 and Lab 6 both consume.
-* **Part B is a demonstration.** The instructor builds a no-code Supervisor Agent in Agent Bricks over a governed Neo4j MCP connection, against their own demo instance. You need no Aura instance, no MCP connection and no OAuth credential to watch it.
-
-**Neither one is the workshop's final architecture.** Lab 5 is, and it reaches the same routing behaviour in code against your own graph. Part B exists to show what the no-code path looks like and what it costs, which is a contrast worth seeing before you write the code version.
+**Neither one is the workshop's final architecture.** Lab 5 is, and it reaches the same routing behaviour in code against your own graph, with no MCP server needed. The demo exists to show what the no-code path looks like and what it costs, which is a contrast worth seeing before you write the code version.
 
 .**At a Glance**
 
 * **Agents** use the ReAct pattern (Reason + Act): perceive, reason, call tools, observe results, repeat
-* **Genie space** translates natural language to SQL for sensor telemetry analytics over Delta tables. **Part A, and you build it**
-* **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher). **Part B, instructor demo**
-* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both. **Part B, and Lab 5 rebuilds this in code**
+* **Genie Agent** translates natural language to SQL for sensor telemetry analytics over Delta tables. **This is what you build**
+* **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher). **Optional demo**
+* **Supervisor Agent** (Agent Bricks) routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both. **Optional demo, and Lab 5 rebuilds this in code**
 * One agent per platform prevents idiom mixing (SQL thinks in rows/aggregations, Cypher thinks in paths/patterns)
 
 == What Are Agents
@@ -54,7 +52,7 @@ Unity Catalog provides governance across all of these capabilities, so that mode
 Rather than a single product, Mosaic AI is the layer that the agent-specific tools build on. Genie uses Mosaic AI's model serving infrastructure to run its compound AI pipeline. Agent Bricks deploys agents to Mosaic AI's serverless compute and monitors them through MLflow tracing. The platform handles the operational concerns (model hosting, authentication, scaling, observability) so that agent development can focus on the reasoning and tool-calling logic that makes each agent useful.
 ====
 
-=== AI/BI Genie
+=== Genie
 
 Genie specializes in one problem: turning natural language questions into correct SQL. It is purpose-built for structured data analytics, translating conversational questions into queries, executing them against a SQL warehouse, and returning results as tables, summaries, and visualizations.
 
@@ -63,16 +61,16 @@ Genie specializes in one problem: turning natural language questions into correc
 ====
 Rather than relying on a single language model to handle everything from parsing the question to generating SQL to summarizing results, Genie operates as a compound AI system. Multiple specialized components work together: one parses the question, another generates SQL, another summarizes the result, and so on. This multi-component design lets the platform select the best-suited model for each subtask and evolve individual components independently.
 
-The accuracy of any natural-language-to-SQL system depends on how much context the model has about the data it queries. Genie draws its context from Unity Catalog metadata: table names and descriptions, column names and descriptions, primary and foreign key relationships, and sample column values. Domain experts configure **Genie spaces** by curating a set of tables (up to 25 per space), writing plain-text instructions that teach business terminology and rules, defining JOIN relationships, and supplying example SQL queries that demonstrate correct patterns. When a user's question matches a parameterized example query, Genie marks the response as **Trusted**, signaling that the answer follows a verified pattern rather than a generated one.
+The accuracy of any natural-language-to-SQL system depends on how much context the model has about the data it queries. Genie draws its context from Unity Catalog metadata: table names and descriptions, column names and descriptions, primary and foreign key relationships, and sample column values. Domain experts configure **Genie Agents** by curating a set of tables (up to 30 per agent), writing plain-text instructions that teach business terminology and rules, defining JOIN relationships, and supplying example SQL queries that demonstrate correct patterns. When a user's question matches a parameterized example query, Genie marks the response as **Trusted**, signaling that the answer follows a verified pattern rather than a generated one.
 
-Genie also provides a **Knowledge Store** where space authors can define structured business semantics:
+Genie also provides a **Knowledge Store** where agent authors can define structured business semantics:
 
 * **Column-level synonyms**
 * **Local join relationships**
 * **SQL measures** with filters and dimensions
 * **Prompt-matching rules**
 
-These refinements stay local to the space and do not alter the underlying Unity Catalog metadata, so multiple spaces can present different views of the same tables for different audiences. Every query Genie generates is read-only, which makes it safe to expose to business users who need answers without writing SQL themselves.
+These refinements stay local to the agent and do not alter the underlying Unity Catalog metadata, so multiple agents can present different views of the same tables for different audiences. Every query Genie generates is read-only, which makes it safe to expose to business users who need answers without writing SQL themselves.
 ====
 
 === Agent Bricks
@@ -89,16 +87,16 @@ The platform offers managed agent builders for common patterns:
 * **Custom LLM** handles specialized generation tasks like summarization and text transformation.
 * **Supervisor Agent** orchestrates multi-agent systems by routing questions to the right specialist. This is the builder most relevant to this lab.
 
-The Supervisor Agent supports up to 20 subagents of four types: Genie spaces for natural language analytics over structured data, agent endpoints for document-based Q&A, Unity Catalog functions for custom tool logic, and MCP servers for external services. Each subagent is registered with a name and a detailed description of its capabilities. The supervisor reads these descriptions to determine which subagent should handle each incoming question. When a question requires multiple subagents, the supervisor delegates to each and synthesizes a unified response. Access control flows through the platform: end users only reach subagents they have explicit permissions for.
+The Supervisor Agent supports up to 20 subagents of four types: Genie Agents for natural language analytics over structured data, agent endpoints for document-based Q&A, Unity Catalog functions for custom tool logic, and MCP servers for external services. Each subagent is registered with a name and a detailed description of its capabilities. The supervisor reads these descriptions to determine which subagent should handle each incoming question. When a question requires multiple subagents, the supervisor delegates to each and synthesizes a unified response. Access control flows through the platform: end users only reach subagents they have explicit permissions for.
 ====
 
 == Specialized Agents for Different Data Structures
 
 Two schemas, two query languages, and two sets of conventions in one prompt dilute focus. An agent that only knows about graph structure writes precise graph queries; an agent that knows about both starts mixing idioms. SQL thinks in rows, filters, and aggregations. Cypher thinks in paths, patterns, and traversals. The architecture separates concerns: one agent per platform, a supervisor to coordinate them.
 
-=== Genie Space: Sensor Telemetry Analytics
+=== Genie Agent: Sensor Telemetry Analytics
 
-The Genie space in this lab is configured against the Lakehouse sensor data: `sensor_readings`, `sensors`, `systems`, and `aircraft` tables registered in Unity Catalog. Domain instructions teach Genie the aircraft terminology (EGT, fuel flow, vibration amplitude) and the JOIN paths between tables. Example queries demonstrate the aggregation patterns that sensor analytics requires.
+The Genie Agent in this lab is configured against the Lakehouse sensor data: `sensor_readings`, `sensors`, `systems`, and `aircraft` tables registered in Unity Catalog. Domain instructions teach Genie the aircraft terminology (EGT, fuel flow, vibration amplitude) and the JOIN paths between tables. Example queries demonstrate the aggregation patterns that sensor analytics requires.
 
 .How Genie handles a sensor question
 [%collapsible]
@@ -121,19 +119,19 @@ Write operations are hidden entirely, so agents can never modify production data
 
 A supervisor agent sits above both specialists and routes questions based on their nature.
 
-image::lab-architecture-overview.svg[Part B instructor demo: an Agent Bricks supervisor routing to Genie and a Neo4j MCP agent]
+image::lab-architecture-overview.svg[An Agent Bricks supervisor routing to Genie and a Neo4j MCP agent]
 
 The supervisor does not answer questions itself. It reads the question, determines which data shape it targets, and routes to the right specialist. For questions that span both platforms, it decomposes the question into sub-tasks, sends each to the appropriate agent, and synthesizes a single answer.
 
-NOTE: The diagram above is the **Part B demo**, not the workshop's destination. You build the Genie space in Part A. The supervisor and its Neo4j MCP agent are Part B, which the instructor demonstrates against their own demo instance and MCP connection. Watching it requires no Aura instance, no MCP connection, and no OAuth credential from you. Lab 5 is where you build this routing yourself, in code, against your own graph.
+NOTE: The diagram above is the **optional demo**, not the workshop's destination. You build the Genie Agent. The supervisor and its Neo4j MCP agent sit outside the scope of the workshop, because they need a hosted MCP server and the Unity Catalog connection that fronts it. The instructor demos them. Lab 5 is where you build this routing yourself, in code, against your own graph.
 
-=== Part B and Lab 5, side by side
+=== The demo and Lab 5, side by side
 
-The same routing behaviour reached two ways. This contrast is the reason Part B is worth watching rather than skipping.
+The same routing behaviour reached two ways. This contrast is the reason the demo is worth watching rather than skipping.
 
 [cols="1,2,2"]
 |===
-| | Part B: Agent Bricks | Lab 5: LangGraph
+| | Optional demo: Agent Bricks | Lab 5: LangGraph
 
 | How it is built
 | A form. Name each subagent, describe what it does, save
@@ -148,11 +146,11 @@ The same routing behaviour reached two ways. This contrast is the reason Part B 
 | Whoever can merge to the repository, with the prompt under version control
 
 | What it costs to extend
-| A new subagent has to exist as an endpoint, a Genie space, a UC function or an MCP server first
+| A new subagent has to exist as an endpoint, a Genie Agent, a UC function or an MCP server first
 | A new tool is a Python function and a node, and the supervisor prompt gets a line
 |===
 
-Neither column is the right answer in general. Part B is faster to stand up and easier to hand to a non-engineer; Lab 5 is what you reach for when the routing rules themselves need testing, review and a git history.
+Neither column is the right answer in general. Agent Bricks is faster to stand up and easier to hand to a non-engineer; Lab 5 is what you reach for when the routing rules themselves need testing, review and a git history.
 
 == Query Routing Strategy
 
@@ -193,6 +191,6 @@ Neither column is the right answer in general. Part B is faster to stand up and 
 
 == Next Steps
 
-Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` to build your Genie space, and keep the space ID it gives you. Lab 5 reads it as `GENIE_AGENT_ID`, and losing it means rebuilding the space.
+Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` to build your Genie Agent, and keep the agent ID it gives you. Lab 5 reads it as `GENIE_AGENT_ID`, and losing it means rebuilding the agent.
 
-Then watch Part B, and continue to Lab 5, where the supervisor becomes code you own.
+Then continue to Lab 5, where the supervisor becomes code you own. If the instructor runs the optional compound agent demo, watch it first.

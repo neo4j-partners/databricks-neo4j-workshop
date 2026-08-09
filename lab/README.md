@@ -50,7 +50,7 @@ directory measured to exist on the machine a hook actually runs on.
 data generator writes there, the public setup notebook downloads from there, and
 the Vocareum archive reads from there. A copy would be a second owner of 28
 files, and the last time two copies of this workshop's definitions diverged the
-symptom was a Genie space answering questions wrong. Regenerating the data
+symptom was a Genie Agent answering questions wrong. Regenerating the data
 changes what the next upload sends, with nothing to remember to copy.
 
 Two files that run inside Vocareum are **not** here and should not be added:

@@ -13,8 +13,8 @@ Start at the [Workshop Overview](https://neo4j-partners.github.io/databricks-neo
 | 1. Neo4j Aura Setup | [`Lab_1_Aura_Setup`](./Lab_1_Aura_Setup) | 20 min |
 | 2. Databricks ETL to Neo4j | [`Lab_2_Databricks_ETL_Neo4j`](./Lab_2_Databricks_ETL_Neo4j) | 45 min |
 | 3. Semantic Search with GraphRAG | [`Lab_3_Semantic_Search`](./Lab_3_Semantic_Search) | 45 min |
-| 4 Part A. Genie Space | [`04_genie_agent.ipynb`](./Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | 30 min |
-| 4 Part B. No-code Supervisor | [`PART_B.md`](./Lab_4_Compound_AI_Agents/PART_B.md), an instructor demo you watch | 10 min |
+| 4. Genie Agent | [`04_genie_agent.ipynb`](./Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | 30 min |
+| 4, optional. Compound AI Agent | [`OPTIONAL_COMPOUND_AGENT_DEMO.md`](./Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md), a demo needing an MCP server | 10 min |
 | 5. LangGraph Agent | [`Lab_5_LangGraph_Agent`](./Lab_5_LangGraph_Agent) | 90 min |
 | 6. Agent Memory | [`Lab_6_Agent_Memory`](./Lab_6_Agent_Memory) | 75 min |
 | Appendix A. GDS Graph Analytics, optional | [`Appendix_A_GDS_Graph_Analytics`](./Appendix_A_GDS_Graph_Analytics) | 45 min |

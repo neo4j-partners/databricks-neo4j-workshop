@@ -68,7 +68,7 @@ The hooks build the Databricks side. They do not build the Neo4j side or the Lab
 - **Participant Aura instances.** Each participant creates their own Aura Free instance in Lab 1. Nothing to pre-provision.
 - **The instructor's demo Aura instance.** Lab 4 Part A queries Unity Catalog and touches no graph. Part B is a demo the instructor runs, against an instance the instructor loads before class with `workshop-setup/populate_aircraft_db`. No participant reads that instance and none needs credentials for it.
 - **The `neo4j_agentcore_mcp` Unity Catalog connection.** Part B needs an HTTP connection to a Neo4j MCP server pointed at the instructor's demo instance. `workshop-setup/MCP-MANUAL-SETUP.md` is the walkthrough. Participants watch the demo. They never create the connection and never call it.
-- **Genie spaces.** Each participant creates their own in Lab 4 Part A. Do not pre-create a shared one, because each participant needs to edit their space's instructions.
+- **Genie Agents.** Each participant creates their own in Lab 4 Part A. Do not pre-create a shared one, because each participant needs to edit their agent's instructions.
 
 ## Setting up a new course
 

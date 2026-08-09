@@ -49,7 +49,7 @@ was a second copy of something that now has exactly one owner.
 
 | Retired | Who owns that job now |
 | --- | --- |
-| `lakehouse_tables.py`, `load_lakehouse_data.py` | `lab/workshop.py`. The four tables it built are eight gold tables published by the `Fleet Digital Twin ETL` DLT pipeline, and the eighteen `COMMENT` statements a Genie space reads are `workshop.genie_statements()`. |
+| `lakehouse_tables.py`, `load_lakehouse_data.py` | `lab/workshop.py`. The four tables it built are eight gold tables published by the `Fleet Digital Twin ETL` DLT pipeline, and the eighteen `COMMENT` statements a Genie Agent reads are `workshop.genie_statements()`. |
 | `data_upload.py` | `workshop.provision_data`, which uploads the courseware out of the same hash-verified archive the hooks travel in. |
 | `cluster.py` | `voclab.py cluster-ensure`, called from `lab_setup.sh` and `user_setup.sh`. |
 | `libraries.py` | `voclab.py cluster-ensure`, from `VOC_COURSE_LIBRARIES` in `lab/course.env`. |
@@ -77,6 +77,6 @@ sees an archive.
 
 Why one definition rather than two: the gold `systems` and `sensors` tables were
 once renamed to match the copy in this directory, and the symptom of the two
-copies having drifted was a Genie space answering plausibly rather than
+copies having drifted was a Genie Agent answering plausibly rather than
 correctly. That is the hardest class of workshop failure to notice in a room of
 thirty people.

@@ -828,7 +828,7 @@
       "frameId": null,
       "roundness": null,
       "boundElements": [],
-      "text": "🧠 Supervisor Agent\n(Genie Space + Neo4j MCP Agent)",
+      "text": "🧠 Supervisor Agent\n(Genie Agent + Neo4j MCP Agent)",
       "fontSize": 16,
       "fontFamily": 9,
       "textAlign": "center",
@@ -839,7 +839,7 @@
       "updated": 1770709481623,
       "link": null,
       "locked": false,
-      "originalText": "🧠 Supervisor Agent\n(Genie Space + Neo4j MCP Agent)",
+      "originalText": "🧠 Supervisor Agent\n(Genie Agent + Neo4j MCP Agent)",
       "autoResize": true,
       "lineHeight": 1.5625
     },

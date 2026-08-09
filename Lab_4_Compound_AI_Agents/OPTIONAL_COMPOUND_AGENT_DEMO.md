@@ -1,19 +1,14 @@
-# Part B: Multi-Agent Supervisor for Aircraft Intelligence (Instructor Demo)
+# Optional: Compound AI Agent over Genie and Neo4j MCP
 
-> **Watch this one. Do not build it.**
+> **This section is optional.** It requires a hosted Neo4j MCP server and the Unity Catalog connection that fronts it, both of which are outside the scope of the workshop. The instructor demos it.
 >
-> Part B is a demonstration the instructor runs from the front of the room. Follow along on screen. You do not build the supervisor yourself, and you need nothing from your own account to see it work:
-> - **No Aura instance.** The demo queries the instructor's demo instance, not yours.
-> - **No MCP connection.** The Unity Catalog connection lives in the instructor's workspace.
-> - **No OAuth credential.** The client id and secret belong to the instructor's setup and are never handed out.
+> **Why it is here.** It takes the Genie agent you built in the lab and makes it one half of a compound AI agent. A supervisor sits above it and a second agent queries Neo4j over MCP, so one question box reaches both the Lakehouse and the graph. Agent Bricks Multi-Agent Supervisor gets there through configuration alone, with no code. A Unity Catalog HTTP connection using OAuth2 M2M against a hosted MCP server is what governed agent access to Neo4j looks like in production.
 >
-> **Why it is in the workshop.** The demo shows the same routing architecture as Lab 5, built with no code and with centrally governed access to Neo4j. Agent Bricks Multi-Agent Supervisor reaches a working system through configuration alone. A Unity Catalog HTTP connection with OAuth2 M2M against a hosted MCP server is how governed agent access to Neo4j looks in production. Seeing one architecture from two directions is the point.
+> **[Lab 5](../Lab_5_LangGraph_Agent)** builds the same routing in code, against your own graph, and it is where the lab continues.
 >
-> **[Lab 5](../Lab_5_LangGraph_Agent)** is your continuation from Part A. It builds the same routing in code, against your own graph.
->
-> **Instructors:** the full procedure below is the record of how the demo is built. Everything from Prerequisites down is written for the person running it.
+> **Instructors:** everything from Prerequisites down is the procedure for building the demo.
 
-The supervisor routes questions to either the **Genie space** for sensor analytics or the **Neo4j MCP agent** for graph relationships. Natural language queries then span both data sources.
+The supervisor routes questions to either the **Genie Agent** for sensor analytics or the **Neo4j MCP agent** for graph relationships. Natural language queries then span both data sources.
 
 **Demo runtime:** about 10 minutes on screen. Build it ahead of class.
 
@@ -22,12 +17,12 @@ The supervisor routes questions to either the **Genie space** for sensor analyti
 ## Prerequisites
 
 The instructor running the demo needs:
-- A Genie space in the demo workspace, built as in **Part A**. The current one is
-  `aircraft-genie`, space id `01f1661b55731a0293c3f84ac9c5ba52`
+- A Genie Agent in the demo workspace, built as in [`04_genie_agent.ipynb`](./04_genie_agent.ipynb). The
+  current one is `aircraft-genie`, agent id `01f1661b55731a0293c3f84ac9c5ba52`
 - Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft`, meaning tables and volume
 - The `neo4j_agentcore_mcp` Unity Catalog connection, created ahead of time per [`MCP-MANUAL-SETUP.md`](../workshop-setup/MCP-MANUAL-SETUP.md)
 
-> **The graph behind the demo.** The MCP server points at the instructor's demo Aura instance, loaded before class with `workshop-setup/populate_aircraft_db`. It holds the complete dataset: the full fleet with all systems, components, sensors, maintenance events, flights, and delays. Participants never connect to it and never need credentials for it.
+> **The graph behind the demo.** The MCP server points at the instructor's demo Aura instance, loaded before class with `workshop-setup/populate_aircraft_db`. It holds the complete dataset: the full fleet with all systems, components, sensors, maintenance events, flights, and delays. Nobody in the room connects to it or needs credentials for it.
 
 ---
 
@@ -88,14 +83,13 @@ Which aircraft had critical maintenance events?
 
 ### 3.1 Add and Configure the External MCP Server
 
-1. In the supervisor configuration under **Configure Agents**, click **+ Add**
-2. From the **Type** dropdown, select **External MCP Server**
-3. From the **Unity Catalog connection** dropdown, select `neo4j_agentcore_mcp`
-4. The **Agent Name** `mcp-neo4j-agentcore-mcp` will auto-populate
+1. Under **Tools and sub-agents** in the left side pane, click **External MCP server**
+2. From the **Unity Catalog connection** dropdown, select `neo4j_agentcore_mcp`
+3. The **Agent Name** `mcp-neo4j-agentcore-mcp` will auto-populate
 
 ![MCP Connection Configuration](../site/modules/ROOT/images/lab4-mcp-connection.png)
 
-5. In the **Describe the content** field, paste the following. The supervisor uses this description to decide which agent handles each question, so detail matters:
+4. In the **Describe the content** field, paste the following. The supervisor uses this description to decide which agent handles each question, so detail matters:
 
 ```
 Queries the Neo4j knowledge graph to explore aircraft relationships, topology, and operational data.
@@ -135,20 +129,19 @@ DO NOT USE FOR:
 
 ---
 
-## Step 4: Add the Genie space Agent
+## Step 4: Add the Genie Agent
 
-### 4.1 Add Genie space
+### 4.1 Add Genie Agent
 
-1. Click **+ Add** to add another agent
-2. From the **Type** dropdown, select **Genie space**
-3. Select the demo workspace's own Genie space, `aircraft-genie`, space id
-   `01f1661b55731a0293c3f84ac9c5ba52`
+1. Under **Tools and sub-agents** in the left side pane, click **Genie Agent**
+2. From the dropdown that appears, select the demo workspace's own Genie Agent,
+   `aircraft-genie`, agent id `01f1661b55731a0293c3f84ac9c5ba52`
 
-> **Pick it by id, not by name.** Part A has every participant title their space
+> **Pick it by id, not by name.** The lab has everyone title their agent
 > `Aircraft Sensor Analyst <THEIR INITIALS>`, so there is no one name to look up
 > and nothing named `Aircraft Sensor Analyst` in the demo workspace. The id is in
-> the space's URL, after `/genie/rooms/`. Substitute your own id if you built the
-> demo space yourself rather than reusing `aircraft-genie`.
+> the agent's URL, after `/genie/rooms/`. Substitute your own id if you built the
+> demo agent yourself rather than reusing `aircraft-genie`.
 
 ### 4.2 Configure the Genie Subagent
 
@@ -216,7 +209,7 @@ You are an intelligent coordinator for aircraft analytics. Your role is to under
 
 ## Available Agents
 
-### sensor_data_agent (Genie space - Unity Catalog SQL)
+### sensor_data_agent (Genie Agent - Unity Catalog SQL)
 Use for questions about:
 - Sensor readings and telemetry data
 - Time-series analytics (averages, trends, rolling windows)
@@ -345,6 +338,8 @@ Expected behavior:
 2. Get maintenance events from mcp-neo4j-agentcore-mcp
 3. Combine and present results
 
+> **What a weak answer looks like.** It answers only half the question, or it answers the second half about the whole fleet rather than about the aircraft the first half returned. Watch for that, because these two tests are the point of the whole demo. Neither subagent can answer them alone.
+
 ---
 
 ## Step 8: Improve Through Feedback
@@ -402,11 +397,11 @@ print(response.json())
 
 The demo shows a multi-agent system that combines two purpose-built data platforms:
 
-- **Genie + Lakehouse for time-series data** — SQL-powered analytics over sensor telemetry readings, ideal for aggregations, trends, and statistical analysis
-- **Neo4j for rich relational data** — graph-powered traversals across aircraft topology, maintenance events, flights, and delays, ideal for relationship queries and multi-hop navigation
-- **Intelligent routing** — the supervisor directs each question to the right data source automatically
-- **Cross-source synthesis** — complex questions that span both systems are answered by querying each sequentially and combining the results
-- **Natural language access** — users ask questions without needing SQL or Cypher knowledge
+- **Genie plus Lakehouse for time-series data.** SQL analytics over sensor telemetry readings, right for aggregations, trends, and statistics.
+- **Neo4j for relationship data.** Graph traversals across aircraft topology, maintenance events, flights, and delays, right for relationship queries and multi-hop navigation.
+- **Intelligent routing.** The supervisor directs each question to the right data source on its own.
+- **Cross-source synthesis.** Questions that span both systems get answered by querying each in turn and combining the results.
+- **Natural language access.** Users need neither SQL nor Cypher.
 
 ---
 
@@ -415,7 +410,7 @@ The demo shows a multi-agent system that combines two purpose-built data platfor
 ### "Agent not responding"
 - Check MCP connection status in **Catalog** > **Connections**
 - Verify Neo4j instance is running
-- Test Genie space independently in AI Playground
+- Test Genie Agent independently in AI Playground
 - Ensure user has `USE CONNECTION` permission on the MCP connection
 
 ### "Wrong agent selected"
@@ -432,11 +427,11 @@ The demo shows a multi-agent system that combines two purpose-built data platfor
 ### "SQL query failed"
 - Verify table names in Unity Catalog: `databricks-neo4j-workshop.aircraft`
 - Check column names match documentation
-- Ensure Genie space has access to all required tables
+- Ensure Genie Agent has access to all required tables
 - Test queries directly in SQL Editor first
 
 ### "Permission denied"
-- For Genie space: User needs access to the space AND underlying data tables
+- For Genie Agent: User needs access to the agent AND underlying data tables
 - For MCP server: User needs `USE CONNECTION` permission on the Unity Catalog connection
 - For supervisor: User needs `CAN QUERY` permission on the agent endpoint
 
@@ -474,7 +469,7 @@ Show maintenance events for aircraft with the lowest fuel efficiency
 
 ## Next Steps
 
-Participants continue to **[Lab 5](../Lab_5_LangGraph_Agent)**, which builds this same routing in code against their own graph.
+**[Lab 5](../Lab_5_LangGraph_Agent)** builds this same routing in code, against your own graph and with no MCP server needed.
 
 Extensions worth showing or mentioning during the demo:
 

@@ -1,13 +1,13 @@
 = Lab 5: The LangGraph Supervisor Agent
 
-Lab 4 Part B showed a supervisor built from a form. This lab builds the same routing behaviour in code, against your own graph, and deploys it as an endpoint you own. It is the lab the previous four have been assembling parts for: the Genie space from Part A, the fleet graph from Lab 2, and the GraphRAG retrievers from Lab 3, all reachable from one question.
+Lab 4 Part B showed a supervisor built from a form. This lab builds the same routing behaviour in code, against your own graph, and deploys it as an endpoint you own. It is the lab the previous four have been assembling parts for: the Genie Agent from Part A, the fleet graph from Lab 2, and the GraphRAG retrievers from Lab 3, all reachable from one question.
 
 .**At a Glance**
 
 * **LangGraph** models the agent as a **state graph**: nodes that read and write a shared state object, and edges that decide what runs next.
 * **One supervisor node, three tool nodes.** `genie_node` for SQL over Delta telemetry, `cypher_node` for traversal over your own Aura instance, `graphrag_node` for a `VectorCypherRetriever` over the Lab 3 manual chunks.
 * **Every tool returns to the supervisor**, which is free to pick again. That edge is the difference between a supervisor and a router.
-* **The prompt is the artifact.** Two rules in it were each written to fix a measured failure.
+* **The routing rules live in the prompt.** Two of them were each written to fix a measured failure.
 * **A direct Bolt driver**, not an MCP server. Part B's MCP connection is an admin-managed Unity Catalog object, and one per participant is not a thing a classroom can stand up.
 * **Deployment is its own beat.** Logged to Unity Catalog, served as an endpoint that authenticates as a **service principal** rather than as you.
 
@@ -19,7 +19,7 @@ A router picks one tool and is done. This supervisor sees what came back and get
 
 === The three tools
 
-**`genie_node`** asks your Genie space, which writes SQL over the four Lakehouse tables and runs it. This is the only tool that can see a sensor reading. Your graph has `Sensor` nodes with no readings on them, because timestamped values at that volume belong in Delta, where scanning them is cheap.
+**`genie_node`** asks your Genie Agent, which writes SQL over the four Lakehouse tables and runs it. This is the only tool that can see a sensor reading. Your graph has `Sensor` nodes with no readings on them, because timestamped values at that volume belong in Delta, where scanning them is cheap.
 
 **`cypher_node`** generates Cypher from the question and runs it in a read transaction. The schema it is given is the one your graph actually has, which matters: a schema promising nodes that are not there produces queries returning zero rows and an agent that reports it found nothing. A failed query gets one retry with its error message attached, because most text-to-Cypher failures are a mistyped property or a relationship pointing the wrong way, and the error says which.
 
@@ -31,9 +31,9 @@ A router picks one tool and is done. This supervisor sees what came back and get
 The tail walks sideways along `NEXT_CHUNK`, so a procedure split across a chunk boundary arrives whole, and upward through the `Document` to the aircraft the manual applies to. Neither of those facts is in the embedding. Both are one hop away in the graph. This is the concrete answer to "what does GraphRAG add to vector search", and it is why Lab 3 came before this one.
 ====
 
-== Why the Prompt Is the Lab
+== Routing Lives in the Prompt
 
-The wiring is about thirty lines and it is not the interesting part. Two of the tools end in a Neo4j traversal, so a supervisor that describes its tools by what they do at the *end* cannot tell them apart. It sends manual questions to Cypher, where they return nothing, because manual text is not a property you can filter on.
+The wiring is about thirty lines. What decides which tool runs is not in it. Two of the tools end in a Neo4j traversal, so a supervisor that describes its tools by what they do at the *end* cannot tell them apart. It sends manual questions to Cypher, where they return nothing, because manual text is not a property you can filter on.
 
 The prompt therefore routes on where the question **starts**:
 
@@ -133,7 +133,7 @@ The second notebook logs the same graph to Unity Catalog as an MLflow `Responses
 ====
 **Resources and credentials are different mechanisms.** Databricks objects are declared at log time and granted to the serving principal from that list. Your Aura password cannot be declared that way, so it travels as a secret reference in the endpoint's environment block and resolves at startup.
 
-**A Genie space grant is not a SQL warehouse grant.** A model logged with the Genie space and not the warehouse underneath it deploys cleanly, routes correctly, and answers every sensor question with `is not authorized to use or monitor this SQL Endpoint`. Two resources, two grants.
+**A Genie Agent grant is not a SQL warehouse grant.** A model logged with the Genie Agent and not the warehouse underneath it deploys cleanly, routes correctly, and answers every sensor question with `is not authorized to use or monitor this SQL Endpoint`. Two resources, two grants.
 
 **Pin the requirements.** Inferred requirements read the cluster, and a cluster carrying the Lab 6 memory wheel produces a requirement that resolves from no index. The container then fails to build, about fifteen minutes after you stopped watching.
 ====

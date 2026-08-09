@@ -38,7 +38,7 @@ One supervisor, three tools, one question that needs all of them
 
 - **Lab 2 gave you a fleet graph:** aircraft, systems, components, flights, maintenance history, in your own Aura instance
 - **Lab 3 gave you the manuals:** chunked, embedded, with a retriever that walks out from a matched passage
-- **Lab 4 Part A gave you a Genie space:** natural language to SQL over the Lakehouse telemetry
+- **Lab 4 Part A gave you a Genie Agent:** natural language to SQL over the Lakehouse telemetry
 - **None of the three answers a real question on its own.** This lab builds the thing that decides which one to reach for
 
 <!--
@@ -72,7 +72,7 @@ slide's only real content, and the next two slides unpack it.
 
 ## The Three Tools
 
-- **`genie_node`:** SQL over the Delta telemetry, through your Genie space. Every measured value and every aggregate over measured values
+- **`genie_node`:** SQL over the Delta telemetry, through your Genie Agent. Every measured value and every aggregate over measured values
 - **`cypher_node`:** text to Cypher over your own Aura instance, run in a read transaction, with one retry that carries the error message back to the model
 - **`graphrag_node`:** a `VectorCypherRetriever` over the Lab 3 manual chunks. Embed the question, take the closest chunks, then run a Cypher tail from each hit
 
@@ -399,7 +399,7 @@ binds a password to a name.
 - **Every tool returns to the supervisor.** That loop, not a single decision, is what lets one question reach three stores
 - **`cypher_node` and `graphrag_node` are adjacent** because the GraphRAG retriever has a Cypher tail. Route on where the question *starts*, not on what a tool does at the end
 - **Two prompt rules, each bought with a measured failure:** a backwards arrow that returned zero rows silently, and a limit returned as a measurement
-- **The prompt is the artifact.** It is the part of this lab you will change first for your own domain
+- **The routing rules live in the prompt.** They are the part of this lab you will change first for your own domain
 
 **Next:** logging the same graph to Unity Catalog and serving it as an endpoint that authenticates as a service principal.
 

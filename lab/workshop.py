@@ -4,7 +4,7 @@
 Uploaded to ``/voc/scripts`` beside the hooks and invoked by
 ``workspace_init.sh``. One definition rather than two, because the alternative
 is a Vocareum copy and an instructor copy of the same eight table definitions,
-and two copies of a Genie comment drift silently: a Genie space with a stale
+and two copies of a Genie comment drift silently: a Genie Agent with a stale
 column comment answers plausibly rather than correctly, which is the hardest
 class of workshop failure to notice in a room of thirty people.
 
@@ -103,7 +103,7 @@ VOLUME_NAME = os.environ.get("WORKSHOP_VOLUME_NAME", "raw_data")
 LAKEHOUSE_SCHEMA = os.environ.get("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
 
 # Bronze and silver land here, so a participant browsing Catalog, or picking
-# tables for a Genie space, sees the eight gold tables and nothing else.
+# tables for a Genie Agent, sees the eight gold tables and nothing else.
 PIPELINE_SCHEMA = os.environ.get("WORKSHOP_PIPELINE_SCHEMA", "aircraft_pipeline")
 
 VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"
@@ -156,7 +156,7 @@ GOLD_TABLES = (
 #
 # Registered under the workshop catalog so a teardown of the catalog takes the
 # model with it, in the pipeline schema's sibling rather than the gold schema so
-# a participant browsing gold tables for a Genie space still sees eight.
+# a participant browsing gold tables for a Genie Agent still sees eight.
 AGENT_SCHEMA = os.environ.get("WORKSHOP_AGENT_SCHEMA", "agents")
 AGENT_MODEL_NAME = "fleet_ops_assistant"
 AGENT_MODEL_FULL_NAME = f"{CATALOG}.{AGENT_SCHEMA}.{AGENT_MODEL_NAME}"
@@ -176,8 +176,8 @@ AGENT_SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 
 # The database inside that instance. Aura names it, often after the instance ID
 # rather than "neo4j", so Lab 1's 02_credentials_and_cypher.ipynb detects the
-# real name and writes it here. A scope written before this key existed has no
-# fourth key at all, and Lab 3 falls back to "neo4j" for those.
+# real name and writes it here. Required like the other three: nothing
+# downstream guesses a name.
 AGENT_SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
 # The model behind the supervisor's routing decision, and behind GraphRAG answer
@@ -288,7 +288,7 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     and the ``SELECT`` grants in ``genie_statements``, and nothing else. No lab
     writes to this catalog: Labs 2 and 3 read the volume and the gold tables and
     write their results to the participant's own Aura instance, and Lab 4 Part A
-    builds a Genie space, which needs ``SELECT`` and no more. Keep it that way.
+    builds a Genie Agent, which needs ``SELECT`` and no more. Keep it that way.
     A ``GRANT CREATE CONNECTION ON METASTORE TO account users`` used to sit at
     the end of this list, so that whoever built the Lab 4 Part B MCP connection
     by hand could do it without metastore admin. It was removed on 2026-08-08:
@@ -415,7 +415,7 @@ def genie_statements() -> list[tuple[str, str, bool]]:
     """The column comments Genie reads, and the grants that let a participant see them.
 
     These comments are the reason a SQL warehouse is provisioned at all. Lab 4
-    asks a Genie space questions in English, and a space with no table or column
+    asks a Genie Agent questions in English, and a space with no table or column
     comments answers plausibly rather than correctly. So a comment that did not
     land is a failure here rather than the warning it used to be. The table
     comments arrive with the pipeline; only the column comments are written from
@@ -992,7 +992,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description=(
             "Provision this workshop's Databricks objects: the catalog and "
             "volume, the courseware data, the DLT pipeline, and the comments "
-            "and grants a Genie space reads."
+            "and grants a Genie Agent reads."
         ),
     )
     parser.add_argument(

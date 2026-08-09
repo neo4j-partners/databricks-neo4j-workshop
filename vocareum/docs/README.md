@@ -72,7 +72,7 @@ Lab_6_Agent_Memory/
   memory.py
 ```
 
-Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 needs the graph Lab 2 loads, Lab 5 needs the Genie space you create in Lab 4, and Lab 6 needs the agent and the Model Serving endpoint from Lab 5. Keep the lab folders as siblings. `memory.py` imports from `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, so moving a folder breaks Lab 6.
+Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 needs the graph Lab 2 loads, Lab 5 needs the Genie Agent you create in Lab 4, and Lab 6 needs the agent and the Model Serving endpoint from Lab 5. Keep the lab folders as siblings. `memory.py` imports from `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, so moving a folder breaks Lab 6.
 
 ---
 
@@ -99,7 +99,7 @@ That notebook writes them into a Databricks secret scope named `fleet-ops-<your 
 
 You never type a database name. Aura picks it, and on a Free instance it is often the instance ID rather than `neo4j`, so notebook 02 detects the real name off the connection and stores that too.
 
-Lab 4 Part A does not use Neo4j at all. You build a Genie space over the lakehouse sensor tables. Part B is an instructor demo you watch rather than run, against the instructor's own workspace and Neo4j MCP connection, so there is nothing for you to configure there. Lab 5 goes back to your own Aura instance, the one you loaded in Lab 2. Lab 6 uses that same instance and is the first lab that writes to it, storing the agent's memory beside the fleet graph.
+Lab 4 Part A does not use Neo4j at all. You build a Genie Agent over the lakehouse sensor tables. Part B is an instructor demo you watch rather than run, against the instructor's own workspace and Neo4j MCP connection, so there is nothing for you to configure there. Lab 5 goes back to your own Aura instance, the one you loaded in Lab 2. Lab 6 uses that same instance and is the first lab that writes to it, storing the agent's memory beside the fleet graph.
 
 ## Shared Lakehouse Data
 

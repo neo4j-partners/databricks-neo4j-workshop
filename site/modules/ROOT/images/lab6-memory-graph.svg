@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" font-family="Liberation Sans, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#52525B"/>
+    </marker>
+    <marker id="arrow-st" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6E56CF"/>
+    </marker>
+    <marker id="arrow-lt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0E9188"/>
+    </marker>
+    <marker id="arrow-rz" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#E8501F"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="600" fill="#FFFFFF"/>
+
+  <!-- Header: title and layer legend -->
+  <text x="24" y="33" font-size="16" font-weight="bold" fill="#27272A">Lab 6: agent memory in the fleet graph</text>
+
+  <rect x="520" y="20" width="14" height="14" rx="3" fill="#F1EEFB" stroke="#6E56CF" stroke-width="1.8"/>
+  <text x="540" y="32" font-size="12" fill="#3F3F46">Short term</text>
+  <rect x="624" y="20" width="14" height="14" rx="3" fill="#E6F5F3" stroke="#0E9188" stroke-width="1.8"/>
+  <text x="644" y="32" font-size="12" fill="#3F3F46">Long term</text>
+  <rect x="726" y="20" width="14" height="14" rx="3" fill="#FDEEEA" stroke="#E8501F" stroke-width="1.8"/>
+  <text x="746" y="32" font-size="12" fill="#3F3F46">Reasoning</text>
+  <rect x="828" y="20" width="14" height="14" rx="3" fill="#F2F8FE" stroke="#0B7FD4" stroke-width="1.8"/>
+  <text x="848" y="32" font-size="12" fill="#3F3F46">Fleet graph</text>
+
+  <!-- ================= Memory layer 1: short term ================= -->
+  <rect x="20" y="48" width="296" height="292" rx="10" fill="#F1EEFB" stroke="#6E56CF" stroke-width="2"/>
+  <text x="168" y="73" text-anchor="middle" font-size="14" font-weight="bold" fill="#3B2E7E">Short term memory</text>
+
+  <rect x="80" y="82" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#6E56CF" stroke-width="1.8"/>
+  <text x="168" y="103" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3B2E7E">:User</text>
+  <text x="168" y="119" text-anchor="middle" font-size="11" fill="#52525B">identifier: tech:rivera</text>
+
+  <line x1="168" y1="128" x2="168" y2="171" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="178" y="157" font-size="10.5" fill="#52525B">HAS_CONVERSATION</text>
+
+  <rect x="80" y="176" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#6E56CF" stroke-width="1.8"/>
+  <text x="168" y="197" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3B2E7E">:Conversation</text>
+  <text x="168" y="213" text-anchor="middle" font-size="11" fill="#52525B">session_id: shift-rivera-01</text>
+
+  <line x1="168" y1="222" x2="168" y2="265" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="178" y="251" font-size="10.5" fill="#52525B">HAS_MESSAGE</text>
+
+  <rect x="80" y="270" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#6E56CF" stroke-width="1.8"/>
+  <text x="168" y="291" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3B2E7E">:Message</text>
+  <text x="168" y="307" text-anchor="middle" font-size="11" fill="#52525B">role, content, embedding</text>
+
+  <!-- ================= Memory layer 2: long term ================= -->
+  <rect x="332" y="48" width="296" height="292" rx="10" fill="#E6F5F3" stroke="#0E9188" stroke-width="2"/>
+  <text x="480" y="73" text-anchor="middle" font-size="14" font-weight="bold" fill="#0A6F68">Long term memory</text>
+
+  <line x1="256" y1="105" x2="387" y2="105" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="322" y="97" text-anchor="middle" font-size="10.5" fill="#52525B">HAS_PREFERENCE</text>
+
+  <rect x="392" y="82" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#0E9188" stroke-width="1.8"/>
+  <text x="480" y="103" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0A6F68">:Preference</text>
+  <text x="480" y="119" text-anchor="middle" font-size="11" fill="#52525B">superseded, valid_until set</text>
+
+  <line x1="480" y1="128" x2="480" y2="171" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="490" y="157" font-size="10.5" fill="#52525B">SUPERSEDED_BY</text>
+
+  <rect x="392" y="176" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#0E9188" stroke-width="1.8"/>
+  <text x="480" y="197" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0A6F68">:Preference</text>
+  <text x="480" y="213" text-anchor="middle" font-size="11" fill="#52525B">category, preference, context</text>
+
+  <!-- ================= Memory layer 3: reasoning ================= -->
+  <rect x="644" y="48" width="296" height="292" rx="10" fill="#FDEEEA" stroke="#E8501F" stroke-width="2"/>
+  <text x="792" y="73" text-anchor="middle" font-size="14" font-weight="bold" fill="#8C2A0C">Reasoning memory</text>
+
+  <rect x="704" y="82" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#E8501F" stroke-width="1.8"/>
+  <text x="792" y="103" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#8C2A0C">:ReasoningTrace</text>
+  <text x="792" y="119" text-anchor="middle" font-size="11" fill="#52525B">goal, outcome, success</text>
+
+  <line x1="792" y1="128" x2="792" y2="171" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="802" y="157" font-size="10.5" fill="#52525B">HAS_STEP</text>
+
+  <rect x="704" y="176" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#E8501F" stroke-width="1.8"/>
+  <text x="792" y="197" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#8C2A0C">:ReasoningStep</text>
+  <text x="792" y="213" text-anchor="middle" font-size="11" fill="#52525B">thought, action, observation</text>
+
+  <line x1="792" y1="222" x2="792" y2="265" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="802" y="251" font-size="10.5" fill="#52525B">USES_TOOL</text>
+
+  <rect x="704" y="270" width="176" height="46" rx="8" fill="#FFFFFF" stroke="#E8501F" stroke-width="1.8"/>
+  <text x="792" y="291" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#8C2A0C">:ToolCall</text>
+  <text x="792" y="307" text-anchor="middle" font-size="11" fill="#52525B">tool_name, status, result</text>
+
+  <!-- Naming the memory half, opposite the fleet band title -->
+  <text x="936" y="372" text-anchor="end" font-size="13" font-weight="bold" fill="#52525B">Memory, written in Lab 6</text>
+  <text x="936" y="390" text-anchor="end" font-size="11.5" fill="#71717A">by neo4j-agent-memory</text>
+
+  <!-- ================= The fleet half ================= -->
+  <rect x="300" y="412" width="640" height="170" rx="10" fill="#F2F8FE" stroke="#0B7FD4" stroke-width="1.8" stroke-dasharray="7 4"/>
+  <text x="924" y="437" text-anchor="end" font-size="13.5" font-weight="bold" fill="#0A4E82">Fleet graph, loaded in Lab 2</text>
+
+  <rect x="350" y="490" width="220" height="56" rx="8" fill="#FFFFFF" stroke="#0B7FD4" stroke-width="1.8"/>
+  <text x="460" y="514" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0A4E82">:MaintenanceEvent</text>
+  <text x="460" y="532" text-anchor="middle" font-size="11.5" fill="#52525B">severity: CRITICAL</text>
+
+  <rect x="690" y="490" width="220" height="56" rx="8" fill="#FFFFFF" stroke="#0B7FD4" stroke-width="1.8"/>
+  <text x="800" y="514" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0A4E82">:System</text>
+  <text x="800" y="532" text-anchor="middle" font-size="11.5" fill="#52525B">type: Engine</text>
+
+  <line x1="460" y1="490" x2="460" y2="459" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="472" y="477" font-size="10.5" fill="#52525B">AFFECTS_AIRCRAFT</text>
+
+  <line x1="570" y1="518" x2="685" y2="518" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="628" y="510" text-anchor="middle" font-size="10.5" fill="#52525B">AFFECTS_SYSTEM</text>
+
+  <text x="924" y="570" text-anchor="end" font-size="11.5" fill="#125C93">Lab 2 loaded these. Lab 6 added nothing to them.</text>
+
+  <!-- ============ The three edges that cross the boundary ============ -->
+  <path d="M 168 316 L 168 396 L 345 396" fill="none" stroke="#6E56CF" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-st)"/>
+  <text x="258" y="388" text-anchor="middle" font-size="10.5" fill="#5B45B5">MENTIONS</text>
+
+  <path d="M 480 222 L 480 363" fill="none" stroke="#0E9188" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-lt)"/>
+  <text x="490" y="300" font-size="10.5" fill="#0A6F68">APPLIES_TO</text>
+
+  <path d="M 704 199 L 668 199 L 668 396 L 615 396" fill="none" stroke="#E8501F" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-rz)"/>
+  <text x="639" y="388" text-anchor="middle" font-size="10.5" fill="#B03A12">TOUCHED</text>
+
+  <!-- ============ The hinge: one node carrying both labels ============ -->
+  <rect x="350" y="368" width="260" height="86" rx="10" fill="#FFFFFF" stroke="#0B7FD4" stroke-width="3"/>
+  <rect x="366" y="380" width="112" height="26" rx="13" fill="#E8F3FF" stroke="#0B7FD4" stroke-width="1.5"/>
+  <text x="422" y="398" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0A4E82">:Aircraft</text>
+  <rect x="486" y="380" width="112" height="26" rx="13" fill="#F1EEFB" stroke="#6E56CF" stroke-width="1.5"/>
+  <text x="542" y="398" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3B2E7E">:Entity</text>
+  <text x="480" y="425" text-anchor="middle" font-size="12.5" fill="#27272A">tail_number: N10004</text>
+  <text x="480" y="443" text-anchor="middle" font-size="11" fill="#52525B">adoption added :Entity, id, name, type</text>
+
+  <!-- ============ What put it there ============ -->
+  <rect x="24" y="428" width="252" height="154" rx="8" fill="#FAFAFA" stroke="#A1A1AA" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="40" y="454" font-size="13" font-weight="bold" fill="#27272A">Adoption put it there</text>
+  <text x="40" y="478" font-size="11.5" fill="#3F3F46">adopt_existing_graph added the</text>
+  <text x="40" y="496" font-size="11.5" fill="#3F3F46">:Entity label and the memory keys</text>
+  <text x="40" y="514" font-size="11.5" fill="#3F3F46">to the Aircraft nodes Lab 2 loaded.</text>
+  <text x="40" y="532" font-size="11.5" fill="#3F3F46">Nothing was copied, so a mention</text>
+  <text x="40" y="550" font-size="11.5" fill="#3F3F46">and a maintenance event land on</text>
+  <text x="40" y="568" font-size="11.5" fill="#3F3F46">one node, not two.</text>
+  <path d="M 276 448 L 345 440" fill="none" stroke="#71717A" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+</svg>

@@ -40,7 +40,7 @@
 
 * **ReAct Pattern and Agents**: The Reasoning and Acting loop that AI agents follow: receive a question, reason about which tool fits, execute the tool, observe the result, respond. Retrievers become tools agents can select automatically based on question type. Covered in: `agents/01-from-retrievers-to-agents-slides.md`
 
-* **Genie Space**: Databricks' natural language to SQL system. Translates plain English questions into governed SQL queries against Delta Lake tables registered in Unity Catalog. One of two specialized agents in the multi-agent architecture. Covered in: `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`
+* **Genie Agent**: Databricks' natural language to SQL system. Translates plain English questions into governed SQL queries against Delta Lake tables registered in Unity Catalog. One of two specialized agents in the multi-agent architecture. Covered in: `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`
 
 * **Neo4j MCP Server**: Exposes Neo4j as agent tools via the Model Context Protocol. Tools include schema discovery, read-only Cypher execution, and GDS procedure listing. Allows any agent framework to query the graph without pre-built integrations. Covered in: `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`
 
@@ -211,7 +211,7 @@ Every topic from the Key Topics Summary has at least one canonical file that cov
 | Vector Cypher Retriever | `retrieval-patterns/03-vector-cypher-retriever-slides.md` |
 | Text2Cypher Retriever | `retrieval-patterns/04-text2cypher-retriever-slides.md` |
 | ReAct pattern and agents | `agents/01-from-retrievers-to-agents-slides.md` |
-| Genie Space | `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`, `agents/03-langgraph-supervisor-slides.md` (as a tool node) |
+| Genie Agent | `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`, `agents/03-langgraph-supervisor-slides.md` (as a tool node) |
 | Neo4j MCP Server | `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md` |
 | Multi-agent supervisor | `platform-overview/02-databricks-neo4j-integration-slides.md`, `agents/02-power-of-graphrag-slides.md`, `agents/03-langgraph-supervisor-slides.md`, `graph-ml/04-future-graph-enrichment-slides.md` |
 | LangGraph supervisor agent | `agents/03-langgraph-supervisor-slides.md` |
@@ -272,7 +272,7 @@ Gaps confirmed from Phase 2 and newly identified in this review:
 **Confirmed gaps from Phase 2:**
 - No standalone introduction to JDBC federation as a topic. `background/governance/auth-sync-slides.md` opens with a JDBC federation status update but it is a partner/internal briefing, not a teaching deck, and it now sits on the Background track rather than the workshop path.
 - Databricks Vector Search as an external vector store option. CLOSED in Phase 6: `retrieval-patterns/01-retrievers-overview-slides.md` now carries an "External Vector Stores: Databricks Vector Search" slide.
-- Genie Space setup and configuration steps. Still a gap. Covered in workshop notebooks, not in slides.
+- Genie Agent setup and configuration steps. Still a gap. Covered in workshop notebooks, not in slides.
 
 **New gaps identified in Phase 5:**
 - No slide covering the `GraphRAG` orchestration class from `neo4j-graphrag-python`. CLOSED in Phase 6: `retrieval-patterns/01-retrievers-overview-slides.md` now carries a "The GraphRAG Class" slide.
@@ -406,7 +406,7 @@ slides/
 No dedicated slide file exists for:
 - JDBC federation and SQL-to-Cypher translation (mentioned in `platform-overview/02-databricks-neo4j-integration-slides.md` but not developed as standalone slides)
 - Databricks Vector Search as a pluggable external vector store (mentioned in one slide, not developed). Closed in Phase 6, see the What Is Missing section
-- Genie Space setup and configuration steps (covered in workshop notebooks, not in slides)
+- Genie Agent setup and configuration steps (covered in workshop notebooks, not in slides)
 
 These are content gaps to address in a future content phase, not part of the reorganization.
 
@@ -434,7 +434,7 @@ These are content gaps to address in a future content phase, not part of the reo
 - Four `01-` prefix files in `platform-overview/`: naming, not content; renaming would break history and links
 - Content overlap on incremental sync in `graph-ml/`: editorial decision deferred
 - JDBC federation standalone intro: content already covered in `background/governance/auth-sync-slides.md`
-- Genie Space setup/configuration: covered in workshop notebooks, not slides
+- Genie Agent setup/configuration: covered in workshop notebooks, not slides
 
 **Superseded by later work:** the "no LangGraph slides" gap was later closed by `agents/03-langgraph-supervisor-slides.md` and `agents/04-deploy-the-agent-slides.md`, which were written after this phase.
 

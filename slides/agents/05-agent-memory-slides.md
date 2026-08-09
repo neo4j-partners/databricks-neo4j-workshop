@@ -32,18 +32,45 @@ ol > li {
 Giving the Lab 5 supervisor a memory, in the graph it already queries
 
 <!--
-Nine slides, about 16 minutes. Assumes GraphRAG and the Lab 5
+Thirteen slides, about 19 minutes. Assumes GraphRAG and the Lab 5
 supervisor are already taught. Lands on Lab 6's own demo.
 
-CUTTING TO 15 MINUTES: fold slide 6 into the one line already
-written on slide 7 and skip slide 6 entirely. NEVER cut slide 8.
-Slide 8 is the argument for the whole lab.
+CUTTING TO 15 MINUTES: fold Hot Path Versus Background Write into
+the one line already written on recall, then act, then remember,
+and skip Hot Path entirely. NEVER cut The Payoff. The Payoff is
+the argument for the whole lab.
 
-Slides 5 and 6 are the soft middle: most interesting to a
-practitioner, least connected to anything a participant runs.
-If the room is drifting, that is where it happens. Slide 5 keeps
-its place because there is a live demo behind it. Slide 6 has
-none.
+Memory Has to Handle Being Wrong and Hot Path Versus Background
+Write are the soft middle: most interesting to a practitioner,
+least connected to anything a participant runs. If the room is
+drifting, that is where it happens. Memory Has to Handle Being
+Wrong keeps its place because there is a live demo behind it. Hot
+Path has none.
+-->
+
+---
+
+## What This Covers
+
+- **The amnesiac.** The Lab 5 supervisor holds nothing from the question before
+- **The fake fix.** Replaying the transcript costs, distracts, and contradicts itself
+- **Three layers, one graph.** Short term, long term, reasoning, beside the fleet
+- **Being wrong.** Supersede the old belief, keep it, stamp when it stopped being true
+- **recall, act, remember.** Two nodes added, and one query that crosses both halves
+
+<!--
+0.5 minutes. Read the five lines. Do not explain them.
+
+The one to point at is the last. Everything above it is memory
+the way any product does memory. The last line is the part that
+only works because the memory lives in the fleet graph, and it
+is where the deck ends up.
+
+IF THE DAY IS RUNNING LATE, cut in this order. This slide goes
+first, and costs nothing. Then the Summary near the end, down to
+its Next line. Only then the Hot Path slide, which is already
+marked as the cut that takes the deck under its original budget.
+Never cut The Payoff.
 -->
 
 ---
@@ -96,10 +123,10 @@ Context rot was taught in the GenAI foundations deck. One
 sentence of callback is enough; do not re-teach it.
 
 The contradiction failure is the one to dwell on, because it
-sets up slide 5. Both statements are in the window, both are
-fluent, both name the same aircraft, and retrieval has no
-principled way to prefer one. The model picks whichever it
-happened to attend to.
+sets up Memory Has to Handle Being Wrong. Both statements are in
+the window, both are fluent, both name the same aircraft, and
+retrieval has no principled way to prefer one. The model picks
+whichever it happened to attend to.
 
 Name the field once, here, so nobody thinks this is a Neo4j-only
 problem: LangGraph's own checkpointers and store are where most
@@ -146,6 +173,42 @@ borrowed picture of why the layers are separate.
 
 ---
 
+![bg contain](../../site/modules/ROOT/images/lab6-memory-graph.svg)
+
+<!--
+1.5 minutes. No title on this one on purpose. The picture is full
+bleed and you are the caption.
+
+Walk it in four moves, finger on the screen.
+
+  Short term: a User, a Conversation, the Messages inside it.
+  This is the only layer the participant notebook writes.
+
+  Long term: the durable record. Preferences, which supersede one
+  another rather than overwrite.
+
+  Reasoning: a trace, the steps inside it, the tool calls those
+  steps made.
+
+  Then the right hand side, which the room built in Lab 2:
+  Aircraft, Systems, Components, MaintenanceEvents. Colour is
+  doing the grouping. Each layer has its own.
+
+Land on the one edge that crosses: MENTIONS, from a Message to an
+Aircraft. Put a finger on it and say the sentence out loud.
+"After adoption that is not a copy of the aircraft. It is the
+aircraft." One node wearing two labels, :Aircraft and :Entity.
+
+That edge is the whole lab. Everything left of it is memory any
+product will sell you. Everything right of it is the fleet. The
+edge is what makes the query on The Payoff slide possible at all.
+
+IF YOU ARE SHORT ON TIME, show the picture, say that last
+paragraph, and move on. Thirty seconds.
+-->
+
+---
+
 ## Why a Graph, in One Query
 
 ```cypher
@@ -173,9 +236,9 @@ This query is verbatim from Demo 4 of
 Lab_6_Agent_Memory/02_instructor_demos.ipynb. It runs. If the
 room wants proof, that is the notebook to open.
 
-The one caveat to say out loud, because it comes back on slide
-8: that last MATCH only resolves because the lab adopted the
-fleet's Aircraft nodes. Without adoption the memory library
+The one caveat to say out loud, because it comes back on The
+Payoff: that last MATCH only resolves because the lab adopted
+the fleet's Aircraft nodes. Without adoption the memory library
 creates its own N10011 Entity beside yours, the pattern matches
 nothing, and you are back to two stores joined by string
 comparison in Python.
@@ -200,7 +263,8 @@ RETURN old.preference AS superseded,
 
 <!--
 2.0 minutes. There is a live demo behind this one, which is why
-it survives a shortened day and slide 6 does not.
+it survives a shortened day and Hot Path Versus Background Write
+does not.
 
 DEMO BEAT, Demo 1 of 02_instructor_demos.ipynb. Run it or narrate
 it.
@@ -244,7 +308,8 @@ is a design decision you have to make, not a feature you get.
 
 <!--
 1.5 minutes, and THIS IS THE SLIDE TO CUT if the day is running
-late. Fold it into the one line already on slide 7 and move on.
+late. Fold it into the one line already on recall, then act, then
+remember, and move on.
 
 The Lab 6 numbers are measured, from Section 9 of
 01_agent_memory.ipynb, against live Aura and live Databricks
@@ -297,7 +362,8 @@ leaves the supervisor. Section 8 of the notebook shows the
 resolved: line in the trace, on a question where the
 participant never typed a tail number.
 
-IF SLIDE 6 WAS CUT, this is where its line goes: memory here
+IF HOT PATH VERSUS BACKGROUND WRITE WAS CUT, this is where its
+line goes: memory here
 costs about 15 seconds a question, and recall running once per
 question rather than once per tool call is the single decision
 that keeps it from being three times worse.
@@ -392,7 +458,7 @@ apart if anyone asks for links:
   2. neo4j-agent-memory, the neo4j-labs library Lab 6 pins. This
      is what the lab runs.
   3. The hosted service, which is the source of the queue-lag
-     SLI mentioned on slide 6.
+     SLI mentioned on Hot Path Versus Background Write.
 
 Conflating them on a citation slide sends people to the wrong
 repository.
@@ -400,7 +466,74 @@ repository.
 One line on the pin, if asked: Lab 6 installs a fork wheel from
 a Unity Catalog volume rather than a PyPI version, because the
 released 0.5.0 silently drops most MENTIONS edges, and MENTIONS
-is the exact edge the slide 8 query walks. The fork fixes it.
+is the exact edge The Payoff query walks. The fork fixes it.
 The library is pre-1.0, so treat any upgrade as a code change
 with its own test pass.
+-->
+
+---
+
+## What Memory Adds to the Lab 5 Agent
+
+- **Stateless is a default, not a law.** Two nodes either side of the supervisor change it
+- **Memory is a graph, not a pile of chunks.** Short term, long term, reasoning, and the edges between them
+- **Adoption makes it one graph.** A remembered aircraft **is** the fleet's `Aircraft` node
+- **Being wrong is modelled, not deleted.** Supersede, stamp `valid_until`, and an audit can replay what the agent believed
+- **The bill is about 15 seconds a question.** Measured, printed by the notebook, yours to accept or move off the turn
+
+**Next:** Lab 6. Adopt `Aircraft`, seed the shift history, run the crossing query, then wire `recall` and `remember` and redeploy the Lab 5 endpoint.
+
+<!--
+1.0 minutes.
+
+Lab 6 is the last required lab, so this is the last thing the
+room hears before they open the notebook. Read the Next line as a
+list of what they are about to do, not as a summary of what you
+just said.
+
+The bullet to linger on is adoption, because it is the only one
+that is a decision they make rather than a fact they receive. The
+other four follow from it.
+
+IF THE DAY IS RUNNING LATE, cut the five bullets and keep the
+Next line. The room still needs to know what they are opening.
+That is the second cut in the ladder written on What This Covers.
+-->
+
+---
+
+## Appendix: References
+
+**Three different things carry the "Neo4j memory" name. Only one is this lab.**
+
+1. `mcp-neo4j-memory`, the older MCP server: github.com/neo4j-contrib/mcp-neo4j
+2. `neo4j-agent-memory`, the Neo4j Labs library **Lab 6 runs**: github.com/neo4j-labs/agent-memory, docs at neo4j.com/labs/agent-memory/
+3. The hosted Agent Memory service, source of the queue-lag freshness SLI
+
+**Lab 6 installs a fork of 2:** github.com/neo4j-partners/agent-memory, branch `mentions`
+
+- Context graphs, why AI agents need three types of memory (Webber): neo4j.com/blog/agentic-ai/context-graph-ai-agent-memory/
+- Modeling agent memory (Gilmore): neo4j.com/blog/developer/modeling-agent-memory/
+- Hands on with context graphs and Neo4j (Lyon): neo4j.com/blog/agentic-ai/hands-on-with-context-graphs-and-neo4j/
+
+<!--
+Not presented. Zero minutes. Leave it on screen while the room
+photographs it, or hand it out with the deck.
+
+It exists because conflating those three names sends people to
+the wrong repository, and all three turn up in a search for
+"neo4j agent memory". Say the one sentence if anyone asks for
+links: the MCP server is not what you installed, the hosted
+service is not what you installed, and the thing you installed is
+a fork of the Labs library.
+
+The fork, if they ask why: released 0.5.0 silently drops most
+MENTIONS edges, and MENTIONS is the exact edge The Payoff query
+walks. The fork fixes it and the fix has not gone upstream yet.
+Pre-1.0 library, so treat any upgrade as a code change with its
+own test pass.
+
+Gilmore is the cross-walk for anyone who reads the older
+short-term versus long-term taxonomy afterwards and wonders why
+this deck says something different.
 -->

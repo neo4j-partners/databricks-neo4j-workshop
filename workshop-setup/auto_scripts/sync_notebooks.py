@@ -98,7 +98,12 @@ NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     ),
     (
         "Lab_5_LangGraph_Agent",
-        ("01_langgraph_agent.ipynb", "tools.py"),
+        (
+            "01_langgraph_agent.ipynb",
+            "02_deploy_and_evaluate.ipynb",
+            "tools.py",
+            "agent.py",
+        ),
         "Lab_5_LangGraph_Agent",
     ),
     (
