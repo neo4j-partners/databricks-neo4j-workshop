@@ -113,6 +113,8 @@ After completing this lab, you can ask questions like:
 * "When should I replace the fuel filter?"
 * "What oil analysis levels indicate bearing wear?"
 
+`EGT` is Exhaust Gas Temperature, the parameter these manuals set takeoff limits on. The answers come back in the manuals' own vocabulary, so expect terms like HPT, FADEC, and ATA chapter alongside it. xref:glossary.adoc[The glossary] expands all of them.
+
 Slides for this lab: xref:slides/slides-graphrag-foundations.adoc[GraphRAG Foundations] and xref:slides/slides-retriever-patterns.adoc[GraphRAG Retriever Patterns].
 
 == Next Steps

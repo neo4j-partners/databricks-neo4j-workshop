@@ -1,6 +1,6 @@
 = Lab 6: Agent Memory
 
-The Lab 5 agent answers one question at a time. Ask it about `N10011`, then ask "any maintenance events on that aircraft?", and it has no idea what *that* means. Close the notebook and everything it worked out is gone. This lab gives it a memory, and puts that memory in the same Aura instance the fleet already lives in.
+The Lab 5 agent answers one question at a time. Ask it about `N10011`, then ask "any maintenance events on that aircraft?", and it has no idea what *that* means. Close the notebook and everything it worked out is gone. This lab gives it a memory, and puts that memory in the same Aura instance the Aircraft Digital Twin already lives in.
 
 Putting the memory in the same instance is what this lab is about. Most memory products keep conversations in a store of their own, so "which aircraft do people keep asking about" and "which aircraft is actually failing" end up in two systems that someone has to join by hand. Here a remembered aircraft **is** the `Aircraft` node Lab 2 loaded, so one `MATCH` walks from a technician's question to a maintenance record.
 
@@ -9,7 +9,7 @@ TIP: Ready to start? Open `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your Dat
 .**At a Glance**
 
 * **Two nodes added, three tools untouched.** `recall` before the supervisor, `remember` after synthesis. The supervisor is Lab 5's node with a `\{recalled}` block in front of its prompt.
-* **Adoption is what makes it one graph.** The fleet's `Aircraft` nodes gain the `:Entity` label, so a message points at the aircraft rather than at a copy of it.
+* **Adoption is what makes it one graph.** The graph's `Aircraft` nodes gain the `:Entity` label, so a message points at the aircraft rather than at a copy of it.
 * **Adopt `Aircraft` and nothing else.** Adoption overwrites `type`, and four other labels already use that property for something.
 * **Explicit mentions, not LLM extraction.** An agent already knows which entities its tools touched, so it can name them instead of paying a model to rediscover them.
 * **Memory is routing context for the supervisor, not a fourth tool.** Nobody asks memory a question, and `recall` runs once per question rather than once per tool call.
@@ -46,7 +46,7 @@ The memory library hangs conversations off `(:Entity {name, type})` nodes. Left 
 
 image::lab6-memory-graph.svg[Lab 6 memory graph,align=center]
 
-Writing to nodes an earlier lab loaded makes this the one step in the workshop that changes existing data. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and the notebook's final section shows it along with the guard that keeps a memory cleanup from taking your fleet with it.
+Writing to nodes an earlier lab loaded makes this the one step in the workshop that changes existing data. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and the notebook's final section shows it along with the guard that keeps a memory cleanup from taking your graph with it.
 
 .Why the lab adopts `Aircraft` and refuses four other labels
 [%collapsible]
@@ -64,11 +64,11 @@ The same reasoning constrains what memory is allowed to create, though less shar
 
 Three queries over the same graph, in order.
 
-**The fleet graph alone**, ranked by critical maintenance events, is what a maintenance dashboard shows you. `N10011` comes last of six.
+**The graph alone**, ranked by critical maintenance events, is what a maintenance dashboard shows you. `N10011` comes last of six.
 
 **The conversation memory alone**, ranked by how many different technicians asked, is what a memory product with no domain graph shows you. `N10011` is joint first.
 
-Each list on its own says nothing unusual. An aircraft with few critical events is healthy. An aircraft several people asked about had a busy week. Read together they say something else: three technicians, on three separate shifts, each pulled the EGT trend on an aircraft the maintenance record calls healthy. Either they are seeing something the record has not caught, or three people each spent a shift on the same dead end. A supervisor wants to know about both, and neither list shows it alone.
+Each list on its own says nothing unusual. An aircraft with few critical events is healthy. An aircraft several people asked about had a busy week. Read together they say something else: three technicians, on three separate shifts, each pulled the EGT (Exhaust Gas Temperature) trend on an aircraft the maintenance record calls healthy. Either they are seeing something the record has not caught, or three people each spent a shift on the same dead end. A supervisor wants to know about both, and neither list shows it alone.
 
 One query returns that:
 
@@ -79,7 +79,7 @@ WITH ac, count(DISTINCT u) AS technicians, ...
 MATCH (ac)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)-[:AFFECTS_SYSTEM]->(sys:System)
 ----
 
-The `(ac)` on the second `MATCH` is what makes this work. It is bound in the memory half and reused in the fleet half: the same node, with no join key, no federation and no second query. Without adoption, that `ac` would be a memory entity that happens to share a name with an aircraft, and joining the two would mean exporting both sides and matching strings in Python. String matching is where the tail number `N10011` and the tail number `n10011 ` stop matching each other.
+The `(ac)` on the second `MATCH` is what makes this work. It is bound in the memory half and reused in the aircraft half: the same node, with no join key, no federation and no second query. Without adoption, that `ac` would be a memory entity that happens to share a name with an aircraft, and joining the two would mean exporting both sides and matching strings in Python. String matching is where the tail number `N10011` and the tail number `n10011 ` stop matching each other.
 
 == What Recall Has to Do Besides Search
 
@@ -148,7 +148,7 @@ Walking that path answers two questions that a log line cannot. **Which agent de
 
 NOTE: `TOUCHED` hangs off the `ReasoningStep`, not off the `ToolCall`. The traversal is step to entity for the audit and step to call for the mechanics.
 
-`MATCH (s)-[:TOUCHED]->(ac:Aircraft)` only resolves because the participant notebook adopted the fleet's `Aircraft` nodes. Without adoption the library writes its own `N10011` entity and the pattern returns nothing. That is the same dependency the query in the previous section has, showing up in a different query.
+`MATCH (s)-[:TOUCHED]->(ac:Aircraft)` only resolves because the participant notebook adopted the graph's `Aircraft` nodes. Without adoption the library writes its own `N10011` entity and the pattern returns nothing. That is the same dependency the query in the previous section has, showing up in a different query.
 
 The library also keeps a running score per tool, `total_calls`, `successful_calls` and `failed_calls` on a `Tool` node, updated on every call. That is what a routing policy could read instead of a prompt.
 

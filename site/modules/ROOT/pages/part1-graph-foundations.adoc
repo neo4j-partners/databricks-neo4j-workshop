@@ -1,6 +1,6 @@
 = Part 1: Graph Foundations
 
-Part 1 gets you a graph database of your own and puts the fleet in it. Everything after this reads what these two labs write.
+Part 1 gets you a graph database of your own and loads the Aircraft Digital Twin into it. Everything after this reads what these two labs write.
 
 .**At a Glance**
 * **You end with an AuraDB Free instance** holding the full Aircraft Digital Twin: Aircraft, System, Component, Sensor, Flight, Delay, MaintenanceEvent and Airport.
@@ -27,4 +27,4 @@ Slides for this part: xref:slides/slides-business-case.adoc[The Business Case fo
 
 == Next Steps
 
-Start with xref:lab1.adoc[Lab 1: Graph Databases and Neo4j Aura]. When the fleet is loaded, continue to xref:part2-retrieval.adoc[Part 2: Retrieval].
+Start with xref:lab1.adoc[Lab 1: Graph Databases and Neo4j Aura]. When the graph is loaded, continue to xref:part2-retrieval.adoc[Part 2: Retrieval].

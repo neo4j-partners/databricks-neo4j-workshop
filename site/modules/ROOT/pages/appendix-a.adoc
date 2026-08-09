@@ -8,7 +8,7 @@ TIP: Taking this home? The notebooks are in `Appendix_A_GDS_Graph_Analytics/`, o
 
 .**At a Glance**
 * **Three algorithm families**, one folder each: community detection, centrality, and similarity.
-* **Every one needs Lab 2 notebook 01** to have loaded the fleet, plus the GDS plugin, which AuraDB Free does not have.
+* **Every one needs Lab 2 notebook 01** to have loaded the Aircraft Digital Twin, plus the GDS plugin, which AuraDB Free does not have.
 * **GDS runs on a projection.** It copies part of the graph into memory, runs the algorithm there, and writes results back as node properties.
 * **The output is a feature.** Each score becomes a node property, and that property becomes a column an ML model in Databricks can train on.
 
@@ -72,7 +72,7 @@ That loop runs in both directions. Databricks sends sensor telemetry into the gr
 | Needs | Why
 
 | Lab 2 notebook 01
-| Every notebook here. It is what loads the fleet, systems, components and maintenance events the algorithms run over
+| Every notebook here. It is what loads the aircraft, systems, components and maintenance events the algorithms run over
 
 | The GDS plugin
 | Every notebook here. Not on AuraDB Free. An AuraDS instance or a self-managed Neo4j with the plugin installed

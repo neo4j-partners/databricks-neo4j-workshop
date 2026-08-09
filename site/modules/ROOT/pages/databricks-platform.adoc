@@ -8,7 +8,7 @@ This page covers the architecture that joins the two platforms: the Lakehouse fo
 
 Databricks answers "how much?" and "how often?" through SQL aggregation over rows and columns. Neo4j answers "how is this connected?" and "what is affected?" through Cypher traversal over nodes and relationships. Most real-world questions require both.
 
-An aircraft maintenance investigation illustrates why. A fleet manager asks: "Which aircraft models have the highest EGT volatility, and what maintenance events are connected to those aircraft?" The first half is a `GROUP BY` with `STDDEV` over the `sensor_readings` table. The second half is a multi-hop traversal from Aircraft through System, Component, and MaintenanceEvent nodes. Neither platform can answer the full question alone. A supervisor agent decomposes the question, routes each half to the platform built for it, and synthesizes a single response.
+An aircraft maintenance investigation illustrates why. A fleet manager asks: "Which aircraft models have the highest EGT (Exhaust Gas Temperature) volatility, and what maintenance events are connected to those aircraft?" EGT is the standard engine health indicator, and its volatility is how a fleet manager spots an engine losing margin. xref:glossary.adoc[The glossary] has that term and the rest of the fleet vocabulary. The first half of the question is a `GROUP BY` with `STDDEV` over the `sensor_readings` table. The second half is a multi-hop traversal from Aircraft through System, Component, and MaintenanceEvent nodes. Neither platform can answer the full question alone. A supervisor agent decomposes the question, routes each half to the platform built for it, and synthesizes a single response.
 
 .Databricks SQL: the aggregation half
 [source,sql]

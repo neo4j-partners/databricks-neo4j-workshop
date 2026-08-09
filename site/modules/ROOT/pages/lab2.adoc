@@ -136,7 +136,7 @@ The whole shape, once the notebook finishes:
 (Aircraft) -[:HAS_REMOVAL]-> (Removal) -[:REMOVED_COMPONENT]-> (Component)
 ----
 
-Lab 5 uses `HAS_LIMIT` directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares the two. The comparison works on a plain string because the units match on both sides by design: `EGT` is `°C` in the sensor metadata and `°C` in the limit table, and `N1Speed` is `% RPM` in both.
+Lab 5 uses `HAS_LIMIT` directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares the two. The comparison works on a plain string because the units match on both sides by design: `EGT` (Exhaust Gas Temperature) is `°C` in the sensor metadata and `°C` in the limit table, and `N1Speed` (fan speed, as a percentage of the engine's rated speed) is `% RPM` in both. xref:glossary.adoc[The glossary] expands the four sensor types and the maintenance vocabulary that goes with them.
 
 == Sensor Readings Stay in Databricks
 

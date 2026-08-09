@@ -1,5 +1,6 @@
 * xref:index.adoc[Home]
 * xref:databricks-platform.adoc[How Neo4j + Databricks Work Together]
+* xref:glossary.adoc[Glossary: Aircraft Terms and Data Vocabulary]
 * xref:part1-graph-foundations.adoc[Part 1: Graph Foundations]
 ** xref:lab1.adoc[Lab 1: Graph Databases and Neo4j Aura]
 ** xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j]

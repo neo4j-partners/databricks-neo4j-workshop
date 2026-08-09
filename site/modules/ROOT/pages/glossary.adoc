@@ -1,0 +1,169 @@
+= Glossary: Aircraft Terms and Data Vocabulary
+
+The Aircraft Digital Twin dataset uses the vocabulary of commercial aviation maintenance. Sensor types, fault names, and manual references are all abbreviated the way an airline would abbreviate them. This page expands those abbreviations and ties each one to the place in the data where you meet it.
+
+Nothing here is required reading before a lab. Keep it open in a second tab while you write Cypher, read a manual chunk, or check why an agent answered the way it did.
+
+== Sensors and Readings
+
+Four sensor types are fitted to every engine in the fleet, and to nothing else. All 288 `Sensor` nodes hang off the 72 `Engine` systems, four per engine. The `type` property carries the short form, and the `name` property spells it out.
+
+[cols="1,2,1,3"]
+|===
+| `type` | `name` | `unit` | What it measures
+
+| `EGT`
+| Exhaust Gas Temperature
+| `°C`
+| Temperature of the gas leaving the turbine. The standard engine health indicator. An engine running hotter for the same thrust is an engine losing margin, so a rising EGT trend is read as degradation long before anything fails.
+
+| `Vibration`
+| Engine Vibration
+| `ips`
+| Vibration velocity in inches per second. Rising amplitude points at rotor imbalance, blade damage, or bearing wear.
+
+| `N1Speed`
+| Fan Speed N1
+| `% RPM`
+| Speed of the low-pressure spool, the fan, as a percentage of its rated speed. Thrust is set on N1. A value above 100% is normal on some engines, because the rating is a reference speed rather than a ceiling.
+
+| `FuelFlow`
+| Fuel Flow
+| `kg/s`
+| Fuel delivered to the combustor per second. Flow that climbs while thrust holds steady is another degradation signal.
+|===
+
+**Reading.** One sensor value at one timestamp. The 155,520 readings span 90 days at hourly scale and live in the Databricks `sensor_readings` table. They are never loaded into Neo4j, which is why sensor trend questions route to Genie and not to Cypher.
+
+**Operating limit.** The manufacturer's allowed range for one parameter on one aircraft model, transcribed from that model's maintenance manual. Twenty `OperatingLimit` nodes cover five models times four parameters. Every one carries `regime: 'takeoff'`, because takeoff is the limiting case. `sourceRef` names the manual, section, and line the number came from, so any limit can be traced back to its page.
+
+**Regime.** The phase of flight a limit applies to. Takeoff, climb, cruise, and idle each have different allowances, and this dataset holds the takeoff numbers only.
+
+== Engine Anatomy
+
+These terms appear in the maintenance manuals that Lab 3 chunks and Lab 5 retrieves. They are not properties in the graph, but they are what the retrieved text talks about.
+
+[cols="1,4"]
+|===
+| Term | Meaning
+
+| N1
+| The low-pressure spool: fan, low-pressure compressor, and low-pressure turbine on one shaft. Also used for its speed.
+
+| N2
+| The high-pressure spool: high-pressure compressor and high-pressure turbine on a second, concentric shaft. Also used for its speed. The two spools turn independently and at different speeds.
+
+| HPC / LPC
+| High-Pressure Compressor and Low-Pressure Compressor. They raise air pressure before combustion.
+
+| HPT / LPT
+| High-Pressure Turbine and Low-Pressure Turbine. They extract energy from the combustion gas to drive the compressors and the fan. HPT hardware runs hottest, so it is the usual suspect when EGT climbs.
+
+| Combustor
+| Where fuel burns. A `Component` type in the graph.
+
+| Nozzle
+| The exhaust nozzle that sets the exit area of the gas stream. A `Component` type in the graph.
+
+| FADEC
+| Full Authority Digital Engine Control. The computer that runs the engine: it sets thrust, schedules fuel, and detects faults. Dual-channel, with automatic switchover.
+
+| EEC
+| Electronic Engine Control. The physical unit that houses a FADEC channel.
+
+| Borescope
+| A flexible optical probe pushed through an access port to inspect turbine and compressor hardware without disassembling the engine. "Borescope the HPT nozzle and blades" is an inspection instruction, not a repair.
+
+| FOD
+| Foreign Object Damage. Damage from something ingested by the engine. It shows up as nicks and tears on blade leading edges.
+|===
+
+== Maintenance Vocabulary
+
+[cols="1,4"]
+|===
+| Term | Meaning
+
+| Fault
+| What went wrong, as recorded on a `MaintenanceEvent`. The dataset uses four: `Vibration exceedance`, `Bearing wear`, `Overheat`, and `Sensor drift`.
+
+| Severity
+| How urgent the event is: `MINOR`, `MAJOR`, or `CRITICAL`. Severity drives the response time an airline is allowed to take, and most fleet health queries in the labs rank on it.
+
+| Corrective action
+| What was done about the fault. Free text on the `MaintenanceEvent` node.
+
+| Removal event
+| A component taken off an aircraft, with its work order, technician, part and serial numbers, and hours and cycles at removal. Column names in this file are airline mainframe abbreviations: `RMV_TRK_NO` is the removal tracking number and `RMV_REA_TX` is the removal reason text.
+
+| Flight hours / flight cycles
+| The two ways component life is counted. Hours measure running time; one cycle is one takeoff and landing. Parts that wear from heat are tracked on hours, and parts that wear from stress are tracked on cycles.
+
+| On-condition
+| Maintenance done when inspection says it is needed, rather than at a fixed interval. HPT blades in these manuals are on-condition, monitored by borescope.
+
+| ATA chapter
+| The industry-standard numbering for aircraft systems, run by Airlines for America and used by every manufacturer. Chapter 29 is Hydraulic Power, 34 is Navigation, 71 to 79 cover the powerplant. Manual sections cite it, so it is how a fault maps to a section of documentation.
+
+| AMM
+| Aircraft Maintenance Manual. The manufacturer's procedures document. The five manuals in this workshop are AMM-format documents.
+
+| IPC / CMM
+| Illustrated Parts Catalog and Component Maintenance Manual. The parts breakdown and the shop-level repair procedures that sit behind an AMM reference.
+
+| MEL
+| Minimum Equipment List. The list of what may be inoperative and still allow dispatch, and for how long. "Dispatch with MEL if applicable" means the aircraft can fly with the fault noted.
+
+| SB / AD
+| Service Bulletin and Airworthiness Directive. A manufacturer's recommended modification, and a regulator's mandatory one.
+
+| LRU
+| Line Replaceable Unit. A part designed to be swapped at the gate rather than repaired in place. "LRU swap" is a fix that takes minutes.
+|===
+
+== Fleet and Operations
+
+[cols="1,4"]
+|===
+| Term | Meaning
+
+| Tail number
+| The aircraft registration painted on the tail, such as `N95040A`. Unique per aircraft, and the identifier people actually use. It is the join key you will type most often.
+
+| icao24
+| The 24-bit address broadcast by the aircraft transponder, written as six hex characters. Unique per airframe, and how live tracking feeds identify an aircraft.
+
+| IATA / ICAO codes
+| The two airport code systems. IATA codes are three letters and appear on tickets and baggage tags. ICAO codes are four letters and are used in flight plans. `Airport` nodes carry both.
+
+| Delay cause
+| Why a flight was late. The dataset uses four categories from the US Bureau of Transportation Statistics scheme: `Weather`, `Carrier` for anything inside the airline's control, `Maintenance`, and `NAS` for National Airspace System, meaning air traffic control, airport capacity, and routing constraints.
+
+| Fleet models
+| Five types: Airbus A220-300, A320-200, and A321neo, Boeing B737-800, and Embraer E190. Operating limits differ by model, which is why every limits query filters on `aircraftType`.
+|===
+
+== Where Each Term Lives
+
+Terms split across the two stores the same way the data does.
+
+[cols="2,2,3"]
+|===
+| Vocabulary | Store | Where you meet it
+
+| Sensor types, units, limits
+| Both
+| `Sensor` and `OperatingLimit` nodes in Neo4j, `sensors` and `sensor_readings` tables in Databricks
+
+| Readings and trends
+| Databricks
+| The `sensor_readings` table, reached through Genie in xref:lab4.adoc[Lab 4] and the `genie_node` tool in xref:lab5.adoc[Lab 5]
+
+| Faults, severities, removals
+| Neo4j
+| `MaintenanceEvent` and `Removal` nodes, reached through Cypher
+
+| Engine anatomy, ATA, AMM, MEL
+| Neo4j
+| Text inside `Chunk` nodes, reached through the GraphRAG retrievers built in xref:lab3.adoc[Lab 3]
+|===

@@ -114,7 +114,7 @@ ____
 
 One question, three tools, one answer. It routed `genie_node`, then `cypher_node`, then `graphrag_node`, in a single pass.
 
-Genie named the engines carrying abnormal EGT. The graph returned the maintenance history for those aircraft, including a bearing wear fault with its corrective action. The manual closed with the guidance for high EGT: trend data for margin degradation, oil spectrographic analysis, fuel filter differential pressure, and a borescope of the HPT nozzle and blades, with corrective actions graded from minor to critical.
+Genie named the engines carrying abnormal EGT (Exhaust Gas Temperature). The graph returned the maintenance history for those aircraft, including a bearing wear fault with its corrective action. The manual closed with the guidance for high EGT: trend data for margin degradation, oil spectrographic analysis, fuel filter differential pressure, and a borescope of the HPT (High-Pressure Turbine) nozzle and blades, with corrective actions graded from minor to critical. xref:glossary.adoc[The glossary] expands the manual's vocabulary.
 
 No single store holds all three answers. The telemetry is in Delta, the maintenance history is in the graph, and the guidance is in the manual chunks. That is why the workshop uses both platforms.
 
@@ -158,4 +158,4 @@ Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in your workspace, set `GE
 
 `tools.py` and `agent.py` sit next to the notebooks. They are worth opening in an editor rather than a cell, and `Lab_5_LangGraph_Agent/README.md` documents them.
 
-Then continue to xref:lab6.adoc[Lab 6], which gives this agent memory in the same graph as the fleet.
+Then continue to xref:lab6.adoc[Lab 6], which gives this agent memory in the same graph as the Aircraft Digital Twin.

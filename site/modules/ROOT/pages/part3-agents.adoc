@@ -5,7 +5,7 @@ Parts 1 and 2 built the two stores and the retrievers over them. Part 3 puts an 
 .**At a Glance**
 * **Lab 4 builds the Genie Agent**, natural language to SQL over the Lakehouse telemetry. It is the tool Lab 5's supervisor calls for anything time-series.
 * **Lab 5 is the workshop's final architecture.** You write the supervisor in LangGraph over three tools, then deploy it to Model Serving as a service principal.
-* **Lab 6 gives it memory**, stored in the same Aura instance as the fleet, so one Cypher query can cross conversation history and maintenance history.
+* **Lab 6 gives it memory**, stored in the same Aura instance as the Aircraft Digital Twin, so one Cypher query can cross conversation history and maintenance history.
 * **Two routes to the same behaviour.** Lab 4 carries an optional instructor demo of the no-code Agent Bricks version. Lab 5 is the code version you own.
 * **About three and a half hours** across the three labs.
 

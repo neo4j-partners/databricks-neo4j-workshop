@@ -25,7 +25,7 @@ came for.
 |---|---|
 | `MemoryEmbeddings`, `MemoryLLM` | The two adapters that put `neo4j-agent-memory` on Databricks Foundation Model endpoints |
 | `NotebookLoop`, `MemorySession` | A long-lived event loop, so an async client opened in one cell still works in the next |
-| `adoption_dry_run`, `adopt_aircraft` | Adoption of the fleet graph, with the guard rail that keeps it to `Aircraft` |
+| `adoption_dry_run`, `adopt_aircraft` | Adoption of the graph, with the guard rail that keeps it to `Aircraft` |
 | `aircraft_mentions`, `seed_memory` | Explicit-mention writing, and the seeded shift history the demos read |
 | `HEADLINE_QUERY`, `FLEET_ONLY_QUERY`, `MEMORY_ONLY_QUERY` | The query that crosses both halves, and its two controls |
 | `build_recall_node`, `build_remember_node` | The two nodes either side of the Lab 5 supervisor |
@@ -70,7 +70,7 @@ adopting one of them is a full reload, measured at four and a half minutes.
 `ADOPT_LABEL_TO_TYPE` is `Aircraft` alone, and `build_memory_settings` declares
 one entity type, `AIRCRAFT`, for the matching reason: entities the library
 creates take a label derived from their type, so `SYSTEM` becomes
-`:System:Entity` and collides with the fleet's own label.
+`:System:Entity` and collides with the graph's own label.
 
 `UNUSED_MEMORY_SUBSYSTEMS` names the four subsystems this lab never writes, and
 the library then leaves their indexes and constraints off the instance. Index

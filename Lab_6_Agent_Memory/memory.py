@@ -2,7 +2,7 @@
 
 Lab 5 built a supervisor over three stores and it forgot everything between
 questions. Lab 6 gives it memory, and the memory lives in the same Aura
-instance as the fleet graph, which is the entire reason this lab is worth
+instance as the Aircraft Digital Twin, which is the entire reason this lab is worth
 doing. A remembered aircraft is not a copy of an aircraft. It is the same
 node Lab 2 loaded, so a single Cypher statement can walk from "who asked
 about this" to "what maintenance actually found" without a join key.
@@ -13,7 +13,7 @@ What this module provides:
   ``neo4j-agent-memory`` run on Databricks Foundation Model endpoints.
 - ``NotebookLoop`` and ``MemorySession``  A long-lived event loop so an
   async client can be opened in one notebook cell and used in the next.
-- ``adoption_dry_run`` and ``adopt_aircraft``  Adoption of the fleet graph,
+- ``adoption_dry_run`` and ``adopt_aircraft``  Adoption of the graph,
   with the guard rail that keeps it to ``Aircraft``.
 - ``aircraft_mentions`` and ``seed_memory``  Explicit-mention writing, and
   the seeded shift history the demos read.
@@ -918,7 +918,7 @@ def adopt_aircraft(
     label_to_type: dict[str, str] | None = None,
     name_property_per_label: dict[str, str] | None = None,
 ) -> Any:
-    """Adopt the fleet ``Aircraft`` nodes as long-term memory entities.
+    """Adopt the graph's ``Aircraft`` nodes as long-term memory entities.
 
     Each node gains the ``:Entity`` label plus ``id``, ``type`` and ``name``.
     That is what makes a remembered aircraft the same node as a maintained
@@ -1032,7 +1032,7 @@ class SeedMessage:
 # Five technicians, five sessions, ten messages, replayed from the Phase 0
 # spike so the demos read against a known answer. The distribution is the
 # demo: three separate technicians each pulled the EGT trend on N10011
-# without knowing the others had, and the fleet graph ranks N10011 last of
+# without knowing the others had, and the graph ranks N10011 last of
 # six on critical events. Neither source says anything interesting alone.
 #
 # This is seeded in a setup step rather than written by the participant in a
@@ -1147,9 +1147,9 @@ def seed_memory(
 # =============================================================================
 
 # The one that matters. Line for line the point is the `(ac)` on the second
-# MATCH: it is bound in the memory half and reused in the fleet half. Same
+# MATCH: it is bound in the memory half and reused in the aircraft half. Same
 # node. No join key, no federation, no second query, because the conversation
-# graph and the fleet graph are one graph.
+# graph and the aircraft graph are one graph.
 HEADLINE_QUERY = """
 // 1. Conversation memory: which aircraft are technicians actually asking about
 MATCH (u:User)-[:HAS_CONVERSATION]->(c:Conversation)-[:HAS_MESSAGE]->(m:Message)
@@ -1160,7 +1160,7 @@ WITH ac,
      count(DISTINCT m)              AS mentions
 WHERE technicians >= $min_technicians
 
-// 2. Same node, fleet graph: what maintenance actually found
+// 2. Same node, aircraft graph: what maintenance actually found
 MATCH (ac)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)-[:AFFECTS_SYSTEM]->(sys:System)
 RETURN ac.tail_number                                       AS aircraft,
        technicians,

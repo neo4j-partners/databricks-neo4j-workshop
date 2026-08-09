@@ -37,6 +37,8 @@ The dataset includes:
 * **Maintenance Events** with fault severity and corrective actions
 * **Airports** in the route network
 
+The data speaks airline shorthand: sensor types like `EGT` and `N1Speed`, fault severities, and manual references such as ATA chapters. xref:glossary.adoc[The glossary] expands every term the labs use, and is worth keeping open in a second tab.
+
 === How the Data Splits Across Platforms
 
 image::dual-database-architecture.svg[Dual Database Architecture,align=center]
@@ -121,7 +123,7 @@ The xref:slides.adoc[slide decks] follow the same arc, and each lab page links t
 
 == Which Aura Instance Each Lab Uses
 
-Every required lab reads and writes the **one AuraDB Free instance you create in Lab 1**, and each lab's output is the next lab's input. Lab 2 loads the fleet, Lab 3 adds documentation and vector indexes to it, Lab 5 builds an agent that queries both, and Lab 6 writes the agent's memory back into it.
+Every required lab reads and writes the **one AuraDB Free instance you create in Lab 1**, and each lab's output is the next lab's input. Lab 2 loads the graph, Lab 3 adds documentation and vector indexes to it, Lab 5 builds an agent that queries both, and Lab 6 writes the agent's memory back into it.
 
 [cols="1,3"]
 |===
@@ -174,7 +176,7 @@ Every required lab reads and writes the **one AuraDB Free instance you create in
 | No-code multi-agent supervisor. Shown in the optional Lab 4 demo
 
 | **Neo4j Agent Memory**
-| Conversation memory stored as a graph beside the fleet data, in Lab 6
+| Conversation memory stored as a graph beside the Aircraft Digital Twin, in Lab 6
 
 | **Model Serving**
 | Deploys the agent as an endpoint authenticating as a service principal
