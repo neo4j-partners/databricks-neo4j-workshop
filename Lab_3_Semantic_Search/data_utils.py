@@ -344,6 +344,13 @@ SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
+# The SQL warehouse behind the Genie Agent, which is not a credential and is
+# kept here anyway. Lab 5 notebook 02 and Lab 6 both have to declare that
+# warehouse as a resource when they log a model, and asking a participant to
+# find the ID twice is how the two end up naming different warehouses. Lab 5
+# notebook 01 reads it off the Genie Agent once and stores it under this key.
+SECRET_KEY_WAREHOUSE_ID = "sql-warehouse-id"
+
 # Databricks caps a scope name at 128 characters. The prefix plus its separator
 # take 10, leaving this much for the user slug.
 MAX_SCOPE_SLUG_LENGTH = 118
@@ -405,6 +412,62 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
             "scope and stores all four keys there."
         ) from error
     return credentials
+
+
+def store_warehouse_id(workspace: Any, scope: str, warehouse_id: str) -> None:
+    """Store the Genie Agent's SQL warehouse ID in this participant's scope.
+
+    Written once, by Lab 5's 01_langgraph_agent.ipynb, and read by every
+    notebook after it that logs a model. A secret scope is not where a
+    non-secret usually goes; it is where this one goes because the scope is the
+    workshop's one per-participant store and it already exists by then.
+
+    Args:
+        workspace: A ``databricks.sdk.WorkspaceClient``.
+        scope: Scope name from secret_scope_name().
+        warehouse_id: The warehouse ID to store.
+
+    Raises:
+        ValueError: warehouse_id is empty.
+    """
+    if not warehouse_id.strip():
+        raise ValueError(
+            "warehouse_id is empty. An empty one is stored, read back by Lab 5 "
+            "notebook 02, logged into the model's resource list, and fails the "
+            "deploy fifteen minutes later."
+        )
+    workspace.secrets.put_secret(
+        scope=scope, key=SECRET_KEY_WAREHOUSE_ID, string_value=warehouse_id.strip()
+    )
+
+
+def read_warehouse_id(dbutils: Any, scope: str) -> str:
+    """Read the SQL warehouse ID Lab 5's notebook 01 stored.
+
+    Databricks redacts secret values in notebook output, so printing this
+    prints [REDACTED]. The value itself is intact in Python, which is all the
+    resource list needs.
+
+    Args:
+        dbutils: The notebook's dbutils handle.
+        scope: Scope name from secret_scope_name().
+
+    Returns:
+        The warehouse ID.
+
+    Raises:
+        RuntimeError: The scope or the key is missing.
+    """
+    try:
+        return dbutils.secrets.get(scope, SECRET_KEY_WAREHOUSE_ID)
+    except Exception as error:
+        # dbutils reports a missing scope or key through a Py4J-wrapped Java
+        # exception, a type this module cannot import to catch by name.
+        raise RuntimeError(
+            f"No '{SECRET_KEY_WAREHOUSE_ID}' in secret scope '{scope}'. Run "
+            "Lab 5's 01_langgraph_agent.ipynb first: its Section 1 reads the "
+            "warehouse off your Genie Agent and stores it there."
+        ) from error
 
 
 # =============================================================================

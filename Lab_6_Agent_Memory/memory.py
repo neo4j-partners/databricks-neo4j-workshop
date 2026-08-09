@@ -217,7 +217,7 @@ EMBEDDING_DIMENSIONS = 1024
 # Facts, hygiene runs and read auditing are library features nothing in this
 # lab calls, and the point index is for geocoded locations, which an aircraft
 # fleet has none of. Conversations, entities, preferences, users and the whole
-# reasoning trace are all kept: 02_instructor_demos.ipynb writes preferences
+# reasoning trace are all kept: 02_optional_demos.ipynb writes preferences
 # and reasoning traces and then traverses them.
 #
 # Plain strings rather than the MemorySubsystem enum so this module still

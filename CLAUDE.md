@@ -101,7 +101,7 @@ Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector noteb
 Labs 5 and 6 are both on disk:
 
 - `Lab_5_LangGraph_Agent/` holds `01_langgraph_agent.ipynb`, `tools.py`, `agent.py` and `README.md`. `tools.py` builds the three nodes and carries the supervisor prompt. `agent.py` wraps the same graph as an MLflow `ResponsesAgent` for Model Serving, reading its credentials from environment variables rather than `dbutils`
-- `Lab_6_Agent_Memory/` holds `01_agent_memory.ipynb`, `02_instructor_demos.ipynb`, `memory.py` and `README.md`. It adds a `recall` node before the supervisor and a `remember` node after it, leaving the three tools untouched, and redeploys the same Model Serving endpoint Lab 5 creates rather than a second one. `memory.py` imports from both `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, so the three lab folders have to stay siblings
+- `Lab_6_Agent_Memory/` holds `01_agent_memory.ipynb`, `02_optional_demos.ipynb`, `memory.py` and `README.md`. It adds a `recall` node before the supervisor and a `remember` node after it, leaving the three tools untouched, and redeploys the same Model Serving endpoint Lab 5 creates rather than a second one. `memory.py` imports from both `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, so the three lab folders have to stay siblings
 
 `expand.md` is the plan those labs were built from. It is a record of intent, not
 a description of what shipped, so read the labs' own files first.

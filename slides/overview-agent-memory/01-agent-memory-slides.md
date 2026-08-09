@@ -136,7 +136,7 @@ RETURN ac.tail_number AS aircraft, tc.tool_name AS tool,
 
 <!--
 2.0 minutes. This is the thesis slide. Walk the path with a finger on the screen. Do not read the Cypher as Cypher; read it as a sentence: trace, step, tool call, aircraft.
-Verbatim from Demo 4 of Lab_6_Agent_Memory/02_instructor_demos.ipynb. It runs; that is the notebook to open if the room wants proof.
+Verbatim from Demo 4 of Lab_6_Agent_Memory/02_optional_demos.ipynb. It runs; that is the notebook to open if the room wants proof.
 The caveat that returns on The Payoff: that last MATCH only resolves because the lab adopted the graph's Aircraft nodes. Without adoption the memory library creates its own N10011 Entity beside yours, the pattern matches nothing, and you are back to two stores joined by string comparison in Python.
 -->
 
@@ -159,7 +159,7 @@ RETURN old.preference AS superseded,
 
 <!--
 2.0 minutes. A live demo backs this one, which is why it survives a shortened day when Hot Path does not.
-Demo beat, Demo 1 of 02_instructor_demos.ipynb, run it or narrate it. Monday: add_preference says the EGT exceedance on N10004 is on the number two engine. Tuesday: the borescope says otherwise; a second preference says number ONE engine, then supersede_preference(old, new). get_preferences_for(active_only=True) now returns the number ONE engine, what the agent believes now; the same call with active_only=False, as_of=BEFORE_CORRECTION returns the number two engine, what it believed on Monday.
+Demo beat, Demo 1 of 02_optional_demos.ipynb, run it or narrate it. Monday: add_preference says the EGT exceedance on N10004 is on the number two engine. Tuesday: the borescope says otherwise; a second preference says number ONE engine, then supersede_preference(old, new). get_preferences_for(active_only=True) now returns the number ONE engine, what the agent believes now; the same call with active_only=False, as_of=BEFORE_CORRECTION returns the number two engine, what it believed on Monday.
 Nothing was deleted. The wrong answer is still attached to the aircraft and to the technician who gave it, stamped with the moment it stopped being true. An audit can reconstruct exactly what the agent knew at any point; delete the row instead and the agent cannot explain itself in an incident review.
 Do not pitch this as Neo4j beating mem0. Three live systems made three defensible calls. Handling being wrong is a design decision you have to make, not a feature you get.
 -->

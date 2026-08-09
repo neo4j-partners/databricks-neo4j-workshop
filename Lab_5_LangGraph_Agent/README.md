@@ -6,7 +6,7 @@ notebooks**, and the concepts are on the site:
 
 | File | What it is |
 |---|---|
-| `01_langgraph_agent.ipynb` | Build the three tools, write the supervisor, wire the graph, run it, measure the routing |
+| `01_langgraph_agent.ipynb` | Build the three tools, write the supervisor, wire the graph, run it, measure the routing. Section 1 also reads the Genie Agent's SQL warehouse ID and stores it in the participant's secret scope, which is where notebook 02 and Lab 6 read it from |
 | `02_deploy_and_evaluate.ipynb` | Log to Unity Catalog, deploy to Model Serving, evaluate with MLflow judges |
 | `tools.py` | Node builders, the supervisor prompt, and the graph schema the text-to-Cypher tool is given |
 | `agent.py` | The same graph wrapped as an MLflow `ResponsesAgent` |

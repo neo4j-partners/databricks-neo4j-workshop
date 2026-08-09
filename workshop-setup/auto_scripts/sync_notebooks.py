@@ -108,7 +108,7 @@ NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     ),
     (
         "Lab_6_Agent_Memory",
-        ("01_agent_memory.ipynb", "02_instructor_demos.ipynb", "memory.py"),
+        ("01_agent_memory.ipynb", "02_optional_demos.ipynb", "memory.py"),
         "Lab_6_Agent_Memory",
     ),
     (

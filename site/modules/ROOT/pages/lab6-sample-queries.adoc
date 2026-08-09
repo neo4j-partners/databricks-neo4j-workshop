@@ -29,10 +29,10 @@ IMPORTANT: These need `Lab_6_Agent_Memory/01_agent_memory.ipynb` to have run, in
 | The edge that crosses into the aircraft. The `Aircraft` is Lab 2's node
 
 | `(:ReasoningTrace)-[:HAS_STEP]\->(:ReasoningStep)`
-| What the agent did, one step per decision. Instructor demo only
+| What the agent did, one step per decision. Optional demos only
 
 | `(:ReasoningStep)-[:TOUCHED]\->(:Aircraft)`
-| Which entity a step reached. Instructor demo only
+| Which entity a step reached. Optional demos only
 |===
 
 '''
@@ -114,7 +114,7 @@ ORDER BY size(technicians) DESC, critical DESC
 
 == The Audit Trail
 
-Reasoning traces come from `02_instructor_demos.ipynb`, so this returns rows only on an instance where that notebook ran.
+Reasoning traces come from `02_optional_demos.ipynb`, so this returns rows only on an instance where that notebook ran.
 
 [source,cypher]
 ----

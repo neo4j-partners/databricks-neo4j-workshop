@@ -68,7 +68,7 @@ Lab_5_LangGraph_Agent/
   agent.py
 Lab_6_Agent_Memory/
   01_agent_memory.ipynb
-  02_instructor_demos.ipynb           <- the instructor drives this one
+  02_optional_demos.ipynb             <- optional; run it or watch the instructor
   memory.py
 ```
 

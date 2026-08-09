@@ -125,7 +125,7 @@ The scorer now requires the expected aircraft to appear and no other aircraft to
 
 Neo4j also publishes an earlier taxonomy that borrows LangGraph's semantic, episodic and procedural split. The workshop uses the one above because it is what the code participants run is built on.
 
-The participant notebook writes short-term memory only. Long term and reasoning are shown in `02_instructor_demos.ipynb`, an instructor-driven notebook that ships to every workspace. It covers four cases: a correction that supersedes an earlier belief rather than contradicting it, a preference scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes. That last case is the most interesting one, because a supervisor reading past traces routes on what has worked rather than on a fixed prompt.
+The participant notebook writes short-term memory only. Long term and reasoning are shown in `02_optional_demos.ipynb`, an optional notebook that ships to every workspace. Run it yourself if there is time, or watch the instructor drive it: it needs nothing beyond the Aura instance and the cluster you already have. It covers four cases: a correction that supersedes an earlier belief rather than contradicting it, a preference scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes. That last case is the most interesting one, because a supervisor reading past traces routes on what has worked rather than on a fixed prompt.
 
 == Going Further: Reasoning Traces
 
@@ -189,6 +189,8 @@ AuraDB Free caps at 200,000 nodes and 400,000 relationships. Memory adds a coupl
 Lab 5 deployed this agent to a Model Serving endpoint. Lab 6 redeploys **that** endpoint with the two new nodes in it, rather than standing up a second one. An endpoint per participant is the tightest quota in the workshop, and the registered model name and the endpoint name are constants in Lab 5's `agent.py` for exactly this reason.
 
 Memory adds no Databricks resource to the endpoint, because it writes to Aura, and Aura reaches the endpoint through environment variables rather than through MLflow's resource list. Lab 5 already set that up: the endpoint carries the Neo4j URI, username and password as secret references resolved at startup. Memory reads those same three variables, so the redeploy needs no new secrets and no second credential path.
+
+The redeploy does declare the same resource list Lab 5 declared, and that list names your Genie Agent and the SQL warehouse behind it. **Run Section 1 of Lab 5's `01_langgraph_agent.ipynb` before this lab.** It reads that warehouse ID off your Genie Agent and stores it in your secret scope, and Lab 6 reads it back from there. Without it, the log cell stops with the ID missing rather than failing fifteen minutes into the deploy.
 
 == Why the Lab Installs a Pinned Fork
 
