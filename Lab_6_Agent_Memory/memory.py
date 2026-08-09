@@ -107,7 +107,6 @@ def ensure_labs_on_path() -> tuple[Path, Path]:
 ensure_labs_on_path()
 
 from data_utils import (  # noqa: E402
-    DEFAULT_NEO4J_DATABASE,
     EMBEDDING_ENDPOINT,
     LLM_ENDPOINT,
     extract_text,
@@ -232,9 +231,8 @@ UNUSED_MEMORY_SUBSYSTEMS = ("facts", "consolidation", "read_audit", "geospatial"
 # should not be declaring itself a model.
 ENV_CREDENTIAL_NAMES = ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
 
-# The fourth variable, which is optional. An endpoint deployed from a scope
-# without a neo4j-database key does not carry it, and the runtime asks the
-# instance which database it holds instead of assuming a name.
+# The fourth variable, required like the other three. Aura names the database
+# and it is not always "neo4j", so the endpoint is told which one to use.
 ENV_DATABASE_NAME = "NEO4J_DATABASE"
 
 # How many past messages the recall node pulls in. Each one is a vector search
@@ -578,7 +576,7 @@ def build_memory_settings(
     username: str,
     password: str,
     *,
-    database: str = DEFAULT_NEO4J_DATABASE,
+    database: str,
     entity_types: Sequence[str] = ("AIRCRAFT",),
 ) -> Any:
     """Build ``MemorySettings`` pointed at the participant's Aura instance.
@@ -667,7 +665,7 @@ class MemorySession:
         username: str,
         password: str,
         *,
-        database: str = DEFAULT_NEO4J_DATABASE,
+        database: str,
         expected_uri_prefix: str | None = None,
     ) -> MemorySession:
         """Connect to Aura and return an open session.
@@ -708,25 +706,26 @@ class MemorySession:
 
         A Model Serving container has no ``dbutils`` and no notebook user, so
         Lab 5's ``agent.py`` deploys the endpoint with ``NEO4J_URI``,
-        ``NEO4J_USERNAME`` and ``NEO4J_PASSWORD`` bound to
-        ``{{secrets/<scope>/<key>}}`` references. Memory reads the same three
+        ``NEO4J_USERNAME``, ``NEO4J_PASSWORD`` and ``NEO4J_DATABASE`` bound to
+        ``{{secrets/<scope>/<key>}}`` references. Memory reads the same four
         rather than opening a second connection path, so the redeployed
         endpoint needs no new secrets and no new environment block.
 
         Args:
             database: Neo4j database name. Read from ``NEO4J_DATABASE`` when
-                omitted, falling back to the AuraDB Free name.
+                omitted.
             expected_uri_prefix: Passed to :func:`guard_write_target`.
 
         Returns:
             An open :class:`MemorySession`.
 
         Raises:
-            RuntimeError: One of the three variables is missing or empty.
+            RuntimeError: One of the four variables is missing or empty.
         """
         import os
 
-        missing = [name for name in ENV_CREDENTIAL_NAMES if not os.environ.get(name)]
+        required = (*ENV_CREDENTIAL_NAMES, ENV_DATABASE_NAME)
+        missing = [name for name in required if not os.environ.get(name)]
         if missing:
             raise RuntimeError(
                 f"Missing environment variables: {', '.join(missing)}. The "
@@ -738,11 +737,7 @@ class MemorySession:
             uri,
             username,
             password,
-            database=(
-                database
-                or os.environ.get(ENV_DATABASE_NAME, "").strip()
-                or DEFAULT_NEO4J_DATABASE
-            ),
+            database=database or os.environ[ENV_DATABASE_NAME].strip(),
             expected_uri_prefix=expected_uri_prefix,
         )
 
@@ -756,7 +751,7 @@ class MemorySession:
         database: str | None = None,
         expected_uri_prefix: str | None = None,
     ) -> MemorySession:
-        """Connect using the credentials Lab 3 notebook 01 stored.
+        """Connect using the credentials Lab 1 notebook 02 stored.
 
         The values are read, used and dropped inside this call, so nothing in
         the notebook binds a password to a name. Same scope, same keys and same

@@ -77,8 +77,6 @@ __all__ = [
     "build_runtime",
     "endpoint_name",
     "export_neo4j_env",
-    "resolve_database",
-    "scope_has_key",
     "serving_environment_vars",
 ]
 
@@ -105,9 +103,9 @@ AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
 _MAX_ENDPOINT_SLUG = 63 - len(AGENT_ENDPOINT_PREFIX) - 1
 
 # The names the endpoint's environment block binds to secret references. They
-# are read here and nowhere else, so a rename is one edit. The first three are
-# required. The fourth carries the database name, and an endpoint without it
-# falls back to asking the instance which database it holds.
+# are read here and nowhere else, so a rename is one edit. All four are
+# required, the database name included: Aura names the database and it is not
+# always "neo4j", so it travels as a credential rather than as a guess.
 ENV_NEO4J_URI = "NEO4J_URI"
 ENV_NEO4J_USERNAME = "NEO4J_USERNAME"
 ENV_NEO4J_PASSWORD = "NEO4J_PASSWORD"
@@ -119,7 +117,6 @@ ENV_NEO4J_DATABASE = "NEO4J_DATABASE"
 # variable rather than out of two places that can drift.
 DEFAULT_CONFIG: dict[str, Any] = {
     "genie_agent_id": "",
-    "neo4j_database": "",
     "llm_endpoint": LLM_ENDPOINT,
     "embedding_endpoint": EMBEDDING_ENDPOINT,
     "top_k": 3,
@@ -185,11 +182,11 @@ MISSING_CREDENTIAL_MESSAGE = (
     "This agent could not open its Neo4j connection, so no tool ran.\n\n"
     "{detail}\n\n"
     "The endpoint reads its Aura credentials from the environment variables "
-    f"{ENV_NEO4J_URI}, {ENV_NEO4J_USERNAME} and {ENV_NEO4J_PASSWORD}, each "
-    "deployed as a '{{secrets/<scope>/<key>}}' reference into the "
-    "'fleet-ops-<your-user>' scope from Lab 3 notebook 01. Check that the "
-    "endpoint carries all three, and that whoever created the endpoint can "
-    "still read that scope."
+    f"{ENV_NEO4J_URI}, {ENV_NEO4J_USERNAME}, {ENV_NEO4J_PASSWORD} and "
+    f"{ENV_NEO4J_DATABASE}, each deployed as a '{{secrets/<scope>/<key>}}' "
+    "reference into the 'fleet-ops-<your-user>' scope from Lab 1 notebook 02. "
+    "Check that the endpoint carries all four, and that whoever created the "
+    "endpoint can still read that scope."
 )
 
 
@@ -215,7 +212,7 @@ def endpoint_name(scope: str) -> str:
 
 
 def export_neo4j_env(dbutils: Any, scope: str) -> tuple[str, ...]:
-    """Copy the Lab 3 secret scope into this process's environment.
+    """Copy the Lab 1 secret scope into this process's environment.
 
     The notebook needs the same variables the endpoint will get, so that what
     it tests locally is what gets deployed. The values are read, written to
@@ -242,28 +239,6 @@ def export_neo4j_env(dbutils: Any, scope: str) -> tuple[str, ...]:
     )
 
 
-def scope_has_key(scope: str, key: str) -> bool:
-    """Report whether a secret scope carries a key, without reading its value.
-
-    ``list_secrets`` returns key names and timestamps, never values. A
-    ``{{secrets/...}}`` reference to a key that is absent fails when Model
-    Serving applies the endpoint configuration, so a scope written before
-    ``neo4j-database`` existed has to be detected rather than assumed.
-
-    Args:
-        scope: Scope name from ``tools.secret_scope_name``.
-        key: The key to look for.
-
-    Returns:
-        True when the scope holds that key.
-    """
-    from databricks.sdk import WorkspaceClient
-
-    return any(
-        entry.key == key for entry in WorkspaceClient().secrets.list_secrets(scope)
-    )
-
-
 def serving_environment_vars(scope: str) -> dict[str, str]:
     """Build the environment block a serving endpoint needs for Neo4j.
 
@@ -272,9 +247,9 @@ def serving_environment_vars(scope: str) -> dict[str, str]:
     the password exists only inside the container and never appears in the
     notebook, in MLflow, or in the endpoint's own configuration.
 
-    Three references are always built. The database is added only when the
-    scope holds ``neo4j-database``, so an older three-key scope still deploys;
-    an endpoint without it asks the instance which database it holds.
+    Four references, one per key. The database name is one of them: Aura does
+    not always call the database ``neo4j``, so the endpoint is told which one
+    to query rather than working it out at startup.
 
     Args:
         scope: Scope name from ``tools.secret_scope_name``.
@@ -289,16 +264,12 @@ def serving_environment_vars(scope: str) -> dict[str, str]:
         SECRET_KEY_NEO4J_USERNAME,
     )
 
-    environment = {
+    return {
         ENV_NEO4J_URI: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_URI}}}}}",
         ENV_NEO4J_USERNAME: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_USERNAME}}}}}",
         ENV_NEO4J_PASSWORD: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_PASSWORD}}}}}",
+        ENV_NEO4J_DATABASE: f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_DATABASE}}}}}",
     }
-    if scope_has_key(scope, SECRET_KEY_NEO4J_DATABASE):
-        environment[ENV_NEO4J_DATABASE] = (
-            f"{{{{secrets/{scope}/{SECRET_KEY_NEO4J_DATABASE}}}}}"
-        )
-    return environment
 
 
 # =============================================================================
@@ -322,43 +293,6 @@ class AgentRuntime:
     driver: Any
     database: str
     available_tools: tuple[str, ...]
-
-
-def resolve_database(driver: Any, requested: str = "") -> str:
-    """Name the Neo4j database the tools should query.
-
-    An Aura instance answers to ``neo4j``, and that is what Lab 2 and Lab 3 use.
-    Some instances carry a database named after the instance instead, and a
-    hardcoded ``neo4j`` fails against those with a routing error rather than a
-    readable one. An empty request therefore asks the server.
-
-    Args:
-        driver: A connected ``neo4j.Driver``.
-        requested: Database name from the model config or from the
-            ``NEO4J_DATABASE`` environment variable, or empty to resolve.
-
-    Returns:
-        The database name to pass as ``database_``.
-
-    Raises:
-        RuntimeError: The instance holds several databases and none is
-            ``neo4j``, so the choice cannot be made here.
-    """
-    if requested:
-        return requested
-    records, _, _ = driver.execute_query(
-        "SHOW DATABASES YIELD name RETURN DISTINCT name", database_="system"
-    )
-    names = [record["name"] for record in records if record["name"] != "system"]
-    if "neo4j" in names:
-        return "neo4j"
-    if len(names) == 1:
-        return names[0]
-    raise RuntimeError(
-        f"Cannot choose a Neo4j database among {names}. Store the one this "
-        "agent should query as the 'neo4j-database' key in your secret scope, "
-        "then redeploy."
-    )
 
 
 def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
@@ -388,7 +322,12 @@ def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
         )
     missing = [
         name
-        for name in (ENV_NEO4J_URI, ENV_NEO4J_USERNAME, ENV_NEO4J_PASSWORD)
+        for name in (
+            ENV_NEO4J_URI,
+            ENV_NEO4J_USERNAME,
+            ENV_NEO4J_PASSWORD,
+            ENV_NEO4J_DATABASE,
+        )
         if not os.environ.get(name)
     ]
     if missing:
@@ -399,12 +338,9 @@ def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
         os.environ[ENV_NEO4J_USERNAME],
         os.environ[ENV_NEO4J_PASSWORD],
     )
-    # The model config wins when it names a database, then the environment
-    # variable the endpoint carries from the secret scope, then the instance.
-    database = resolve_database(
-        driver,
-        config.get("neo4j_database") or os.environ.get(ENV_NEO4J_DATABASE, ""),
-    )
+    # The database name is a credential like the other three, so it arrives the
+    # same way and is read the same way.
+    database = os.environ[ENV_NEO4J_DATABASE]
 
     llm = get_llm(config.get("llm_endpoint", LLM_ENDPOINT))
     embedder = get_embedder(config.get("embedding_endpoint", EMBEDDING_ENDPOINT))

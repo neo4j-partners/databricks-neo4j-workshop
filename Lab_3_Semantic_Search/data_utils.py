@@ -344,15 +344,6 @@ SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
-# The name every scope written before neo4j-database existed implies.
-# read_neo4j_secrets falls back to it, and it is the only place that fallback
-# lives. It is a guess, not a rule: Aura names the database and often names it
-# after the instance ID, so an instance at f024ea61.databases.neo4j.io can serve
-# a database called f024ea61 and reject "neo4j" outright. Lab 1's
-# 02_credentials_and_cypher.ipynb detects the real name and stores it, which is
-# what keeps this fallback off the path for any scope written since.
-DEFAULT_NEO4J_DATABASE = "neo4j"
-
 # Databricks caps a scope name at 128 characters. The prefix plus its separator
 # take 10, leaving this much for the user slug.
 MAX_SCOPE_SLUG_LENGTH = 118
@@ -377,7 +368,13 @@ def secret_scope_name(spark: Any) -> str:
 
 
 def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
-    """Read the Neo4j connection values stored by notebook 01.
+    """Read the Neo4j connection values Lab 1's notebook 02 stored.
+
+    All four keys are required. The database name is a credential like the
+    other three: Aura names the database, often after the instance ID, so an
+    instance at f024ea61.databases.neo4j.io serves a database called f024ea61
+    and rejects "neo4j" outright. Lab 1's 02_credentials_and_cypher.ipynb
+    detects the real name and stores it, so there is nothing to guess here.
 
     Databricks redacts secret values in notebook output, so printing any of
     these prints [REDACTED]. The value itself is intact in Python.
@@ -390,13 +387,14 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
         Dict with uri, username, password, and database keys.
 
     Raises:
-        RuntimeError: The scope or one of its three credential keys is missing.
+        RuntimeError: The scope or one of its four keys is missing.
     """
     try:
         credentials = {
             "uri": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_URI),
             "username": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_USERNAME),
             "password": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_PASSWORD),
+            "database": dbutils.secrets.get(scope, SECRET_KEY_NEO4J_DATABASE),
         }
     except Exception as error:
         # dbutils reports a missing scope or key through a Py4J-wrapped Java
@@ -404,19 +402,8 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
         raise RuntimeError(
             f"Could not read Neo4j credentials from secret scope '{scope}'. "
             "Run Lab 1's 02_credentials_and_cypher.ipynb first: it creates the "
-            "scope and stores the credentials there."
+            "scope and stores all four keys there."
         ) from error
-
-    # The database key arrived after the other three, so a scope written before
-    # it exists holds three keys and dbutils raises on the fourth. Fall back to
-    # the common name rather than failing, which keeps those older scopes
-    # working. This is the one place that fallback lives. Re-running Lab 1's
-    # 02_credentials_and_cypher.ipynb writes the key and retires the guess.
-    try:
-        database = dbutils.secrets.get(scope, SECRET_KEY_NEO4J_DATABASE)
-    except Exception:
-        database = ""
-    credentials["database"] = database.strip() or DEFAULT_NEO4J_DATABASE
     return credentials
 
 
@@ -432,7 +419,7 @@ class Neo4jConnection:
         uri: str,
         username: str,
         password: str,
-        database: str = DEFAULT_NEO4J_DATABASE,
+        database: str,
     ):
         """Initialize and connect to Neo4j.
 
@@ -440,9 +427,9 @@ class Neo4jConnection:
             uri: Neo4j URI (e.g., "neo4j+s://xxxxxxxx.databases.neo4j.io")
             username: Neo4j username (typically "neo4j")
             password: Neo4j password
-            database: Neo4j database name. Defaults to the common name, which
-                the secret scope's neo4j-database key overrides. Aura does not
-                always call it neo4j, so prefer the stored value.
+            database: Neo4j database name, from the secret scope's
+                neo4j-database key. Required, because Aura does not always
+                call it neo4j.
         """
         self.uri = uri
         self.username = username
