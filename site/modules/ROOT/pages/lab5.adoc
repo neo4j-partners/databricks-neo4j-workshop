@@ -67,7 +67,7 @@ The prompt now tells `cypher_node` to return exactly `RETURN 'The graph holds no
 
 Refusal is the useful behaviour because the supervisor is still holding the question. A refusal routes it to `genie_node`, which can answer it. A plausible wrong number ends the conversation with a confident falsehood, and nothing downstream can tell that it happened.
 
-`OperatingLimit` is a good trap precisely because it is well-formed data: exactly twenty canonical limits, never empty, never duplicated. The nearest number is always available, which is what makes "return the nearest number" such an attractive failure.
+`OperatingLimit` catches the model out because the data is clean: exactly twenty canonical limits, never empty, never duplicated. A plausible number is always there to return, so the model reaches for it instead of admitting the graph has no reading.
 ====
 
 == Routing Accuracy
@@ -94,7 +94,7 @@ Twelve questions, four per tool, each scored on the first tool the supervisor ch
 | **8/8 (100%)**
 |===
 
-**The last row is the one that matters.** Both tools end in a graph traversal, so that pair is where a weak routing prompt fails first. Folding it into the overall average hides the one thing worth knowing.
+**The last row is the one to read.** Both tools end in a graph traversal, so that pair is where a weak routing prompt fails first. The overall average hides that result, which is why it is broken out.
 
 NOTE: Recorded 2026-08-08 from a full run of `01_langgraph_agent.ipynb`, against `SUPERVISOR_PROMPT` in `Lab_5_LangGraph_Agent/tools.py` as it stands today. These numbers are a claim about this workshop's prompt, so they go stale when someone edits it and not before. Section 9 of the notebook re-runs the measurement.
 
@@ -114,7 +114,7 @@ One question, three tools, one answer. It routed `genie_node`, then `cypher_node
 
 Genie named the engines carrying abnormal EGT. The graph returned the maintenance history for those aircraft, including a bearing wear fault with its corrective action. The manual closed with the guidance for high EGT: trend data for margin degradation, oil spectrographic analysis, fuel filter differential pressure, and a borescope of the HPT nozzle and blades, with corrective actions graded from minor to critical.
 
-No single store can answer that question. That is the whole argument of the workshop, in one prompt.
+No single store holds all three answers. The telemetry is in Delta, the maintenance history is in the graph, and the guidance is in the manual chunks. That is why the workshop uses both platforms.
 
 == Credentials, and What Happens Without Them
 
@@ -146,7 +146,7 @@ The registered model name and the endpoint name come from `agent.py` rather than
 
 Lab 4's optional demo reached Neo4j through an MCP server registered as a Unity Catalog HTTP connection. That is the right shape for a governed, shared, admin-managed instance, and the wrong shape for a classroom: the connection is an admin object, one per participant instance is not something a workshop can provision, and the OAuth2 credential behind it belongs to whoever owns the server.
 
-Your instance is yours, your password is in your secret scope, and the Neo4j Python driver opens a Bolt session against it in one line. The governance story that demo tells is real, and it starts to pay when the graph is shared. It costs more than it returns when the graph has exactly one user.
+Your instance is yours, your password is in your secret scope, and the Neo4j Python driver opens a Bolt session against it in one line. The governance the demo shows is worth the setup once an instance has several users and several agents reaching it. With one user and one agent, it costs more than it returns.
 
 == Next Steps
 

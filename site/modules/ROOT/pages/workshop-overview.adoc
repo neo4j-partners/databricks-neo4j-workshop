@@ -9,7 +9,7 @@ The system handles two fundamentally different kinds of questions:
 * **Relationship questions**: "Which components have had critical failures, and which flights did those failures delay?" These are best answered by traversing a graph in Neo4j.
 * **Time-series analytics questions**: "How have engine temperature readings trended over the last 90 days?" These are best answered by running SQL over columnar data in Databricks.
 
-A single database handles one kind well but not both. This workshop pairs Neo4j and Databricks so each handles the workload it is built for, then connects them through a shared AI layer.
+One database handles one of those kinds well. This workshop pairs Neo4j and Databricks so each handles the workload it is built for, then connects them through a shared AI layer.
 
 == The Aircraft Digital Twin Dataset
 
@@ -45,7 +45,7 @@ The labs build on each other, moving from a single graph database to a full mult
 * **Lab 2** loads the Aircraft Digital Twin into Neo4j from Databricks using the Spark Connector.
 * **Lab 3** adds semantic search: chunk the maintenance manual, generate embeddings, and build GraphRAG retrievers.
 * **Lab 4** builds a Genie Agent for sensor analytics, with an optional demo that turns it into a no-code Agent Bricks compound agent.
-* **Lab 5** writes the supervisor yourself in LangGraph, over Genie, your own graph and the Lab 3 retrievers, then deploys it to Model Serving.
+* **Lab 5** has you write the supervisor yourself in LangGraph, over Genie, your own graph and the Lab 3 retrievers, then deploy it to Model Serving.
 * **Lab 6** gives that agent memory in Neo4j, so conversation history and maintenance history sit in one graph and one query can cross both.
 
 == Architecture
@@ -54,9 +54,9 @@ The workshop lands on a **LangGraph supervisor agent that you write, deploy and 
 
 image::lab5-agent-topology.svg[The Lab 5 supervisor routing to a Genie node, a Cypher node and a GraphRAG node over the Databricks Lakehouse and your own Aura instance,align=center]
 
-Routing is a loop, not a one-shot decision. Every tool returns its result to the supervisor, which is free to pick another tool before it answers. That is how one question reaches both stores.
+Routing runs as a loop. Every tool returns its result to the supervisor, which can then pick another tool before it answers. That is how one question reaches both stores.
 
-Lab 4 shows the same routing idea reached a second way, without code. A **Supervisor Agent in Databricks Agent Bricks** sits over a Genie Agent and a governed Neo4j MCP connection. That is an optional demo rather than the destination, since the MCP server behind it is outside the scope of the workshop, and xref:lab4.adoc[Lab 4] puts the two approaches side by side.
+Lab 4 shows the same routing built a second way, without code. A **Supervisor Agent in Databricks Agent Bricks** sits over a Genie Agent and a governed Neo4j MCP connection. It stays an optional demo because the MCP server behind it is outside the scope of the workshop. xref:lab4.adoc[Lab 4] compares the two approaches side by side.
 
 == Labs
 
@@ -109,13 +109,13 @@ Every required lab reads and writes the **one AuraDB Free instance you create in
 | None. Genie queries Unity Catalog
 
 | Lab 4, optional demo
-| None of yours. The instructor's demo instance
+| The instructor's demo instance, not yours
 
 | Labs 5, 6
 | Yours
 
 | Appendix A
-| Not yours. Graph Data Science is not on AuraDB Free, so these are take-home, on an instance that carries the plugin
+| An instance carrying the Graph Data Science plugin, which AuraDB Free does not. These are take-home
 |===
 
 == Key Technologies

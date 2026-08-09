@@ -1,18 +1,18 @@
 = Appendix A: GDS Graph Analytics
 
-WARNING: **You cannot run these notebooks on your workshop instance.** Graph Data Science is not available on AuraDB Free, and AuraDB Free is the tier xref:lab1.adoc[Lab 1] puts you on. Every notebook in this appendix fails at its first `gds.` call. **Appendix A is take-home**: read it during the workshop, run it later on an instance that carries the plugin. The concepts are taught in the workshop's slides and they stand on their own without a single algorithm ever running.
+WARNING: **You cannot run these notebooks on your workshop instance.** Graph Data Science is not available on AuraDB Free, and AuraDB Free is the tier xref:lab1.adoc[Lab 1] puts you on. Every notebook in this appendix fails at its first `gds.` call. **Appendix A is take-home**: read it during the workshop, run it later on an instance that carries the plugin. The workshop's slides teach the concepts, and you can follow them without running any of the algorithms.
 
-The graph you built in Lab 2 already answers questions about what is connected to what. Graph algorithms answer a different kind of question: not "which components does this aircraft have" but "which aircraft behave like each other", "which airport would hurt most if it closed", and "which faults cluster together across the fleet". Those answers are computed from the shape of the graph rather than looked up in it.
+The graph you built in Lab 2 answers questions about what is connected to what. Graph algorithms answer a different kind of question: "which aircraft behave like each other", "which airport would hurt most if it closed", and "which faults cluster together across the fleet". Those answers are computed from the shape of the graph rather than read out of it.
 
 .**At a Glance**
 * **Three algorithm families**, one folder each: community detection, centrality, and similarity.
 * **Every one needs Lab 2 notebook 01** to have loaded the fleet, plus the GDS plugin, which AuraDB Free does not have.
-* **A projection is not a query.** GDS runs over an in-memory copy of the graph and writes results back as node properties.
-* **The output is a feature.** The point is not the score, it is that the score becomes a column an ML model in Databricks can train on.
+* **GDS runs on a projection.** It copies part of the graph into memory, runs the algorithm there, and writes results back as node properties.
+* **The output is a feature.** Each score becomes a node property, and that property becomes a column an ML model in Databricks can train on.
 
 == What Graph Algorithms Compute
 
-A Cypher query traverses the graph you have. A graph algorithm reads the whole structure and derives something that is nowhere in it.
+A Cypher query traverses the graph you have. A graph algorithm reads the whole structure and computes a value that is not stored anywhere in it.
 
 [cols="1,2,2"]
 |===
@@ -31,37 +31,37 @@ A Cypher query traverses the graph you have. A graph algorithm reads the whole s
 | Node Similarity (Jaccard)
 |===
 
-.Projections, and why the algorithm does not run on your graph directly
+.How a projection works
 [%collapsible]
 ====
-GDS does not run over the stored graph. It builds a **projection**: an in-memory, read-optimised copy holding only the labels and relationship types the algorithm needs. The algorithm runs there, and the results are written back to the stored graph as node properties.
+GDS runs over a **projection** rather than the stored graph: an in-memory, read-optimised copy holding only the labels and relationship types the algorithm needs. The algorithm runs there, and the results are written back to the stored graph as node properties.
 
-Two consequences follow. A projection is a snapshot, so results reflect the graph as it was when the projection was built. And projections hold memory until they are dropped, which is why every notebook in this appendix drops its projection at the end.
+Two things follow from that. A projection is a snapshot, so results reflect the graph as it was when the projection was built. And a projection holds memory until it is dropped, which is why every notebook in this appendix drops its projection at the end.
 ====
 
 == The Three Notebook Families
 
 **Community detection, Louvain.** Groups aircraft into risk communities from shared fault patterns. Nobody defines the communities in advance; they fall out of which aircraft keep having the same kinds of problems. The useful output is an aircraft that lands in a community whose other members are already failing.
 
-**Centrality, PageRank and Betweenness.** Scores airports by network influence, then finds the ones that act as connectors. These two disagree on purpose. PageRank finds the busy hubs. Betweenness finds the airports that sit on the paths between everything else, which are not always busy and are the ones whose closure fragments the route network.
+**Centrality, PageRank and Betweenness.** Scores airports by network influence, then finds the ones that act as connectors. The two algorithms rank airports differently on purpose. PageRank finds the busy hubs. Betweenness finds the airports that sit on the paths between everything else. Those are often quiet airports, and they are the ones whose closure breaks the route network into pieces.
 
 **Similarity, Node Similarity with Jaccard.** Finds aircraft sharing overlapping fault portfolios across different models. Two aircraft can be similar without sharing a model, a route or an operator, if the components that fail on them are the same components.
 
-.Where the kNN notebook lives, and why it is not here
+.Where the kNN notebook lives
 [%collapsible]
 ====
-`02_gds_knn_aircraft.ipynb` sits in Lab 2 rather than in this appendix, because it bridges both stores: it builds similarity from Databricks sensor behaviour and Neo4j maintenance history at once, which makes it part of the dual-database argument rather than an aside about algorithms.
+`02_gds_knn_aircraft.ipynb` sits in Lab 2 rather than in this appendix, because it uses both stores at once: it builds similarity from Databricks sensor behaviour and Neo4j maintenance history together. That makes it part of the dual-database story rather than a lesson about algorithms.
 
 The Node Similarity notebook here extends it. Its comparison queries assume the Lab 2 kNN notebook has already run, so run that one first.
 ====
 
 == Why This Belongs in a Databricks Workshop
 
-A community ID, a PageRank score and a similarity neighbour are all just numbers on a node once they are written back. Numbers on a node are **features**, and features go back to Databricks to train a model.
+A community ID, a PageRank score and a similarity neighbour are all numbers on a node once they are written back. Numbers on a node are **features**, and features go back to Databricks to train a model.
 
-That is the loop the workshop's graph-ML slides argue for, and it runs in both directions. Databricks sends sensor telemetry into the graph. The graph sends back structural features no table could have produced, because they are properties of the connections rather than of the rows. A failure-prediction model trained with "how central is this aircraft's usual airport" and "which fault community does it belong to" has information that a purely tabular pipeline never had access to.
+That loop runs in both directions. Databricks sends sensor telemetry into the graph. The graph sends back structural features no table could produce, because they describe the connections rather than the rows. A failure-prediction model trained with "how central is this aircraft's usual airport" and "which fault community does it belong to" has information a purely tabular pipeline never had.
 
-**The slides on this are taught in the workshop even though the notebooks are take-home.** The argument does not depend on anyone running an algorithm live.
+**The workshop teaches these slides even though the notebooks are take-home.** Understanding the loop does not require running an algorithm live.
 
 == Dependencies, and the Order to Read Them In
 

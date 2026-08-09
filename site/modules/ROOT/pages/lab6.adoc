@@ -2,7 +2,7 @@
 
 The Lab 5 agent answers one question at a time. Ask it about `N10011`, then ask "any maintenance events on that aircraft?", and it has no idea what *that* means. Close the notebook and everything it worked out is gone. This lab gives it a memory, and puts that memory in the same Aura instance the fleet already lives in.
 
-That last part is the whole lab. Most memory products keep conversations in a store of their own, so "which aircraft do people keep asking about" and "which aircraft is actually failing" end up in two systems joined by hand. Here a remembered aircraft **is** the `Aircraft` node Lab 2 loaded, and one `MATCH` walks from a technician's question to a maintenance record.
+Putting the memory in the same instance is what this lab is about. Most memory products keep conversations in a store of their own, so "which aircraft do people keep asking about" and "which aircraft is actually failing" end up in two systems that someone has to join by hand. Here a remembered aircraft **is** the `Aircraft` node Lab 2 loaded, so one `MATCH` walks from a technician's question to a maintenance record.
 
 TIP: Ready to start? Jump to the xref:lab6-instructions.adoc[Lab 6 Instructions] for the step-by-step walkthrough.
 
@@ -34,35 +34,35 @@ TIP: Ready to start? Jump to the xref:lab6-instructions.adoc[Lab 6 Instructions]
 
 `recall` searches what this team has said before, recent turns first. `remember` writes the question and the answer back, with the aircraft they mention.
 
-The three tools are exactly the ones xref:lab5.adoc[Lab 5] built, doing exactly what they did. The supervisor is the same node with a fourth variable in its prompt. That is the entire code delta between the two agents, and keeping it that small is what makes the memory-off against memory-on comparison in the notebook mean anything.
+The three tools are the ones xref:lab5.adoc[Lab 5] built, doing what they did there. The supervisor is the same node with a fourth variable in its prompt. Those are the only code changes between the two agents. Keeping the change that small is what lets the notebook compare memory-off against memory-on and attribute the difference to memory.
 
 `recall` runs once per question, not once per tool call. Wire memory as a tool instead and the supervisor is free to call it three times in one turn, at several seconds each, for no extra information.
 
-== Adoption, and What "The Same Node" Costs
+== Adoption: One Node in Both Halves
 
-The memory library wants to hang conversations off `(:Entity {name, type})` nodes. Left alone it creates its own `N10004` beside yours, and you are back to two stores joined by string comparison in Python.
+The memory library hangs conversations off `(:Entity {name, type})` nodes. Left alone it creates its own `N10004` beside yours, which leaves you with two stores that only a string comparison in Python can join.
 
 **Adoption** stops that. It adds the `:Entity` label and the library's `id`, `type` and `name` properties to nodes you already have. Afterwards there is one `N10004`: still an `Aircraft` with its flights and maintenance events, and now also an entity a message can point at.
 
 image::lab6-memory-graph.svg[Lab 6 memory graph,align=center]
 
-The conversation half and the fleet half meet on one node, and adoption is what puts them there.
+Adoption is what puts the conversation half and the fleet half on the same node.
 
 Adoption writes to nodes you already have, which makes it the one step in the workshop that changes data an earlier lab loaded. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and xref:lab6-instructions.adoc#cleaning-up[the instructions] show it along with the guard that keeps a memory cleanup from taking your fleet with it.
 
 .Why the lab adopts `Aircraft` and refuses four other labels
 [%collapsible]
 ====
-The obvious move is to adopt everything: `System`, `Component`, `Sensor`, `Document`. Richer memory, surely.
+Adopting everything looks like the better option: `System`, `Component`, `Sensor` and `Document` as well as `Aircraft`, for richer memory.
 
-`adopt_existing_graph` sets `n.type` unconditionally. Those four labels already carry a meaningful `type`, holding values like `Turbine` and `Engine` that Lab 2 and Lab 4 queries filter on. Adopt them and every one of those becomes the string `COMPONENT` or `SYSTEM`. No error, no warning, and the queries that filter on `type` quietly return nothing. Recovery is a full reload.
+It breaks the graph. `adopt_existing_graph` sets `n.type` unconditionally, and those four labels already carry a `type` of their own, holding values like `Turbine` and `Engine` that Lab 2 and Lab 4 queries filter on. Adopting them overwrites every one of those with the string `COMPONENT` or `SYSTEM`. There is no error and no warning, and the queries that filter on `type` start returning nothing. Recovery is a full reload.
 
-`Aircraft` has no `type` of its own, so adopting it overwrites nothing, and the headline query below needs `Aircraft` and nothing else. `memory.py` refuses the other four by name rather than trusting the notebook to get it right, and the notebook shows the refusal on purpose before it shows the successful adoption.
+`Aircraft` has no `type` of its own, so adopting it overwrites nothing, and the query below needs `Aircraft` and nothing else. `memory.py` refuses the other four labels by name rather than relying on the notebook to get it right, and the notebook shows that refusal on purpose before it shows a successful adoption.
 
 The same reasoning constrains what memory is allowed to create, though less sharply than it first looks. On its automatic extraction path the library adds an entity's type verbatim as a second label, so an entity of type `SYSTEM` becomes `:Entity:SYSTEM`. Neo4j labels are case sensitive, so that does not break `MATCH (s:System)`. What it leaves is an instance carrying both `:System` and `:SYSTEM`, differing only in case and holding unrelated things, which is a graph nobody can read six months later. The lab declares one entity type, `AIRCRAFT`, matched to the one label it adopts. On the explicit-mentions path the lab actually uses, the library adds no type label at all.
 ====
 
-== The Headline Query
+== The Query That Needs Both Halves
 
 Three queries over the same graph, in order.
 
@@ -70,9 +70,9 @@ Three queries over the same graph, in order.
 
 **The conversation memory alone**, ranked by how many different technicians asked, is what a memory product with no domain graph shows you. `N10011` is joint first.
 
-Read separately, each list is unremarkable. An aircraft with few critical events is fine. An aircraft several people asked about is a busy week. Put them side by side and it is a different sentence: three technicians, on three separate shifts, each pulled the EGT trend on an aircraft the maintenance record says is healthy. Either they are seeing something the record has not caught, or three people each wasted a shift on the same dead end. Both are worth a supervisor's attention, and neither list says it alone.
+Each list on its own says nothing unusual. An aircraft with few critical events is healthy. An aircraft several people asked about had a busy week. Read together they say something else: three technicians, on three separate shifts, each pulled the EGT trend on an aircraft the maintenance record calls healthy. Either they are seeing something the record has not caught, or three people each spent a shift on the same dead end. A supervisor wants to know about both, and neither list shows it alone.
 
-The query that says it is one statement:
+One query returns that:
 
 [source,cypher]
 ----
@@ -81,45 +81,45 @@ WITH ac, count(DISTINCT u) AS technicians, ...
 MATCH (ac)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)-[:AFFECTS_SYSTEM]->(sys:System)
 ----
 
-Line for line, the point is the `(ac)` on the second `MATCH`. It is bound in the memory half and reused in the fleet half. Same node, no join key, no federation, no second query. Without adoption that `ac` would be a memory entity that happens to share a name with an aircraft, and joining the two means exporting both sides and matching strings in Python. That code exists in a lot of production systems, and it is where the tail number `N10011` and the tail number `n10011 ` go to disagree.
+The `(ac)` on the second `MATCH` is what makes this work. It is bound in the memory half and reused in the fleet half: the same node, with no join key, no federation and no second query. Without adoption, that `ac` would be a memory entity that happens to share a name with an aircraft, and joining the two would mean exporting both sides and matching strings in Python. String matching is where the tail number `N10011` and the tail number `n10011 ` stop matching each other.
 
-== Recall Had Two Jobs, and Only One Was Obvious
+== What Recall Has to Do Besides Search
 
-Semantic search over past messages is the obvious half. The lab found the other two the expensive way, on live runs, and both are worth more than the feature they fixed.
+Semantic search over past messages is the first job. Two more turned up during live runs, and both are described below.
 
 === Memory reached the router and never reached the tool
 
-`recall` set `recalled`, the supervisor prompt rendered it, and the supervisor returned a route and nothing else. Lab 5's tools read the question text verbatim, which is Lab 5's documented contract, so a question saying "that aircraft" reached Genie as "that aircraft" and Genie replied asking which aircraft. Memory changed the route and changed no answer, which is the one claim the whole lab rests on.
+`recall` set `recalled`, the supervisor prompt rendered it, and the supervisor returned a route and nothing else. Lab 5's tools read the question text verbatim, which is Lab 5's documented contract, so a question saying "that aircraft" reached Genie as "that aircraft" and Genie replied asking which aircraft. Memory changed the route but not the answer, and the answer is what the lab claims memory improves.
 
 .The fix, and why it lives in the supervisor
 [%collapsible]
 ====
 The supervisor now returns a third field alongside the route: the question with every reference to an earlier one replaced. `MEMORY_ROUTE_SCHEMA` requires it, so the same call that picks a tool also rewrites the question, and there is no extra model call.
 
-The rewrite happens on the first pass only. After a tool has run, the question already carries the tail number, and rewriting a rewrite is how a question drifts. The participant's original wording is kept in a separate `asked` field so nothing is lost.
+The rewrite happens on the first pass only. After a tool has run, the question already carries the tail number, and rewriting an already-rewritten question lets it drift further from what was asked. The participant's original wording is kept in a separate `asked` field.
 
 Lab 5's `tools.py` is untouched by all of this. The same mechanism would close a known Lab 5 defect, where a tool is handed the question rather than the finding, and doing that belongs in Lab 5 rather than here.
 ====
 
 === Semantic search cannot know what "that" means
 
-The rewrite did not work on its own, and both reasons took a debugging cell to see rather than a guess.
+The rewrite alone was not enough. Two things went wrong, and a debugging cell was needed to find each one.
 
 **Every question the agent is asked is written to memory**, so the nearest neighbour to a question is very often that identical question, asked before. It scores near 1.0, it takes one of only three recall slots, and it carries none of what the supervisor needs, because the aircraft is in the reply and not in the question. Restatements of the question being asked are now dropped before the prompt sees them.
 
-**Even then, a follow-up resolved to the wrong aircraft.** "Which system was that on?" is short and generic, so its nearest neighbours are whatever the busiest aircraft in memory happens to be, and the setup question asked five seconds earlier lost to a week of seeded shift notes about a different one. Semantic search finds what is related. It cannot say what "that" means, because that is a fact about time, not about meaning. So `recall` reads the conversation's own recent turns first and puts the search behind them.
+**Even then, a follow-up resolved to the wrong aircraft.** "Which system was that on?" is short and generic, so its nearest neighbours are whatever the busiest aircraft in memory happens to be. The setup question asked five seconds earlier scored lower than a week of seeded shift notes about a different aircraft. Semantic search finds text with related meaning, and "that" refers to whatever came last, which is a fact about time rather than meaning. So `recall` reads the conversation's own recent turns first and runs the search after them.
 
 .The failure that was scored as a pass
 [%collapsible]
 ====
 The wrong-aircraft answer scored as resolved, because the scorer asked only whether the expected tail number appeared anywhere in the answer, and it happened to appear far enough down the text to be missed by the printed excerpt.
 
-The scorer now requires the expected aircraft to appear and no other aircraft to appear. **The failure worth catching is not a wrong answer, it is a confident answer to a question the agent did not understand**, and a substring test cannot tell those apart. Read the answers, not just the score.
+The scorer now requires the expected aircraft to appear and no other aircraft to appear. **The failure to catch is a confident answer to a question the agent misread**, which looks identical to a correct answer under a substring test. Read the answers as well as the score.
 ====
 
 == Three Layers, and Which Ones You Write
 
-`neo4j-agent-memory` splits memory three ways, and the three are the namespaces the code calls rather than a taxonomy invented for a slide.
+`neo4j-agent-memory` splits memory three ways. These three names are the namespaces the code actually calls.
 
 * **Short term.** The shift log. Messages, who said them, which entities they mention. This is what the lab's `recall` and `remember` nodes use.
 * **Long term.** The permanent record. Preferences and durable facts that outlive a session.
@@ -127,7 +127,7 @@ The scorer now requires the expected aircraft to appear and no other aircraft to
 
 Neo4j also publishes an earlier taxonomy that borrows LangGraph's semantic, episodic and procedural split. The workshop uses the one above because it is what the code participants run is built on.
 
-The participant notebook writes short-term memory only. Long term and reasoning are shown in `02_instructor_demos.ipynb`, an instructor-driven notebook that ships to every workspace: a correction that supersedes an earlier belief rather than contradicting it, a preference scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes. The last of those is the one to watch, because it turns routing from a fixed prompt into something that improves with use.
+The participant notebook writes short-term memory only. Long term and reasoning are shown in `02_instructor_demos.ipynb`, an instructor-driven notebook that ships to every workspace. It covers four cases: a correction that supersedes an earlier belief rather than contradicting it, a preference scoped to an aircraft rather than to a person, a shift handoff, and a reasoning trace the supervisor consults before it routes. That last case is the most interesting one, because a supervisor reading past traces routes on what has worked rather than on a fixed prompt.
 
 == Going Further: Reasoning Traces
 
@@ -146,17 +146,17 @@ RETURN ac.tail_number AS aircraft, tc.tool_name AS tool,
 ORDER BY tc.tool_name
 ----
 
-Walking that path answers two questions at once, and neither is answerable from a log line. **Which agent decisions touched this aircraft**, because the traversal starts at `ac` and every step that reached it is one hop away. And **which of them failed**, because `tc.status` is on the tool call and `s.observation` says what came back. An incident review that begins "why did the agent say that about `N10011`" is a traversal rather than a support ticket.
+Walking that path answers two questions that a log line cannot. **Which agent decisions touched this aircraft**, because the traversal starts at `ac` and every step that reached it is one hop away. And **which of those decisions failed**, because `tc.status` is on the tool call and `s.observation` records what came back. An incident review that starts with "why did the agent say that about `N10011`" runs as a query rather than a manual search through logs.
 
 NOTE: `TOUCHED` hangs off the `ReasoningStep`, not off the `ToolCall`. The traversal is step to entity for the audit and step to call for the mechanics.
 
-`MATCH (s)-[:TOUCHED]->(ac:Aircraft)` only resolves because the participant notebook adopted the fleet's `Aircraft` nodes. Without adoption the library would have written its own `N10011` entity and the pattern returns nothing, which is the headline query's lesson arriving from a different direction.
+`MATCH (s)-[:TOUCHED]->(ac:Aircraft)` only resolves because the participant notebook adopted the fleet's `Aircraft` nodes. Without adoption the library writes its own `N10011` entity and the pattern returns nothing. That is the same dependency the query in the previous section has, showing up in a different query.
 
 The library also keeps a running score per tool, `total_calls`, `successful_calls` and `failed_calls` on a `Tool` node, updated on every call. That is what a routing policy could read instead of a prompt.
 
 == What Memory Costs
 
-Memory is not free, and the notebook prints its own bill rather than hiding it.
+Memory adds latency to every turn. The notebook measures and prints it.
 
 [cols="2,1"]
 |===
@@ -174,37 +174,37 @@ Memory is not free, and the notebook prints its own bill rather than hiding it.
 
 NOTE: Recorded 2026-08-08 to 2026-08-09, from job runs replaying a harness copy of `01_agent_memory.ipynb` against a live Aura instance and live Databricks Foundation Model endpoints. `worklog/lab6-memory-defects.md` is the record, and run `241421965631969` is the one these come from. Section 9 of the notebook reproduces the comparison.
 
-Fifteen seconds a question is a good trade for a shift-handover agent, where the questions are few and the context is everything, and a bad one for a high-volume endpoint answering one-shot lookups. The number is what makes that a decision rather than a preference.
+Fifteen seconds a question is a good trade for a shift-handover agent, where the questions are few and the carried context matters. It is a bad trade for a high-volume endpoint answering one-shot lookups. Knowing the number lets you decide which case you are in.
 
-Lab 6 also writes on the hot path, during the turn, and that is a teaching choice rather than an engineering one: a participant who cannot see the write happen cannot debug it. A production handover agent would move the write off the turn and accept staleness instead, at which point "how far behind is memory right now?" becomes the question to answer.
+Lab 6 writes on the hot path, during the turn, for teaching reasons: a participant who cannot watch the write happen cannot debug it. A production handover agent would move the write off the turn and accept stale memory in exchange, which replaces this question with "how far behind is memory right now?".
 
 .What the graph itself costs
 [%collapsible]
 ====
-AuraDB Free caps at 200,000 nodes and 400,000 relationships. Memory adds a couple of dozen nodes per participant per session, so the node cap is not the thing to watch. Index count is: the library installs a schema of its own on first connect, on an instance already carrying Lab 3's vector index.
+AuraDB Free caps at 200,000 nodes and 400,000 relationships. Memory adds a couple of dozen nodes per participant per session, so the node cap has plenty of headroom. The index count is the constraint to watch: the library installs a schema of its own on first connect, on an instance that already carries Lab 3's vector index.
 
-`memory.py` names the four memory subsystems this lab never writes to, and the library then leaves their indexes and constraints off the instance entirely. Facts, consolidation runs, read auditing and a geospatial point index are all skipped. That narrowing is the reason the combined schema stays modest, and it is worth copying in any deployment where index quota is finite.
+`memory.py` names the four memory subsystems this lab never writes to, and the library then skips their indexes and constraints entirely. Facts, consolidation runs, read auditing and a geospatial point index are all left off. That keeps the combined schema small, and it is worth doing in any deployment where index quota is limited.
 ====
 
 == One Endpoint, Redeployed
 
 Lab 5 deployed this agent to a Model Serving endpoint. Lab 6 redeploys **that** endpoint with the two new nodes in it, rather than standing up a second one. An endpoint per participant is the tightest quota in the workshop, and the registered model name and the endpoint name are constants in Lab 5's `agent.py` for exactly this reason.
 
-Memory adds no Databricks resource, because it writes to Aura, and Aura is a credential rather than a resource. The serving container has no `dbutils` and no notebook user, and Lab 5 already solved that: the endpoint carries the Neo4j credentials as secret references resolved at startup, and memory reads those same three variables rather than opening a second credential path. The redeploy needs no new secrets.
+Memory adds no Databricks resource to the endpoint, because it writes to Aura, and Aura reaches the endpoint through environment variables rather than through MLflow's resource list. Lab 5 already set that up: the endpoint carries the Neo4j URI, username and password as secret references resolved at startup. Memory reads those same three variables, so the redeploy needs no new secrets and no second credential path.
 
-== A Pinned Fork, Not a PyPI Version
+== Why the Lab Installs a Pinned Fork
 
-The lab installs `neo4j-agent-memory` from a wheel on a Unity Catalog volume, built from a fork, rather than from PyPI. The released version silently drops most `MENTIONS` edges when it extracts entities, and `MENTIONS` is the exact edge the headline query walks. No exception, no warning, no edge. The fork fixes it, and the fix has not gone upstream yet.
+The lab installs `neo4j-agent-memory` from a wheel on a Unity Catalog volume, built from a fork, rather than from PyPI. The released version drops most `MENTIONS` edges when it extracts entities, with no exception and no warning, and `MENTIONS` is the edge the query above walks. The fork fixes that, and the fix has not gone upstream yet.
 
-That is worth knowing if you reproduce this at work, because it decides whether you are waiting on a release or carrying a patch. The library is pre-1.0 and moves fast, so treat any upgrade as a code change with its own test pass rather than as a version bump.
+If you reproduce this at work, that decides whether you wait for a release or carry a patch yourself. The library is pre-1.0 and changes quickly, so treat an upgrade as a code change with its own test pass rather than a version bump.
 
-Explicit mentions are the recommendation regardless of the defect. Handing the library the entities yourself is one fewer model call on the critical path, it is exact, and an agent normally knows what its tools just touched. Reserve LLM extraction for text nobody has parsed yet.
+Use explicit mentions whether or not the defect is fixed. Naming the entities yourself removes a model call from the critical path, the result is exact, and an agent already knows what its tools just touched. Use LLM extraction for text nobody has parsed yet.
 
 == Where Memory Belongs
 
-Databricks holds the telemetry, because timestamped values at that volume are cheap to scan there. Neo4j holds the topology, the history, and now the memory. The test is the same one every other placement decision in this workshop used: memory is relationship-rich, low-volume data whose entire value is in what it connects to. Put it anywhere else and every question that spans both halves becomes an export and a string match.
+Databricks holds the telemetry, because timestamped values at that volume are cheap to scan there. Neo4j holds the topology, the history and now the memory. The same test decided all three placements: memory is relationship-rich, low-volume data whose value is in what it connects to, so it goes in the graph. Put it anywhere else and every question spanning both halves needs an export and a string match.
 
-That is the closing argument of the workshop, and it is the argument xref:workshop-overview.adoc[the overview] opened with.
+xref:workshop-overview.adoc[The overview] opens with that same test.
 
 == Next Steps
 
