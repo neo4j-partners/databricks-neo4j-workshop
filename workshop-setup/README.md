@@ -88,9 +88,12 @@ Two administrator cases need an instance loaded ahead of time, and both use the
   either way, so the `limit_retriever` cell in Lab 3 notebook 02 still has a
   chain to traverse.
 
-`EMBEDDING_PROVIDER=databricks` calls the same `databricks-bge-large-en`
-endpoint Lab 3 calls, so vectors written by the loader and vectors written by the
-notebooks come from one model. Install it with `uv sync --extra databricks`.
+Embeddings have no provider setting. The loader always calls the same
+`databricks-bge-large-en` endpoint Lab 3 calls, so vectors written by the loader
+and vectors written by the notebooks come from one model. A bare `uv sync`
+installs everything that path needs, but the loader does need Databricks
+credentials, on the `--skip-extraction` path too. Set `DATABRICKS_CONFIG_PROFILE`
+or the host/token pair in `.env`.
 
 ### The Neo4j MCP connection, for Lab 4 Part B only
 
@@ -174,7 +177,7 @@ the only piece of the courseware that is not either data or a notebook.
 
 | | |
 |---|---|
-| Committed at | `lab/courseware/wheels/neo4j_agent_memory-0.5.1.dev0+mentions-py3-none-any.whl` |
+| Committed at | `lab/courseware/wheels/neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl` |
 | Reaches the volume by | `workshop.provision_data`, called from `lab/workspace_init.sh` |
 | Lands at | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
 | Installed on the cluster by | `VOC_COURSE_LIBRARIES` in `lab/course.env`, as `whl:` plus a separate `pypi:httpx>=0.27.0` |
@@ -183,7 +186,7 @@ the only piece of the courseware that is not either data or a notebook.
 **Why a fork.** Released `0.5.0` silently drops `MENTIONS` edges on the
 automatic extraction path, which is the edge Lab 6's headline query walks. The
 fix exists on that branch and nowhere else yet. The branch bumps the version to
-`0.5.1.dev0+mentions`, so `pip list` tells a patched install from an unpatched
+`0.5.1.dev1+mentions`, so `pip list` tells a patched install from an unpatched
 one at a glance.
 
 **Why a wheel rather than `git+https`.** It is byte-identical for every
@@ -218,9 +221,9 @@ provision if the directory is missing or empty, rather than warning. A volume
 without the wheel does not break one lab: it breaks the library install on
 every cluster in the class, at cluster start, with the student waiting.
 
-**One trap for Lab 6, and it is unmeasured.** `0.5.1.dev0+mentions` is a PEP 440
+**One trap for Lab 6, and it is unmeasured.** `0.5.1.dev1+mentions` is a PEP 440
 local version segment and resolves from nowhere. MLflow's inferred requirements
-will emit `neo4j-agent-memory==0.5.1.dev0+mentions` into the logged model, which
+will emit `neo4j-agent-memory==0.5.1.dev1+mentions` into the logged model, which
 the serving build container cannot install. So the logged model cannot be left
 to inference here.
 

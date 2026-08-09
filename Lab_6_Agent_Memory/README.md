@@ -217,7 +217,7 @@ the Unity Catalog volume, the same artifact the cluster and Model Serving both
 install:
 
 ```
-%pip install /Volumes/databricks-neo4j-workshop/aircraft/raw_data/neo4j_agent_memory-0.5.1.dev0+mentions-py3-none-any.whl httpx>=0.27.0
+%pip install /Volumes/databricks-neo4j-workshop/aircraft/raw_data/neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl httpx>=0.27.0
 dbutils.library.restartPython()
 ```
 
@@ -234,7 +234,7 @@ trap that follows from the version.
 A wheel carries no extras, which is why `httpx` is named separately. The
 `[nams]` extra contains exactly one thing, `httpx>=0.27.0`.
 
-The branch bumps `pyproject.toml` to `0.5.1.dev0+mentions`, so `pip list` tells
+The branch bumps `pyproject.toml` to `0.5.1.dev1+mentions`, so `pip list` tells
 a patched install from an unpatched one at a glance. The cost of that local
 version segment is that it does not resolve from PyPI, so anything pinning by
 version alone has to be handed the wheel path explicitly. MLflow's inferred
@@ -358,9 +358,13 @@ seed is ten messages and not fifty.
 
 ### Graph cost
 
-The memory library creates 33 indexes and 12 constraints on first connect.
-Memory itself costs about 20 nodes per participant per session, against roughly
-178,000 nodes of headroom on AuraDB Free after Labs 1 through 3.
+The memory library creates 25 indexes and 9 constraints on first connect. Its
+full schema is 33 and 12; `UNUSED_MEMORY_SUBSYSTEMS` in `memory.py` names the
+four subsystems this lab never writes to, and `build_memory_settings` passes
+them to the library so their schema is never installed. Skipped are facts,
+consolidation runs, read auditing and the geospatial point index. Memory itself
+costs about 20 nodes per participant per session, against roughly 178,000 nodes
+of headroom on AuraDB Free after Labs 1 through 3.
 
 ## What stays in your graph
 

@@ -6,11 +6,9 @@ import asyncio
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Any
 
 from neo4j import Driver
 from neo4j_graphrag.embeddings.base import Embedder
-from neo4j_graphrag.embeddings.openai import OpenAIEmbeddings
 from neo4j_graphrag.experimental.components.text_splitters.base import TextSplitter
 from neo4j_graphrag.experimental.components.types import TextChunks
 
@@ -114,21 +112,6 @@ class ContextPrependingSplitter(TextSplitter):
 # ---------------------------------------------------------------------------
 
 
-class DimensionAwareOpenAIEmbeddings(OpenAIEmbeddings):
-    """OpenAIEmbeddings that always passes ``dimensions`` to the API.
-
-    The pipeline's ``TextChunkEmbedder`` calls ``embed_query(text)`` without
-    a ``dimensions`` kwarg, so we override to inject it automatically.
-    """
-
-    def __init__(self, dimensions: int, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self._dimensions = dimensions
-
-    def embed_query(self, text: str, **kwargs: Any) -> list[float]:
-        return super().embed_query(text, dimensions=self._dimensions, **kwargs)
-
-
 class DatabricksEmbeddings(Embedder):
     """Embeddings from a Databricks Foundation Model serving endpoint.
 
@@ -140,7 +123,7 @@ class DatabricksEmbeddings(Embedder):
     vector.  It just retrieves slightly worse.  Copying the call is the point,
     not an accident waiting to be refactored away.
 
-    Requires the ``databricks`` extra (``mlflow-skinny``).
+    Reaches the workspace through ``mlflow-skinny``, a base dependency.
     """
 
     def __init__(self, model_id: str) -> None:
@@ -167,34 +150,16 @@ class DatabricksEmbeddings(Embedder):
         return await asyncio.to_thread(self.embed_query, text)
 
 
-def create_embedder(
-    *,
-    embedding_provider: str,
-    embedding_model: str,
-    embedding_dimensions: int,
-    openai_api_key: str | None,
-) -> Embedder:
+def create_embedder(*, embedding_model: str) -> Embedder:
     """Create the embedder for Chunk embeddings.
 
-    "bge" (default) runs the model locally via sentence-transformers, so no
-    API key is needed. "openai" calls the OpenAI embeddings API. "databricks"
-    calls a Foundation Model serving endpoint, which is the path Lab 3 uses.
+    There is one embedding path and this is it: the Databricks Foundation Model
+    serving endpoint, the same one Lab 3 queries the index through. No provider
+    switch, because a switch is a way to write vectors the index was not built
+    from, and no local model weights, because a lab should not download 1.3 GB
+    to produce 290 vectors.
     """
-    if embedding_provider == "bge":
-        from neo4j_graphrag.embeddings.sentence_transformers import (
-            SentenceTransformerEmbeddings,
-        )
-
-        return SentenceTransformerEmbeddings(model=embedding_model)
-    if embedding_provider == "openai":
-        return DimensionAwareOpenAIEmbeddings(
-            dimensions=embedding_dimensions,
-            model=embedding_model,
-            api_key=openai_api_key,
-        )
-    if embedding_provider == "databricks":
-        return DatabricksEmbeddings(model_id=embedding_model)
-    raise ValueError(f"Unknown embedding provider: {embedding_provider!r}")
+    return DatabricksEmbeddings(model_id=embedding_model)
 
 
 # ---------------------------------------------------------------------------
@@ -325,9 +290,7 @@ def _create_pipeline(
     anthropic_api_key: str | None,
     llm_model: str,
     llm_max_tokens: int,
-    embedding_provider: str,
     embedding_model: str,
-    embedding_dimensions: int,
     chunk_size: int,
     chunk_overlap: int,
 ):
@@ -349,12 +312,7 @@ def _create_pipeline(
     )
 
     # --- Embedder ---
-    embedder = create_embedder(
-        embedding_provider=embedding_provider,
-        embedding_model=embedding_model,
-        embedding_dimensions=embedding_dimensions,
-        openai_api_key=openai_api_key,
-    )
+    embedder = create_embedder(embedding_model=embedding_model)
 
     # --- Text splitter (with per-chunk context injection) ---
     inner_splitter = FixedSizeSplitter(
@@ -537,9 +495,7 @@ def process_all_documents(
     anthropic_api_key: str | None,
     llm_model: str,
     llm_max_tokens: int,
-    embedding_provider: str,
     embedding_model: str,
-    embedding_dimensions: int,
     chunk_size: int,
     chunk_overlap: int,
     enrich_sample_size: int = 0,
@@ -558,9 +514,7 @@ def process_all_documents(
         anthropic_api_key=anthropic_api_key,
         llm_model=llm_model,
         llm_max_tokens=llm_max_tokens,
-        embedding_provider=embedding_provider,
         embedding_model=embedding_model,
-        embedding_dimensions=embedding_dimensions,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
@@ -591,12 +545,9 @@ def process_all_documents_lexical_only(
     database: str,
     document_dir: Path,
     *,
-    embedding_provider: str,
     embedding_model: str,
-    embedding_dimensions: int,
     chunk_size: int,
     chunk_overlap: int,
-    openai_api_key: str | None = None,
     enrich_sample_size: int = 0,
 ) -> None:
     """Chunk and embed every maintenance manual, without entity extraction.
@@ -633,12 +584,7 @@ def process_all_documents_lexical_only(
     )
     from neo4j_graphrag.experimental.components.types import DocumentInfo, DocumentType
 
-    embedder = create_embedder(
-        embedding_provider=embedding_provider,
-        embedding_model=embedding_model,
-        embedding_dimensions=embedding_dimensions,
-        openai_api_key=openai_api_key,
-    )
+    embedder = create_embedder(embedding_model=embedding_model)
     splitter = ContextPrependingSplitter(
         FixedSizeSplitter(
             chunk_size=chunk_size,

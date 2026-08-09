@@ -506,7 +506,7 @@ def gold_sensors():
 
 @dlt.table(
     name=f"{GOLD_SCHEMA}.sensor_readings",
-    comment="Sensor readings at 4-hour intervals over 90 days (2024-07-01 to 2024-09-28), 155,520 rows. Each sensor has 540 readings spaced 6 per day; there is no hourly granularity, so per-hour buckets are not meaningful. Partitioned by sensor_id for efficient time-series queries.",
+    comment="Sensor readings at 4-hour intervals over 90 days (2024-07-01 to 2024-09-28), 155,520 rows across 288 sensors. Each sensor has 540 readings spaced 6 per day; there is no hourly granularity, so per-hour buckets are not meaningful. Partitioned by sensor_id for efficient time-series queries.",
     partition_cols=["sensor_id"]
 )
 def gold_sensor_readings():

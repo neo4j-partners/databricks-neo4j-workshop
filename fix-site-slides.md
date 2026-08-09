@@ -785,6 +785,24 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 > **What Lab 6 still owes, once the step 0 probe passes:** `lab6.adoc`, its nav entry, the xref at the end of `lab5.adoc` (plain text today), the `Lab 6` row in the `workshop-overview.adoc` lab table (plain text today), and the README shrink. Nothing else in step 8 is waiting on it.
 >
 > **Verified.** `npm run build` in `site/`, clean, three times across the step. `lab5.html` and `appendix-a.html` both publish, and the README's deep link was checked against the generated anchor id rather than guessed.
+> **STATUS: review pass over steps 1 through 8. Seven defects found and fixed.**
+>
+> A full read of every changed surface: site pages, `nav.adoc`, the slides, the root and per-lab READMEs, the touched notebooks, and the deploy workflow.
+>
+> **Clean.** Every `image::`, every `xref:`, and every notebook `raw.githubusercontent.com` URL resolves. No orphaned images. No dangling reference to any deleted page, README, `PART_A.md`, `Aura_Free_Trial.md` or root diagram outside `worklog/`. `npm run build` in `site/` is warning-free. The workflow builds the slides before Antora and `site/.gitignore` excludes the output, so the two halves agree. Lab 1's tier statements agree across page, notebook and deck. `tools.py` exports every name the Lab 5 README claims.
+>
+> **Fixed.**
+> - **`04_genie_agent.ipynb` contradicted itself on the telemetry grain.** The step 7 no-counts edit made cell `step1-header` say `Hourly-scale`, while cell `explore-readings` says 155,520 rows and cells `step3-instructions` and `partb-genie-subagent` both say every 4 hours. Those last two are Genie prompt text, where the grain is load-bearing. Reverted to `Telemetry every 4 hours over 90 days`. **The no-counts rule stops at a prompt block.** The site and slides keep the hedged wording, which is the split the rule intends.
+> - **`Lab_5_LangGraph_Agent/README.md` named the wrong file.** It said Lab 6's `memory.py` subclasses `FleetOpsAgent`. `memory.py` imports only `data_utils` and `tools`. The subclass is in `memory_agent.py`, which `01_agent_memory.ipynb` writes out with `%%writefile`. Claim inherited from the old README and re-asserted in the rewrite.
+> - **`lab5.adoc` overclaimed on credentials.** `No plaintext password appears anywhere in Lab 5` is false on the documented recovery path: notebook 01 carries a commented-out fallback cell. Scoped to the normal path and the fallback named.
+> - **Lab 4's duration disagreed.** Root README 30 + 10 = 40, `workshop-overview.adoc` 75, the notebook 30 + 20 = 50, `PART_B.md` 20. **Ryan's answer: 40.** The site row is now 40 and Part B is 10 in both notebook cells and in `PART_B.md`. The 20-minute figure was the instructor demo's own runtime estimate, so **check it against a real run before class.**
+> - **The Aura instance table omitted Appendix A**, the one entry that needs an instance the participant does not have. Row added.
+> - **`site/README.md` undercounted the slide build.** It said two output directories and named them without their `slides/` prefix; `build:assets` writes a third. Now three, correctly pathed, pointing at the section that explains the odd one. `Two consumers, one directory` also headed a three-row table.
+> - **`appendix-a.adoc` said `most` of `gds-exploring.md` is ordinary Cypher.** Actual: 20 of 35 blocks plain, 15 call `gds.`. Now `many`.
+>
+> **Two paths in this document went stale under it.** `agenda.md` was deleted and now lives at `worklog/agenda.md`; steps 9 and 10 below still cite the old path. `expand-v2.md`, whose false claim started this work, was deleted too, and the claim does not reappear in `expand-v3.md`.
+>
+> **New Aura Agents leftovers**, beyond the list already left for step 10: `agent_samples.py:1` and `main.py:506` docstrings. Cosmetic, in an admin CLI.
 9. **Write the three new decks:** LangGraph supervisor, deployment, agent memory. Two agent decks, not one, matching Lab 5's two notebooks.
 10. **Split and publish the remaining decks**, Workshop against Additional Background. **This is where the slides nav group lands**, along with the remaining `.adoc` wrappers. Three exist already under `site/modules/ROOT/pages/slides/` and are unreachable; the rest copy their `iframe` pattern. `governance/auth-sync-slides.md` needs its source rebuilt to HTML first, since it is PDF-only.
 

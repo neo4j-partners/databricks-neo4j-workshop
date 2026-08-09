@@ -187,7 +187,7 @@ __all__ = [
 # predates that list.
 WHEEL_PATH = (
     "/Volumes/databricks-neo4j-workshop/aircraft/raw_data/"
-    "neo4j_agent_memory-0.5.1.dev0+mentions-py3-none-any.whl"
+    "neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl"
 )
 HTTPX_REQUIREMENT = "httpx>=0.27.0"
 INSTALL_COMMAND = f"%pip install {WHEEL_PATH} {HTTPX_REQUIREMENT}"
@@ -203,12 +203,28 @@ INSTALL_COMMAND = f"%pip install {WHEEL_PATH} {HTTPX_REQUIREMENT}"
 # either string is written.
 
 # databricks-bge-large-en returns 1024 floats. The library reads this number
-# off the adapter and sizes all six of its vector indexes to match, then
+# off the adapter and sizes every vector index it creates to match, then
 # re-validates on every later connect and raises
 # EmbeddingDimensionMismatchError if it has moved. Changing the embedding
 # endpoint therefore means dropping the vector indexes, not just editing a
 # constant.
 EMBEDDING_DIMENSIONS = 1024
+
+# Memory subsystems this lab never writes to, named so the library leaves
+# their constraints and indexes off the instance. An AuraDB Free instance is
+# already carrying Lab 3's schema by the time Lab 6 connects, and index count
+# is the scarce thing there.
+#
+# Facts, hygiene runs and read auditing are library features nothing in this
+# lab calls, and the point index is for geocoded locations, which an aircraft
+# fleet has none of. Conversations, entities, preferences, users and the whole
+# reasoning trace are all kept: 02_instructor_demos.ipynb writes preferences
+# and reasoning traces and then traverses them.
+#
+# Plain strings rather than the MemorySubsystem enum so this module still
+# imports on a cluster where the wheel is not installed yet; the library
+# coerces them.
+UNUSED_MEMORY_SUBSYSTEMS = ("facts", "consolidation", "read_audit", "geospatial")
 
 # The three variables Lab 5's agent.py binds to secret references when it
 # deploys. Repeated here rather than imported, because importing agent.py runs
@@ -579,6 +595,10 @@ def build_memory_settings(
     artifacts next to real systems. One type, ``AIRCRAFT``, matched to the
     one label this lab adopts, keeps that from happening.
 
+    ``skip_subsystems`` is the other deliberate narrowing. The four named
+    there cover memory this lab never writes, and each one costs indexes on
+    an AuraDB Free instance that already carries Lab 3's schema.
+
     Args:
         uri: Aura bolt URI.
         username: Neo4j user.
@@ -591,6 +611,7 @@ def build_memory_settings(
     """
     from neo4j_agent_memory.config.settings import (
         MemorySettings,
+        MemorySubsystem,
         Neo4jConfig,
         SchemaConfig,
         SchemaModel,
@@ -610,6 +631,7 @@ def build_memory_settings(
             model=SchemaModel.CUSTOM,
             entity_types=list(entity_types),
             enable_subtypes=False,
+            skip_subsystems={MemorySubsystem(name) for name in UNUSED_MEMORY_SUBSYSTEMS},
         ),
     )
 
@@ -621,11 +643,13 @@ class MemorySession:
     memory is written under. Open it once near the top of the notebook, use
     it from every cell after that, close it at the end.
 
-    First connect is the expensive one. The library creates 33 indexes and 12
-    constraints, six of them vector indexes sized from
-    ``MemoryEmbeddings.dimensions``, and that took 22.4 seconds when measured.
-    It happens once per database rather than once per session, so a second run
-    of the notebook connects quickly.
+    First connect is the expensive one. The library creates 25 indexes and 9
+    constraints, five of them vector indexes sized from
+    ``MemoryEmbeddings.dimensions``. The full schema is 33 indexes and 12
+    constraints, and ``UNUSED_MEMORY_SUBSYSTEMS`` is what takes it down.
+    Connecting took 22.4 seconds when the full schema was measured. It happens
+    once per database rather than once per session, so a second run of the
+    notebook connects quickly.
 
     Attributes:
         client: The connected ``MemoryClient``.

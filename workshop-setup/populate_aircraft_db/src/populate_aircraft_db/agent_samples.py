@@ -240,11 +240,9 @@ def _create_llm_client(
     openai_key: str | None = None,
     anthropic_key: str | None = None,
     llm_model: str,
-    embedding_provider: str,
     embedding_model: str,
-    embedding_dimensions: int,
 ):
-    """Return an LLM callable and an embed callable based on the providers."""
+    """Return an LLM callable and an embed callable for the chosen LLM provider."""
 
     if provider == "openai":
         from openai import OpenAI
@@ -281,12 +279,7 @@ def _create_llm_client(
 
     from .pipeline import create_embedder
 
-    embedder = create_embedder(
-        embedding_provider=embedding_provider,
-        embedding_model=embedding_model,
-        embedding_dimensions=embedding_dimensions,
-        openai_api_key=openai_key,
-    )
+    embedder = create_embedder(embedding_model=embedding_model)
 
     def embed(text: str) -> list[float]:
         return embedder.embed_query(text)
@@ -423,9 +416,7 @@ def run_agent_samples(
     openai_key: str | None = None,
     anthropic_key: str | None = None,
     llm_model: str,
-    embedding_provider: str,
     embedding_model: str,
-    embedding_dimensions: int,
     sample_size: int = 0,
 ) -> None:
     """Run all agent sample questions with LLM-generated Cypher."""
@@ -434,9 +425,7 @@ def run_agent_samples(
         openai_key=openai_key,
         anthropic_key=anthropic_key,
         llm_model=llm_model,
-        embedding_provider=embedding_provider,
         embedding_model=embedding_model,
-        embedding_dimensions=embedding_dimensions,
     )
 
     questions = SAMPLE_QUESTIONS

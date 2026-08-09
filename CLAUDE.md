@@ -25,7 +25,7 @@ All Python tools use `uv` for package management and `hatchling` as build backen
 ### populate_aircraft_db (Neo4j data loading CLI)
 ```bash
 cd workshop-setup/populate_aircraft_db
-uv sync --extra anthropic --extra databricks   # bare `uv sync` installs no extras
+uv sync                                     # embeddings work out of the box
 uv run populate-aircraft-db setup           # Load CSV data + enrich (chunking, embeddings, entity extraction)
 uv run populate-aircraft-db setup --skip-extraction   # same, minus the extractor LLM. No OpenAI or Anthropic key
 uv run populate-aircraft-db verify         # Print node/relationship counts
@@ -33,9 +33,12 @@ uv run populate-aircraft-db clean          # Delete all data
 uv run populate-aircraft-db samples        # Run showcase Cypher queries
 ```
 
-`--extra anthropic` is required when `LLM_PROVIDER=anthropic` and `--extra
-databricks` when `EMBEDDING_PROVIDER=databricks`. Neither is installed by a bare
-`uv sync`.
+`--extra anthropic` is the one remaining extra, required when
+`LLM_PROVIDER=anthropic`. Embeddings have no extra and no provider setting: they
+always call the `databricks-bge-large-en` serving endpoint, whose client
+`mlflow-skinny` is a base dependency. That makes Databricks credentials a
+prerequisite for every `setup` and `enrich`, including `--skip-extraction`. Set
+`DATABRICKS_CONFIG_PROFILE` or `DATABRICKS_HOST`/`DATABRICKS_TOKEN` in `.env`.
 
 ### Databricks provisioning
 `lab/workshop.py` is the one definition of this course's Databricks objects: the
@@ -108,7 +111,7 @@ a description of what shipped, so read the labs' own files first.
 Each tool reads from `.env` files (see `.env.example` in each directory). Key variables:
 - **Neo4j**: `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`
 - **LLM**: `LLM_PROVIDER` (openai/anthropic), `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`
-- **Embeddings**: `EMBEDDING_PROVIDER` (bge/openai/databricks), configured separately from `LLM_PROVIDER`
+- **Embeddings**: no provider setting. Always the `databricks-bge-large-en` serving endpoint at 1024 dimensions, reached with the `DATABRICKS_*` credentials below. `DATABRICKS_EMBEDDING_MODEL` renames the endpoint and is the only knob
 - **Databricks**: `DATABRICKS_PROFILE`, `DATABRICKS_ACCOUNT_ID`, `CATALOG_NAME`
 
 All config uses Pydantic `BaseSettings` with `SecretStr` for passwords.

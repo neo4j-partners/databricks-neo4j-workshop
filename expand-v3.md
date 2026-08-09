@@ -178,7 +178,9 @@ TOTAL                                              260.4     4:20
 ### Capacity
 
 - **A participant finishing Labs 1 through 3 holds about 21,613 nodes,** 10.8 percent of the AuraDB Free cap, with roughly 178,000 nodes of headroom. Memory costs about 20 nodes per participant per session. Full analysis in `worklog/aura-node-budget.md`.
-- **The 59 indexes coexisting on the development instance prove nothing about Free.** That instance is multi-database and is not Free. **Participants get Free.** Read the 59 as evidence the schema installs, never as evidence the cap tolerates it.
+- **The index and constraint question is closed, on Free, and there is no capacity concern left.** The development instance `f024ea61` is itself AuraDB Free, confirmed on the Aura console, so its numbers are evidence about Free rather than evidence about something else. Detail in section 3.
+  - **An earlier draft of this line said the opposite** and read the counts as proving nothing, on the reasoning that the instance was not Free. That reasoning was wrong twice over: the instance is Free, and the database-name signal it rested on points the other way.
+  - **The schema footprint has since been cut roughly in half,** so the tested ceiling now sits further under the cap than the measurement that closed the question. Nothing here is close to a limit.
 
 ### Content and cleanup
 
@@ -199,6 +201,8 @@ TOTAL                                              260.4     4:20
   - **`f024ea61` is AuraDB Free.** Confirmed on the Aura console: instance `workshop-free-v2`, Type `AuraDB Free`, version 2026.07.
   - **The database-name heuristic that appeared here was backwards, and it is worth naming so it is not repeated.** An earlier draft said Free names its home database `neo4j`, so an instance named after its own id is not Free. **The opposite is true.** AuraDB Free names the home database after the instance id, which is exactly why `f024ea61`'s home database is `f024ea61`. **No signal available from inside the database identifies the tier**, `dbms.components()` least of all, since it reports `enterprise` everywhere. The console is the only source.
   - The check stays durable at `workshop-setup/verify/src/verify_aura_caps/main.py`, run as `uv run verify-aura-caps`, in read-only `check` and apply-then-roll-back `probe` modes. It reads the home database out of `SHOW DATABASES` rather than assuming `neo4j`.
+  - **The footprint has since been cut roughly in half, so 71 is now the high-water mark rather than the shape that ships.** The answer only gets safer. Re-run `verify-aura-caps check` once to record the new number, and the tool's hard-coded Lab 6 projection needs updating to match.
+  - **Treat this as settled and stop re-opening it.** Anything that reads as a Free capacity concern is stale text, not new evidence.
 
 **One thing the console showed that no query reports: `f024ea61` sits at 177,171 nodes, 89 percent of the 200,000 Free cap**, with 206,908 relationships at 52 percent. That is not a participant's shape. It carries 155,520 `Reading` nodes, and `Reading` is the label the dual-database design puts in Databricks and never in Neo4j. A participant finishing Labs 1 through 3 holds about 21,613 nodes. **The cap result above stands either way**, because indexes and constraints are not nodes, but the loader path that put 155,520 readings into an AuraDB Free instance is worth finding before a class runs it.
 
@@ -214,12 +218,20 @@ TOTAL                                              260.4     4:20
   - **This is the same shape as the Lab 6 memory defect, with a finding in place of a memory, and the Lab 6 fix would close both.**
   - **Moderate severity:** single-tool questions are unaffected, and those are what the labs demonstrate.
   - **It is the only failing pair of six in the shipped notebook's evaluation,** and it fails on the question the lab builds toward. **Decide whether the notebook ships ending on a visible 5 of 6.**
-- **Re-capture the memory-off baseline.** The existing artifact is dated on four axes: a superseded `tools.py`, a pre-rebuild lakehouse, no Genie answer at all, and a maintenance-history answer taken before the backwards-arrow fix.
+- **BLOCKING, and the reason both re-measurements stalled: the deployed endpoint does not run the code on disk.** Measured 2026-08-09 by downloading the served artifact and reading it, rather than by trusting the registry.
+  - **The endpoint serves UC model version 9, and version 9 carries `databricks-meta-llama-3-3-70b-instruct`.** The supervisor moved to Claude in a commit made after every model version that exists. Versions 10 and 11 were checked too and are also llama. **There is no already-logged Claude version to shift traffic to.**
+  - **The served `tools.py` is 121 lines shorter than the repo's,** 1097 against 1218, with the repo's inserts landing in the supervisor-prompt and Genie-handoff regions. So the endpoint is stale on the model and on the agent code, independently.
+  - **The backwards-arrow fix is in version 9,** verified by reading both files. That fix predates the drift and is not part of it.
+  - **Any evaluation run against this endpoint today measures llama on old code.** A number taken that way and filed as a Claude baseline would be worse than no number.
+  - **The unblock is a fresh log and deploy, about 15 minutes, and it needs Ryan's authorization.** It clears both staleness axes in one operation.
+- **Re-capture the memory-off baseline,** in the same run as the routing re-measurement above once the endpoint is redeployed.
+  - **The existing artifact is not merely dated, it describes an endpoint that no longer exists.** `worklog/lab5_memory_off_baseline.json` records model version 1 and llama, captured against a pre-rebuild lakehouse. The endpoint has since moved to version 9.
   - **The trap to avoid:** a memory-on run returning 23 maintenance events is the arrow fix landing, not memory improving recall. Whoever reads the comparison has to be told this inside the comparison.
+  - **The worse trap, and the reason this is urgent.** Lab 6 redeploys this same endpoint. Redeploy from the current tree and the supervisor becomes Claude in the same operation that turns memory on. **A memory-off llama baseline compared against a memory-on Claude run attributes the whole difference to memory.** Baseline and comparison must sit on the same model.
   - Carry forward what is still valid: the 15.8 minute cold deploy, the interpretation notes, and the rule that expected-tools is a subset test and never an exact match, because the supervisor retries on an empty or failed tool.
-- **Re-measure routing on Claude.** The 48 of 48 figure and the deploy notebook's 6 of 6 routing score were both taken on `databricks-meta-llama-3-3-70b-instruct`. The supervisor is now `databricks-claude-sonnet-5`, and **a model change voids routing numbers exactly the way a prompt change does.** Two runs are owed.
-  - The 48-case routing suite across 9 groups, on a participant-shaped instance carrying zero `Reading` nodes.
-  - The deploy notebook's 6-pair evaluation, which is the same run as the re-captured memory-off baseline below. One execution covers both.
+- **Re-measure routing on Claude.** The 48 of 48 figure and the deploy notebook's 6 of 6 routing score were both taken on llama. **A model change voids routing numbers exactly the way a prompt change does.** Two runs are owed.
+  - The 48-case routing suite across 9 groups. **Runs against `tools.py` on disk, so it needs no deploy** and is the one measurement not blocked above.
+  - The deploy notebook's 6-pair evaluation. Blocked on the redeploy.
   - **The four Cypher schema bullets are the thing most likely to move.** Each was written against an observed llama failure. The backwards-arrow and invented-relationship sweeps are the two to re-run first.
 - ~~**One line prints an empty result to every participant.**~~ **DONE.** `print("Usage:", result["usage"])` is removed from the deploy notebook. The endpoint returns an empty usage block, so every participant was seeing `Usage: {}` immediately after a fifteen minute deploy. The `usage` key stays in the helper's return value and nothing prints it.
 - **Exercise the extracted-entity routing path** against a graph loaded with extraction on. Blocked on a working LLM key.
@@ -294,10 +306,18 @@ TOTAL                                              260.4     4:20
 - **The limit uniqueness constraint keys on `limit_id`, not `name`.** A uniqueness constraint is not enforced against nodes lacking the property, so `limit_id` binds the canonical rows and ignores everything else.
 - **The memory library runs on the self-hosted bolt path, pinned to the fork wheel, adopting `Aircraft` only, writing in explicit mode.** Four conditions, each of which fails silently rather than loudly.
 - **The Lab 4 Genie space attaches four tables:** `sensor_readings`, `aircraft`, `sensors`, `systems`.
-- **Do not attach the two derived tables, and drop their Genie comments.** The evidence closed this one.
+- **The pipeline is the single author of table comments. `workshop.py` no longer restates them.** Genie reads comments to write SQL, and two writers meant the second silently overwrote the first with a thinner string.
+  - **What the thinner string was deleting.** On `sensor_readings` it removed the sentence saying there is no hourly granularity so per-hour buckets are not meaningful, which is a guardrail against one specific wrong query. `aircraft` lost "Join key for all fleet queries", `sensors` lost its four type values, `maintenance_events` lost its severity values.
+  - **Column comments stay in `workshop.py`,** because the pipeline cannot write them. Verified: every `comment=` in `dlt_fleet_etl.py` is the table-level decorator argument, and the file carries no `COMMENT ON`, no explicit `StructField` schema and no column metadata.
+  - One merge was needed: `across 288 sensors` moved into the pipeline's `sensor_readings` comment. On the other five the pipeline text was already a strict superset.
+  - Runner-up was enriching `workshop.py`'s strings to match, which lost because it leaves the same prose in two files. **Two copies of one definition already drifted once in this repo, in the gold tables, and the symptom was a Genie space answering wrong.**
+- **A recorded decision that never actually held, corrected here.** An earlier version of this line said the two derived tables were left uncommented on purpose, so Genie would be less likely to reach for them.
+  - **That was never true in any provisioned workspace.** The pipeline has always commented `fleet_readiness` and `sensor_health`, and `workshop.py` could only add comments, never remove one. Not commenting a table does not make it uncommented.
+  - **Steering Genie away from the two summary tables needs a different mechanism,** and is open.
+- **`sensor_health` carries a real defect, and it is not a comment problem.** Open, see section 5.
   - **The health-status column can never emit its documented `ANOMALY` value.** The rule fires on `p95 > avg + 2*stddev` while `p95` is approximately `avg + 1.645*stddev`, so the threshold is unreachable. Measured across all 288 sensors: **284 WARNING, 4 NORMAL, 0 ANOMALY.**
-  - A table whose documented status value never occurs is a table Genie would answer wrongly from, so the comment that promises it goes. Both tables keep their SELECT grant and stay browsable.
-  - Runner-up was fixing the rule so `ANOMALY` can fire, which lost because nothing attaches the table and the fix would change a published gold table for no consumer.
+  - **The column is uninformative even where it works.** 284 of 288 sensors read WARNING, so the value separates nothing.
+  - Both tables keep their SELECT grant and stay browsable.
 
 **How Cypher defects get fixed**
 
@@ -321,7 +341,8 @@ Each says what the decision is, what the evidence is, and what it blocks.
 - ~~**Does AuraDB Free tolerate 71 indexes and 24 constraints on one instance?**~~ **ANSWERED: yes.**
   - All 45 Lab 6 objects created and dropped cleanly on top of a real Lab 2 plus Lab 3 graph, zero errors, exact rollback, **on `f024ea61`, which the Aura console shows as Type `AuraDB Free`**.
   - **The threshold is 71 indexes, not the 59 carried in earlier notes.** Constraint-backing indexes were never counted.
-  - **Blocked Lab 6 entirely. Blocks nothing now.**
+  - **And 71 is no longer what ships.** The schema footprint has since been cut roughly in half, so the tested worst case is now well above the real one.
+  - **Blocked Lab 6 entirely. Blocks nothing now, and is not to be re-opened.** The only follow-up is bookkeeping: record the new count and correct the check tool's projection.
 - **Regenerate the Antora site, or drop the link from README line 1?**
   - The site stops at Lab 4 and carries pre-regeneration dataset numbers, and it publishes on every push to main.
   - Writing two lab pages is content creation, not drift repair, which is why the audit left it.
@@ -484,7 +505,10 @@ The first version of this plan drifted from the repository in one repeatable way
 - **Verify against disk before writing a status.** Grep for the symbol, read the line, list the directory. The most common error in the first version was reporting a decision as if it were a file.
 - **Each remaining item carries its own probe.** "The list names 10 entries" should carry `grep -c ipynb lab/course.env` beside it, so re-verification is a command rather than a re-read. That is the difference between a rule that holds and one that gets skipped at the end of a long session.
 - **Measurements name what they were measured against.** A development instance and a participant-shaped instance are different graphs and give different answers. One capacity figure misled this plan for a week because it did not say which instance produced it.
-- **A prompt change voids the routing numbers taken before it.** Applies to `tools.py` and the supervisor prompt without exception. A 19 of 20 run was voided this way by a 56 line edit made after it.
+- **A prompt change voids the routing numbers taken before it.** Applies to `tools.py` and the supervisor prompt without exception. A 19 of 20 run was voided this way by a 56 line edit made after it. **A model change voids them the same way.**
+- **A measurement through the deployed endpoint names the served artifact, not the repository.** They drift, and the drift is invisible from either side.
+  - **Read the served code, do not trust the version number.** The endpoint was found serving a model version whose bundled `tools.py` was 121 lines shorter than the repository's and whose supervisor endpoint was the superseded one, while the working tree had moved on. Downloading the artifact is the only thing that shows this.
+  - **The registry is not the answer either.** Every logged version was checked, and the current code had never been logged at all.
 - **Completion criteria are measurements.** "Deployment succeeded" is not a criterion. "The deployed endpoint answered a Genie question as the serving principal" is.
 - **Silent failures get their own line item.** The four memory conditions, the serving principal's secret read, and the Genie table grant all fail with no error message. Each is a checklist item, never a note buried in a paragraph.
 - **Measured work gets committed before the next measurement starts.** Otherwise an endpoint's provenance is the hash of a file that exists in one working tree and nowhere else.
@@ -502,15 +526,19 @@ Two Aura instances, so one line of work does not corrupt the other's evidence.
 
 | Instance | Credentials | Role |
 |---|---|---|
-| `f024ea61` | `workshop-setup/.env` | Lab 5 and Lab 6 development. **The `fleet-ops-<user-slug>` secret scope points here**, so this is what the labs actually read |
-| `1a2c98cc` | `workshop-setup/.env.memory` and `populate_aircraft_db/.env` | Memory research |
+| Instance | Tier | Credentials | Role |
+|---|---|---|---|
+| `f024ea61` | **AuraDB Free**, console name `workshop-free-v2` | `workshop-setup/.env` | Lab 5 and Lab 6 development. **The `fleet-ops-<user-slug>` secret scope points here**, so this is what the labs actually read |
+| `1a2c98cc` | unconfirmed | `workshop-setup/.env.memory` and `populate_aircraft_db/.env` | Memory research |
 
-- **Neither instance is AuraDB Free, so no capacity or index number from either is evidence about Free.** Both report `enterprise`, as every Aura tier does. `f024ea61`'s standard database is named after the instance rather than `neo4j`, which Free never does. **Participants get Free.**
+- **`f024ea61` is Free, so its index and constraint numbers are evidence about Free.** That is what closed the last no-go. Participants get Free, and the development instance is the same thing they get.
+- **Ask the console for a tier, never the database.** `dbms.components()` reports `enterprise` on every Aura tier, so it settles nothing. The database name is worse than useless: **AuraDB Free names the home database after the instance id**, so `f024ea61`'s home database being `f024ea61` is a Free signal and was once read here as the opposite.
+- **No capacity concern remains,** and the footprint has since been cut roughly in half. Do not re-open it on the strength of an old sentence.
 - **The separation does not hold through the workspace, and that was chosen deliberately.** The secret scope points at `f024ea61`, so Lab 6 writes memory into the Lab 5 measurement graph. The alternative was overriding the environment to write elsewhere, which would leave the shipped credential path untested.
 - **Verify what is on `f024ea61` before trusting a measurement taken there.** It was found **empty** on 2026-08-09, with the fleet graph, the Lab 3 chunks and the memory schema all gone, contradicting several measurements recorded against it.
   - **Reloaded the same day** through `populate-aircraft-db setup --skip-extraction` in 5:04: 177,067 nodes, 207,597 relationships, 286 of 286 chunks embedded at 1024 dims, both GraphRAG indexes ONLINE, all 12 constraints present.
   - **The Lab 6 memory schema is not back.** Anything that depended on it has to re-run the lab.
-  - **The loader defaults to the local `bge` embedder, not Databricks.** Neither `.env` sets `EMBEDDING_PROVIDER`, so a bare run pulls a 1.3 GB model instead of using the endpoint Lab 3 uses. Set `EMBEDDING_PROVIDER=databricks` explicitly.
+  - **The loader used to default to a local `bge` embedder rather than Databricks,** so a bare run pulled 1.3 GB of model weights onto the machine instead of calling the endpoint Lab 3 uses. **Being removed:** the provider switch goes entirely, leaving `databricks-bge-large-en` as the only path, so the trap cannot be re-entered by leaving a variable unset. Anything embedded before that change was embedded locally. Same model and same 1024 dimensions, so the vectors are interchangeable and nothing needs re-embedding.
 - **Standing hazard.** `populate_aircraft_db/config.py:13` pins `populate_aircraft_db/.env` at import time, and that file points at `1a2c98cc`. **A bare `populate-aircraft-db clean` from any directory wipes the memory instance, regardless of what the caller thought they were pointed at.**
 
 ### Cadence

@@ -1,6 +1,6 @@
 # populate-aircraft-db
 
-Standalone CLI tool that generates the Aircraft Digital Twin dataset and loads it into a Neo4j Aura instance. The `generate` command produces the synthetic CSV dataset with correlated sensor degradation. The `setup` command handles the full loading pipeline: CSV data loading, maintenance manual chunking, BGE-large embedding generation locally via sentence-transformers, and independently configured LLM-powered entity extraction with OpenAI or Anthropic via `neo4j-graphrag`'s `SimpleKGPipeline`.
+Standalone CLI tool that generates the Aircraft Digital Twin dataset and loads it into a Neo4j Aura instance. The `generate` command produces the synthetic CSV dataset with correlated sensor degradation. The `setup` command handles the full loading pipeline: CSV data loading, maintenance manual chunking, BGE-large embedding generation through the `databricks-bge-large-en` serving endpoint, and independently configured LLM-powered entity extraction with OpenAI or Anthropic via `neo4j-graphrag`'s `SimpleKGPipeline`.
 
 **This is manual, and nothing automates it.** The Vocareum hooks in `lab/` build the Databricks side and reach nothing outside the workspace. Neo4j runs in Aura and the labs connect out to it over Bolt, so no workspace resource hosts a database, `workspace_init.sh` has nothing to create, and `lab_end.sh` has nothing to tear down. `dbx-vocareum/docs/neo4j-aura.md` records that decision and what follows from it. Participants load their own instance during Labs 2 and 3; this tool is for the two administrator cases, the instructor's demo instance behind Lab 4 Part B and a participant who fell behind. See `workshop-setup/README.md` for when each applies.
 
@@ -14,7 +14,7 @@ cp .env.example .env
 # Edit .env with your credentials
 
 # Install and run
-uv sync                              # BGE embeddings + OpenAI extraction
+uv sync                              # Databricks embeddings + OpenAI extraction
 uv sync --extra anthropic            # include Anthropic extraction support
 uv run populate-aircraft-db clean
 uv run populate-aircraft-db setup
@@ -95,20 +95,15 @@ Settings are loaded from a `.env` file in the project root or from environment v
 | `DATA_DIR` | no | `../aircraft_digital_twin_data` | CSV directory for operational graph loading |
 | `DOCUMENT_DIR` | no | `../aircraft_digital_twin_data` | Maintenance manual directory for enrichment (same directory; CSVs and manuals live together) |
 | `LLM_PROVIDER` | no | `openai` | LLM provider for entity extraction: `openai` or `anthropic` |
-| `EMBEDDING_PROVIDER` | no | `bge` | Chunk embedding provider: `bge` (local sentence-transformers, no API key), `openai`, or `databricks` |
-| `BGE_EMBEDDING_MODEL` | no | `BAAI/bge-large-en-v1.5` | BGE embedding model (used when `EMBEDDING_PROVIDER=bge`) |
-| `BGE_EMBEDDING_DIMENSIONS` | no | `1024` | BGE embedding dimensions — matches the Lab 3 `maintenanceChunkEmbeddings` index |
-| `OPENAI_API_KEY` | for setup (openai) | - | OpenAI API key. Required for extraction when `LLM_PROVIDER=openai` and for embeddings when `EMBEDDING_PROVIDER=openai` |
-| `OPENAI_EMBEDDING_MODEL` | no | `text-embedding-3-small` | OpenAI embedding model (used when `EMBEDDING_PROVIDER=openai`) |
-| `OPENAI_EMBEDDING_DIMENSIONS` | no | `1536` | OpenAI embedding dimensions (used when `EMBEDDING_PROVIDER=openai`) |
+| `OPENAI_API_KEY` | for setup (openai) | - | OpenAI API key. Required for entity extraction when `LLM_PROVIDER=openai`. Embeddings never use it |
 | `OPENAI_EXTRACTION_MODEL` | no | `gpt-5-mini` | Chat model for entity extraction (OpenAI) |
 | `OPENAI_EXTRACTION_MAX_COMPLETION_TOKENS` | no | `8000` | OpenAI extraction output budget. Keep this high for GPT-5-family structured extraction |
 | `ANTHROPIC_API_KEY` | for setup (anthropic) | - | Anthropic API key |
 | `ANTHROPIC_EXTRACTION_MODEL` | no | `claude-sonnet-4-6` | Chat model for entity extraction (Anthropic) |
 | `ANTHROPIC_EXTRACTION_MAX_TOKENS` | no | `8000` | Anthropic extraction output budget |
-| `DATABRICKS_EMBEDDING_MODEL` | no | `databricks-bge-large-en` | Serving endpoint used when `EMBEDDING_PROVIDER=databricks` |
-| `DATABRICKS_EMBEDDING_DIMENSIONS` | no | `1024` | Dimensions of that endpoint. Matches the Lab 3 index |
-| `DATABRICKS_CONFIG_PROFILE` | no | - | Profile in `~/.databrickscfg` to authenticate with |
+| `DATABRICKS_EMBEDDING_MODEL` | no | `databricks-bge-large-en` | Serving endpoint that produces every chunk embedding |
+| `DATABRICKS_EMBEDDING_DIMENSIONS` | no | `1024` | Dimensions of that endpoint. Sizes the `maintenanceChunkEmbeddings` index |
+| `DATABRICKS_CONFIG_PROFILE` | no | - | Profile in `~/.databrickscfg` to authenticate with. Required unless the host/token pair or an ambient environment supplies credentials |
 | `DATABRICKS_HOST` | no | - | Workspace URL, if not using a profile |
 | `DATABRICKS_TOKEN` | no | - | Personal access token, if not using a profile |
 | `CHUNK_SIZE` | no | `800` | Characters per chunk (setup) |
@@ -118,31 +113,25 @@ Settings are loaded from a `.env` file in the project root or from environment v
 
 ### Embeddings vs extractor LLM
 
-Chunk embeddings default to BGE-large (`BAAI/bge-large-en-v1.5`, 1024 dimensions), run locally via sentence-transformers with no API key. This matches the `databricks-bge-large-en` embeddings and the 1024-dim `maintenanceChunkEmbeddings` vector index used in Lab 3, so embeddings are compatible across the workshop. Entity extraction is controlled separately with `LLM_PROVIDER` and always needs an OpenAI or Anthropic API key.
+Chunk embeddings have one path and no provider setting. Every embedding comes from the `databricks-bge-large-en` Foundation Model serving endpoint at 1024 dimensions, which is the same endpoint the Lab 3 notebooks call. The loader and Lab 3 both write into the single 1024-dim `maintenanceChunkEmbeddings` vector index, and an index cannot represent the difference between two ways of producing a vector. It just retrieves slightly worse. A second embedding path is how that difference gets in, so there is no second path, and nothing is downloaded to the machine running the loader.
 
-To use the default BGE embeddings with Anthropic entity extraction (no OpenAI key needed):
+Entity extraction is a separate setting. `LLM_PROVIDER` picks `openai` or `anthropic`, and that path needs its own API key unless you pass `--skip-extraction`.
+
+**The loader needs Databricks credentials.** Embeddings run on every `setup` and `enrich`, including `--skip-extraction`, so the workspace is always on the critical path. Point it at a workspace with either a profile or the host/token pair:
+
+```dotenv
+DATABRICKS_CONFIG_PROFILE=DEFAULT
+```
+
+Inside a Databricks notebook, leave the host, token, and profile unset: authentication is already in the environment. The client this uses, `mlflow-skinny`, is a base dependency, so a bare `uv sync` installs it.
+
+Anthropic entity extraction, needing no OpenAI key:
 
 ```dotenv
 LLM_PROVIDER=anthropic
 ANTHROPIC_API_KEY=sk-ant-your-key
 ANTHROPIC_EXTRACTION_MODEL=claude-sonnet-4-6
 ```
-
-To opt back in to OpenAI embeddings (1536 dimensions — incompatible with the Lab 3 index dimensions):
-
-```dotenv
-EMBEDDING_PROVIDER=openai
-OPENAI_API_KEY=sk-your-openai-key
-```
-
-To embed through the same Databricks Foundation Model endpoint the Lab 3 notebooks call, so the vectors this loader writes and the vectors a participant writes come from one model:
-
-```dotenv
-EMBEDDING_PROVIDER=databricks
-DATABRICKS_CONFIG_PROFILE=DEFAULT
-```
-
-Install the extra it needs with `uv sync --extra databricks`. Inside a Databricks notebook, leave the host, token, and profile unset: authentication is already in the environment.
 
 If `LLM_PROVIDER=openai` and you see repeated `LLM response has improper format` messages, keep `OPENAI_EXTRACTION_MAX_COMPLETION_TOKENS` at `8000` or higher. GPT-5-family models can spend part of that budget on structured-output reasoning before emitting the JSON graph.
 
@@ -208,7 +197,7 @@ Uses `neo4j-graphrag`'s `SimpleKGPipeline` to process maintenance manuals from
 `DOCUMENT_DIR` (A320-200, A321neo, B737-800, E190, A220-300 by default):
 
 1. **Chunking**: Splits text into ~800-character chunks with overlap
-2. **Embedding**: Generates BGE-large embeddings (local sentence-transformers, 1024 dimensions) stored on Chunk nodes
+2. **Embedding**: Generates BGE-large embeddings at 1024 dimensions from the `databricks-bge-large-en` serving endpoint, stored on Chunk nodes
 3. **Entity extraction**: Uses the configured extractor LLM to extract **AircraftModel**, **SystemReference**, **ComponentReference**, **Fault**, **MaintenanceProcedure**, and **ExtractedLimit** entities. Limits read out of the manuals get their own label so they never mix with the canonical **OperatingLimit** rows loaded from `nodes_operating_limits.csv`
 4. **Entity resolution**: Deduplicates entities with matching `name` property (via APOC)
 5. **Cross-linking**:

@@ -86,7 +86,6 @@ class _LLMCredentials:
     anthropic_key: str | None
     llm_model: str
     llm_max_tokens: int
-    embedding_provider: Literal["bge", "openai", "databricks"]
     embedding_model: str
     embedding_dims: int
 
@@ -95,14 +94,12 @@ def _export_databricks_env(settings: Settings) -> None:
     """Publish Databricks credentials from .env into the process environment.
 
     pydantic-settings reads .env into a Settings object and stops there, but the
-    MLflow deployments client the "databricks" embedding provider uses only
-    reads os.environ. Without this bridge a host and token sitting in .env look
-    configured and are not. Only keys the user actually set are written, so an
-    ambient environment (a Databricks notebook, an already-exported token) still
-    wins when .env is silent.
+    MLflow deployments client the embedder uses only reads os.environ. Without
+    this bridge a host and token sitting in .env look configured and are not.
+    Only keys the user actually set are written, so an ambient environment (a
+    Databricks notebook, an already-exported token) still wins when .env is
+    silent.
     """
-    if settings.embedding_provider != "databricks":
-        return
     if settings.databricks_host:
         os.environ["DATABRICKS_HOST"] = settings.databricks_host
     if settings.databricks_token:
@@ -124,20 +121,16 @@ def _resolve_llm_credentials(
     external account on the critical path of a lab.
     """
     provider = settings.llm_provider
-    embedding_provider = settings.embedding_provider
     openai_key = None
     anthropic_key = None
 
-    # OpenAI is needed for extraction (llm_provider=openai) and/or embeddings
-    # (embedding_provider=openai). The BGE embedder runs locally and the
-    # Databricks embedder authenticates through the workspace, so neither
-    # needs a key.
-    extraction_needs_openai = provider == "openai" and not skip_extraction
-    if extraction_needs_openai or embedding_provider == "openai":
+    # OpenAI is needed for extraction only (llm_provider=openai). Embeddings
+    # never need it: the Databricks embedder authenticates through the
+    # workspace.
+    if provider == "openai" and not skip_extraction:
         if settings.openai_api_key is None:
-            usage = "extraction" if extraction_needs_openai else "embeddings"
             raise typer.BadParameter(
-                f"OPENAI_API_KEY is required for {usage} when using OpenAI. "
+                "OPENAI_API_KEY is required for extraction when using OpenAI. "
                 "Set it in .env or as an env var."
             )
         openai_key = settings.openai_api_key.get_secret_value()
@@ -166,7 +159,6 @@ def _resolve_llm_credentials(
         anthropic_key=anthropic_key,
         llm_model=llm_model,
         llm_max_tokens=llm_max_tokens,
-        embedding_provider=embedding_provider,
         embedding_model=settings.embedding_model,
         embedding_dims=settings.embedding_dimensions,
     )
@@ -211,19 +203,15 @@ def _run_enrich(
     if skip_extraction:
         print(
             f"Chunking and embedding, no entity extraction "
-            f"(embeddings: {creds.embedding_provider}/{creds.embedding_model}"
-            f"{sample_note})..."
+            f"(embeddings: {creds.embedding_model}{sample_note})..."
         )
         process_all_documents_lexical_only(
             driver,
             settings.neo4j_database,
             settings.document_dir,
-            embedding_provider=creds.embedding_provider,
             embedding_model=creds.embedding_model,
-            embedding_dimensions=creds.embedding_dims,
             chunk_size=settings.chunk_size,
             chunk_overlap=settings.chunk_overlap,
-            openai_api_key=creds.openai_key,
             enrich_sample_size=settings.enrich_sample_size,
         )
     else:
@@ -245,9 +233,7 @@ def _run_enrich(
             anthropic_api_key=creds.anthropic_key,
             llm_model=creds.llm_model,
             llm_max_tokens=creds.llm_max_tokens,
-            embedding_provider=creds.embedding_provider,
             embedding_model=creds.embedding_model,
-            embedding_dimensions=creds.embedding_dims,
             chunk_size=settings.chunk_size,
             chunk_overlap=settings.chunk_overlap,
             enrich_sample_size=settings.enrich_sample_size,
@@ -519,9 +505,7 @@ def agent_samples_cmd() -> None:
             openai_key=creds.openai_key,
             anthropic_key=creds.anthropic_key,
             llm_model=creds.llm_model,
-            embedding_provider=creds.embedding_provider,
             embedding_model=creds.embedding_model,
-            embedding_dimensions=creds.embedding_dims,
             sample_size=settings.sample_size,
         )
 

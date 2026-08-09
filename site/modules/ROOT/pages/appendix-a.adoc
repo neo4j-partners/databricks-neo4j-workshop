@@ -83,4 +83,4 @@ That is the loop the workshop's graph-ML slides argue for, and it runs in both d
 
 The notebooks are in `Appendix_A_GDS_Graph_Analytics/`, one folder per family: `community_detection/`, `centrality/`, `similarity/`.
 
-`Appendix_A_GDS_Graph_Analytics/gds-exploring.md` is the companion reference. It holds Cypher for inspecting projections, re-running individual algorithm steps, and exploring what each notebook wrote back to the graph. Unlike the notebooks, most of those inspection queries are ordinary Cypher, so they run anywhere.
+`Appendix_A_GDS_Graph_Analytics/gds-exploring.md` is the companion reference. It holds Cypher for inspecting projections, re-running individual algorithm steps, and exploring what each notebook wrote back to the graph. Unlike the notebooks, many of those inspection queries are ordinary Cypher, so they run anywhere.

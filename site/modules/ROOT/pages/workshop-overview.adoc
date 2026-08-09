@@ -78,7 +78,7 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 
 | xref:lab4.adoc[Lab 4]
 | Compound AI Agents: Genie + Supervisor
-| 75 min
+| 40 min
 
 | xref:lab5.adoc[Lab 5]
 | The LangGraph Supervisor Agent, built and deployed
@@ -113,6 +113,9 @@ Every required lab reads and writes the **one AuraDB Free instance you create in
 
 | Labs 5, 6
 | Yours
+
+| Appendix A
+| Not yours. Graph Data Science is not on AuraDB Free, so these are take-home, on an instance that carries the plugin
 |===
 
 == Key Technologies

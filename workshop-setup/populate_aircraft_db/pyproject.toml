@@ -5,8 +5,15 @@ description = "Standalone Neo4j Aura data loader for the Aircraft Digital Twin d
 requires-python = ">=3.11"
 dependencies = [
     "faker>=24.0.0",
+    # [openai] is the extraction LLM (LLM_PROVIDER=openai), not embeddings.
+    "neo4j-graphrag[openai]>=1.17.0",
     "neo4j>=6.2.0",
-    "neo4j-graphrag[openai,sentence-transformers]>=1.17.0",
+    # Chunk embeddings always call the databricks-bge-large-en serving
+    # endpoint, so the MLflow deployments client is on every run's path and
+    # belongs in the base set. mlflow-skinny rather than mlflow because that
+    # client is all this needs and the full package drags in a tracking
+    # server's worth of dependencies.
+    "mlflow-skinny>=2.19.0",
     "numpy>=1.26.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.0.0",
@@ -18,12 +25,6 @@ dependencies = [
 anthropic = [
     "anthropic>=0.49.0",
     "neo4j-graphrag[anthropic]>=1.17.0",
-]
-# Required by EMBEDDING_PROVIDER=databricks. mlflow-skinny rather than mlflow
-# because the deployments client is all this needs and the full package drags
-# in a tracking server's worth of dependencies.
-databricks = [
-    "mlflow-skinny>=2.19.0",
 ]
 
 [project.scripts]

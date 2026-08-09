@@ -11,10 +11,11 @@ cd slides
 npm run build:html
 ```
 
-This writes to `site/modules/ROOT/attachments/`, under two directories:
+This writes to `site/modules/ROOT/attachments/`, under three directories:
 
-- `overview/` — Databricks + Neo4j Integration overview
-- `databricks-in-depth/` — Introduction to Databricks + Neo4j, The Power of GraphRAG
+- `slides/overview/` — Databricks + Neo4j Integration overview
+- `slides/databricks-in-depth/` — Introduction to Databricks + Neo4j, The Power of GraphRAG
+- `site/modules/ROOT/images/` — the shared diagrams those decks reference. See [The one odd path](#the-one-odd-path-and-why-it-is-not-a-mistake) below
 
 **Do not commit the output.** `site/modules/ROOT/attachments/` is gitignored. The deploy workflow runs `npm run build:html` in `slides/` before the Antora build, so every push to `main` publishes the decks from their Markdown sources. Committing the HTML was how stale decks used to ship.
 
@@ -42,7 +43,7 @@ Opens a live-reload preview of the Marp decks.
 
 **`site/modules/ROOT/images/` is the single source for every screenshot and concept diagram.** There is no second copy anywhere, and nothing is stored next to the notebook that uses it.
 
-Two consumers, one directory:
+Three consumers, one directory:
 
 | Consumer | How to reference an image |
 |---|---|

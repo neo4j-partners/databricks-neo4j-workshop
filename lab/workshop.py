@@ -133,8 +133,8 @@ DLT_NOTEBOOK_WORKSPACE_PATH = "/Shared/workshop/dlt_fleet_etl"
 
 # The eight gold tables, in the order a reader meets them: the fleet, what is on
 # it, what it did, then a per-aircraft and a per-sensor summary. All eight are
-# granted to participants. Only six carry comments, for the reason written above
-# TABLE_COMMENTS below.
+# granted to participants, and all eight carry a table comment written by the
+# pipeline rather than by this file. See the block above COLUMN_COMMENTS below.
 GOLD_TABLES = (
     "aircraft",
     "systems",
@@ -365,45 +365,35 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     ]
 
 
-# The comments below cover six of the eight gold tables. `fleet_readiness` and
-# `sensor_health` are described nowhere, on purpose.
+# There are no table comments here. The pipeline writes every one of them, in
+# lab/courseware/dlt_fleet_etl.py, through the `comment=` argument on each
+# `@dlt.table` decorator, and this file no longer restates them.
 #
-# A table with no comment is a table Genie is far less likely to reach for, and
-# that is the outcome wanted here. Every question Lab 4 puts to a Genie space is
-# either a time window or a grouping by a fleet attribute, and both summaries
-# collapse time and carry neither model nor operator, so neither can answer one.
-# They only add a second plausible path to a question the four base tables
-# already answer.
+# It used to. A `TABLE_COMMENTS` tuple stood here and drove a COMMENT ON TABLE
+# over six of the eight gold tables. Because provisioning runs the pipeline
+# first, those six statements landed on tables that already carried a comment,
+# and every one of the six replacements was a shorter version of the same
+# sentence. The loss was real rather than cosmetic. The pipeline tells Genie
+# that `sensor_readings` has no hourly granularity, so per-hour buckets are not
+# meaningful, and the overwrite deleted that sentence along with
+# `aircraft`'s "Join key for all fleet queries" and `sensors`'s list of the four
+# sensor types. One author, and it is the one that sits next to the code
+# computing the table.
 #
-# `sensor_health.health_status` is worse than merely unhelpful. The rule that
-# sets it, in lab/courseware/dlt_fleet_etl.py, calls a sensor ANOMALY when its
+# Column comments below stay, because a `@dlt.table` decorator has no column
+# argument. Nothing else writes them, so they restate nothing.
+#
+# One thing in the pipeline's comments is worth knowing about while reading
+# here, because it is the kind of thing this file used to work around.
+# `sensor_health` is described there as carrying an "anomaly flag based on
+# 2-sigma deviation", and the rule that sets it calls a sensor ANOMALY when its
 # p95 exceeds avg + 2*stddev. For anything close to a normal distribution the
 # p95 sits at about avg + 1.645*stddev, so that test can never pass. Measured
-# across all 288 sensors: 284 WARNING, 4 NORMAL, 0 ANOMALY. A comment
-# advertising an ANOMALY status to Genie would send a room of participants
-# hunting for rows that cannot exist, and Genie would report the empty result as
-# a fact about the fleet.
-#
-# Both tables still appear in GOLD_TABLES and still get the SELECT grant below,
-# so a participant browsing the catalog sees the whole gold layer.
-TABLE_COMMENTS = (
-    ("aircraft", "Fleet of aircraft with tail numbers, models, and operators"),
-    ("systems", "Aircraft systems including engines, avionics, and hydraulics"),
-    ("sensors", "Sensors installed on aircraft systems"),
-    (
-        "sensor_readings",
-        (
-            "Sensor readings at 4-hour intervals over 90 days (2024-07-01 to "
-            "2024-09-28), 155,520 rows across 288 sensors"
-        ),
-    ),
-    (
-        "flights",
-        "Flight operations with aircraft, route, schedule, and total delay minutes",
-    ),
-    ("maintenance_events", "Maintenance events with fault details and severity"),
-)
-
+# across all 288 sensors: 284 WARNING, 4 NORMAL, 0 ANOMALY. The comment
+# therefore advertises to Genie a status value the table can never hold, which
+# sends a room of participants hunting for rows that cannot exist while Genie
+# reports the empty result as a fact about the fleet. The fix is either the rule
+# or the wording, and both of them live in dlt_fleet_etl.py, not here.
 COLUMN_COMMENTS = (
     ("aircraft", "tail_number", "Aircraft registration/tail number (e.g., N10000)"),
     ("aircraft", "model", "Aircraft model (e.g., B737-800, A320-200)"),
@@ -421,12 +411,14 @@ COLUMN_COMMENTS = (
 
 
 def genie_statements() -> list[tuple[str, str, bool]]:
-    """The comments Genie reads, and the grants that let a participant see them.
+    """The column comments Genie reads, and the grants that let a participant see them.
 
     These comments are the reason a SQL warehouse is provisioned at all. Lab 4
     asks a Genie space questions in English, and a space with no table or column
     comments answers plausibly rather than correctly. So a comment that did not
-    land is a failure here rather than the warning it used to be.
+    land is a failure here rather than the warning it used to be. The table
+    comments arrive with the pipeline; only the column comments are written from
+    here, for the reason set out above ``COLUMN_COMMENTS``.
 
     Only the eight gold tables are granted. Bronze and silver stay in
     ``PIPELINE_SCHEMA`` without SELECT, deliberately, so the schema a
@@ -434,14 +426,6 @@ def genie_statements() -> list[tuple[str, str, bool]]:
     """
     target = f"`{CATALOG}`.`{LAKEHOUSE_SCHEMA}`"
     statements = []
-    for table, comment in TABLE_COMMENTS:
-        statements.append(
-            (
-                f"comment on {table}",
-                f"COMMENT ON TABLE {target}.{table} IS '{comment}'",
-                True,
-            )
-        )
     for table, column, comment in COLUMN_COMMENTS:
         statements.append(
             (

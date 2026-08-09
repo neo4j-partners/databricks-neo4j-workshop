@@ -56,7 +56,9 @@ and served. It reads credentials from **environment variables** bound to
 not exist inside a serving container, and everything else from model config
 logged beside it.
 
-`FleetOpsAgent` is the class Lab 6's `memory.py` subclasses. The registered model
+`FleetOpsAgent` is the class Lab 6 subclasses. It does it in `memory_agent.py`,
+which notebook 01 of Lab 6 writes out with `%%writefile` rather than shipping on
+disk, so read that cell to see the subclass. The registered model
 name and the endpoint name are constants here rather than strings a participant
 types, because Lab 6 redeploys **this** endpoint rather than creating a second
 one. Renaming either breaks Lab 6.

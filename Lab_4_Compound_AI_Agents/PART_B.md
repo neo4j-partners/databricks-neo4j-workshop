@@ -15,7 +15,7 @@
 
 The supervisor routes questions to either the **Genie space** for sensor analytics or the **Neo4j MCP agent** for graph relationships. Natural language queries then span both data sources.
 
-**Demo runtime:** about 20 minutes on screen. Build it ahead of class.
+**Demo runtime:** about 10 minutes on screen. Build it ahead of class.
 
 ---
 
