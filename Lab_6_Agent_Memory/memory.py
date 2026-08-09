@@ -41,6 +41,7 @@ useful message before the ``%pip install`` cell has run.
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import sys
 import threading
@@ -110,10 +111,12 @@ from data_utils import (  # noqa: E402
     EMBEDDING_ENDPOINT,
     LLM_ENDPOINT,
     extract_text,
+    json_schema_format,
     read_neo4j_secrets,
     secret_scope_name,
 )
 from tools import (  # noqa: E402
+    ROUTE_SCHEMA,
     SUPERVISOR_PROMPT,
     AgentState,
 )
@@ -132,6 +135,7 @@ __all__ = [
     "INSTALL_COMMAND",
     "LLM_ENDPOINT",
     "MEMORY_ONLY_QUERY",
+    "MEMORY_ROUTE_SCHEMA",
     "MEMORY_SUPERVISOR_PROMPT",
     "RECALL_LIMIT",
     "SEED_MESSAGES",
@@ -1378,9 +1382,10 @@ Routing is not the only thing memory is for. The tools receive the question
 text, so a question saying "that aircraft" reaches Genie as "that aircraft"
 and Genie asks you which one. Resolve it here instead.
 
-Add one line above the NEXT line:
+So in this lab the JSON object carries a third field as well as next and
+reason, and all three are required:
 
-RESOLVED: <the question, with every reference to an earlier one replaced>
+  resolved  the question, with every reference to an earlier one replaced
 
 Replace "that aircraft", "it", "the same one" and the like with the tail
 number the recalled messages point at. Change nothing else: same wording,
@@ -1390,19 +1395,36 @@ exactly as it was asked.
 
 Question: Are there any vibration readings I should worry about on that aircraft?
 Memory holds: N10011 is the one I care about, the EGT margin has been trending.
-Two lines back:
+The reply:
 
-RESOLVED: Are there any vibration readings I should worry about on N10011?
-NEXT: genie_node
+{{"next": "genie_node",
+  "reason": "genie_node holds the vibration readings this asks for.",
+  "resolved": "Are there any vibration readings I should worry about on N10011?"}}
 """
 )
+
+
+# Lab 5's two routing fields plus the rewritten question. Databricks caps a
+# structured-output schema at 64 keys and rejects pattern, anyOf, oneOf, allOf
+# and $ref, so this stays flat for the same reason ROUTE_SCHEMA does.
+MEMORY_ROUTE_SCHEMA: dict[str, Any] = {
+    **ROUTE_SCHEMA,
+    "properties": {
+        **ROUTE_SCHEMA["properties"],
+        "resolved": {"type": "string"},
+    },
+    "required": [*ROUTE_SCHEMA["required"], "resolved"],
+}
 
 
 RESOLVED_PREFIX = "RESOLVED:"
 
 
 def _parse_resolved(decision: str) -> str | None:
-    """Pull the rewritten question out of a supervisor reply.
+    """Pull the rewritten question out of a free-text supervisor reply.
+
+    The fallback path. A reply that came back through ``MEMORY_ROUTE_SCHEMA``
+    carries ``resolved`` as a JSON field and never reaches this.
 
     Args:
         decision: The supervisor's raw reply.
@@ -1419,7 +1441,10 @@ def _parse_resolved(decision: str) -> str | None:
 
 
 def _pick_tool(text: str, tools: Sequence[str]) -> tuple[str, int]:
-    """Lab 5's rule: the tool named last in the reply is the one chosen.
+    """Lab 5's fallback rule: the tool named last in the reply is the one chosen.
+
+    Used only when the reply did not arrive as schema-constrained JSON, which
+    is the same fallback Lab 5's ``build_supervisor_node`` keeps.
 
     Args:
         text: The part of the reply to read.
@@ -1451,11 +1476,11 @@ def build_memory_supervisor_node(
     versus memory-on comparison mean anything.
 
     Two things are new. The prompt carries a fourth variable, ``recalled``.
-    And on the first pass the node rewrites ``question`` from a ``RESOLVED:``
-    line, because routing alone is not enough: the tools are handed the
-    question text, so "that aircraft" reaches Genie as "that aircraft" and
-    Genie asks which one. Resolving it here is what lets memory change an
-    answer rather than only a route.
+    And on the first pass the node rewrites ``question`` from the reply's
+    ``resolved`` field, because routing alone is not enough: the tools are
+    handed the question text, so "that aircraft" reaches Genie as "that
+    aircraft" and Genie asks which one. Resolving it here is what lets memory
+    change an answer rather than only a route.
 
     Args:
         llm: A ``data_utils.DatabricksLLM``.

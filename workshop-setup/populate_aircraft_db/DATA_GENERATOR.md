@@ -48,7 +48,7 @@ aircraft x 2 engines x 4 sensors x (days x 24 / reading-interval)
 Sensor series are always generated at hourly resolution internally. The interval only controls which rows are written to the CSV: every Nth hourly reading. This has two important consequences:
 
 1. **Every other CSV is identical regardless of interval.** Maintenance events are triggered by the internal hourly series, so the degradation-to-maintenance correlation is preserved, and files such as `nodes_maintenance.csv` and `nodes_flights.csv` are byte-identical whether you generate at 1-hour or 8-hour intervals.
-2. **Reading IDs are stable.** The hourly index is kept in `reading_id`, so a 4-hour file contains IDs `R00001, R00005, R00009, ...`, a strict subset of the hourly file's IDs. Loading a coarser file into a graph that already holds a finer one merges cleanly.
+2. **Reading IDs are stable.** The hourly index is kept in `reading_id`, so a 4-hour file contains IDs `R00001, R00005, R00009, ...`, a strict subset of the hourly file's IDs. `reading_id` is therefore a stable key across intervals, so a coarser file re-ingested over a finer one in the `sensor_readings` Delta table addresses the same rows rather than duplicating them.
 
 ## Regenerating only the readings file
 
@@ -168,17 +168,21 @@ The Lab 3 enrichment adds further node types from the manuals: `Document`, `Chun
 ### Example Cypher
 
 ```cypher
-// Average EGT in the 7 days before each critical maintenance event
+// Every critical engine event, with the EGT sensors watching the same system
 MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System {type:'Engine'})
-      -[:HAS_SENSOR]->(sn:Sensor {type:'EGT'})
-      -[:HAS_READING]->(r:Reading)
 MATCH (s)-[:HAS_COMPONENT]->(c)-[:HAS_EVENT]->(m:MaintenanceEvent {severity:'CRITICAL'})
-WHERE datetime(r.ts) <= datetime(m.reported_at)
-  AND datetime(r.ts) >= datetime(m.reported_at) - duration('P7D')
-RETURN a.tail_number, s.name, m.fault, m.reported_at,
-       avg(r.value) AS avg_egt_before_event, count(r) AS readings
-ORDER BY avg_egt_before_event DESC
+MATCH (s)-[:HAS_SENSOR]->(sn:Sensor {type:'EGT'})
+RETURN a.tail_number, s.name, c.name, m.fault, m.reported_at,
+       collect(sn.sensor_id) AS egt_sensor_ids
+ORDER BY m.reported_at DESC
 ```
+
+That query stops at the sensor IDs. It cannot go further, because the graph
+holds no measured values. To get the average EGT in the seven days before each
+of those events, feed `egt_sensor_ids` and `reported_at` into a
+`sensor_readings` query like the SQL below. Traversal in Neo4j, aggregation in
+Databricks, joined on `sensor_id`: that is the dual-database split in one pair
+of queries.
 
 ## Databricks Delta Lake schema
 

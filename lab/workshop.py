@@ -798,9 +798,14 @@ def resolve_warehouse_id(workspace, args: argparse.Namespace) -> str:
 
     ``voclab.py warehouse-ensure`` has already created it from
     ``workspace_init.sh`` by the time this runs, so this looks it up rather than
-    creating a second one. Absent is a failure rather than a fallback onto
-    whatever warehouse happens to be running, because "whatever is running" is
-    how a class's DDL lands on an unrelated team's warehouse.
+    creating a second one.
+
+    The configured name is correct by construction on Vocareum and is a name for
+    nothing anywhere else, which is every workspace an admin or an instructor
+    provisions by hand. So a missing name falls back, but only to a workspace
+    holding exactly one warehouse. Two or more is still a failure: "whatever is
+    running" is how a class's DDL lands on an unrelated team's warehouse, and
+    that was the reason this had no fallback at all.
     """
     name = voclab.resolve_course_value(
         getattr(args, "warehouse_name", None), voclab.WAREHOUSE_NAME_VAR
@@ -813,14 +818,35 @@ def resolve_warehouse_id(workspace, args: argparse.Namespace) -> str:
             f"that name is set, and workspace_init.sh creates it from there.",
         )
     warehouse = voclab.find_warehouse(workspace, name)
-    if not warehouse:
-        raise voclab.VoclabError(
-            "MISSING_WAREHOUSE",
-            f"No SQL warehouse named {name} exists in this workspace. It is "
-            f"created by voclab.py warehouse-ensure from workspace_init.sh, so "
-            f"this means that step did not run or did not succeed.",
+    if warehouse:
+        return warehouse["id"]
+
+    candidates = voclab.list_warehouses(workspace)
+    if len(candidates) == 1:
+        sole = candidates[0]
+        print(
+            f"  No warehouse named {name}. Falling back to the only warehouse "
+            f"in this workspace, {sole.get('name')}. On Vocareum this branch "
+            f"never runs, because warehouse-ensure creates {name} first."
         )
-    return warehouse["id"]
+        return sole["id"]
+
+    if candidates:
+        detail = (
+            "this workspace holds %d warehouses and picking among them is not "
+            "this script's call. Set %s or pass --warehouse-name."
+            % (len(candidates), voclab.WAREHOUSE_NAME_VAR)
+        )
+    else:
+        detail = (
+            "this workspace holds no warehouses at all. On Vocareum that means "
+            "voclab.py warehouse-ensure did not run or did not succeed. "
+            "Anywhere else, create one first."
+        )
+    raise voclab.VoclabError(
+        "MISSING_WAREHOUSE",
+        "No SQL warehouse named %s exists, and %s" % (name, detail),
+    )
 
 
 def provision_infrastructure(workspace, warehouse_id: str) -> dict:

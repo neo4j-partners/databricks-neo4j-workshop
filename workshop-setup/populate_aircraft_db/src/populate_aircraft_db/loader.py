@@ -407,7 +407,7 @@ _REL_DEFINITIONS: list[tuple[str, str, str]] = [
 
 
 def load_nodes(driver: Driver, database: str, data_dir: Path) -> None:
-    """Load all 10 node types from CSV files."""
+    """Load all 9 node types in ``OPERATIONAL_LABELS`` from CSV files."""
     for label, filename, query in _NODE_DEFINITIONS:
         print(f"Loading {label} nodes...")
         records = read_csv(data_dir, filename)
@@ -416,7 +416,7 @@ def load_nodes(driver: Driver, database: str, data_dir: Path) -> None:
 
 
 def load_relationships(driver: Driver, database: str, data_dir: Path) -> None:
-    """Load all 13 relationship types from CSV files."""
+    """Load all 12 types in ``OPERATIONAL_RELATIONSHIP_TYPES`` from CSV files."""
     for rel_type, filename, query in _REL_DEFINITIONS:
         print(f"Loading {rel_type} relationships...")
         records = read_csv(data_dir, filename)
@@ -878,6 +878,18 @@ def verify(
             "RETURN count(c) AS count",
             {"Component", "System"},
             {"HAS_COMPONENT"},
+        ),
+        # Sensor's reachability used to be covered by a "Sensors without
+        # Readings" check. Readings are gone, so this replaces it, and it is
+        # the check that actually matters: a Sensor no System owns is
+        # unreachable from any Aircraft, which breaks both the Cypher path in
+        # Lab 5 and the sensor_id join back to the lakehouse.
+        (
+            "Sensors without System",
+            "MATCH (s:Sensor) WHERE NOT (s)<-[:HAS_SENSOR]-(:System) "
+            "RETURN count(s) AS count",
+            {"Sensor", "System"},
+            {"HAS_SENSOR"},
         ),
         (
             "Documents without Chunks",

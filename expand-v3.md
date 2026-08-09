@@ -62,7 +62,7 @@ Replaces `expand-v2.md`, which is deleted. Same facts, rewritten to be read.
 ### Lab 5, the agent itself
 
 - **Three tools built and live.** `genie_node`, `cypher_node`, `graphrag_node`, the last on `VectorCypherRetriever` lifted from Lab 3.
-- **Routing measured at 48 of 48 across 9 groups,** against the current `tools.py`, on a participant-shaped instance carrying zero `Reading` nodes. That last detail is what makes the numbers mean anything.
+- **Routing measured at 48 of 48 across 9 groups,** against the current `tools.py`, on a participant-shaped instance carrying zero `Reading` nodes. That last detail is what makes the numbers mean anything. **Measured on llama, before the supervisor moved to Claude.** See section 3.
 - **The anchor question runs end to end.** Genie names the engines with abnormal EGT, the graph returns their maintenance history including a bearing wear fault, the manual's high-EGT procedure closes the answer.
 - **Supervisor model settled:** `databricks-claude-sonnet-5`, one constant, one endpoint across Labs 3 and 5.
 - **Credentials wired.** Lab 5 reads the `fleet-ops-<user-slug>` secret scope that Lab 3 creates. No plaintext password anywhere in Lab 5.
@@ -217,9 +217,13 @@ TOTAL                                              260.4     4:20
 - **Re-capture the memory-off baseline.** The existing artifact is dated on four axes: a superseded `tools.py`, a pre-rebuild lakehouse, no Genie answer at all, and a maintenance-history answer taken before the backwards-arrow fix.
   - **The trap to avoid:** a memory-on run returning 23 maintenance events is the arrow fix landing, not memory improving recall. Whoever reads the comparison has to be told this inside the comparison.
   - Carry forward what is still valid: the 15.8 minute cold deploy, the interpretation notes, and the rule that expected-tools is a subset test and never an exact match, because the supervisor retries on an empty or failed tool.
-- **One line prints an empty result to every participant.** Cell 19 of the deploy notebook prints the usage block, and the endpoint returns an empty one, so every participant sees `Usage: {}` immediately after a fifteen minute deploy. Drop the line, or say in the markdown above it that Model Serving returns no token counts here and latency is the only cost signal.
+- **Re-measure routing on Claude.** The 48 of 48 figure and the deploy notebook's 6 of 6 routing score were both taken on `databricks-meta-llama-3-3-70b-instruct`. The supervisor is now `databricks-claude-sonnet-5`, and **a model change voids routing numbers exactly the way a prompt change does.** Two runs are owed.
+  - The 48-case routing suite across 9 groups, on a participant-shaped instance carrying zero `Reading` nodes.
+  - The deploy notebook's 6-pair evaluation, which is the same run as the re-captured memory-off baseline below. One execution covers both.
+  - **The four Cypher schema bullets are the thing most likely to move.** Each was written against an observed llama failure. The backwards-arrow and invented-relationship sweeps are the two to re-run first.
+- ~~**One line prints an empty result to every participant.**~~ **DONE.** `print("Usage:", result["usage"])` is removed from the deploy notebook. The endpoint returns an empty usage block, so every participant was seeing `Usage: {}` immediately after a fifteen minute deploy. The `usage` key stays in the helper's return value and nothing prints it.
 - **Exercise the extracted-entity routing path** against a graph loaded with extraction on. Blocked on a working LLM key.
-- **Decide whether `eval/questions.jsonl` is still wanted.** It does not exist. The deploy notebook carries its question set inline.
+- ~~**Decide whether `eval/questions.jsonl` is still wanted.**~~ **Decided: no, and it is gone from the plan.** The file never existed on disk. The deploy notebook carries its question set inline, which is one place instead of two and is the reason nobody missed the file.
 - **Optional hybrid retrieval exercise** for participants who ran Lab 3 notebook 03. Cuttable.
 
 ### Lab 6
@@ -231,7 +235,7 @@ TOTAL                                              260.4     4:20
 
 ### Loader hygiene
 
-- **Drop `Reading` and `HAS_READING` from the loader.** Decided, not done. Nothing in the workshop queries them, and their presence means an admin debugging a participant issue works against a graph 155,520 nodes larger than any participant has. About 75 minutes, confined to three files and two documents.
+- ~~**Drop `Reading` and `HAS_READING` from the loader.**~~ **DONE.** Removed from `loader.py` (label, relationship type, node and relationship loader blocks, uniqueness constraint, both orphan checks), `schema.py` (one constraint, two indexes), and `agent_samples.py` (schema and relationship lines). `README.md` and `DATA_GENERATOR.md` updated to 9 node types and 12 relationship types, and the `DATA_GENERATOR.md` example Cypher rewritten to stop at the sensor IDs and hand off to the Databricks SQL below it. Node and relationship definitions were asserted equal to the declared label lists, and ruff passes. The generator still writes `nodes_readings.csv`: Databricks ingests it and `verify_gds/nb04_features.py` reads it with pandas. **`f024ea61` still holds the 155,520 nodes.** `setup` uses `MERGE`, so they survive a rerun. Run `clean` first, or delete them in batched transactions.
 - **Add `OperatingLimit` to the Lab 2 README node list.** The other half of a fix that half landed.
 - **Load `OperatingLimit` in the Lab 2 validation harness.** It never did, which is how the limit collision reached Lab 3 unnoticed.
 
@@ -282,7 +286,9 @@ TOTAL                                              260.4     4:20
 **Data and modeling**
 
 - **One embedding path, `databricks-bge-large-en`,** for the loader and for Lab 3 alike.
-- **`databricks-claude-sonnet-5` as the supervisor model.** The decision was first closed on `databricks-meta-llama-3-3-70b-instruct` at 48 of 48 routing, and the escape hatch it left open, one named constant, is what made the later swap to Claude a one-line change. **The routing number above was measured on llama and has not been re-measured on Claude.**
+- **`databricks-claude-sonnet-5` as the supervisor model.** One named constant, `LLM_ENDPOINT` at `Lab_3_Semantic_Search/data_utils.py:46`, which `tools.py`, `agent.py` and `memory.py` all import. Labs 3, 5 and 6 cannot disagree about the model, because there is one place to disagree in.
+  - The decision was first closed on `databricks-meta-llama-3-3-70b-instruct`, and the escape hatch it left open, that single constant, is what made the swap to Claude a one-line change.
+  - **The 48 of 48 routing number was measured on llama and has not been re-measured on Claude.** Same for the deploy notebook's 6-pair evaluation. Both re-runs are listed in section 3.
 - **`graphrag_node` uses `VectorCypherRetriever`, not a plain vector retriever.** The Cypher tail after the vector hit is what makes it GraphRAG. The cost is that it sits close to `cypher_node`, which is why routing between that pair is measured as its own number.
 - **Extraction writes `ExtractedLimit`; `OperatingLimit` means the 20 canonical CSV rows.** Runner-up was filtering on `limit_id` at every authoritative site, which left every workaround in place and added filters in three more.
 - **The limit uniqueness constraint keys on `limit_id`, not `name`.** A uniqueness constraint is not enforced against nodes lacking the property, so `limit_id` binds the canonical rows and ignores everything else.
@@ -326,16 +332,20 @@ Each says what the decision is, what the evidence is, and what it blocks.
 - **Enrich the Genie comment strings, or stop restating what the pipeline already wrote?**
   - The pipeline writes a comment, then the Genie provisioning stage overwrites it with a thinner one. Nothing errors, and every provisioned workspace ships the thinner comment.
   - **Comments are what Genie reads to write SQL, so this lands on the participant path in Lab 4.**
-- **Leave the configured warehouse name as Vocareum-only, or fall back to the sole warehouse in the workspace?**
-  - `lab/course.env:154` names a warehouse that exists in no workspace this repository has been run against. On Vocareum the name is correct by construction. Everywhere else it is a name for nothing.
-  - Provisioning fails loudly rather than silently, but its message says the warehouse-ensure step did not run, which is true on Vocareum and misleading anywhere else.
-  - **Blocks nothing on the Vocareum path.** Blocks any admin or instructor provisioning into a workspace they did not build with the init script, which is how every measurement in this document was taken.
+- ~~**Leave the configured warehouse name as Vocareum-only, or fall back to the sole warehouse in the workspace?**~~ **Decided by Ryan: fall back. Landed in `resolve_warehouse_id` at `lab/workshop.py:796`.**
+  - **The fallback is exactly one warehouse wide.** Named warehouse missing and the workspace holds one warehouse, use it and print why. Two or more, still fail.
+  - **That bound is the whole safety argument, kept intact.** The function had no fallback because "whatever is running" is how a class's DDL lands on an unrelated team's warehouse. A workspace with one warehouse has no wrong choice to make.
+  - The failure message now splits the two cases: on Vocareum it still says warehouse-ensure did not run, and anywhere else it says to set `VOC_COURSE_WAREHOUSE_NAME` or pass `--warehouse-name`.
+  - **Unexercised.** The branch never runs on Vocareum, because `warehouse-ensure` creates the named warehouse first. Provisioning into a hand-built workspace is what will run it.
 
 ### Contained, or not holding anything up
 
 - **The refusal string in `cypher_node` is wrong for write requests.** A declined write answers "The graph holds no sensor readings." Nothing writes and no data is wrong, but the wrong sentence reaches synthesis.
   - **A second refusal string gives the model two to choose between, which is exactly the shape that produced the first routing defect.** Recommendation is to leave it.
-- **Drop the fifth table, `aircraft_fleet_metrics`?** Produced by no pipeline and referenced nowhere. It still holds 36 rows from the same stale generator run that forced the gold rebuild, and it was left in place because it was outside that authorization.
+- ~~**Drop the fifth object, `aircraft_fleet_metrics`?**~~ **DONE, dropped 2026-08-09.** The `aircraft` schema now holds exactly the eight gold objects and nothing else.
+  - **It was a metric view, not a table,** which two worklogs disagreed about. `information_schema.tables` reported `METRIC_VIEW`, created by Spark on 2026-07-01 with the comment "created via MCP/SQL for openness research". So `DROP VIEW`, not `DROP TABLE`.
+  - **The "36 stale rows" claim was wrong.** A metric view stores nothing. It read live from the `aircraft` materialized view, so the gold rebuild had already corrected whatever it returned. It was an orphan, not stale data.
+  - Recreatable: three dimensions off `aircraft`, `model`, `manufacturer` and `operator`, and three count measures. Nothing referenced it.
 - **Both LLM keys are dead.** Anthropic credit too low, OpenAI 401. **Blocks only the LLM-extracted entities** and therefore the extraction-on routing exercise. Everything GraphRAG needs is already loaded without them.
 
 ### Answered, kept because the reasoning is reusable
@@ -367,7 +377,7 @@ Six phases. Each has an entry condition, a body, and a completion criterion that
 | Model Serving endpoint quota at class size | Phase 2 completion, Phase 4 |
 | Batch seeding path through the memory library | Phase 3 seeding step |
 | Serverless install of the loader, or pick the fallback | nothing participant-facing |
-| Drop `Reading` and `HAS_READING` from the loader | nothing, but it makes every later debug session honest |
+| ~~Drop `Reading` and `HAS_READING` from the loader~~ **DONE in code. The reference instance is still unreloaded** | nothing |
 
 **Completion:** the index tolerance question returns a yes, or Lab 6 is formally re-scoped.
 
@@ -449,7 +459,9 @@ Order inside the phase, because each step gates the next:
 ### What to do next, in order
 
 1. ~~**Provision a fresh AuraDB Free instance and run the index tolerance check.**~~ **DONE. It passed on Free at 71 indexes and 24 constraints, and there is no remaining no-go.** See section 3.
-2. **Re-capture the memory-off baseline** on the current endpoint, scoring it with the rules already agreed: expected tools as a subset test, row-count variance in the components question as known residual, and a 23-event maintenance answer as the arrow fix landing rather than memory improving recall.
+2. **Re-measure routing on Claude, and re-capture the memory-off baseline in the same pass.** The supervisor model changed after both numbers were taken, and one endpoint run covers both.
+   - Score the baseline with the rules already agreed: expected tools as a subset test, row-count variance in the components question as known residual, and a 23-event maintenance answer as the arrow fix landing rather than memory improving recall.
+   - The 48-case suite is the one that matters most, because the four Cypher schema bullets were each written against a llama failure.
 3. **Decide the Lab 5 anchor question,** which is the same defect shape the Lab 6 fix already closed. It determines whether the shipped notebook ends on 5 of 6.
 4. **Answer the four delivery questions in section 5.** Phase 4 hits all of them whether or not they are answered first.
 5. **Push the `MENTIONS` fix upstream.** Carried unactioned across three passes, and worth doing whether or not Lab 6 ships.
