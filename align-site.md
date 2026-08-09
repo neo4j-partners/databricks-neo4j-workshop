@@ -89,18 +89,13 @@ Six lab pages, four shapes. Verified:
   "What You Build in This Lab" is useful content, so keep it as a section and
   put the `TIP` above it.
 
-## 6. Lab 6 is the only lab with an instructions page
+## 6. Lab 6 instructions page, done
 
-- **Now:** `lab6-instructions.adoc` is 706 lines, ten numbered procedure
-  sections, cell-by-cell code. It is 25% of the site by line count. Labs 1 to 5
-  moved their procedure into notebooks.
-- **Reference:** every lab has an instructions page. The split is consistent
-  either way, which is the point.
-- **Do:** move the procedure into `01_agent_memory.ipynb` and cut the page,
-  matching Labs 1 to 5. The notebook is where a participant runs the steps
-  anyway, and the site copy is what goes stale.
-- **Alternative:** keep it and restore instructions pages for all six labs.
-  Larger job, and it reverses the notebook-first decision in `fix-site-slides.md`.
+- **Was:** `lab6-instructions.adoc`, 706 lines, ten numbered procedure sections,
+  cell-by-cell code. The last instructions page on the site.
+- **Done:** deleted. `01_agent_memory.ipynb` already carried every section,
+  including the cleanup, so nothing moved. The three xrefs on `lab6.adoc` and
+  the nav entry now point at the notebook, matching Labs 1 to 5.
 
 ## 7. Missing pages the reference has
 
@@ -136,9 +131,8 @@ Six lab pages, four shapes. Verified:
 - **Now:** `lab2-sample-queries.adoc` and `lab3-sample-queries.adoc` exist. Labs
   1, 5 and 6 have none, and Lab 6 has the most interesting Cypher in the
   workshop, the query that crosses memory and fleet.
-- **Do:** add `lab6-sample-queries.adoc` when the instructions page is cut. The
-  cross-half query and the reasoning-trace query are worth a page a participant
-  can paste from.
+- **Do:** add `lab6-sample-queries.adoc`. The cross-half query and the
+  reasoning-trace query are worth a page a participant can paste from.
 
 ## 10. Small format items
 
@@ -158,5 +152,5 @@ Six lab pages, four shapes. Verified:
 2. **Merge `workshop-overview.adoc` into `index.adoc`.**
 3. **Slides gallery.** Deletes 24 pages and the asset mirroring together.
 4. **Lab page template sweep.** Three `TIP` blocks, one deck link per lab.
-5. **Cut `lab6-instructions.adoc` into the notebook.**
+5. ~~**Cut `lab6-instructions.adoc` into the notebook.**~~ Done.
 6. **New pages:** Lab 0, configuration, production path.

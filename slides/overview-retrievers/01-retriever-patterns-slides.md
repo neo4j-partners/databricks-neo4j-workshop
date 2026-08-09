@@ -174,33 +174,37 @@ retriever different: a Cypher query runs on every matched chunk.
 ```python
 from neo4j_graphrag.retrievers import VectorCypherRetriever
 
-retrieval_query = """
--- Traverse from chunk to the component it describes
-MATCH (node)-[:FROM_DOCUMENT]-(doc:Document)-[:DESCRIBES]->(component:Component)
--- OPTIONAL so components without events still appear
-OPTIONAL MATCH (component)-[:HAS_EVENT]->(event:MaintenanceEvent)
--- Aggregate faults, limit to 20
-WITH node, score, component, collect(event.fault)[0..20] AS faults
--- Return chunk text plus metadata
-RETURN node.text AS text, score,
-       {component: component.name, faults: faults} AS metadata
-ORDER BY score DESC
+system_context_query = """
+WITH node
+// From the matched chunk to its manual, to the aircraft that manual applies to
+MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)-[:APPLIES_TO]->(a:Aircraft)
+MATCH (a)-[:HAS_SYSTEM]->(s:System)
+// OPTIONAL so systems with no components still appear
+OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(comp:Component)
+
+WITH node, doc, a, s, comp
+RETURN doc.aircraftType AS aircraft_type,
+       a.tail_number AS aircraft,
+       COLLECT(DISTINCT s.name)[0..3] AS systems,
+       COLLECT(DISTINCT comp.name)[0..3] AS components,
+       node.text AS context
 """
 
 retriever = VectorCypherRetriever(
     driver=driver,
     index_name='maintenanceChunkEmbeddings',
     embedder=embedder,
-    retrieval_query=retrieval_query
+    retrieval_query=system_context_query
 )
 ```
 
 <!--
-Same driver, index, and embedder as VectorRetriever, plus one new argument:
-retrieval_query. The library runs the vector search automatically and hands
-this query `node` and `score`. Everything after that is plain Cypher: reach
-the component the chunk describes, optionally collect its maintenance
-events, and shape the return value.
+Verbatim from Lab 3 notebook 02. Same driver, index, and embedder as
+VectorRetriever, plus one new argument: retrieval_query. The library runs the
+vector search automatically and hands this query `node` and `score`.
+Everything after is plain Cypher: reach the manual, cross APPLIES_TO to the
+aircraft, then collect its systems and components. Cypher comments use two
+forward slashes.
 -->
 
 ---
@@ -209,22 +213,22 @@ events, and shape the return value.
 
 **Without OPTIONAL MATCH:**
 ```cypher
-MATCH (component)-[:HAS_EVENT]->(event)
+MATCH (s:System)-[:HAS_COMPONENT]->(comp:Component)
 ```
-Only returns components that already have maintenance events.
+Drops any system that has no components attached, and the chunk with it.
 
 **With OPTIONAL MATCH:**
 ```cypher
-OPTIONAL MATCH (component)-[:HAS_EVENT]->(event)
+OPTIONAL MATCH (s:System)-[:HAS_COMPONENT]->(comp:Component)
 ```
-Returns all components; the events list is empty when none exist.
+Keeps every system; the components list comes back empty when none exist.
 
 Use `OPTIONAL MATCH` whenever the surrounding node should appear in results even when the relationship is missing.
 
 <!--
-A plain MATCH filters out any component with zero maintenance events,
-silently dropping healthy components from the answer. OPTIONAL MATCH keeps
-them in, with an empty collection instead of a missing row.
+A plain MATCH here filters the whole row out, so a chunk about a system with
+no components recorded never reaches the LLM at all. The retrieval query runs
+per matched chunk, so one missing relationship silently loses a result.
 -->
 
 ---
@@ -279,7 +283,7 @@ or lookups are more reliable with Text2Cypher.
 
 **Example:**
 Question: "How many critical maintenance events does aircraft N10001 have?"
-Generated: `MATCH (a:Aircraft {tailNumber:'N10001'})-[:HAS_SYSTEM]->()-[:HAS_COMPONENT]->()-[:HAS_EVENT]->(e:MaintenanceEvent {severity:'CRITICAL'}) RETURN count(e)`
+Generated: `MATCH (a:Aircraft {tail_number:'N10001'})-[:HAS_SYSTEM]->()-[:HAS_COMPONENT]->()-[:HAS_EVENT]->(e:MaintenanceEvent {severity:'CRITICAL'}) RETURN count(e)`
 Result: `7`
 
 <!--

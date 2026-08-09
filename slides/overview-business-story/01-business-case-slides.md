@@ -45,6 +45,16 @@ An answer that cannot be explained cannot be used.
 
 ---
 
+## Why LLMs Alone Fall Short
+
+- **Hallucination**: an LLM generates the statistically probable answer, not the verified one, and will describe a maintenance action that never happened just as confidently as one that did
+- **Knowledge cutoff**: it has no access to this fleet's telemetry, maintenance records, or manuals, no matter how recently it was trained
+- **Relationship blindness**: it cannot connect a sensor reading to the system it belongs to, or a fault to every other aircraft that shares the same component
+
+Retrieval closes the first two gaps. Only a graph closes the third.
+
+---
+
 ## The Problem Vectors Do Not Solve
 
 Vector search finds text that is **similar**, but it cannot **traverse relationships**.
@@ -109,16 +119,6 @@ By the end of the workshop, you will have built and deployed exactly this:
 - Built end to end on your own Aura instance, not a shared demo
 
 The demo you are about to see is the artifact you will build.
-
----
-
-## Why LLMs Alone Fall Short
-
-- **Hallucination**: an LLM generates the statistically probable answer, not the verified one, and will describe a maintenance action that never happened just as confidently as one that did
-- **Knowledge cutoff**: it has no access to this fleet's telemetry, maintenance records, or manuals, no matter how recently it was trained
-- **Relationship blindness**: it cannot connect a sensor reading to the system it belongs to, or a fault to every other aircraft that shares the same component
-
-Deck 4 returns to each of these limitations in depth.
 
 ---
 

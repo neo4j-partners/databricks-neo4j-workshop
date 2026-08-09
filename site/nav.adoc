@@ -10,7 +10,6 @@
 ** xref:lab4.adoc[Lab 4: Compound AI Agents]
 ** xref:lab5.adoc[Lab 5: LangGraph Agent]
 ** xref:lab6.adoc[Lab 6: Agent Memory]
-*** xref:lab6-instructions.adoc[Instructions]
 * xref:appendix-a.adoc[Appendix A: GDS Graph Analytics]
 * Slides
 ** xref:slides/slides-business-case.adoc[1. The Business Case for GraphRAG]

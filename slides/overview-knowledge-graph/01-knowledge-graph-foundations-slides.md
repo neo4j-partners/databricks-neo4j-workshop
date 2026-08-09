@@ -71,9 +71,9 @@ Each Aircraft node carries properties like `tail_number` and `model`. Each HAS_S
 
 **"Which components sit on aircraft N10007's engines?"**
 
-**Relational (SQL):** join aircraft to systems, then systems to components, filtering for engine type at each step.
+**In SQL:** join aircraft to systems, then systems to components, filtering for engine type at each step.
 
-**Graph (Cypher):**
+**In Cypher:**
 ```cypher
 MATCH (a:Aircraft {tail_number: 'N10007'})
       -[:HAS_SYSTEM]->(s:System {type: 'Engine'})
@@ -111,11 +111,11 @@ section { font-size: 22px; }
 
 ## The Same Question, Two Languages
 
-**Question:** starting from the component that triggered a critical maintenance event, which other aircraft could share the same root cause through common ground infrastructure.
+**Question:** starting from the component that triggered a critical maintenance event, which other aircraft could share the same root cause through common ground infrastructure?
 
-Neo4j holds `Component`, `MaintenanceEvent`, `Flight`, and `Airport`. Databricks holds four gold tables: `sensor_readings`, `sensors`, `systems`, `aircraft`, a fixed join chain with no shared-connection table. This exact question has no SQL answer on the real schema.
+Answering it means walking Component to System to Aircraft, then fanning out through the flights and airports those aircraft share. Neo4j stores every one of those hops as a relationship. The Databricks gold layer stores four tables, `sensor_readings`, `sensors`, `systems`, and `aircraft`, joined in one fixed chain.
 
-**Closest question Databricks can answer:** which other aircraft show elevated readings on the same sensor type.
+**What SQL reaches:** which other aircraft show elevated readings on the same sensor type.
 
 ```sql
 WITH origin AS (
@@ -132,7 +132,7 @@ JOIN sensor_readings r2 ON r2.sensor_id = sen2.sensor_id
 GROUP BY a2.tail_number, a2.model ORDER BY avg_value DESC
 ```
 
-<!-- The literal fraud-style question, variable-depth reachability through shared connections, has no answer here: the shared entities live only in Neo4j. This SQL answers the closest supported question instead: a self-join on sensor type, fixed depth, no recursion. -->
+<!-- This SQL is real and it runs, but it is a self-join on sensor type: fixed depth, no recursion, one shared signal. The shared ground infrastructure the question asks about lives only in Neo4j. Set up the next slide as the same question, run in full. -->
 
 ---
 
@@ -142,7 +142,7 @@ section { font-size: 22px; }
 
 ## The Same Question in Cypher
 
-The full component-to-aircraft path Databricks cannot see is stored as relationships in Neo4j, so the traversal runs as written:
+Every hop the question needs is stored as a relationship, so the traversal runs as written:
 
 ```cypher
 MATCH (c:Component {component_id: 'AC1001-S01-C04'})
@@ -152,9 +152,9 @@ WHERE other <> origin
 RETURN DISTINCT other.tail_number, other.model
 ```
 
-Widening this to a second shared signal means stacking another CTE onto the SQL `WITH` block, on tables that mostly do not exist. In Cypher it means widening `*2..6` to `*2..10`: one changed number, no new tables.
+Searching two hops deeper means changing `*2..6` to `*2..10`. One number, no new tables, no new joins.
 
-<!-- The component sits under a system, under an aircraft; from there the query fans out through Flight and Airport nodes to any aircraft within the hop range. SQL never gets there in the first place: the ground-infrastructure entities are not gold tables. -->
+<!-- Walk the pattern: the component sits under a system, under an aircraft, and from there the query fans out through Flight and Airport nodes to any aircraft within the hop range. The variable-length pattern is the whole point. In SQL, each extra hop is another join; here it is a digit. -->
 
 ---
 

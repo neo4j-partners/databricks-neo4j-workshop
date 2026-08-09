@@ -31,7 +31,7 @@ ol > li {
 
 From GenAI Limitations to Graph-Enriched Retrieval
 
-<!-- Deck 1 laid out the platform. This one lays out GraphRAG: the technique that makes the aircraft digital twin answerable in plain language, from LLM gaps through RAG to graph traversal. -->
+<!-- The Business Case deck made the argument and Knowledge Graph Foundations built the graph. This one lays out the technique that makes the aircraft digital twin answerable in plain language, from LLM gaps through RAG to graph traversal. -->
 
 ---
 
@@ -45,7 +45,7 @@ Foundation models are powerful, but they have critical gaps:
 
 These gaps matter when a technician needs a grounded, traceable answer, not a guess.
 
-<!-- Quick recap, not a new argument; deck 1 covered these in depth. They set up why retrieval matters: something has to hand the model your data and its relationships at query time. -->
+<!-- One-line recall of the Business Case deck, not a new argument. Say it fast. It exists to set up the next slide: something has to hand the model your data and its relationships at query time. -->
 
 ---
 

@@ -83,7 +83,7 @@ Not a criticism of Lab 5. The supervisor is stateless by construction, and that 
 **"Your 'memory' is just a pile of text chunks ranked by cosine similarity."**
 
 <!--
-1.5 minutes. Context rot was taught in the GenAI foundations deck; one callback sentence is enough, do not re-teach it.
+1.5 minutes. Context rot was taught in the GraphRAG Foundations deck; one callback sentence is enough, do not re-teach it.
 Dwell on the contradiction failure; it sets up Memory Has to Handle Being Wrong. Both statements sit in the window, both are fluent, both name the same aircraft, and retrieval has no principled way to prefer one. The model picks whichever it happened to attend to.
 Name the field once: LangGraph's own checkpointers and store are where most people put this first, and mem0, Zep/Graphiti, and Letta are the dedicated products, all solving the same three failures above.
 -->

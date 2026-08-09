@@ -462,6 +462,7 @@ These are content gaps to address in a future content phase, not part of the reo
 | Update `slides/README.md` | Done | Slide Decks section is a run-of-show table with the lab each deck pairs with |
 | Rewire the site | Done | 16 wrappers deleted, 8 written, `slides-agent-memory.adoc` repointed and retitled, 3 shelved wrappers repointed to `background/` paths, Slides section of `site/nav.adoc` rewritten as a flat numbered list |
 | Build verification | Done | 15 decks built, 8 workshop and 7 background. Every image reference in the built HTML resolves to a file under `attachments/`. Zero broken links |
+| Quality and flow review | Done | Eight decks read end to end. Six fixes applied, listed below. Rebuilt and re-verified after |
 
 **Deck sizes as shipped:**
 
@@ -471,15 +472,32 @@ These are content gaps to address in a future content phase, not part of the reo
 | 2 | `overview-architecture/01-architecture-roadmap-slides.md` | 387 | 16 |
 | 3 | `overview-knowledge-graph/01-knowledge-graph-foundations-slides.md` | 337 | 19 |
 | 4 | `overview-graphrag/01-graphrag-foundations-slides.md` | 259 | 15 |
-| 5 | `overview-retrievers/01-retriever-patterns-slides.md` | 448 | 18 |
+| 5 | `overview-retrievers/01-retriever-patterns-slides.md` | 452 | 18 |
 | 6 | `overview-agent/01-supervisor-agent-slides.md` | 340 | 18 |
 | 7 | `overview-agent-memory/01-agent-memory-slides.md` | 299 | 13 |
 | 8 | `overview-mcp/01-mcp-agent-bricks-slides.md` | 285 | 13 |
 
+#### Review pass, 2026-08-09
+
+Mechanical checks passed with no changes: no financial-domain vocabulary anywhere in the eight decks, no em dashes, no litotes, no throat-clearing openers, all code fences balanced, all frontmatter identical.
+
+Six content fixes applied:
+
+| Deck | Problem | Fix |
+|------|---------|-----|
+| 5 Retrievers | The `retrieval_query` example was invented. It used SQL-style `--` Cypher comments and a `DESCRIBES` relationship that does not exist in the graph | Replaced with `system_context_query`, verbatim from `Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb`. The following slide's `OPTIONAL MATCH` example was rewritten to match it |
+| 5 Retrievers | Text2Cypher example used `{tailNumber:'N10001'}` | Corrected to `tail_number`, the real property name |
+| 1 Business Case | Slide 8 pointed forward to deck 4 for depth on LLM limits; deck 4's own notes pointed back to deck 1 for the same thing | Deck 1 keeps the depth and ends on how retrieval and the graph close each gap. Deck 4's notes now name the deck rather than a number and mark the slide as a one-line recall |
+| 1 Business Case | "Why LLMs Alone Fall Short" sat after the hero question, breaking the argument | Moved directly after "The Stakes", so the deck runs stakes, why the model alone fails, why vectors alone fail, then GraphRAG |
+| 3 Knowledge Graph | The SQL versus Cypher pair read as an apology for the Databricks schema | Reframed as an escalation: state what the question needs, show what SQL reaches, then run the real question in Cypher. Also fixed a question written with a period and dropped the explanatory parentheses in the language labels |
+| 7 Agent Memory | Instructor note cited "the GenAI foundations deck", a name Phase 7 retired | Now cites the GraphRAG Foundations deck, which is where Context Rot lives |
+
+**Open, needs a decision:** `site/modules/ROOT/images/dual-database-architecture.svg` has stale figures baked into it, 345,600+ readings, 160 sensors, 80 systems, 20 aircraft. The committed CSVs hold 155,520 readings, 288 sensors, 144 systems, 36 aircraft, and deck 2's own instructor note says roughly 155,000. The file is a shared site asset used outside the slides, so it was left alone.
+
 **Deviations from plan, recorded:**
 
 - **Line counts ran above target.** The plan estimated about 1,890 lines; the decks ship at 2,517. The gap is code blocks and tables, which condense less than prose. Decks 2, 5 and 6 carry the overage.
-- **The three-hop SQL versus Cypher contrast changed question.** The Databricks side has four gold tables in a fixed linear join chain and no junction table, so the fraud deck's variable-depth reachability question has no SQL answer on the real schema. Deck 3 says so on the slide and substitutes a self-join on shared sensor type, then shows the genuine variable-depth Cypher traversal Neo4j can do and Databricks cannot.
+- **The three-hop SQL versus Cypher contrast changed question.** The Databricks side has four gold tables in a fixed linear join chain and no junction table, so the fraud deck's variable-depth reachability question has no SQL answer on the real schema. Deck 3 substitutes a self-join on shared sensor type as what SQL reaches, then runs the real variable-depth question in Cypher.
 - **`list-gds-procedures` dropped from the MCP tools slide.** The deployment this repo documents in `MCP-MANUAL-SETUP.md` exposes two tools, `get_neo4j_schema` and `read_neo4j_cypher`. The source slide listed a third that does not exist here.
 - **The semantic map argument was dropped from deck 8.** Syncing Unity Catalog metadata into Neo4j is a different feature from the two-agent supervisor demo Lab 4 Part B actually runs.
 - **`fraud-ring-dual-architecture.svg` stays fraud-flavored.** No new deck references it. It survives only in `background/governance/auth-sync-slides.md`, which is shelved.

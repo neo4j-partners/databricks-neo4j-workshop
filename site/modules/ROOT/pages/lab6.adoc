@@ -4,7 +4,7 @@ The Lab 5 agent answers one question at a time. Ask it about `N10011`, then ask 
 
 Putting the memory in the same instance is what this lab is about. Most memory products keep conversations in a store of their own, so "which aircraft do people keep asking about" and "which aircraft is actually failing" end up in two systems that someone has to join by hand. Here a remembered aircraft **is** the `Aircraft` node Lab 2 loaded, so one `MATCH` walks from a technician's question to a maintenance record.
 
-TIP: Ready to start? Jump to the xref:lab6-instructions.adoc[Lab 6 Instructions] for the step-by-step walkthrough.
+TIP: Ready to start? Open `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 
 .**At a Glance**
 
@@ -46,7 +46,7 @@ The memory library hangs conversations off `(:Entity {name, type})` nodes. Left 
 
 image::lab6-memory-graph.svg[Lab 6 memory graph,align=center]
 
-Writing to nodes an earlier lab loaded makes this the one step in the workshop that changes existing data. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and xref:lab6-instructions.adoc#cleaning-up[the instructions] show it along with the guard that keeps a memory cleanup from taking your fleet with it.
+Writing to nodes an earlier lab loaded makes this the one step in the workshop that changes existing data. Run the dry run, read the counts, then commit. Undoing it is a label strip rather than a delete, and the notebook's final section shows it along with the guard that keeps a memory cleanup from taking your fleet with it.
 
 .Why the lab adopts `Aircraft` and refuses four other labels
 [%collapsible]
@@ -206,6 +206,6 @@ xref:workshop-overview.adoc[The overview] opens with that same test.
 
 == Next Steps
 
-Continue to xref:lab6-instructions.adoc[Lab 6 Instructions] to work through the notebook step by step, from the pinned install to the redeploy, and to remove everything it wrote afterwards.
+Work through `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your Databricks workspace, from the pinned install to the redeploy, and use its final section to remove everything the lab wrote.
 
 `memory.py` sits next to the notebooks and is worth opening in an editor rather than a cell. `Lab_6_Agent_Memory/README.md` documents what it exports and the constraints that come with it.
