@@ -1,8 +1,8 @@
 # Proposal: Restructure Labs 4 through 6 for an Extended Advanced Workshop
 
-> **Superseded 2026-08-08 by [`expand-v2.md`](expand-v2.md), which owns the plan and the status.**
+> **Superseded by [`expand-v3.md`](expand-v3.md), which owns the plan and the status.** An intermediate `expand-v2.md` existed and is deleted; anything citing it means this file for reasoning and `expand-v3.md` for status.
 >
-> Read this document for the reasoning: the defect write-ups, the runner-up options and why each lost, and the raw measurements. Do not read it for what is done. Its status blocks were written when decisions were made rather than when code landed, so several items listed here as "in flight" are on disk. `expand-v2.md` section 2 was checked against the repository.
+> Read this document for the reasoning: the defect write-ups, the runner-up options and why each lost, and the raw measurements. Do not read it for what is done. Its status blocks were written when decisions were made rather than when code landed, so several items listed here as "in flight" are on disk.
 
 A proposal to make Lab 4 Part B optional, add a LangGraph lab that connects the Genie space to the participant's own Aura instance, and add a memory lab. The result is a longer workshop where every required lab builds on the graph the participant loaded themselves.
 

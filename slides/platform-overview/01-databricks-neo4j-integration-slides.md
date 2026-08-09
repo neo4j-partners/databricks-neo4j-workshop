@@ -63,7 +63,7 @@ Most real-world problems have both: numbers that need crunching **and** relation
 
 ---
 
-![bg contain](../../images/dual-database-architecture.svg)
+![bg contain](../../site/modules/ROOT/images/dual-database-architecture.svg)
 
 ---
 

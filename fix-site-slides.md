@@ -2,7 +2,7 @@
 
 What is wrong, what is missing, and what has to be added on the two surfaces that describe the course but were never updated with it: the Antora site in `site/` and the Marp decks in `slides/`.
 
-**Source of truth:** the lab folders on disk, then `expand-v2.md` section 3 and section 5 question 9. `expand.md` is reasoning only. Where the site and a lab folder disagree, the lab folder is right.
+**Source of truth:** the lab folders on disk, then `expand-v3.md` section 3, and its outstanding question on whether the Antora site is regenerated or delinked. `expand.md` is reasoning only. Where the site and a lab folder disagree, the lab folder is right.
 
 **Why now:** `README.md` line 1 links the published site, and `.github/workflows/deploy-antora.yml` publishes on every push to `main`.
 
@@ -62,7 +62,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **Retired outright:** `lab1-instructions.adoc` (135 lines), `lab2-instructions.adoc` (78), `lab3-instructions.adoc` (79), `lab4-instructions.adoc` (557). No `lab5-instructions.adoc` or `lab6-instructions.adoc` ever gets written.
 - **Both live defects die with the pages that carried them.** Verified on disk: `Lab_1_Aura_Setup/01_aura_setup.ipynb` contains no backup-restore procedure, and `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` already carries the corrected Genie instruction block (`every 4 hours`, `CFM56-5B`, `LEAP-1A`, September 28). The notebooks were right the whole time; only the site copies were stale.
-- **It matches a decision already made.** `expand-v2.md` section 4: "Browser labs ship as notebooks. Labs 1 and 4 join the notebook set, because a Vocareum student sees no rendered README." Both notebooks exist. The site split is the same reasoning applied one layer up.
+- **It matches a decision already made.** `expand-v3.md` section 4: "Browser labs ship as notebooks. Labs 1 and 4 join the notebook set, because a Vocareum student sees no rendered README." Both notebooks exist. The site split is the same reasoning applied one layer up.
 - **The duplication direction reverses, which is the whole win.** Today the site is a stale copy of the lab markdown. After the split the notebook is the only copy of any procedure, and the site can never drift from it because it no longer states it.
 
 ### The site after the split
@@ -73,27 +73,36 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 ### Three problems it creates
 
-- **Screenshots have no home. RESOLVED, and the pattern already ships.** `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` renders five images this way today:
+- **Screenshots have no home. RESOLVED, but not the way this document first said.** An earlier draft of this item called for moving the screenshots *out* to per-lab `images/` folders. **That direction is reversed. `site/modules/ROOT/images/` is the single source and nothing moves out of it.** Ryan decided this on 2026-08-08, after a separate session had already implemented it in the working tree and recorded it in `svg-png.md`.
+
+  **Why the site directory wins.** It is the only location that keeps the *published site* self-contained. An Antora page uses `image::name.png[]` and resolves it locally, with no dependency on `raw.githubusercontent.com` staying reachable, staying public, or resolving at all. Notebooks already reach the network for everything else they do, so making the notebook the side that hot-links costs nothing it was not already paying.
+
+  **Notebooks reference it by absolute raw URL**, the pattern `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` already ships:
 
   ```
-  ![Lab Architecture Overview](https://raw.githubusercontent.com/neo4j-partners/databricks-neo4j-workshop/main/images/lab-architecture-overview.png)
+  ![Configure Genie](https://raw.githubusercontent.com/neo4j-partners/databricks-neo4j-workshop/main/site/modules/ROOT/images/lab4-configure-genie.png)
   ```
 
-  Absolute `raw.githubusercontent.com` URLs against `main`. This is better than hot-linking the published site: the images are already in the repo, no Antora build has to succeed first, and there is no second copy to keep in sync.
+  So the convention has exactly two halves, and both point at one directory:
 
-  **`site/modules/ROOT/images/` holds 24 files, not 14, and only 15 of them move.** The split is by role, not by format:
+  | Consumer | How it references an image |
+  |---|---|
+  | Antora page under `site/` | `image::lab2-clone-menu.png[]`, resolved locally |
+  | Lab notebook | `raw.githubusercontent.com/.../main/site/modules/ROOT/images/lab2-clone-menu.png` |
 
-  | Kind | Count | Files | Do |
-  |---|---|---|---|
-  | Screenshots | 15 `.png` | `lab1-backup-restore`, `lab1-create-instance`, `lab1-create-instance-alt`, `lab1-download-credentials`, `lab1-instance-details`, `lab2-change-compute`, `lab2-clone-dialog`, `lab2-clone-menu`, `lab2-compute-overview`, `lab2-csv-volume-data`, `lab2-dbx-login-error`, `lab4-configure-genie`, `lab4-genie-connect-data`, `lab4-lakehouse-sensor-readings`, `lab4-mcp-connection` | **Move** to per-lab `images/`, reference by raw URL |
-  | Concept diagrams | 7 `.svg` | `lab1-property-graph`, `lab3-graphrag-retrieval-flow`, `lab3-knowledge-graph-structure`, `graphrag-multiplatform-retrieval`, `step1-flat-tables-foreign-keys`, `step2-spark-connector-mapping`, `step3-connected-graph` | **Stay put.** They belong to concepts pages that survive the split |
-  | Duplicated diagrams | 2 `.svg` | `lab-architecture-overview`, `dual-database-architecture` | **Delete the site copy.** See the architecture-diagram item below |
+  **`site/modules/ROOT/images/` holds 24 files.** Nothing in it moves. Two things leave and two arrive:
 
-  `lab1-backup-restore.png` is the one screenshot with no destination: its only consumer was `lab1-instructions.adoc:37-47`, the dead backup-restore procedure, and `01_aura_setup.ipynb` never had that procedure. **Delete it rather than moving it.** That makes 14 screenshots that move and one that goes, which is where the earlier "14" came from.
+  | Kind | Count | Do |
+  |---|---|---|
+  | Screenshots | 15 `.png`, `lab1-*`, `lab2-*`, `lab4-*` | **Stay.** Both consumers point here |
+  | Concept diagrams | 7 `.svg` | **Stay.** They belong to concepts pages that survive the split |
+  | Duplicated diagrams | 2 `.svg`, `lab-architecture-overview`, `dual-database-architecture` | **Delete the site copy.** See the architecture-diagram item below. Step 7 owns this |
+  | `lab1-backup-restore.png` | 1 `.png` | **Delete.** Its only consumer was `lab1-instructions.adoc:37-47`, the dead backup-restore procedure, and `01_aura_setup.ipynb` never had that procedure |
+  | `Lab_1_Aura_Setup/images/FREE_*.png` | 2 `.png` | **Move in.** They are the only screenshots living outside the single source, and they are the AuraDB Free screenshots the tier decision makes load-bearing |
 
-  **Two things it costs, both acceptable, neither zero:**
+  **Two things the notebook half costs, both acceptable, neither zero:**
 
-  - **It only works on a public repo.** `raw.githubusercontent.com` on `main` needs no auth today. If this repo ever goes private, every image in every notebook breaks at once.
+  - **It only works on a public repo.** `raw.githubusercontent.com` on `main` needs no auth today. If this repo ever goes private, every image in every notebook breaks at once. The site half keeps working, which is the point of choosing this direction.
   - **It pins to `main`, so images update the moment they merge.** A participant on an older notebook copy sees the newest screenshot. For screenshots that is usually right, occasionally confusing.
 
   **DECIDED: this is the standard**, said once in the repository so the next person adding a screenshot does not invent a third pattern.
@@ -256,7 +265,7 @@ There are six, and they total 1,049 lines.
   | 200,000 node / 400,000 relationship caps | Real. Worth one sentence in Lab 1 so nobody panics later |
   | GDS unavailable | Lab 2 `02_gds_knn_aircraft.ipynb` is optional and skippable. Appendix A likewise |
   | Never expires | No mid-course expiry, so a multi-session format is safe |
-  | Lab 6 index cap | Still unmeasured. `expand-v2.md` q6 stays open and stays the one no-go |
+  | Lab 6 index cap | Still unmeasured. The AuraDB Free index and constraint question in `expand-v3.md` section 5 stays open and stays the one no-go |
 
   **Every place the wrong tier is still written down. Verified by grep, and it is sixteen lines across ten files, not four.** The earlier four-row list caught the site and missed the notebooks entirely.
 
@@ -315,6 +324,30 @@ There are six, and they total 1,049 lines.
 - **`platform-overview/01-neo4j-aura-overview-slides.md` is not embedded. DECIDED to publish**, after checking it for the tier claim.
 
 - **`Lab_1_Aura_Setup/slides/07-lab-steps-1.md:6,12 say "free trial". DECIDED to fix.** Both lines become "AuraDB Free". This deck lives in the lab folder rather than `slides/`, so the deck-split table below does not cover it and it will be missed unless someone looks for it.
+
+> **STATUS: DONE. The four Lab 1 items no numbered step owned are closed.** Steps 1 and 2 took the rest of this section; these were decided here and then never picked up by a step, so they are done as their own pass.
+>
+> **Aura Agents is gone from `lab1.adoc`.** Both edits, as the item said: the `Aura Agents: no-code agent platform` block deleted, and the At-a-Glance line rewritten. That line had a second problem the item named, advertising Graph Data Science on the tier that does not have it, so it now reads "with built-in vector search. You use **AuraDB Free**, which never expires and holds up to 200,000 nodes and 400,000 relationships." **The caps sentence from "Missing" lands in the same line**, which is where a participant will actually meet it.
+>
+> **The GDS claim ran deeper than line 12.** The `Vector search, Graph Data Science, and AI capabilities` collapsible also promised "Graph Data Science algorithms like PageRank and community detection run directly within Aura", to a room that cannot run one. It is now two collapsibles: **What AuraDB Free gives you, and what it does not**, carrying the caps, the never-expires point and the GDS skip in the same take-home framing step 2 gave the Appendix A notebooks; and **Vector search and AI capabilities**, which is the old block with the GDS bullet removed and "Both are on Free" added.
+>
+> **The carry-forward line from "To add" is now an `IMPORTANT` admonition in the opening**, not a buried sentence: one instance, no fallback, a lost password means redoing Labs 2 and 3.
+>
+> **`lab1.adoc:3` said "This is Lab 1 of 4."** Not in any list, and false since Labs 5 and 6 shipped. Now "the first of six labs", and the sentence names what Labs 5 and 6 do with the instance rather than stopping at Lab 4.
+>
+> **`Aura_Free_Trial.md` was verified folded before step 5 deleted it**, not assumed. `01_aura_setup.ipynb` cells `part1-header` through `part1-limits` carry all seven signup steps, both screenshots, the caps, the one-instance and 30-day-inactivity limits, and the GDS skip. The notebook is the better version: the trial warning is a `WARNING` block and the password-shown-once point is a `CRITICAL` block.
+>
+> **Aura Agents swept beyond the site, because "every mention" was decided.** `platform-overview/01-workshop-over.md:45` and `docs/overview-and-genai-foundations.md:17` both listed "**Create** a no-code Aura Agent" as a workshop learning objective. Nobody creates one. Those were the two worst instances found, worse than the site's, because they are a promise on the opening deck. Deleted. `platform-overview/01-neo4j-aura-overview-slides.md` lost its three Aura Agents slides and its summary bullet.
+>
+> **The tier check on `01-neo4j-aura-overview-slides.md` is done, and it failed.** Its `Graph Analytics in Explore` slide lists 65-plus algorithms with no hint that the workshop instance has none of them. A note now says so, in the take-home framing. **Step 10 can publish this deck.**
+>
+> **Left, deliberately, and both need a decision rather than an edit:**
+> - `01-intro-databricks-neo4j-slides.md:99,189` name Aura Agent in two lists of what the Neo4j product includes. Neither claims a participant builds one, so this is product-capability content on a product-overview deck, not a false promise. Deleting a product from a capabilities slide is a different call from deleting a false learning objective, so it is Ryan's.
+> - `workshop-setup/docs/EXAMPLE_QUERIES.md` is an entire file of questions written for an Aura Agent, and `workshop-setup/README.md:361` describes it as such. Admin material, participant-invisible. It either gets retargeted or retired, and neither is a wording fix.
+>
+> **One count noticed and left.** `01_aura_setup.ipynb` cell `part1-limits` says "about 21,613 nodes, which is 10.8 percent of the node cap". Re-running the generator moves it, so the no-counts rule catches it, but its whole job is to reassure a participant they fit inside the cap and a vaguer sentence does that worse. Not in step 4's swept list. Flagged, not changed.
+>
+> **Verified.** `npm run build` in `site/`, clean.
 
 ---
 
@@ -375,7 +408,7 @@ There are six, and they total 1,049 lines.
 
   **DECIDED:** Add it, one paragraph. Written once in Lab 3, read by Labs 3, 5 and 6, which is why a Lab 3 mistake surfaces two labs later as a failure that looks like Lab 5's fault. Say that out loud and the debugging story writes itself.
 
-- **`NEO4J_DATABASE` as the fourth key.** Newly threaded through Labs 3, 5 and 6. Worth a line only if the tier answer means the value is ever anything but `neo4j`. See `expand-v2.md` question 5.
+- **`NEO4J_DATABASE` as the fourth key.** Newly threaded through Labs 3, 5 and 6. Worth a line only if the tier answer means the value is ever anything but `neo4j`. See the database-name question in `expand-v3.md` section 5, under answered questions.
 
   **DECIDED:** One line, not a paragraph. On AuraDB Free the value is always `neo4j`, so for every participant this key is a constant. It exists for the instructor's multi-database instance and for anyone who later points the labs at their own. Say it is there and why, then move on.
 
@@ -523,7 +556,7 @@ There are six, and they total 1,049 lines.
 
 - **Graph cost. DECIDED to include.** The class is on Free, so the cap is real and the arithmetic reassures rather than worries: memory costs about 20 nodes per participant per session against roughly 178,000 nodes of headroom after Labs 1 through 3.
 
-- **`02_instructor_demos.ipynb` ships.** Closes `expand-v2.md` question 8. **The four demos in it are the Lab 6 payoff**, and the memory deck below leans on demo 1.
+- **`02_instructor_demos.ipynb` ships.** Closes the question in `expand-v3.md` section 5 on whether the Lab 6 instructor demos ship to participants. **The four demos in it are the Lab 6 payoff**, and the memory deck below leans on demo 1.
 
   **DECIDED:** Ship it, as an instructor notebook rather than a participant one. Slide 5 and slide 8 of the memory deck both run out of it, so cutting it means rewriting the deck around material that no longer exists. Instructor-only keeps it off the participant critical path while the demos stay runnable on stage. That needs the `course.env` entry.
 
@@ -533,9 +566,9 @@ There are six, and they total 1,049 lines.
 
 ### Open, do not write around it
 
-- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and `expand-v2.md` q6 stays the single remaining no-go.
+- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and the AuraDB Free index and constraint question in `expand-v3.md` section 5 stays the single remaining no-go.
 
-  **The check script does not exist.** Both this document and `expand-v2.md:684` describe `scratchpad/aura_free_index_check.py` as written, with "a read-only `check` and an apply-then-roll-back `probe`." There is no `scratchpad/` directory in the repository and nothing in git history ever created one. It was written into an ephemeral session scratchpad and is gone. **Correct both documents and treat the script as unwritten.**
+  **The check script does not exist.** Both this document and the plan of record used to describe `scratchpad/aura_free_index_check.py` as written, with "a read-only `check` and an apply-then-roll-back `probe`." There is no `scratchpad/` directory in the repository and nothing in git history ever created one. It was written into an ephemeral session scratchpad and is gone. **Correct both documents and treat the script as unwritten.**
 
   **DECIDED:** Step 0 is two jobs, not one. **Write the script, then run it.** It needs a durable home in the repository this time, not a scratchpad: `workshop-setup/verify/` already exists as the package that replays lab queries against Aura, and this is the same shape of thing. Give it the two modes the lost version had, read-only `check` first so it can run against any instance safely.
 
@@ -614,13 +647,13 @@ The deck Lab 6 is missing, `agents/05-agent-memory-slides.md`. Nine slides, abou
 
 Revised for the notebook-first split. The early steps are deletions, which is why they come first: they remove about 1,300 lines of site content and 416 lines of README that would otherwise have to be edited.
 
-**Step 0, and it starts before everything:** the AuraDB Free index-cap check, which is **write the script, then run it**. The version both this document and `expand-v2.md` described as existing did not. Give it a durable home under `workshop-setup/verify/`. Writing it blocks on nothing; running it blocks on Ryan provisioning a fresh Free instance. It is the only item here that can invalidate work already written.
+**Step 0, and it starts before everything:** the AuraDB Free index-cap check, which is **write the script, then run it**. The version both this document and the plan of record described as existing did not. Give it a durable home under `workshop-setup/verify/`. Writing it blocks on nothing; running it blocks on Ryan provisioning a fresh Free instance. It is the only item here that can invalidate work already written.
 
 > **STATUS: script written, run still owed.** `workshop-setup/verify/src/verify_aura_caps/main.py`, registered as `verify-aura-caps` in that package's `pyproject.toml`. Two commands as decided: read-only `check` and apply-then-roll-back `probe`. Ruff clean. `check` was run against the instructor instance `f024ea61` and reports 59 indexes and 24 constraints, so Lab 6 would project to 92 and 36 there. **That is not the answer**, because `f024ea61` is not Free. The run that closes this needs a fresh Free instance.
 >
 > **It already earned its keep once.** `home_database()` reads the home database out of `SHOW DATABASES` rather than assuming `neo4j`, and on `f024ea61` the answer is `f024ea61`. A version that assumed `neo4j` would have failed on the first real query.
 >
-> `expand-v2.md` step 3 corrected to match: the script is unwritten there no longer, and the false "read-only `check` and apply-then-roll-back `probe`" claim is replaced by what actually exists.
+> `expand-v3.md` corrected to match: the script is unwritten there no longer, and the false "read-only `check` and apply-then-roll-back `probe`" claim is replaced by what actually exists.
 
 1. **Retire the four instructions pages, correct `lab4.adoc` and `workshop-overview.adoc`, and collapse `nav.adoc`, as one change.** Both live defects die here. The three parts ship together because deleting `lab4-instructions.adoc` alone would leave only the uncorrected Agent Bricks framing on a site that publishes on every push. Confirm each notebook carries what its page carried before deleting. **Do not add the slides nav group here**; it has no pages to point at until step 10.
 
@@ -681,8 +714,42 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 >
 > **Verified.** `npm run build:html` in `slides/` then `npm run build` in `site/`, both clean.
 5. **Collapse the four participant-facing lab READMEs into their notebooks**, delete `PART_A.md`, keep `PART_B.md`, and shrink the Lab 5 and Lab 6 READMEs to module documentation. Cut the root `README.md` to about 30 lines of pointers, which also retires its two tier mentions and its count.
-6. **Move the 15 screenshots into per-lab `images/` folders** and reference them as `raw.githubusercontent.com` URLs, the pattern `04_genie_agent.ipynb` already uses. **Delete `lab1-backup-restore.png`**, whose only consumer was the dead backup-restore procedure. **Leave the 7 concept `.svg` files where they are**; they belong to pages that survive. Write the convention down once so nobody invents a third.
-7. **Collapse the duplicated diagram files, then redraw as two.** Delete `lab-architecture-overview.svg` and `dual-database-architecture.svg` from `site/modules/ROOT/images/` and point the site at the root `images/` copies, so there is one source per drawing. Then the Lab 5 topology becomes the default and the MCP drawing is retitled as the Part B demo, kept on `lab4.adoc` alone. Collapsing first is what stops the redraw shipping to half the consumers.
+> **STATUS: DONE, except the Lab 5 and Lab 6 README shrink, which moves to step 8.**
+>
+> **Six files deleted:** the four participant-facing lab READMEs, `Lab_1_Aura_Setup/Aura_Free_Trial.md`, and `Lab_4_Compound_AI_Agents/PART_A.md`. `PART_B.md` kept, as decided. `Aura_Free_Trial.md` was checked against `01_aura_setup.ipynb` before deleting and was already fully folded in; the detail is in the Lab 1 status block above.
+>
+> **Two salvages, both landed before the delete.** The instruction to check each README for content the notebook does not have was worth following twice:
+> - Lab 2's README held five troubleshooting cases the notebook never covered, and pointers to `SAMPLE_QUERIES.md`, `aura-explore.md` and `data-exploring.md`. Both are now cells in `01_aircraft_etl_to_neo4j.ipynb`: a new `lab2-troubleshooting` markdown cell before `next-steps`, and a "Go deeper on your own" table inside `next-steps`.
+> - Lab 3's README held the four-key table for the `fleet-ops-<user>` secret scope, the one place naming `neo4j-database` and saying to leave it `neo4j` on Free. It is now in cell `627fcbcb` of `01_data_and_embeddings.ipynb`, which is the cell that writes the scope.
+>
+> **Five inbound `PART_A.md` links repointed** at `04_genie_agent.ipynb`: both Lab 5 notebooks, both Lab 5 and Lab 6 READMEs, and the root `README.md`. No dead link left in the repository, checked by grep.
+>
+> **Root `README.md` cut from 219 lines to 34**, and it now carries no content of its own beyond the one paragraph saying what the workshop builds. A lab table pointing at folders, an instructor table pointing at `workshop-setup/`, `DATA_GENERATOR.md`, `slides/` and `site/README.md`, and the feedback link. Both tier mentions and the reading count went with the cut.
+>
+> **Its homeless content moved to `workshop-overview.adoc` first, not deleted.** The doc's line "everything it duplicates moves to `index.adoc`" is not literally satisfiable: `index.adoc` is 13 lines and is a front door, not a container. `workshop-overview.adoc` is the page that actually duplicated the README, so that is where the three orphans went: the **Which Aura Instance Each Lab Uses** table, a **Reference Documentation** section holding both link lists, and the specific technology rows the site's vaguer table was missing, `databricks-bge-large-en`, `databricks-claude-sonnet-5`, LangGraph, Neo4j Agent Memory and Model Serving.
+>
+> **One falsehood fixed in passing.** `workshop-overview.adoc` listed "A Neo4j Aura instance (pre-provisioned by workshop administrators)" as a prerequisite. Participants create their own in Lab 1. Same class of error as the tier claims step 2 swept, on the page a participant reads before Lab 1.
+>
+> **Deferred to step 8: shrinking `Lab_5_LangGraph_Agent/README.md`, 250 lines, and `Lab_6_Agent_Memory/README.md`, 383 lines.** Their conceptual content has a named destination in step 8, `lab5.adoc` and `lab6.adoc`, and this document already decided at "**DECIDED:** Put them on the site." Shrinking them now would destroy the routing lesson, the operating-limits rules, the measured 12/12 results and the deploy notes with nowhere for any of it to go. The two halves are one move, and step 8 is where it belongs.
+6. **Make `site/modules/ROOT/images/` the single source for every screenshot, and keep it that way.** REVERSED from this document's first draft, which moved them out; see the screenshots item in section 0 for why the site directory wins. Site pages reference locally with `image::`, notebooks reference by absolute `raw.githubusercontent.com` URL against `main`, both pointing at the one directory. **Move `Lab_1_Aura_Setup/images/FREE_*.png` in**, the only screenshots still outside it, and delete the emptied per-lab folders. **Delete `lab1-backup-restore.png`**, whose only consumer was the dead backup-restore procedure. **Leave the 7 concept `.svg` files where they are.** Write the convention down once so nobody invents a third.
+> **STATUS: DONE, after the reversal.**
+>
+> **The direction changed before any of it ran.** This step originally moved screenshots out to per-lab folders. A separate session had already implemented the opposite and recorded it in `svg-png.md`. Both could not ship. Ryan chose the site directory as the single source on 2026-08-08, and this document was rewritten to match before execution, rather than executing against a decision that had been overtaken.
+>
+> **Two screenshots moved in**, the only ones left outside the single source: `Lab_1_Aura_Setup/images/FREE_01_WHERE.png` and `FREE_02_Create_Instances.png`. **Renamed on the way** to `lab1-free-tier-location.png` and `lab1-free-create-instance.png`, because `SCREAMING_SNAKE` names sitting beside fifteen kebab-case ones is exactly the third pattern this item exists to prevent. Both consumers repointed: `01_aura_setup.ipynb` by raw URL, `Aura_Free_Trial.md` by relative path, the second of which step 5 deletes anyway.
+>
+> **`lab1-backup-restore.png` deleted.** Its only consumer was the page step 1 removed. Confirmed nothing else referenced it.
+>
+> **Three empty per-lab `images/` folders removed**, Lab 1, Lab 2 and Lab 3. Two held nothing but a `.DS_Store`. There is now no `images/` directory anywhere under a lab folder, which is what makes "single source" checkable rather than aspirational.
+>
+> **The convention is written down once, in `site/README.md`**, as a two-row table: pages use `image::`, notebooks use the raw URL, both against the same directory. It also carries the naming rule, `lab<n>-<subject>.png`.
+>
+> **`site/README.md` had gone stale from step 3 and was fixed in the same pass.** It told the reader to commit the generated deck HTML, which is now gitignored and built in CI, and its preview command still carried the hardcoded `/opt/homebrew/opt/node@22/bin/node`. Both were false the moment step 3 landed.
+>
+> **Left to step 7, unchanged:** the two duplicated `.svg` diagrams. Deleting the site copy of those is a different decision from where screenshots live, and step 7 owns it.
+>
+> **Verified.** `npm run build` in `site/`, clean.
+7. **Collapse the duplicated diagram files, then redraw as two.** REVERSED from this document's first draft, which kept the root `images/` copies and deleted the site's. **The site directory wins, for the same reason step 6 gives.** Delete `dual-database-architecture.svg`, `dual-database-architecture.png` and `lab-architecture-overview.svg` from root `images/`, move `lab-architecture-overview.png` into `site/modules/ROOT/images/`, and repoint the three slide decks, `build:assets` and `04_genie_agent.ipynb` at the surviving copies. The `.excalidraw` files stay in root `images/`: they are editing sources rather than published assets, and Antora would otherwise ship 120KB nobody fetches. Then the Lab 5 topology becomes the default and the MCP drawing is retitled as the Part B demo, kept on `lab4.adoc` alone. Collapsing first is what stops the redraw shipping to half the consumers.
 8. **Write `lab5.adoc` and `lab6.adoc`**, plus the Appendix A page and their nav entries. Appendix A opens with the tier warning in its first paragraph, and step 2 has already made its notebooks agree with it.
 9. **Write the three new decks:** LangGraph supervisor, deployment, agent memory. Two agent decks, not one, matching Lab 5's two notebooks.
 10. **Split and publish the remaining decks**, Workshop against Additional Background. **This is where the slides nav group lands**, along with the remaining `.adoc` wrappers. Three exist already under `site/modules/ROOT/pages/slides/` and are unreachable; the rest copy their `iframe` pattern. `governance/auth-sync-slides.md` needs its source rebuilt to HTML first, since it is PDF-only.

@@ -99,6 +99,8 @@ Neo4j Aura Graph Analytics provides the complete library via serverless compute 
 | **Link Prediction** | Common Neighbors, Adamic Adar | Predict future connections |
 | **Node Embeddings** | FastRP, GraphSAGE, Node2Vec | ML feature generation |
 
+**Not on the workshop instance.** You are on AuraDB Free, which has no graph algorithms. The GDS notebooks are take-home: read them now, run them later on an instance that has the plugin.
+
 ---
 
 
@@ -175,54 +177,6 @@ h2 { font-size: 32px; }
 
 ---
 
-## Aura Agents: No-Code GraphRAG
-
-Aura Agents let you build **AI-powered conversational interfaces** to your graph:
-
-- **No code required** - Configure through a simple UI
-- **Natural language queries** - Ask questions in plain English
-- **Automatic Cypher generation** - LLM translates questions to graph queries
-- **Knowledge graph reasoning** - Leverage relationships for better answers
-
-**Why Agents matter:**
-- Democratize access to graph insights
-- Build chatbots that understand your domain
-- Combine vector search + graph traversal automatically
-
----
-
-## Aura Agents: How They Work
-
-An Aura Agent combines three retrieval strategies behind a single chat interface:
-
-| Strategy | What It Does | Best For |
-|----------|-------------|---------|
-| **Cypher Templates** | Pre-written queries with parameters the LLM fills in | High-precision, repeatable questions |
-| **Text2Cypher** | LLM generates Cypher from natural language | Ad-hoc graph queries |
-| **Similarity Search** | Vector similarity over embedded nodes | Conceptual and semantic questions |
-
-The agent selects the right strategy per question automatically.
-
----
-
-## Aura Agents: Example Conversation
-
-**Setup:** An aircraft fleet knowledge graph with maintenance manuals loaded.
-
-**User:** "Which engines on N10001 have had bearing faults?"
-
-**Agent reasoning:** Entity-specific count question. Cypher Template or Text2Cypher.
-
-**Agent response:** "Engine CFM56-7B #1 on aircraft N10001 had three bearing fault events in the last 90 days: two MAJOR and one CRITICAL."
-
-**User:** "What do the maintenance manuals say to do about bearing wear?"
-
-**Agent reasoning:** Semantic content question. Similarity Search over embedded chunks.
-
-**Agent response:** Retrieves and summarizes the relevant manual sections.
-
----
-
 ## Summary
 
 Neo4j Aura provides:
@@ -232,7 +186,6 @@ Neo4j Aura provides:
 - **AI/GenAI capabilities** - Vector indexes, GraphRAG support
 - **Graph Analytics** - Built-in algorithms for insights
 - **Integrated Tools** - Query, Explore, and Dashboards
-- **Aura Agents** - No-code conversational AI combining Cypher Templates, Text2Cypher, and Similarity Search
 
 **Next:** Learn about the promise and limits of GenAI and why we need RAG.
 

@@ -20,7 +20,7 @@ ones actually failing?
 | [Lab 2](../Lab_2_Databricks_ETL_Neo4j) | `Aircraft` nodes in your Aura instance, with `tail_number`. The memory library adopts them | Yes |
 | [Lab 3 notebook 01](../Lab_3_Semantic_Search/01_data_and_embeddings.ipynb) | The `fleet-ops-<your-user>` secret scope, and `data_utils.py` beside it on disk | Yes |
 | [Lab 5](../Lab_5_LangGraph_Agent) | `tools.py` and `agent.py`, and the Model Serving endpoint you deployed | Yes |
-| [Lab 4 Part A](../Lab_4_Compound_AI_Agents/PART_A.md) | Your Genie space ID, for the `genie_node` the memory agent keeps | Yes |
+| [Lab 4 Part A](../Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | Your Genie space ID, for the `genie_node` the memory agent keeps | Yes |
 
 `memory.py` imports from both `../Lab_3_Semantic_Search/data_utils.py` and
 `../Lab_5_LangGraph_Agent/tools.py`. Keep the three lab folders as siblings, in

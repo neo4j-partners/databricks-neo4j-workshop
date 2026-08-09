@@ -17,7 +17,7 @@ retrievers from Lab 3 for the maintenance manuals.
 | [Lab 3 notebook 01](../Lab_3_Semantic_Search/01_data_and_embeddings.ipynb) | The `fleet-ops-<your-user>` secret scope, and the `maintenanceChunkEmbeddings` vector index | Yes for three tools |
 | [Lab 3 notebook 02](../Lab_3_Semantic_Search/02_graphrag_retrievers.ipynb) | Understanding of `VectorCypherRetriever`, which `graphrag_node` is built from | Recommended |
 | [Lab 3 notebook 03](../Lab_3_Semantic_Search/03_hybrid_retrievers.ipynb) | The `maintenanceChunkText` fulltext index, for the optional Section 10 exercise | Optional |
-| [Lab 4 Part A](../Lab_4_Compound_AI_Agents/PART_A.md) | Your Genie space, and its space ID | Yes |
+| [Lab 4 Part A](../Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | Your Genie space, and its space ID | Yes |
 
 Lab 4 Part B is not a prerequisite. Its routing instructions are where this
 lab's supervisor prompt started, and you can read them without having built the

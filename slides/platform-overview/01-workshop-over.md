@@ -42,7 +42,6 @@ Build AI Agents and Knowledge Graphs with Neo4j and Databricks
 - **Build** a LangGraph supervisor that routes across Genie, Cypher over your own graph, and GraphRAG
 - **Give** that agent memory stored in the same graph as the fleet data
 - **Watch** the instructor build the same routing with no code in Agent Bricks over a governed Neo4j MCP connection
-- **Create** a no-code Aura Agent with Cypher Templates, Text2Cypher, and Similarity Search
 
 ---
 
@@ -109,7 +108,7 @@ A multi-agent supervisor routes questions to the right database automatically.
 
 ---
 
-![bg contain](../../images/dual-database-architecture.svg)
+![bg contain](../../site/modules/ROOT/images/dual-database-architecture.svg)
 
 ---
 

@@ -1,6 +1,8 @@
 = Lab 1: Neo4j Aura Setup
 
-This is Lab 1 of 4. The graph database you provision here is the foundation for everything that follows: the ETL pipelines in Lab 2 load data into it, Lab 3 runs semantic search against its maintenance manuals, and Lab 4 connects it to a multi-agent system. Getting Aura running and understanding what the graph contains is the starting point.
+This is the first of six labs. The graph database you provision here is the foundation for everything that follows: Lab 2 loads data into it, Lab 3 runs semantic search against its maintenance manuals, Lab 5 builds an agent that queries it, and Lab 6 writes that agent's memory back into it. Getting Aura running and understanding what the graph contains is the starting point.
+
+IMPORTANT: There is one instance and no fallback. Every later lab reads and writes the instance you create here, so save the password where you can find it again. Losing it means redoing Labs 2 and 3.
 
 TIP: Ready to start? Open `Lab_1_Aura_Setup/01_aura_setup.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 
@@ -9,7 +11,7 @@ TIP: Ready to start? Open `Lab_1_Aura_Setup/01_aura_setup.ipynb` in your Databri
 * **Graph databases** store data as nodes and relationships: connections are explicit and traversable, not hidden in foreign keys and joins
 * **Cypher** is Neo4j's pattern-matching query language: queries read like the graph patterns they match
 * **The Aircraft Digital Twin** graph has five entity types: Aircraft, Systems, Components, Flights, and Maintenance Events
-* **Neo4j Aura** is the managed cloud graph database, with built-in vector search, Graph Data Science, and Aura Agents
+* **Neo4j Aura** is the managed cloud graph database, with built-in vector search. You use **AuraDB Free**, which never expires and holds up to 200,000 nodes and 400,000 relationships
 * **Aura developer tools**: Query Workspace (Cypher editor), Explore (visual graph canvas), and Dashboards (low-code visualization)
 
 == Graph Databases
@@ -97,24 +99,27 @@ The Aircraft Digital Twin spans two platforms. Neo4j holds the topology: how air
 
 == Neo4j Aura
 
-Neo4j Aura is a fully managed cloud graph database service. It provides the Neo4j graph engine without the operational overhead of running infrastructure: automatic backups, high availability, and deployment across AWS, GCP, and Azure. Each participant provisions their own Aura instance to hold the Aircraft Digital Twin graph. The data loaded in Lab 2 persists in this instance and is queried by notebooks in Labs 3 and 4.
+Neo4j Aura is a fully managed cloud graph database service. It provides the Neo4j graph engine without the operational overhead of running infrastructure: automatic backups, high availability, and deployment across AWS, GCP, and Azure. Each participant provisions their own Aura instance to hold the Aircraft Digital Twin graph. That one instance carries through the whole workshop: Lab 2 loads it, Lab 3 enriches it, and Labs 5 and 6 query and write to it.
 
-.Vector search, Graph Data Science, and AI capabilities
+.What AuraDB Free gives you, and what it does not
+[%collapsible]
+====
+The workshop runs on **AuraDB Free**, not the 14-day trial and not Professional. Free never expires, so nothing goes away between sessions.
+
+It holds up to **200,000 nodes and 400,000 relationships**. Everything the labs load fits comfortably: the fleet graph is a small fraction of that, because the sensor readings live in Databricks rather than in Neo4j.
+
+The one thing Free does not have is **Graph Data Science**, the library of algorithms like PageRank and community detection. Nothing required depends on it. xref:lab2.adoc[Lab 2]'s `02_gds_knn_aircraft.ipynb` and the GDS appendix are take-home material: read them during the workshop, run them later on an instance that has the plugin.
+====
+
+.Vector search and AI capabilities
 [%collapsible]
 ====
 Aura provides capabilities beyond the core graph engine that support AI retrieval pipelines directly:
 
 * **Built-in vector indexes** store embeddings alongside graph data, enabling semantic similarity search without a separate vector store.
 * **Combined vector and graph queries** retrieve documents by semantic similarity in a single Cypher operation, then follow relationships to pull in structural context.
-* **Graph Data Science algorithms** like PageRank and community detection run directly within Aura for analytical workloads.
 
-These capabilities come together in Lab 3, semantic search over maintenance manuals.
-====
-
-.Aura Agents: no-code agent platform
-[%collapsible]
-====
-Aura Agents is Neo4j's no-code agent platform for building conversational interfaces grounded in graph data. Users describe a use case, and the platform auto-generates an agent with tools tailored to the graph's schema: Cypher query templates for deterministic traversals, vector similarity search over embedded content, and text-to-Cypher generation for ad-hoc exploration. Agents deploy as REST API endpoints or MCP server endpoints, making them callable by external orchestrators like the Databricks supervisor agent built in xref:lab4.adoc[Lab 4].
+Both are on Free, and both come together in xref:lab3.adoc[Lab 3], semantic search over maintenance manuals.
 ====
 
 == Aura Developer Tools

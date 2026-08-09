@@ -1,6 +1,8 @@
 # Expand v3: Labs 5 and 6, Plan of Record
 
-Replaces `expand-v2.md`. Same facts, rewritten to be read. Where this document and `expand.md` or `expand-v2.md` disagree, this one wins.
+Replaces `expand-v2.md`, which is deleted. Same facts, rewritten to be read.
+
+**Two plan files remain.** This one owns the plan and the status. `expand.md` is the reasoning archive: the full defect write-ups, the runner-up options and why each lost, and the raw measurements. **Read `expand.md` for why, never for what is done.** Where the two disagree, this one wins.
 
 **Status date:** 2026-08-09. Every claim below was checked against files on disk or against a job run, not inferred.
 
@@ -8,7 +10,7 @@ Replaces `expand-v2.md`. Same facts, rewritten to be read. Where this document a
 
 - **Lab 5 works end to end, deployed.** All three tools answer through a Model Serving endpoint, including the Genie tool that was failing on authorization.
 - **Lab 6 works and its central claim now holds.** Memory-on beats memory-off on the referring-question test, on a cleared instance, against a scorer tightened after the loose one reported a false pass.
-- **One question can still kill Lab 6:** whether AuraDB Free tolerates the combined index and constraint count of Labs 3 and 6 on one instance. Unrun. Everything else is polish.
+- **The last no-go is closed. AuraDB Free tolerates the combined stack.** `f024ea61` is an AuraDB Free instance, confirmed on the Aura console, and the full Lab 6 shape applied and rolled back on it with zero errors at **71 indexes and 24 constraints**. Nothing is left that can say no. Everything else is polish.
 
 ---
 
@@ -62,7 +64,7 @@ Replaces `expand-v2.md`. Same facts, rewritten to be read. Where this document a
 - **Three tools built and live.** `genie_node`, `cypher_node`, `graphrag_node`, the last on `VectorCypherRetriever` lifted from Lab 3.
 - **Routing measured at 48 of 48 across 9 groups,** against the current `tools.py`, on a participant-shaped instance carrying zero `Reading` nodes. That last detail is what makes the numbers mean anything.
 - **The anchor question runs end to end.** Genie names the engines with abnormal EGT, the graph returns their maintenance history including a bearing wear fault, the manual's high-EGT procedure closes the answer.
-- **Supervisor model settled:** `databricks-meta-llama-3-3-70b-instruct`, one constant, one endpoint across Labs 3 and 5.
+- **Supervisor model settled:** `databricks-claude-sonnet-5`, one constant, one endpoint across Labs 3 and 5.
 - **Credentials wired.** Lab 5 reads the `fleet-ops-<user-slug>` secret scope that Lab 3 creates. No plaintext password anywhere in Lab 5.
 - **Degradation path built.** A missing vector index drops `graphrag_node` from the routing list instead of raising at import.
 - **Write guard fixed.** It was matching write keywords inside string literals. `MATCH (r:Removal)` was never a false positive, and any note claiming otherwise is wrong.
@@ -189,14 +191,16 @@ TOTAL                                              260.4     4:20
 
 ## 3. What Remains
 
-### The one thing that can still say no
+### The one thing that could still say no, and it said yes
 
-- **Confirm AuraDB Free tolerates the Lab 3 plus Lab 6 index and constraint total on one instance.**
-  - Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's.
-  - **The combined total is measured: 59 indexes and 24 constraints,** at 177,382 nodes and 207,605 relationships.
-  - **What is missing is the tier.** `dbms.components()` reports `enterprise` on every Aura instance regardless of tier, so no probe from inside the database settles it.
-  - **Closing it needs one fresh AuraDB Free instance.** The check itself is written and durable at `workshop-setup/verify/src/verify_aura_caps/main.py`, run as `uv run verify-aura-caps`, in read-only and apply-then-roll-back modes. It reads the home database out of `SHOW DATABASES` rather than assuming `neo4j`.
-  - **If Free caps below those numbers, Lab 6 fails for every participant simultaneously.** Ryan's to provision.
+- **CLOSED: AuraDB Free tolerates the Lab 3 plus Lab 6 index and constraint total on one instance.**
+  - **The full stack applied and rolled back cleanly, on Free.** Measured on `f024ea61`, carrying a freshly loaded Lab 2 plus Lab 3 graph: base 26 indexes and 12 constraints, then all 45 Lab 6 objects created with zero errors, then all 45 dropped back to a byte-identical starting state. Verified afterwards: 26 indexes, 12 constraints, zero `aura_cap_probe_*` leftovers, zero `__AuraCapProbe` nodes.
+  - **The number that was tested is 71 indexes and 24 constraints, not 59 and 24.** The check tool projects 59 because it counts only the objects it creates. **Each of the 12 uniqueness constraints also adds a backing index**, so `SHOW INDEXES` peaked at 71, of which 7 are vector. Every earlier statement of 59 undercounts by 12.
+  - **`f024ea61` is AuraDB Free.** Confirmed on the Aura console: instance `workshop-free-v2`, Type `AuraDB Free`, version 2026.07.
+  - **The database-name heuristic that appeared here was backwards, and it is worth naming so it is not repeated.** An earlier draft said Free names its home database `neo4j`, so an instance named after its own id is not Free. **The opposite is true.** AuraDB Free names the home database after the instance id, which is exactly why `f024ea61`'s home database is `f024ea61`. **No signal available from inside the database identifies the tier**, `dbms.components()` least of all, since it reports `enterprise` everywhere. The console is the only source.
+  - The check stays durable at `workshop-setup/verify/src/verify_aura_caps/main.py`, run as `uv run verify-aura-caps`, in read-only `check` and apply-then-roll-back `probe` modes. It reads the home database out of `SHOW DATABASES` rather than assuming `neo4j`.
+
+**One thing the console showed that no query reports: `f024ea61` sits at 177,171 nodes, 89 percent of the 200,000 Free cap**, with 206,908 relationships at 52 percent. That is not a participant's shape. It carries 155,520 `Reading` nodes, and `Reading` is the label the dual-database design puts in Databricks and never in Neo4j. A participant finishing Labs 1 through 3 holds about 21,613 nodes. **The cap result above stands either way**, because indexes and constraints are not nodes, but the loader path that put 155,520 readings into an AuraDB Free instance is worth finding before a class runs it.
 
 ### Also blocking delivery
 
@@ -278,7 +282,7 @@ TOTAL                                              260.4     4:20
 **Data and modeling**
 
 - **One embedding path, `databricks-bge-large-en`,** for the loader and for Lab 3 alike.
-- **`databricks-meta-llama-3-3-70b-instruct` as the supervisor model,** closed on measured routing accuracy. The one-line swap to a Claude endpoint stays available and is not needed.
+- **`databricks-claude-sonnet-5` as the supervisor model.** The decision was first closed on `databricks-meta-llama-3-3-70b-instruct` at 48 of 48 routing, and the escape hatch it left open, one named constant, is what made the later swap to Claude a one-line change. **The routing number above was measured on llama and has not been re-measured on Claude.**
 - **`graphrag_node` uses `VectorCypherRetriever`, not a plain vector retriever.** The Cypher tail after the vector hit is what makes it GraphRAG. The cost is that it sits close to `cypher_node`, which is why routing between that pair is measured as its own number.
 - **Extraction writes `ExtractedLimit`; `OperatingLimit` means the 20 canonical CSV rows.** Runner-up was filtering on `limit_id` at every authoritative site, which left every workaround in place and added filters in three more.
 - **The limit uniqueness constraint keys on `limit_id`, not `name`.** A uniqueness constraint is not enforced against nodes lacking the property, so `limit_id` binds the canonical rows and ignores everything else.
@@ -308,10 +312,10 @@ Each says what the decision is, what the evidence is, and what it blocks.
 
 ### Holding up delivery
 
-- **Does AuraDB Free tolerate 59 indexes and 24 constraints on one instance?**
-  - The combined Lab 3 plus Lab 6 total is measured. Only the tier is unknown, and no probe from inside the database can report it.
-  - **Read the tier off the Aura console, or run the check against a fresh Free instance.** Cheap either way.
-  - **Blocks Lab 6 entirely. It is the one remaining no-go.**
+- ~~**Does AuraDB Free tolerate 71 indexes and 24 constraints on one instance?**~~ **ANSWERED: yes.**
+  - All 45 Lab 6 objects created and dropped cleanly on top of a real Lab 2 plus Lab 3 graph, zero errors, exact rollback, **on `f024ea61`, which the Aura console shows as Type `AuraDB Free`**.
+  - **The threshold is 71 indexes, not the 59 carried in earlier notes.** Constraint-backing indexes were never counted.
+  - **Blocked Lab 6 entirely. Blocks nothing now.**
 - **Regenerate the Antora site, or drop the link from README line 1?**
   - The site stops at Lab 4 and carries pre-regeneration dataset numbers, and it publishes on every push to main.
   - Writing two lab pages is content creation, not drift repair, which is why the audit left it.
@@ -346,7 +350,7 @@ Each says what the decision is, what the evidence is, and what it blocks.
 
 ### A standing hazard, not a question
 
-- **The loader pins its own `.env` at import time,** and that file points at the memory instance. **A bare `populate-aircraft-db clean` from any directory wipes it, regardless of what the caller thought they were pointed at.**
+- **The loader pins its own `.env` at import time,** and that file points at the memory instance. **A bare `populate-aircraft-db clean` from any directory wipes it, regardless of what the caller thought they were pointed at.** Full instance map in section 7.
 
 ---
 
@@ -360,7 +364,7 @@ Six phases. Each has an entry condition, a body, and a completion criterion that
 
 | Item | Blocks |
 |---|---|
-| AuraDB Free index tolerance, Labs 3 and 6 on one Free instance | Phase 3 entirely |
+| ~~AuraDB Free index tolerance, Labs 3 and 6 on one Free instance~~ **CLOSED, 71 indexes and 24 constraints applied and rolled back on Free** | ~~Phase 3 entirely~~ nothing |
 | Model Serving endpoint quota at class size | Phase 2 completion, Phase 4 |
 | Batch seeding path through the memory library | Phase 3 seeding step |
 | Serverless install of the loader, or pick the fallback | nothing participant-facing |
@@ -445,9 +449,66 @@ Order inside the phase, because each step gates the next:
 
 ### What to do next, in order
 
-1. **Provision a fresh AuraDB Free instance and run the index tolerance check.** The only remaining no-go, and it touches nothing else, so it runs beside everything below.
+1. ~~**Provision a fresh AuraDB Free instance and run the index tolerance check.**~~ **DONE. It passed on Free at 71 indexes and 24 constraints, and there is no remaining no-go.** See section 3.
 2. **Re-capture the memory-off baseline** on the current endpoint, scoring it with the rules already agreed: expected tools as a subset test, row-count variance in the components question as known residual, and a 23-event maintenance answer as the arrow fix landing rather than memory improving recall.
 3. **Decide the Lab 5 anchor question,** which is the same defect shape the Lab 6 fix already closed. It determines whether the shipped notebook ends on 5 of 6.
 4. **Answer the four delivery questions in section 5.** Phase 4 hits all of them whether or not they are answered first.
 5. **Push the `MENTIONS` fix upstream.** Carried unactioned across three passes, and worth doing whether or not Lab 6 ships.
 6. **Loader hygiene and the quota check** in any gap. Each is under two hours and neither blocks anything.
+
+---
+
+## 7. How Status Gets Tracked
+
+The first version of this plan drifted from the repository in one repeatable way: **items were written as done on the day they were decided,** and several stayed written as "in flight" for a whole session after they had landed. One pass listed eleven in-flight items and at least eight were already on disk. The rules below exist to make that impossible, not to add ceremony.
+
+### The rules
+
+- **Three states, never two.**
+  - **Decided.** The choice is made and no code exists.
+  - **Landed.** The code is on disk.
+  - **Measured.** A number was produced by running it.
+  - **Nothing moves to measured on the strength of a plan.**
+- **Every status line names its evidence.** A file path with a line number, an instance id, a job run, or a measured number with its units. **A status line with no evidence is a decided line, whatever it claims.**
+- **Verify against disk before writing a status.** Grep for the symbol, read the line, list the directory. The most common error in the first version was reporting a decision as if it were a file.
+- **Each remaining item carries its own probe.** "The list names 10 entries" should carry `grep -c ipynb lab/course.env` beside it, so re-verification is a command rather than a re-read. That is the difference between a rule that holds and one that gets skipped at the end of a long session.
+- **Measurements name what they were measured against.** A development instance and a participant-shaped instance are different graphs and give different answers. One capacity figure misled this plan for a week because it did not say which instance produced it.
+- **A prompt change voids the routing numbers taken before it.** Applies to `tools.py` and the supervisor prompt without exception. A 19 of 20 run was voided this way by a 56 line edit made after it.
+- **Completion criteria are measurements.** "Deployment succeeded" is not a criterion. "The deployed endpoint answered a Genie question as the serving principal" is.
+- **Silent failures get their own line item.** The four memory conditions, the serving principal's secret read, and the Genie table grant all fail with no error message. Each is a checklist item, never a note buried in a paragraph.
+- **Measured work gets committed before the next measurement starts.** Otherwise an endpoint's provenance is the hash of a file that exists in one working tree and nowhere else.
+
+### Where status lives
+
+- **This file** holds the plan and phase-level status. Sections 2, 3 and 6 are the ones that change.
+- **`worklog/*.md`** holds each investigation's full report and raw numbers. **A new investigation gets a new worklog file, never another paragraph here.**
+- **Each lab's README** holds the operational facts a participant or instructor needs, including the pinned-version research answers.
+- **A worklog's open-defect list gets edited when the defect closes,** or it becomes a second stale plan. This already happened once: a worklog closed with three defects marked unfixed that were fixed, and it was only caught because somebody read the code instead of the report.
+
+### Which database produced a measurement
+
+Two Aura instances, so one line of work does not corrupt the other's evidence.
+
+| Instance | Credentials | Role |
+|---|---|---|
+| `f024ea61` | `workshop-setup/.env` | Lab 5 and Lab 6 development. **The `fleet-ops-<user-slug>` secret scope points here**, so this is what the labs actually read |
+| `1a2c98cc` | `workshop-setup/.env.memory` and `populate_aircraft_db/.env` | Memory research |
+
+- **Neither instance is AuraDB Free, so no capacity or index number from either is evidence about Free.** Both report `enterprise`, as every Aura tier does. `f024ea61`'s standard database is named after the instance rather than `neo4j`, which Free never does. **Participants get Free.**
+- **The separation does not hold through the workspace, and that was chosen deliberately.** The secret scope points at `f024ea61`, so Lab 6 writes memory into the Lab 5 measurement graph. The alternative was overriding the environment to write elsewhere, which would leave the shipped credential path untested.
+- **Verify what is on `f024ea61` before trusting a measurement taken there.** It was found **empty** on 2026-08-09, with the fleet graph, the Lab 3 chunks and the memory schema all gone, contradicting several measurements recorded against it.
+  - **Reloaded the same day** through `populate-aircraft-db setup --skip-extraction` in 5:04: 177,067 nodes, 207,597 relationships, 286 of 286 chunks embedded at 1024 dims, both GraphRAG indexes ONLINE, all 12 constraints present.
+  - **The Lab 6 memory schema is not back.** Anything that depended on it has to re-run the lab.
+  - **The loader defaults to the local `bge` embedder, not Databricks.** Neither `.env` sets `EMBEDDING_PROVIDER`, so a bare run pulls a 1.3 GB model instead of using the endpoint Lab 3 uses. Set `EMBEDDING_PROVIDER=databricks` explicitly.
+- **Standing hazard.** `populate_aircraft_db/config.py:13` pins `populate_aircraft_db/.env` at import time, and that file points at `1a2c98cc`. **A bare `populate-aircraft-db clean` from any directory wipes the memory instance, regardless of what the caller thought they were pointed at.**
+
+### Cadence
+
+- **On landing any item:** move its bullet from section 3 to section 2 and name the evidence.
+- **At each phase boundary:** re-verify section 2 against disk, then write the phase completion measurement.
+- **On any decision:** add it to section 4 with its runner-up and why the runner-up lost. **The runner-up is the part that stops the decision being relitigated.**
+- **Weekly, or at any phase boundary:** re-read the two external dependency risks together, the memory library pin and the Part B MCP server.
+
+### Definition of done for the whole effort
+
+A participant creates one AuraDB Free instance in Lab 1 and finishes Lab 6 having used only that instance, with a deployed Model Serving endpoint answering questions as a service principal across all three tools, and with Lab 4 Part B and all MCP material intact as an instructor demo.

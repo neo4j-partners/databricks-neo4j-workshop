@@ -14,7 +14,6 @@ A participant reference covering the workshop overview, GenAI capabilities and l
 - **Build** a LangGraph supervisor that routes across Genie, Cypher over your own graph, and GraphRAG
 - **Give** that agent memory stored in the same graph as the fleet data
 - **Watch** the instructor build the same routing with no code in Agent Bricks over a governed Neo4j MCP connection
-- **Create** a no-code Aura Agent with Cypher Templates, Text2Cypher, and Similarity Search
 
 ### What Is a Digital Twin?
 
@@ -69,7 +68,7 @@ The data is split across two platforms, each chosen for the workload it handles 
 
 A multi-agent supervisor routes questions to the right database automatically.
 
-![Dual Database Architecture](../../images/dual-database-architecture.svg)
+![Dual Database Architecture](../../site/modules/ROOT/images/dual-database-architecture.svg)
 
 ### Workshop Infrastructure
 

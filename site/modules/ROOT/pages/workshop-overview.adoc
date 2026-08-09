@@ -78,6 +78,27 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 
 |===
 
+== Which Aura Instance Each Lab Uses
+
+Every required lab reads and writes the **one AuraDB Free instance you create in Lab 1**, and each lab's output is the next lab's input. Lab 2 loads the fleet, Lab 3 adds documentation and vector indexes to it, Lab 5 builds an agent that queries both, and Lab 6 writes the agent's memory back into it.
+
+[cols="1,3"]
+|===
+| Lab | Neo4j target
+
+| Labs 1, 2, 3
+| Yours
+
+| Lab 4 Part A
+| None. Genie queries Unity Catalog
+
+| Lab 4 Part B
+| None of yours. The instructor's demo instance, in a demo the instructor runs
+
+| Labs 5, 6
+| Yours
+|===
+
 == Key Technologies
 
 [cols="1,2"]
@@ -85,7 +106,7 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 | Technology | Purpose
 
 | **Neo4j Aura**
-| Managed graph database for aircraft relationships
+| Managed graph database for aircraft relationships. AuraDB Free throughout
 
 | **Databricks**
 | Notebooks, Unity Catalog, and the Lakehouse
@@ -93,11 +114,26 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 | **AI/BI Genie**
 | Natural language analytics over Unity Catalog tables
 
-| **Agent Bricks: Supervisor Agent**
-| No-code multi-agent supervisor combining data sources
+| **Embeddings**
+| Databricks BGE-large, `databricks-bge-large-en`
+
+| **LLM**
+| Databricks Claude Sonnet 5, `databricks-claude-sonnet-5`
 
 | **GraphRAG**
-| Graph-enhanced retrieval combining vector search with traversal
+| Graph-enhanced retrieval combining Neo4j vector search with traversal
+
+| **LangGraph**
+| The code-first supervisor you write in Lab 5
+
+| **Agent Bricks: Supervisor Agent**
+| No-code multi-agent supervisor. Shown in the Lab 4 Part B demo
+
+| **Neo4j Agent Memory**
+| Conversation memory stored as a graph beside the fleet data, in Lab 6
+
+| **Model Serving**
+| Deploys the agent as an endpoint authenticating as a service principal
 
 | **Neo4j Spark Connector**
 | ETL between Databricks and Neo4j
@@ -105,9 +141,29 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 
 == Prerequisites
 
-* A Databricks workspace (provided for the workshop)
-* A Neo4j Aura instance (pre-provisioned by workshop administrators)
+* A laptop with a modern web browser, and network access to Databricks and Neo4j Aura
+* A Databricks workspace with Model Serving enabled, provided for the workshop
+* An email address, for the AuraDB Free account you create yourself in xref:lab1.adoc[Lab 1]
 * Basic familiarity with SQL and Python
+
+No local software installation is required. Everything runs in the browser or in a Databricks notebook.
+
+== Reference Documentation
+
+**Neo4j**
+
+* https://neo4j.com/docs/aura/[Neo4j Aura Documentation]
+* https://neo4j.com/docs/neo4j-graphrag-python/[neo4j-graphrag Python Library]
+* https://neo4j.com/docs/spark/current/[Neo4j Spark Connector]
+* https://neo4j.com/docs/cypher-manual/current/[Cypher Query Language]
+* https://github.com/neo4j/mcp[Neo4j MCP Server]
+
+**Databricks**
+
+* https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/[Foundation Model APIs]
+* https://docs.databricks.com/aws/en/genie/[AI/BI Genie]
+* https://docs.databricks.com/aws/en/generative-ai/agent-bricks/multi-agent-supervisor[Agent Bricks: Supervisor Agent]
+* https://docs.databricks.com/en/data-governance/unity-catalog/[Unity Catalog]
 
 == Next Steps
 
