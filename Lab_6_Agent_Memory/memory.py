@@ -1163,12 +1163,18 @@ class MemoryAgentState(AgentState, total=False):
             values of this.
         recalled: Past messages the recall node found, already formatted.
         remembered: Mentions linked by the remember node, for the trace.
+        asked: The question as it was typed. Lab 5 documents ``question`` as
+            unchanged for the whole run, and Lab 6 breaks that on purpose:
+            the supervisor rewrites ``question`` once, so that the tools see
+            the aircraft memory resolved rather than the word "that". The
+            original is kept here so nothing is lost.
     """
 
     session_id: str
     user_identifier: str
     recalled: str
     remembered: int
+    asked: str
 
 
 def format_recalled(messages: Sequence[Any]) -> str:
@@ -1286,7 +1292,70 @@ Recalled from memory:
 
 """
     + SUPERVISOR_PROMPT
+    + """
+## Resolving the question first
+
+Routing is not the only thing memory is for. The tools receive the question
+text, so a question saying "that aircraft" reaches Genie as "that aircraft"
+and Genie asks you which one. Resolve it here instead.
+
+Add one line above the NEXT line:
+
+RESOLVED: <the question, with every reference to an earlier one replaced>
+
+Replace "that aircraft", "it", "the same one" and the like with the tail
+number the recalled messages point at. Change nothing else: same wording,
+same intent, no extra conditions. When the question already names everything
+it needs, or memory holds nothing that resolves it, repeat the question
+exactly as it was asked.
+
+Question: Are there any vibration readings I should worry about on that aircraft?
+Memory holds: N10011 is the one I care about, the EGT margin has been trending.
+Two lines back:
+
+RESOLVED: Are there any vibration readings I should worry about on N10011?
+NEXT: genie_node
+"""
 )
+
+
+RESOLVED_PREFIX = "RESOLVED:"
+
+
+def _parse_resolved(decision: str) -> str | None:
+    """Pull the rewritten question out of a supervisor reply.
+
+    Args:
+        decision: The supervisor's raw reply.
+
+    Returns:
+        The text after ``RESOLVED:``, or ``None`` when the reply carries no
+        such line or the line is empty.
+    """
+    for line in decision.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(RESOLVED_PREFIX):
+            return stripped[len(RESOLVED_PREFIX):].strip() or None
+    return None
+
+
+def _pick_tool(text: str, tools: Sequence[str]) -> tuple[str, int]:
+    """Lab 5's rule: the tool named last in the reply is the one chosen.
+
+    Args:
+        text: The part of the reply to read.
+        tools: Tool names the supervisor may name.
+
+    Returns:
+        The chosen name and the position it was found at. A position below
+        zero means no tool was named at all.
+    """
+    chosen, best = "synthesize", -1
+    for tool in (*tools, "synthesize"):
+        position = text.rfind(tool)
+        if position > best:
+            best, chosen = position, tool
+    return chosen, best
 
 
 def build_memory_supervisor_node(
@@ -1298,9 +1367,16 @@ def build_memory_supervisor_node(
 ) -> Callable[[MemoryAgentState], dict[str, Any]]:
     """Build the Lab 5 supervisor with recalled memory in its prompt.
 
-    Same decision rule as Lab 5, same reading of the answer from the end of
-    the reply, one extra prompt variable. Keeping the rest identical is what
-    makes the memory-off versus memory-on comparison mean anything.
+    Same decision rule as Lab 5 and the same reading of the tool name from the
+    end of the reply. Keeping that identical is what makes the memory-off
+    versus memory-on comparison mean anything.
+
+    Two things are new. The prompt carries a fourth variable, ``recalled``.
+    And on the first pass the node rewrites ``question`` from a ``RESOLVED:``
+    line, because routing alone is not enough: the tools are handed the
+    question text, so "that aircraft" reaches Genie as "that aircraft" and
+    Genie asks which one. Resolving it here is what lets memory change an
+    answer rather than only a route.
 
     Args:
         llm: A ``data_utils.DatabricksLLM``.
@@ -1330,14 +1406,29 @@ def build_memory_supervisor_node(
         )
         decision = llm.invoke(rendered).content
 
-        chosen = "synthesize"
-        best = -1
-        for tool in (*tools, "synthesize"):
-            position = decision.rfind(tool)
-            if position > best:
-                best, chosen = position, tool
+        # The rewrite happens on the first pass only. After a tool has run the
+        # question already carries the tail number, and rewriting a rewrite is
+        # how a question drifts.
+        update: dict[str, Any] = {}
+        resolved = _parse_resolved(decision) if not trace else None
+        if resolved and resolved != state["question"]:
+            update["asked"] = state.get("asked") or state["question"]
+            update["question"] = resolved
+
+        # Read the route from below the RESOLVED line. The resolved question is
+        # the participant's words, and a tool name inside it would otherwise
+        # win the rfind.
+        tail = decision
+        marker = tail.find(RESOLVED_PREFIX)
+        if marker >= 0:
+            newline = tail.find("\n", marker)
+            tail = tail[newline + 1:] if newline >= 0 else ""
+
+        chosen, best = _pick_tool(tail, tools)
         if best < 0:
-            chosen = "synthesize"
-        return {"route": chosen}
+            # A reply that put NEXT above RESOLVED leaves nothing below it.
+            chosen, best = _pick_tool(decision, tools)
+        update["route"] = chosen if best >= 0 else "synthesize"
+        return update
 
     return supervisor_node

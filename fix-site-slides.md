@@ -104,7 +104,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **Nothing anywhere mentions the secret scope. DECIDED to fix.** Lab 3 notebook 01 creates `fleet-ops-<user-slug>` with four keys and Labs 3, 5 and 6 read it. The site still shows a plaintext `NEO4J_PASSWORD` in every notebook's config cell. On the site this becomes concept, not procedure: one paragraph on the Lab 3 page about why credentials get written once and read four times.
 
-- **The tier claim is wrong in two directions. DECIDED to fix, but I need the right answer first.** See the question at the top of Lab 1.
+- **The tier claim. DECIDED: AuraDB Free, everywhere, no exceptions.** Not the 14-day trial, not Professional. Every surface says the same three words. Full sweep list at the top of Lab 1.
 
 ---
 
@@ -112,38 +112,41 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 ### Needs fixed
 
-- **The tier claim, and your answer conflicts with the lab. BLOCKING.** You wrote "everything is Neo4j Aura free trial." `Lab_1_Aura_Setup/README.md` says the opposite in bold: take **AuraDB Free**, and *do not* take the 14-day free trial the console offers first, because that provisions AuraDB Professional and expires partway through the course.
+- **The tier. DECIDED: AuraDB Free. Not the 14-day trial. Not Professional.** `Lab_1_Aura_Setup/README.md` was right all along and everything else conforms to it. This closes `expand.md` Open Decision 6 on every surface, not just in the plan.
 
-  **These are different products and the difference reaches four other decisions:**
+  **Consequences that follow, and they are not optional:**
 
-  | | AuraDB Free | 14-day Professional trial |
+  | Follows from Free | What it means |
+  |---|---|
+  | 200,000 node / 400,000 relationship caps | Real. Worth one sentence in Lab 1 so nobody panics later |
+  | GDS unavailable | Lab 2 `02_gds_knn_aircraft.ipynb` is optional and skippable. Appendix A likewise |
+  | Never expires | No mid-course expiry, so a multi-session format is safe |
+  | Lab 6 index cap | Still unmeasured. `expand-v2.md` q6 stays open and stays the one no-go |
+
+  **Every place the wrong tier is still written down:**
+
+  | File | Line | Says |
   |---|---|---|
-  | Expires | Never | Day 14, mid-course for a multi-session format |
-  | Node cap | 200,000 | None that binds |
-  | GDS | Unavailable | Available |
-  | Lab 2 `02_gds_knn_aircraft.ipynb` | Cannot run | Runs |
-  | Appendix A | Cannot run | Runs |
-  | Lab 6 index-cap risk (`expand-v2.md` q6) | Real, unmeasured | Gone |
+  | `site/modules/ROOT/pages/lab1-instructions.adoc` | 13, 16 | "Neo4j Aura free trial", "14-day free trial" |
+  | `site/modules/ROOT/pages/lab2-instructions.adoc` | 31 | "requires AuraDB Professional" |
+  | `Lab_1_Aura_Setup/slides/07-lab-steps-1.md` | 6, 12 | "free trial signup process", "free trial instance" |
+  | `Lab_1_Aura_Setup/Aura_Free_Trial.md` | filename | Body is correct. The **name** reads as the thing it warns against |
 
-  **If it is really the trial, the whole GDS problem disappears and so does the Lab 6 blocker.** If it is Free, the lab README is right and the site just needs correcting to match. Which is it?
+  The two `.adoc` lines die with the notebook-first split, so they need deleting rather than editing. The slide and the filename are live and need real fixes.
 
-  **RESPONSE** :
+  **`Aura_Free_Trial.md` should be renamed or folded in.** A participant who sees the filename and skips the body clicks exactly the wrong button. Recommendation: fold the whole file into `01_aura_setup.ipynb` and delete it, which the notebook-first split calls for anyway.
 
 - **`lab1-instructions.adoc:37-47`, the dead backup-restore procedure. RESOLVED by the notebook-first split.** The page is retired; `01_aura_setup.ipynb` never had the procedure. No fix needed, just deletion.
 
 - **`lab1.adoc:117` points Aura Agents at Lab 4. DECIDED: drop every mention of Aura Agents.** That is the whole of `lab1.adoc:115-120`. Nothing replaces it.
 
-- **The signup guide is misquoted. DECIDED to fix**, contingent on the tier answer above, since the guide's own title is the thing in dispute.
+- **The signup guide is misquoted. DECIDED to fix.** The guide's body already points at AuraDB Free and warns off the trial button by name. The site paraphrased it backwards. Fixed by deleting the site copy and folding the guide into the notebook.
 
 ### Missing
 
-- **The node and relationship caps.** You asked whether this is needed. **Answer: only if the class is on AuraDB Free.** On Free it is worth one sentence so nobody panics in Lab 6. On the Professional trial it is noise and comes out. Blocked on the tier question.
+- **The node and relationship caps. DECIDED to add, one sentence.** The class is on Free, so 200,000 nodes and 400,000 relationships are real numbers a participant can hit. These two are not the drifting dataset counts the no-counts rule targets; they are product limits, and they change about never.
 
-  **RESPONSE** :
-
-- **`Aura_Free_Trial.md` is not published.** You asked whether this is needed. **Answer: no, not under the notebook-first split.** It is a signup procedure, so it belongs in `01_aura_setup.ipynb` like everything else. Fold it into the notebook and delete the standalone file.
-
-  **RESPONSE** :
+- **`Aura_Free_Trial.md` is not published. DECIDED: fold into `01_aura_setup.ipynb` and delete.** It is a signup procedure, so the notebook-first split takes it. Deleting it also retires a filename that argues against its own contents.
 
 ### To add
 
@@ -153,13 +156,15 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **`platform-overview/01-neo4j-aura-overview-slides.md` is not embedded. DECIDED to publish**, after checking it for the tier claim.
 
+- **`Lab_1_Aura_Setup/slides/07-lab-steps-1.md:6,12 say "free trial". DECIDED to fix.** Both lines become "AuraDB Free". This deck lives in the lab folder rather than `slides/`, so the deck-split table below does not cover it and it will be missed unless someone looks for it.
+
 ---
 
 ## Lab 2: Databricks ETL to Neo4j
 
 ### Needs fixed
 
-- **The GDS notebook tier gate. DECIDED: make it optional**, stated plainly, without the AuraDB Professional claim. Exact wording depends on the tier answer.
+- **The GDS notebook tier gate. DECIDED: make it optional.** The class is on AuraDB Free, GDS is not on Free, so `02_gds_knn_aircraft.ipynb` cannot run for anybody in the room. Say that plainly and mark it skippable. Drop `lab2-instructions.adoc:31`'s "requires AuraDB Professional" framing, which reads as a prerequisite to go acquire rather than a reason to skip.
 
 - **`lab2-instructions.adoc:77` sends participants to Lab 4 for the supervisor. RESOLVED by the split**, page retired. The equivalent handoff on `lab2.adoc` still needs to point at Lab 3, then Lab 4 Part A, then Lab 5.
 
@@ -359,7 +364,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 - **One endpoint, redeployed.** Lab 6 redeploys the endpoint Lab 5 created rather than making a second one, which is why the memory-off baseline has to be captured before Lab 6 overwrites it.
 
-- **Graph cost.** Only meaningful if the class is on Free. Blocked on the tier question.
+- **Graph cost. DECIDED to include.** The class is on Free, so the cap is real and the arithmetic reassures rather than worries: memory costs about 20 nodes per participant per session against roughly 178,000 nodes of headroom after Labs 1 through 3.
 
 - **Whether `02_instructor_demos.ipynb` ships.** `expand-v2.md` question 8, still open. If it ships it needs a `course.env` entry; if not, one sentence stops the next reader asking. **The four demos in it are the Lab 6 payoff**, and the memory deck below leans on demo 1.
 
@@ -371,7 +376,7 @@ The decision to move all procedure into notebooks is not a tidy-up. It deletes a
 
 ### Open, do not write around it
 
-- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured, and it evaporates entirely if the class is on the Professional trial.**
+- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and `expand-v2.md` q6 stays the single remaining no-go. `scratchpad/aura_free_index_check.py` is already written and needs a fresh Free instance to run against.
 
   **RESPONSE** :
 
