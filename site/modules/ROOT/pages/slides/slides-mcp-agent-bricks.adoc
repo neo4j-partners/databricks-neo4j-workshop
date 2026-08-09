@@ -1,0 +1,7 @@
+= Neo4j MCP and Agent Bricks (Slides)
+
+++++
+<iframe src="../_attachments/slides/overview-mcp/01-mcp-agent-bricks-slides.html"
+  style="width:100%;height:600px;border:none;">
+</iframe>
+++++

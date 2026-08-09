@@ -1,0 +1,7 @@
+= Workshop Architecture and Roadmap (Slides)
+
+++++
+<iframe src="../_attachments/slides/overview-architecture/01-architecture-roadmap-slides.html"
+  style="width:100%;height:600px;border:none;">
+</iframe>
+++++

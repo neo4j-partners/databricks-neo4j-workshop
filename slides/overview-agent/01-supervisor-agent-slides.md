@@ -36,10 +36,7 @@ One supervisor, three tools, one endpoint that answers for someone else
 ## Why a Single Retriever Is Not Enough
 
 - **Vector, vector-Cypher, Text2Cypher:** three retrieval patterns, one shape of question each
-- **Users do not name a pattern.** They ask questions:
-  - "What causes turbine bearing wear?"
-  - "How many critical maintenance events are in the database?"
-  - "Which aircraft have engines with components that had recent faults?"
+- **Users do not name a pattern.** They ask "What causes turbine bearing wear?" or "Which aircraft have engines with components that had recent faults?"
 - One retriever answers one shape of question. Real questions do not arrive sorted by shape.
 
 ---
@@ -112,13 +109,11 @@ Nothing in this graph writes to Neo4j.
 
 ```python
 builder = StateGraph(AgentState)
-
 builder.add_node("supervisor", supervisor_node)
 builder.add_node("genie_node", genie_node)
 builder.add_node("cypher_node", cypher_node)
 builder.add_node("graphrag_node", graphrag_node)
 builder.add_node("synthesize", synthesize_node)
-
 builder.add_edge(START, "supervisor")
 builder.add_conditional_edges("supervisor", route_from_supervisor, {...})
 for tool_name in ("genie_node", "cypher_node", "graphrag_node"):
@@ -223,25 +218,14 @@ aircraft's history, the manual returns the procedure.
 
 ---
 
-## Degradation: Two Tools Are Still an Agent
+## Degradation, and Why a Bolt Driver Rather Than MCP
 
-- **`VectorCypherRetriever` raises when its index is missing.** Building it eagerly would turn a skipped Lab 3 into a failure cells before the agent exists
-- **The builder checks first.** No `maintenanceChunkEmbeddings` index means `graphrag_node` becomes a node that explains its own absence
-- **The notebook drops it from `available_tools`,** and the routing schema's enum narrows to the tools that actually exist
+- **`VectorCypherRetriever` raises when its index is missing.** The builder checks first: no `maintenanceChunkEmbeddings` index means `graphrag_node` is dropped from `available_tools`, and the routing enum narrows to what actually exists
 - **The graph still compiles and still answers** from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change
+- **The Lab 4 demo reached Neo4j through an MCP server**, the right shape for a governed, admin-managed instance. Your Aura instance is yours: its password sits in the secret scope Lab 3 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
+- **Governance pays when the graph is shared.** It costs more than it returns when the graph has exactly one user
 
-<!-- Tool sets discovered at build time degrade; assumed at import time they fail. The model cannot name a tool it was never offered. -->
-
----
-
-## Why a Bolt Driver Rather Than MCP
-
-- **The Lab 4 demo reached Neo4j through an MCP server** registered as a Unity Catalog HTTP connection: the right shape for a governed, shared, admin-managed instance
-- **It is the wrong shape for a classroom.** The connection is an admin object, and the OAuth2 credential behind it belongs to whoever owns the server
-- **Your instance is yours.** Your password is in the secret scope Lab 3 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
-- **The governance story pays when the graph is shared.** It costs more than it returns when the graph has exactly one user
-
-<!-- Not MCP being wrong, just the wrong shape for one user. No plaintext password is typed anywhere in Lab 5's normal path. -->
+<!-- Tool sets discovered at build time degrade; assumed at import time they fail. Not MCP being wrong, just the wrong shape for one user. No plaintext password is typed anywhere in Lab 5's normal path. -->
 
 ---
 
@@ -307,7 +291,6 @@ logged = mlflow.pyfunc.log_model(
 
 ```python
 mlflow.set_experiment(f"/Users/{CURRENT_USER}/{ENDPOINT_NAME}")
-
 deployment = agents.deploy(
     UC_MODEL_NAME, MODEL_VERSION,
     endpoint_name=ENDPOINT_NAME,
@@ -339,10 +322,8 @@ UC_MODEL_NAME = "databricks-neo4j-workshop.agents.fleet_ops_assistant"
 AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
 ```
 
-- **Constants in `agent.py`**, not strings a participant types
-- **Lab 6 redeploys *this* endpoint** with memory added, rather than standing up a second one. Renaming either breaks Lab 6
-- **A registered model name is scoped to its catalog**, so it is the same for everyone
-- **A serving endpoint name is unique across the account**, so it carries the participant's slug, taken from the same secret scope the credentials come from
+- **Constants in `agent.py`**, not strings a participant types. Renaming either breaks Lab 6, which redeploys *this* endpoint with memory added rather than standing up a second one
+- **A registered model name is scoped to its catalog**, so it is the same for everyone. A serving endpoint name is unique across the account, so it carries the participant's slug, taken from the same secret scope the credentials come from
 
 <!-- Endpoint name and credentials trace to the same secret scope so they cannot drift. Do not rename these: Lab 6 expects the same endpoint back. -->
 

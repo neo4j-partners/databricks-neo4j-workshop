@@ -444,9 +444,46 @@ These are content gaps to address in a future content phase, not part of the reo
 
 ### Phase 7: Reorganize into Eight Decks
 
-**Status: Approved, not started.**
+**Status: Complete, 2026-08-09.**
 
 **Goal:** Replace the seventeen workshop slide files with eight decks that follow the run of show, one deck per folder, one file per deck.
+
+#### Progress
+
+| Step | Status | Result |
+|------|--------|--------|
+| Shelve three decks under `background/` | Done | `git mv` of `agents/02`, `graph-ml/03`, `graph-ml/04`. Image depth fixed with an extra `..` in both graph-ml decks |
+| Write the eight decks | Done | 2,517 lines total, 121 slides. Written by eight parallel agents, one per deck |
+| Verify frontmatter | Done | All eight match the template byte for byte |
+| Verify no em dashes | Done | Zero across all eight |
+| Delete the seventeen consumed files | Done | 4,631 lines removed. `platform-overview/`, `genai-foundations/`, `kg-construction/`, `retrieval-patterns/` and `agents/` are gone |
+| Stage `spark-connector-virtual-graph.png` | Done | Tracked, lands in deck 2 |
+| Update `build-slides.sh` | Done | `WORKSHOP_TOPICS` is the eight `overview-*` names in run-of-show order. `copy_assets` now mirrors `slides/aircraft/` |
+| Update `slides/README.md` | Done | Slide Decks section is a run-of-show table with the lab each deck pairs with |
+| Rewire the site | Done | 16 wrappers deleted, 8 written, `slides-agent-memory.adoc` repointed and retitled, 3 shelved wrappers repointed to `background/` paths, Slides section of `site/nav.adoc` rewritten as a flat numbered list |
+| Build verification | Done | 15 decks built, 8 workshop and 7 background. Every image reference in the built HTML resolves to a file under `attachments/`. Zero broken links |
+
+**Deck sizes as shipped:**
+
+| # | Deck | Lines | Slides |
+|---|------|-------|--------|
+| 1 | `overview-business-story/01-business-case-slides.md` | 162 | 9 |
+| 2 | `overview-architecture/01-architecture-roadmap-slides.md` | 387 | 16 |
+| 3 | `overview-knowledge-graph/01-knowledge-graph-foundations-slides.md` | 337 | 19 |
+| 4 | `overview-graphrag/01-graphrag-foundations-slides.md` | 259 | 15 |
+| 5 | `overview-retrievers/01-retriever-patterns-slides.md` | 448 | 18 |
+| 6 | `overview-agent/01-supervisor-agent-slides.md` | 340 | 18 |
+| 7 | `overview-agent-memory/01-agent-memory-slides.md` | 299 | 13 |
+| 8 | `overview-mcp/01-mcp-agent-bricks-slides.md` | 285 | 13 |
+
+**Deviations from plan, recorded:**
+
+- **Line counts ran above target.** The plan estimated about 1,890 lines; the decks ship at 2,517. The gap is code blocks and tables, which condense less than prose. Decks 2, 5 and 6 carry the overage.
+- **The three-hop SQL versus Cypher contrast changed question.** The Databricks side has four gold tables in a fixed linear join chain and no junction table, so the fraud deck's variable-depth reachability question has no SQL answer on the real schema. Deck 3 says so on the slide and substitutes a self-join on shared sensor type, then shows the genuine variable-depth Cypher traversal Neo4j can do and Databricks cannot.
+- **`list-gds-procedures` dropped from the MCP tools slide.** The deployment this repo documents in `MCP-MANUAL-SETUP.md` exposes two tools, `get_neo4j_schema` and `read_neo4j_cypher`. The source slide listed a third that does not exist here.
+- **The semantic map argument was dropped from deck 8.** Syncing Unity Catalog metadata into Neo4j is a different feature from the two-agent supervisor demo Lab 4 Part B actually runs.
+- **`fraud-ring-dual-architecture.svg` stays fraud-flavored.** No new deck references it. It survives only in `background/governance/auth-sync-slides.md`, which is shelved.
+- **`intelligence-platform-flow.svg` is orphaned.** Nothing referenced it before this phase either.
 
 Phase 7 supersedes the Target Structure and Canonical Files tables above. Those describe the six-folder layout this phase replaces.
 

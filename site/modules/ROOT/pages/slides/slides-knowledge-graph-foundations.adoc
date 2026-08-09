@@ -1,0 +1,7 @@
+= Knowledge Graph Foundations (Slides)
+
+++++
+<iframe src="../_attachments/slides/overview-knowledge-graph/01-knowledge-graph-foundations-slides.html"
+  style="width:100%;height:600px;border:none;">
+</iframe>
+++++

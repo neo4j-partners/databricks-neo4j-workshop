@@ -1,7 +1,0 @@
-= Neo4j GraphRAG Retrievers Overview (Slides)
-
-++++
-<iframe src="../_attachments/slides/retrieval-patterns/01-retrievers-overview-slides.html"
-  style="width:100%;height:600px;border:none;">
-</iframe>
-++++

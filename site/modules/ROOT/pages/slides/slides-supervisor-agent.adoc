@@ -1,0 +1,7 @@
+= The Supervisor Agent and Deployment (Slides)
+
+++++
+<iframe src="../_attachments/slides/overview-agent/01-supervisor-agent-slides.html"
+  style="width:100%;height:600px;border:none;">
+</iframe>
+++++

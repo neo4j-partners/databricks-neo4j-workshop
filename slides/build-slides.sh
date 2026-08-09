@@ -24,8 +24,8 @@ MARP="./node_modules/.bin/marp"
 ATTACH="../site/modules/ROOT/attachments"
 OUT="$ATTACH/slides"
 
-# Workshop decks. One output directory per topic folder.
-WORKSHOP_TOPICS="platform-overview genai-foundations retrieval-patterns agents kg-construction graph-ml"
+# Workshop decks, in run-of-show order. One output directory per topic folder.
+WORKSHOP_TOPICS="overview-business-story overview-architecture overview-knowledge-graph overview-graphrag overview-retrievers overview-agent overview-agent-memory overview-mcp"
 
 build_decks() {
   for topic in $WORKSHOP_TOPICS; do
@@ -49,6 +49,10 @@ copy_assets() {
   # Both resolve to the same place, so one copy serves both.
   mkdir -p "$OUT/databricks-in-depth"
   cp databricks-in-depth/*.svg databricks-in-depth/*.png "$OUT/databricks-in-depth/"
+
+  # slides/aircraft/, reached as ../aircraft/ from a workshop topic folder.
+  mkdir -p "$OUT/aircraft"
+  cp aircraft/*.svg "$OUT/aircraft/"
 
   # site/modules/ROOT/images/, reached as ../../site/modules/ROOT/images/.
   # Copied whole rather than file by file so that adding an image reference to a

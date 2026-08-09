@@ -1,7 +1,7 @@
 = Graph Feature Engineering with Neo4j GDS and Databricks (Slides)
 
 ++++
-<iframe src="../_attachments/slides/graph-ml/03-graph-enrichment-slides.html"
+<iframe src="../_attachments/slides/background/graph-ml/03-graph-enrichment-slides.html"
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++

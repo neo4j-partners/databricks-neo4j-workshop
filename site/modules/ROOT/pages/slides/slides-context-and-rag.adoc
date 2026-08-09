@@ -1,7 +1,0 @@
-= The Limits of Traditional RAG (Slides)
-
-++++
-<iframe src="../_attachments/slides/genai-foundations/04-context-and-rag-slides.html"
-  style="width:100%;height:600px;border:none;">
-</iframe>
-++++

@@ -1,7 +1,0 @@
-= Text2Cypher Retriever (Slides)
-
-++++
-<iframe src="../_attachments/slides/retrieval-patterns/04-text2cypher-retriever-slides.html"
-  style="width:100%;height:600px;border:none;">
-</iframe>
-++++
