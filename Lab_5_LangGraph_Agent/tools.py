@@ -257,9 +257,32 @@ Facts that change the query you write:
     maxValue 3.0 from the 'Vibration - B737-800' limit is wrong. 3.0 is the
     takeoff ceiling every B737-800 shares, transcribed from a manual. It is
     not a reading, it is not an average, and it is not that aircraft's.
+  - Decide by what is being asked for, not by the words it is asked in. A
+    question about what a sensor observed, or about the highest, lowest,
+    average, typical or worst of what sensors observed, asks for a measurement
+    and gets the refusal above. A question about what the fleet is held to, the
+    ceiling, the redline, the rated, permitted, approved or allowed value, or
+    what a model is limited to, asks for a limit and is answered from
+    OperatingLimit. The graph holds a limit on the same parameter a sensor
+    measures, so the parameter named is not the test and neither is the
+    phrasing. The words documented and limit for do not have to appear.
+  - "What N1 speed is the A321neo limited to on the runway roll?" asks what the
+    model is held to, so it is an OperatingLimit query on N1Speed, A321neo and
+    takeoff. "Which aircraft has the highest average vibration?" asks what
+    sensors observed, so it is the refusal.
+  - A limit is stored per aircraft type, not per tail number. A question naming
+    a model reaches its limit directly. A question naming one aircraft reaches
+    it through that aircraft's model property.
   - OperatingLimit is exactly the twenty canonical limits loaded in Lab 2,
-    four parameters for each of five aircraft models. It is never empty, never
-    duplicated, and it needs no filter.
+    four parameters for each of five aircraft models. The twenty nodes are
+    never empty and never duplicated, so the label needs no filter of its own
+    to be trusted.
+  - Reach a limit by matching (:OperatingLimit) directly and filtering it on
+    its own properties, parameterName, aircraftType and regime. Do not walk in
+    from Sensor or from Document. Many sensors point at one limit, so a
+    traversal returns the same limit once per sensor and fills the result with
+    identical rows even though the nodes behind them are unique. Where a
+    traversal is unavoidable, RETURN DISTINCT.
   - minValue and maxValue are both FLOAT. Compare them directly.
   - minValue is null on ten of the twenty, because a vibration or speed limit
     is a ceiling with no floor. Check ol.minValue IS NOT NULL before comparing
@@ -267,6 +290,11 @@ Facts that change the query you write:
   - OperatingLimit.regime says which phase of flight a limit applies to. A
     limit is only meaningful against readings from that same regime, so return
     the regime alongside any limit you report.
+  - regime values are lower case, and 'takeoff' is the only one loaded. Writing
+    regime: 'Takeoff' matches nothing and returns zero rows with no error.
+  - parameterName is spelled the way Sensor.type is, and the four values are
+    exactly N1Speed, Vibration, EGT and FuelFlow. N1Speed carries no space.
+    Writing 'N1 Speed' matches nothing and returns zero rows with no error.
   - ExtractedLimit is a separate label holding what the Lab 3 language model
     pulled out of the manual text. It exists only if the participant ran Lab 3
     with extraction on, its contents vary from one graph to the next, and it
@@ -298,7 +326,9 @@ Rules:
   - Use only labels, relationship types and properties from the schema.
   - A question about a measured value has no answer here. Return
     RETURN 'The graph holds no sensor readings.' AS cannot_answer rather than
-    a limit, a threshold or any other number standing in for a measurement.
+    a limit, a threshold or any other number standing in for a measurement. A
+    question about what the fleet is limited to is not one of these. Answer it
+    from OperatingLimit however it is phrased.
   - Output the query alone. No prose, no explanation, no markdown fence.
 
 Question: {question}
@@ -517,6 +547,28 @@ _WRITE_CLAUSE = re.compile(
     re.IGNORECASE,
 )
 
+# One Cypher string literal, single or double quoted, backslash escapes inside.
+# A search for a keyword has to skip these or a maintenance event whose
+# corrective_action contains the word 'remove' reads as a write, and so does a
+# fulltext call whose search terms happen to name one.
+_STRING_LITERAL = re.compile(r"'(?:\\.|[^'\\])*'|\"(?:\\.|[^\"\\])*\"", re.DOTALL)
+
+
+def _mask_string_literals(query: str) -> str:
+    """Empty every quoted string in the query, leaving the quotes.
+
+    An unterminated quote matches nothing, so its text stays visible to the
+    scan and the query is judged on it. That is the conservative direction: a
+    malformed query is more likely to be refused, not less.
+
+    Args:
+        query: Generated Cypher.
+
+    Returns:
+        The query with the contents of each quoted string removed.
+    """
+    return _STRING_LITERAL.sub(lambda match: match.group(0)[0] * 2, query)
+
 
 def _reject_writes(query: str) -> None:
     """Raise if the generated Cypher contains a write clause.
@@ -527,7 +579,7 @@ def _reject_writes(query: str) -> None:
     Raises:
         ValueError: The query would write.
     """
-    match = _WRITE_CLAUSE.search(query)
+    match = _WRITE_CLAUSE.search(_mask_string_literals(query))
     if match:
         raise ValueError(
             f"Refusing to run generated Cypher containing '{match.group(1)}'. "

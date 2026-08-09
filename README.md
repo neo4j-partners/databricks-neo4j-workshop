@@ -116,7 +116,7 @@ Together the dataset includes:
 |-----|-------------|------|
 | [Lab 4 Part A - Genie Space](./Lab_4_Compound_AI_Agents/PART_A.md) | Natural language SQL over sensor telemetry in Unity Catalog | 30 min |
 | [Lab 5 - LangGraph Agent](./Lab_5_LangGraph_Agent) | A supervisor routing across Genie, Cypher, and GraphRAG, deployed to Model Serving | 90 min |
-| [Lab 6 - Agent Memory](./Lab_6_Agent_Memory) | Memory that lives in the same graph as the fleet data, so both can be traversed together | 75 min |
+| [Lab 6 - Agent Memory](./Lab_6_Agent_Memory) | Memory that lives in the same graph as the fleet data, so both can be traversed together. Redeploys the Lab 5 endpoint rather than standing up a second one | Not yet timed |
 
 ---
 

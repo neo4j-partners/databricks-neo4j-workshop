@@ -25,12 +25,17 @@ All Python tools use `uv` for package management and `hatchling` as build backen
 ### populate_aircraft_db (Neo4j data loading CLI)
 ```bash
 cd workshop-setup/populate_aircraft_db
-uv sync                                    # Install dependencies
+uv sync --extra anthropic --extra databricks   # bare `uv sync` installs no extras
 uv run populate-aircraft-db setup           # Load CSV data + enrich (chunking, embeddings, entity extraction)
+uv run populate-aircraft-db setup --skip-extraction   # same, minus the extractor LLM. No OpenAI or Anthropic key
 uv run populate-aircraft-db verify         # Print node/relationship counts
 uv run populate-aircraft-db clean          # Delete all data
 uv run populate-aircraft-db samples        # Run showcase Cypher queries
 ```
+
+`--extra anthropic` is required when `LLM_PROVIDER=anthropic` and `--extra
+databricks` when `EMBEDDING_PROVIDER=databricks`. Neither is installed by a bare
+`uv sync`.
 
 ### Databricks provisioning
 `lab/workshop.py` is the one definition of this course's Databricks objects: the
@@ -90,13 +95,20 @@ The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connectio
 ### Lab Progression
 Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 Part A (Genie space over lakehouse telemetry, the participant path) with Part B (Neo4j MCP + Agent Bricks Supervisor Agent) shown alongside it as an instructor demo → Lab 5 (LangGraph agent over Genie, the participant's own Aura instance, and the Lab 3 retrievers, deployed to Model Serving) → Lab 6 (Neo4j agent memory)
 
-Labs 5 and 6 are planned and not yet on disk. See `expand.md`.
+Labs 5 and 6 are both on disk:
+
+- `Lab_5_LangGraph_Agent/` holds `01_langgraph_agent.ipynb`, `tools.py`, `agent.py` and `README.md`. `tools.py` builds the three nodes and carries the supervisor prompt. `agent.py` wraps the same graph as an MLflow `ResponsesAgent` for Model Serving, reading its credentials from environment variables rather than `dbutils`
+- `Lab_6_Agent_Memory/` holds `01_agent_memory.ipynb`, `02_instructor_demos.ipynb`, `memory.py` and `README.md`. It adds a `recall` node before the supervisor and a `remember` node after it, leaving the three tools untouched, and redeploys the same Model Serving endpoint Lab 5 creates rather than a second one. `memory.py` imports from both `Lab_3_Semantic_Search/data_utils.py` and `Lab_5_LangGraph_Agent/tools.py`, so the three lab folders have to stay siblings
+
+`expand.md` is the plan those labs were built from. It is a record of intent, not
+a description of what shipped, so read the labs' own files first.
 
 ## Configuration
 
 Each tool reads from `.env` files (see `.env.example` in each directory). Key variables:
 - **Neo4j**: `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`
-- **LLM**: `LLM_PROVIDER` (openai/anthropic/azure), `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`
+- **LLM**: `LLM_PROVIDER` (openai/anthropic), `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`
+- **Embeddings**: `EMBEDDING_PROVIDER` (bge/openai/databricks), configured separately from `LLM_PROVIDER`
 - **Databricks**: `DATABRICKS_PROFILE`, `DATABRICKS_ACCOUNT_ID`, `CATALOG_NAME`
 
 All config uses Pydantic `BaseSettings` with `SecretStr` for passwords.

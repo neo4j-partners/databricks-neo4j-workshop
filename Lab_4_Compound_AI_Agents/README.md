@@ -15,7 +15,7 @@ Lab 4 combines a **Genie space** for sensor time-series analytics with **Neo4j M
 ## Prerequisites
 
 For Part A, make sure you have:
-- Running in a **Databricks workspace** with Agent Bricks access
+- A **Databricks workspace** with AI/BI Genie enabled and a serverless SQL warehouse you can select as the space's default. Agent Bricks is a Part B thing and Part A needs none of it
 
 Part B needs nothing from you. The instructor supplies the demo workspace, the MCP connection, and the graph behind it.
 
@@ -57,6 +57,7 @@ After Part A, continue to **[Lab 5](../Lab_5_LangGraph_Agent)**, which routes ac
 | `README.md` | This overview document |
 | `PART_A.md` | Genie space configuration guide |
 | `PART_B.md` | Supervisor Agent instructor demo, including the build procedure |
+| `04_genie_agent.ipynb` | The Part A notebook. Browses the four Lakehouse tables in the workspace, then walks the same Genie space build. This is the file `VOC_COURSE_NOTEBOOKS` ships to a participant's folder |
 
 ## Next Steps
 

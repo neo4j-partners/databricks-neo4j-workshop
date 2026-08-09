@@ -2,6 +2,8 @@
 
 Supersedes the status and planning halves of `expand.md`. The reasoning, the measurements, and the defect narratives stay in `expand.md` and are cited here rather than copied. Where the two disagree on what is done, this document wins, because its status was checked against the code on disk on 2026-08-08.
 
+**Last status pass: 2026-08-08, late.** Section 2 gained a Lab 6 subsection, section 3's Phase 3 list shrank to what is genuinely left, and section 7 gained the secret scope collision. Every line below follows the section 8 rules: three states, evidence named, verified against disk.
+
 ---
 
 ## 1. The Goal, and Why
@@ -53,6 +55,26 @@ Verified against code on disk unless marked otherwise.
 - **Headline demo measured.** Adoption of 36 `Aircraft` in 3.1 seconds. The joining Cypher runs in 0.6 to 0.7 seconds and produces a genuine "neither source alone" answer on `N10011`.
 - **Pacing measured.** 5.6 seconds per message in explicit mode, 9.2 with auto extraction, 22.4 seconds for first connect and schema creation.
 
+### Lab 6, files on disk
+
+**State: LANDED. Nothing here is MEASURED, because no notebook in this lab has been executed end to end against a live instance.**
+
+- **`Lab_6_Agent_Memory/` exists**, four files, written 2026-08-08. `memory.py` at 47,359 bytes, `01_agent_memory.ipynb` at 54 cells, 29 code and 25 markdown, `02_instructor_demos.ipynb` at 32 cells, 21 code and 11 markdown, `README.md` at 383 lines and 2,629 words. Every code cell parses under `ast.parse`. No escaped-quote leaks and no forbidden instance id in either notebook.
+- **`memory.py` carries the adapters, the nodes, the seed helper and the headline Cypher**, mirroring Lab 5's `tools.py` as decided. Ruff-clean under the project's own `select` of `E,W,F,I,B,C4,UP,SIM`. A bare `uvx ruff check` reports four RUF100 "unused noqa" hits, which is a false positive: ruff's default rule set excludes E402, and under the project config those `# noqa: E402` directives are required, because the Lab 3 and Lab 5 imports follow `ensure_labs_on_path()`.
+- **`memory.py` passes the FILE-not-NOTEBOOK check.** First line is a docstring, not `# Databricks notebook source`. It fails the other Phase 4 check for now, since it has to ship together with the notebook that imports it.
+- **The adapters are named `MemoryEmbeddings` and `MemoryLLM`**, as decided, and the README carries the one section explaining why the two libraries want different Protocols. The Protocols are async: `embed` and `embed_one` on the embedder, `complete` and `complete_structured` on the LLM.
+- **All nine names `memory.py` imports from Lab 3 and Lab 5 still resolve** after a peer session edited `Lab_5_LangGraph_Agent/tools.py`. Re-verified rather than assumed.
+- **The four pinned-version research answers moved into `Lab_6_Agent_Memory/README.md`**, out of `expand.md`, as section 8 requires: exact version, the API surface this lab depends on, the Neo4j version floor, and the owner and re-check cadence.
+- **Three library API defects found and fixed before execution**, each caught by reading the unzipped wheel rather than trusting prose. `HAS_TOOL_CALL` does not exist and the edge is `USES_TOOL`. `TOUCHED` hangs off `ReasoningStep`, not `ToolCall`, per `graph/queries.py:668` and `memory/reasoning.py:608`. `ToolCallStatus.FAILURE` does not increment `Tool.failed_calls`; only `error` and `timeout` do, per `queries.py:526`, so the routing demo uses `ToolCallStatus.ERROR`.
+
+### Lab 6, workspace findings
+
+Measured against `aws-partner-rk`, host `dbc-cc887abc-9779`, on 2026-08-08.
+
+- **MEASURED: `restartPython()` in Section 1 of both notebooks is load-bearing.** The lab's install line takes `typing_extensions` from 4.4.0 to 4.16.0 and `pydantic` from 1.10.6 to 2.13.4. Importing `neo4j_agent_memory` in the same already-running interpreter raises `ImportError: cannot import name 'Sentinel' from 'typing_extensions'`, because the preloaded 4.4.0 shadows the new install. A fresh interpreter, which is what `restartPython()` produces, imports cleanly. **The install line is correct as written and needs no change.** Recorded because the error message names `typing_extensions` and gives no hint that the fix is a restart, so a participant who skips that cell will not self-diagnose.
+- **LANDED: the wheel now exists in this workspace's volume.** `neo4j_agent_memory-0.5.1.dev0+mentions-py3-none-any.whl` was absent from `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` and has been uploaded by hand. Section 1 of both notebooks would have failed here before that. **This is a property of this one workspace, not a gap in the provisioning path.** `lab/workshop.py:224` defines `WHEELS_DIR`, `:714` resolves it and `:734` enumerates the wheels, so a Vocareum provision does upload it. `aws-partner-rk` is a plain workspace that was never provisioned that way. Corrects an earlier note here that read "nothing in the provisioning path puts it there yet", which was wrong.
+- **MEASURED: Lab 6 gets its dependencies from cluster libraries, not from its own `%pip` line, and the delivery path is sound.** `lab/course.env:71` `VOC_COURSE_LIBRARIES` installs `neo4j`, `langgraph`, `pydantic`, `langchain-core`, `databricks-langchain`, `neo4j-graphrag`, `databricks-agents` and the memory wheel itself as cluster libraries. Labs 3 and 5 carry no `%pip` cell at all and rely on this entirely. Lab 6's `%pip` line therefore covers the wheel a second time, which is harmless. **No Lab 6 defect here.** Recorded because a serverless job run outside Vocareum gets none of those libraries and fails at `data_utils.py:22` on `neo4j_graphrag`, which reads like a lab bug and is not one. Any test harness outside Vocareum has to install the `course.env` set itself.
+
 ### Capacity
 
 - **Aura node budget measured.** A participant finishing Labs 1 through 3 holds about 21,613 nodes, 10.8 percent of the AuraDB Free cap, with roughly 178,000 nodes of headroom. Memory costs about 20 nodes per participant per session. Full analysis in `worklog/aura-node-budget.md`.
@@ -96,20 +118,18 @@ Verified against code on disk unless marked otherwise.
 - MLflow evaluation against the fixed question set, run against the deployed endpoint.
 - `02_deploy_and_evaluate.ipynb`, `eval/questions.jsonl`, and the Lab 5 README completion. `agent.py` landed 2026-08-08; the other two do not exist.
 
-### Lab 6, all of Phase 3
+### Lab 6, the rest of Phase 3
 
-`Lab_6_Agent_Memory/` does not exist. Everything below is new. **File layout decided:** `01_agent_memory.ipynb` for the 75 minute hands-on path, `02_instructor_demos.ipynb` for the four run-and-read demos, `memory.py` for the adapters, the `recall` and `remember` nodes, the seed helper and the headline Cypher, and `README.md`. `memory.py` mirrors Lab 5's `tools.py`.
+**The files are written. What is left is execution.** The build items that closed moved up to section 2. Everything below is a measurement Phase 3 cannot complete without, plus one thing outside the lab.
 
-- Install from the volume wheel with `httpx>=0.27.0` alongside it, never from PyPI and never from git.
-- Adopt `Aircraft` only, showing the `dry_run=True` report first.
-- Write with `extraction_mode="explicit"` and `EntityRef`.
-- Pass the wheel path to `log_model` explicitly, because the local version segment resolves from nowhere.
-- **Test the `extraction_mode="explicit"` batch path.** The spike measured only singular `add_message`; seeding will use `add_messages`.
-- Memory client against the participant's Aura, `recall` and `remember` nodes around the Lab 5 supervisor.
-- Ship the memory adapters as lab-provided code, not an exercise. **Name them `MemoryEmbeddings` and `MemoryLLM` in `memory.py`.** `DatabricksEmbeddings` and `DatabricksLLM` are already taken at `Lab_3_Semantic_Search/data_utils.py:43` and `:97`, implementing neo4j-graphrag's synchronous `Embedder` and `LLMInterface`. `neo4j-agent-memory` wants a different async Protocol. One sentence of lab text explains why the two libraries want different Protocols.
-- Three hands-on demos, four instructor demos, seeded conversation history, and each hands-on demo timed against its share of 75 minutes.
-- Memory off versus on evaluation harness reusing the Phase 2 baseline.
-- Get the `MENTIONS` fix upstream into `neo4j-labs`. Worth doing whether or not Lab 6 ships.
+- **Run `01_agent_memory.ipynb` end to end against a live instance.** Nothing in this lab has ever been executed. Blocked on the write-target question below, which is the next decision anybody picks this up needs.
+- **Decide which Aura instance the test writes to.** The secret scope Lab 6 reads points at Track A. See section 7, where the collision is recorded. **This is a decision, not a task**, and it is the single thing standing between Lab 6 and its first end-to-end run.
+- **Time each hands-on demo individually against its share of 75 minutes.** MEASURED, not estimated, per the Phase 3 completion criterion. Nothing is timed today.
+- **Test the `extraction_mode="explicit"` batch path.** The spike measured only singular `add_message`; the seed helper uses `add_messages`. Still unmeasured.
+- **Verify the two Foundation Model endpoints from this workspace.** `databricks-bge-large-en` returning 1024-dimension vectors, and `databricks-meta-llama-3-3-70b-instruct` answering. Written into three probe runs, never reached a successful execution.
+- **Memory off versus on evaluation harness.** Blocked on the Phase 2 baseline artifact, which does not exist. See the Phase 2 entry.
+- ~~Put the wheel into the provisioning path.~~ **Withdrawn, it was already there.** `lab/workshop.py:224` and `:714` upload it, and `lab/course.env:71` installs it as a cluster library. The hand upload was needed because `aws-partner-rk` is a plain workspace, not a Vocareum-provisioned one. Kept visible rather than deleted, because the wrong version of this line sat in section 2 for part of a session.
+- **Get the `MENTIONS` fix upstream into `neo4j-labs`.** Worth doing whether or not Lab 6 ships. Unchanged.
 
 ### Loader hygiene
 
@@ -193,6 +213,8 @@ Six phases. Each has an entry condition, a body, and a completion criterion that
 
 **Completion:** the index tolerance question returns a yes, or Lab 6 is formally re-scoped.
 
+**Still open, and now carrying more weight than it did.** Phase 3 was entered and built out with this question unanswered, on an explicit "proceed anyway". A no no longer delays Lab 6, it invalidates four files that are already written.
+
 ### Phase 1: Lab 5 core agent
 
 **Status:** Core built and measured. Three items left, two of which close in one run.
@@ -222,18 +244,20 @@ Order inside the phase, because each step gates the next:
 
 ### Phase 3: Lab 6 memory
 
-**Entry:** Phase 1 done, Phase 0 index question answered yes.
+**Entry:** Phase 1 done, Phase 0 index question answered yes. **Entered early, on Ryan's "proceed anyway", with the index tolerance question still open.** Lab 6 is therefore built against a non-final GO, and a no on that question invalidates the build rather than delaying it.
 
-1. The four install and write conditions, each as an explicit checklist item.
-2. Memory client, `adopt_existing_graph` on `Aircraft` with the dry run shown first.
-3. `recall` and `remember` around the Lab 5 supervisor.
-4. Seed script in a setup step, never a participant-run loop.
-5. Three hands-on demos, timed individually.
-6. Four instructor demos, shipped complete as runnable cells.
-7. Memory off versus on harness against the Phase 2 baseline.
-8. `README.md`, carrying the four pinned-version research answers moved out of `expand.md`.
+**Status: written, not run. Steps 1 through 6 and 8 are LANDED. Steps 7 and every timing are open.**
 
-**Completion:** the headline traversal returns a good answer, the comparison shows a measurable difference in tool calls, tokens or accuracy, and the three hands-on demos fit inside 75 minutes **measured, not estimated**.
+1. LANDED. The four install and write conditions, each as an explicit checklist item.
+2. LANDED. Memory client, `adopt_existing_graph` on `Aircraft` with the dry run shown first.
+3. LANDED. `recall` and `remember` around the Lab 5 supervisor.
+4. LANDED. Seed script in a setup step, never a participant-run loop.
+5. LANDED as cells, **open as a measurement.** Three hands-on demos exist. None is timed.
+6. LANDED. Four instructor demos, shipped complete as runnable cells in `02_instructor_demos.ipynb`, each standalone because the shared names sit in one setup cell.
+7. OPEN, and blocked. Memory off versus on harness against the Phase 2 baseline, which does not exist yet.
+8. LANDED. `README.md`, carrying the four pinned-version research answers moved out of `expand.md`.
+
+**Completion:** the headline traversal returns a good answer, the comparison shows a measurable difference in tool calls, tokens or accuracy, and the three hands-on demos fit inside 75 minutes **measured, not estimated**. **None of the three is satisfied today.** Writing the cells is not the criterion, and the gap between "the lab exists" and "Phase 3 is done" is exactly one end-to-end run plus a stopwatch.
 
 ### Phase 4: Delivery readiness
 
@@ -292,6 +316,19 @@ Two Aura instances, one per track, so neither track's writes corrupt the other's
 
 `f024ea61` is reset with `populate-aircraft-db clean` and reloaded when a test needs a clean graph. **Add a third instance before Phase 3, participant-shaped and extraction-on**, because Phase 1's remaining re-run and Phase 3's adoption work both want a graph the other is not mutating.
 
+**MEASURED 2026-08-08: the separation does not hold through the workspace, and this is the open decision blocking Phase 3.** The secret scope `fleet-ops-ryan-knight-neo4j-com` in `aws-partner-rk` points at `f024ea61`, the Track A instance. Lab 6 reads that scope, because Lab 5 does and the two labs share one credential path by design. So running Lab 6 as written writes adoption changes and roughly 20 memory nodes into Track A's active Lab 5 measurement graph. Determined without printing any secret value, by emitting booleans only.
+
+Two ways out, and they trade different things:
+
+| Option | What it costs |
+|---|---|
+| **A. Override `NEO4J_*` in the environment and write to `1a2c98cc`**, Track B, credentials in `workshop-setup/.env.memory` | Clean isolation, but the shipped secret-scope read path goes unexercised, which is the path a participant actually runs |
+| **B. Run against `f024ea61` as the scope points** | Exercises the real path, and mutates Track A's graph mid-measurement. Section 8's rule that measurements name their instance is what makes this expensive: it invalidates Phase 1 numbers taken on that graph |
+
+**Recommendation: A for the first end-to-end run, then B once on a freshly reloaded graph** to prove the scope path before Phase 4. That gets both properties without ever putting Track A's evidence at risk while it is being used.
+
+**Hazard, unchanged and worth repeating here.** `populate_aircraft_db/config.py:13` pins `populate_aircraft_db/.env` at import time, and that file points at `1a2c98cc`. A bare `populate-aircraft-db clean` run from any directory wipes the memory instance regardless of what the caller thought they were pointed at.
+
 **With one person on all three tracks, the tracks collapse to sequential in wall-clock terms.** The separation still earns its keep, because it means a failing loader test is a loader problem and nothing else.
 
 ### Recommended order for one operator
@@ -336,3 +373,112 @@ Slot the Lab 2 README gaps, the validation harness gap, and the `Reading` drop i
 ### Definition of done for the whole effort
 
 A participant creates one AuraDB Free instance in Lab 1 and finishes Lab 6 having used only that instance, with a deployed Model Serving endpoint answering questions as a service principal across all three tools, and with Lab 4 Part B and all MCP material intact as an instructor demo.
+
+---
+
+## 9. Suggested Fixes
+
+Checked 2026-08-08 against the **working tree**, not against `HEAD`. The two differ by 15 modified files and 2 untracked paths, which is the first fix below.
+
+Ordered by what it costs to fix, not by which section it corrects. 9.1 is minutes, 9.4 is the critical path, 9.9 is the process change that stops the list regenerating.
+
+### 9.1 Commit, before anything else
+
+- **F1. None of this work is committed.** `git status` against `694e5ca` shows 15 modified files and 2 untracked paths. That includes the whole of `Lab_6_Agent_Memory/README.md`, a 56 line `tools.py` schema rewrite, a 51 line `agent.py` change, and the `lab/course.env` notebook list. One stray `git checkout` loses the last session entirely.
+- **F2. `lab/Lab_6_Agent_Memory` is untracked, and the Vocareum upload reads through it.** `lab/course.env` names `Lab_6_Agent_Memory/01_agent_memory.ipynb` and `Lab_6_Agent_Memory/memory.py` relative to `lab/`. Both resolve only through the symlink `lab/Lab_6_Agent_Memory -> ../Lab_6_Agent_Memory`, and it is the one lab symlink git does not have. The other five are tracked. **An upload from a fresh clone finds no Lab 6.**
+
+**Fix:** `git add lab/Lab_6_Agent_Memory Lab_6_Agent_Memory/README.md`, then commit the lot. Minutes, and it is the cheapest item here.
+
+### 9.2 Correct sections 2 and 3
+
+**A concurrent session corrected the Lab 6 half of sections 2 and 3 while this review was running.** "`Lab_6_Agent_Memory/` does not exist" is gone, replaced by the LANDED block and the workspace findings. Those corrections are right and are not repeated here. The rows below are what is left.
+
+Landed, and still written in section 3 as remaining:
+
+| Section 3 says | On disk |
+|---|---|
+| "Add `OperatingLimit` to the Lab 2 README node list" | Landed at `Lab_2_Databricks_ETL_Neo4j/README.md:52` |
+| "Re-measure routing with the refusal rule in place" | Run. `worklog/lab5-test-results.md`, 19 of 20, 6 of 6 on supervisor routing, 3 of 3 on `graphrag_node`. Then invalidated again, see F3 |
+| "`VOC_COURSE_NOTEBOOKS` names 10 entries ... only `data_utils.py` and `tools.py`" | 13 entries. `agent.py` and `memory.py` joined. Order is still right: `00_cluster_smoke_test.ipynb` first, Lab 5 before Lab 6 |
+| "`slides/platform-overview/01-workshop-over.md:126-143` still lists MCP as required shared provisioning" | It does not. `:128` reads "used only in the Part B demo", `:129` "in the instructor's workspace", `:144` "Lab 4 Part B is an instructor demo ... You need no credential". **Rescope the item:** what is left is that the slides carry no Lab 5 or Lab 6 content at all |
+| "`lab4-instructions.adoc:552` still says 'You have completed the workshop'" | That line is gone. `:557` now hands off to Lab 5. **Rescope the item:** what is left is absence, not contradiction. `site/nav.adoc` has no Lab 5 or Lab 6 entry and no `lab5*.adoc` or `lab6*.adoc` exists |
+
+Two more that belong in section 2 and are recorded nowhere:
+
+- **Genie space identified by ID, never by name.** `PART_A.md` section 5.2 now has the participant copy the 32 character ID out of `.../genie/rooms/<SPACE_ID>`, and `PART_B.md` pins the demo space `aircraft-genie`, `01f1661b55731a0293c3f84ac9c5ba52`. Lab 5 section 1 and Lab 6 section 2 both read `GENIE_SPACE_ID`. This closes a real break: every participant titles their space differently, so nothing downstream could have looked one up by name.
+- **`mlflow.langchain.autolog()` guarded.** `agent.py` calls it only behind `importlib.util.find_spec("langchain")`. Unguarded it turns a missing optional package into a container that cannot load the model, and nothing in the agent needs `langchain` itself.
+
+**One rule in section 3 is now satisfied by a route it did not predict.** The two checks before a `.py` helper joins the list say `agent.py` fails the first, because `01_langgraph_agent.ipynb` does not import it. True, and no longer the whole picture: `Lab_6_Agent_Memory/01_agent_memory.ipynb:962` does `from agent import`. `memory.py` clears the same check through the same notebook, and section 2 already notes it "has to ship together with the notebook that imports it", which `lab/course.env` now does. So both helpers shipping today is defensible. **Update the rule's worked example rather than pulling either entry**, and note that the importing notebook can live in a different lab than the helper.
+
+### 9.3 The measurement that has to be retaken
+
+**F3. `tools.py` changed by 56 lines after the 19 of 20 run, so that number is void.**
+
+`worklog/lab5-test-results.md` closes with three defects filed as "found, reported and not fixed". All three are fixed in the working tree:
+
+- **A, the reading refusal swallowing limit questions.** `tools.py:260`, a new "Decide by what is being asked for, not by the words it is asked in" rule, plus the A321neo case worked out longhand at `:269`.
+- **B, `_reject_writes` matching inside string literals.** `_STRING_LITERAL` at `tools.py:554`, masked before `_WRITE_CLAUSE.search` at `:582`.
+- **C, `OperatingLimit.parameterName` values undocumented.** `tools.py:295` now names all four.
+
+Each fix is right and each one edits the prompt the 19 of 20 was taken against. Section 8's own rule applies without exception. **Rerun the same harness against the current file, and edit `lab5-test-results.md` in place rather than writing a third worklog.** As it stands its closing section reads as an open defect list, and it is not one.
+
+### 9.4 The critical path: Lab 5 has no deploy notebook
+
+**F4. Lab 6 hard-depends on an endpoint that no notebook creates.**
+
+- `Lab_6_Agent_Memory/README.md:25` lists "the Model Serving endpoint you deployed" as a **required** Lab 5 prerequisite.
+- `01_agent_memory.ipynb` imports `FleetOpsAgent` at `:962`, calls `mlflow.pyfunc.log_model` at `:1126`, and calls `agents.deploy` at `:1164`.
+- `Lab_5_LangGraph_Agent/` holds no notebook 02. Its notebook 01 closing cell still promises one, and the Lab 5 README already flags the gap in writing.
+
+So Lab 6 section 10 redeploys over nothing, and the memory-off baseline that section 4 calls load-bearing has no source. **Phase 2 has gone from a tail item to the only thing between here and an end-to-end run.**
+
+Two options:
+
+- **(a) Write `02_deploy_and_evaluate.ipynb` as planned.** Keeps the one-endpoint-redeployed decision, and gives Lab 6 its persisted baseline.
+- **(b) Move the first deploy into Lab 6 and drop notebook 02.** Cheaper, but it deletes the "Deploying the Agent" item from `agenda.md` and leaves off-versus-on with nothing to compare against.
+
+**Take (a).** Section 4, `agenda.md`, and Lab 6's own README all already tell the participant it happened.
+
+Worth noting in section 7's favor: Lab 6 was built against the in-notebook agent while Phase 2 stayed open, exactly as the parallelism table said it could be. What did not happen is Phase 2.
+
+### 9.5 Reorder Phase 0, because Lab 6 is now built against an unchecked assumption
+
+- **F5. The AuraDB Free index tolerance check has still not run.** Section 3 calls it "the one item that can still flip Lab 6 to no-go" and section 7 says run it first and run it alone. Lab 6 is now 116K of finished material written against the assumption it passes. The cost of a "no" is no longer a plan paragraph. It is one connect against a fresh AuraDB Free instance. **Run it before anything in 9.4.**
+
+  **It also answers Phase 3's write-target decision for free.** Section 7 recommends option A, a fresh instance, for Lab 6's first end-to-end run, precisely so Lab 6 stops writing into Track A's measurement graph. The index check needs a fresh AuraDB Free instance and Lab 6's first run wants one. **Make it the same instance and both items close on one provision.**
+- **F6. Model Serving endpoint quota.** Unchanged, and it now gates step 6 of Phase 2, the second endpoint under a different user.
+
+### 9.6 Cheap items that keep getting deferred
+
+- **Drop `Reading` and `HAS_READING` from the loader.** Still not done. `workshop-setup/populate_aircraft_db/.../loader.py` lines 18, 43, 104, 198, 202, 337, 342, 343, 892-896, 913-917. The test worklog's label census shows `Reading 155520` on the development instance, which is what makes an admin's graph unlike any participant's while debugging.
+- **The Lab 2 validation harness still does not load `OperatingLimit`.** The README half landed, this half did not, and it is how the limit collision reached Lab 3 unnoticed.
+- **The architecture diagram.** `images/lab-architecture-overview.png` still shows the Part B MCP topology, rendered at `README.md:36` and `Lab_4_Compound_AI_Agents/README.md:13`. `lab-architecture-overview.excalidraw` sits beside it, so this is an edit and not a redraw.
+
+### 9.7 One decision worth reopening, on new information
+
+**F7. `worklog/genie-gold-tables.md` and section 4 disagree, and the worklog carries a fact section 4 does not.**
+
+Section 4 records the four `fleet_readiness` and `sensor_health` comment statements as known-inert. The worklog agrees they are dead for Genie, and additionally finds one of them **factually wrong**: `lab/workshop.py:397-399` comments `sensor_health.health_status` as "NORMAL, WARNING, or ANOMALY based on 2-sigma deviation", and ANOMALY never occurs.
+
+Inert and wrong are different things. A wrong comment on an unattached table costs nothing today and becomes a wrong Genie answer the moment somebody attaches the table.
+
+**Suggested, and this is a new decision rather than finishing the old one:** keep the attach decision untouched, apply the worklog's 4b and 4c, skip 4a. That deletes the wrong column comment and rewrites the `lab/workshop.py:134-135` comment that currently asserts the opposite of the decision. Leaving 4a alone keeps `GOLD_TABLES` and `expected.json` unchanged, so nothing needs re-verifying.
+
+### 9.8 Suggested order
+
+1. **Commit.** F1 and F2. Minutes.
+2. **Provision one fresh AuraDB Free instance**, run the index tolerance check on it, and keep it as Lab 6's write target. F5, plus section 7's write-target decision, on one provision. Only remaining no-go.
+3. **Rerun the Lab 5 harness** against the current `tools.py`, on `f024ea61`. F3.
+4. **`02_deploy_and_evaluate.ipynb`**, straight through Phase 2 including the persisted baseline. F4.
+5. **Lab 6 measurement**, which is all Phase 3 has left.
+6. F6, F7 and 9.6 in any gap.
+
+Steps 2 and 3 no longer contend for a graph, which is the point of doing 2 the way it is written. Step 3 stays on `f024ea61`, step 2 never touches it, and on two people they run together. Watch the section 7 hazard while doing either: `populate_aircraft_db/config.py:13` pins `.env` at import time, so a bare `populate-aircraft-db clean` from any directory wipes `1a2c98cc`.
+
+### 9.9 The process fix
+
+Section 8's rules are right and were not applied. **Every correction in 9.2 is a section 3 bullet whose evidence probe is a single `grep` or `ls`.**
+
+Suggested change: each section 3 bullet carries its probe inline. "The list currently names 10 entries" should have carried `grep -c ipynb lab/course.env`, and it would have corrected itself the first time anyone ran it. Re-verification becomes a command instead of a re-read, which is the difference between a rule that holds and one that gets skipped at the end of a long session.
+
+**The same drift is now in a worklog, not just here.** `worklog/lab5-test-results.md` closes with three defects marked unfixed that are fixed, and section 9.3 is only visible because somebody read the code instead of the report. Extend the rule: **a worklog's open-defect list gets edited when the defect closes, or it becomes a second stale plan.**

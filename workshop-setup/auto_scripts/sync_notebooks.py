@@ -102,6 +102,11 @@ NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
         "Lab_5_LangGraph_Agent",
     ),
     (
+        "Lab_6_Agent_Memory",
+        ("01_agent_memory.ipynb", "02_instructor_demos.ipynb", "memory.py"),
+        "Lab_6_Agent_Memory",
+    ),
+    (
         "Appendix_A_GDS_Graph_Analytics/centrality",
         ("04_gds_pagerank_airports.ipynb",),
         "Appendix_A_GDS_Graph_Analytics/centrality",

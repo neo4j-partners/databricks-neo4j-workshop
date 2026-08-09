@@ -22,7 +22,8 @@ The supervisor routes questions to either the **Genie space** for sensor analyti
 ## Prerequisites
 
 The instructor running the demo needs:
-- A Genie space built as in **Part A**, in the demo workspace
+- A Genie space in the demo workspace, built as in **Part A**. The current one is
+  `aircraft-genie`, space id `01f1661b55731a0293c3f84ac9c5ba52`
 - Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft`, meaning tables and volume
 - The `neo4j_agentcore_mcp` Unity Catalog connection, created ahead of time per [`MCP-MANUAL-SETUP.md`](../workshop-setup/MCP-MANUAL-SETUP.md)
 
@@ -140,7 +141,14 @@ DO NOT USE FOR:
 
 1. Click **+ Add** to add another agent
 2. From the **Type** dropdown, select **Genie space**
-3. Select your Genie space from Part A: `Aircraft Sensor Analyst [YOUR_INITIALS]`
+3. Select the demo workspace's own Genie space, `aircraft-genie`, space id
+   `01f1661b55731a0293c3f84ac9c5ba52`
+
+> **Pick it by id, not by name.** Part A has every participant title their space
+> `Aircraft Sensor Analyst <THEIR INITIALS>`, so there is no one name to look up
+> and nothing named `Aircraft Sensor Analyst` in the demo workspace. The id is in
+> the space's URL, after `/genie/rooms/`. Substitute your own id if you built the
+> demo space yourself rather than reusing `aircraft-genie`.
 
 ### 4.2 Configure the Genie Subagent
 

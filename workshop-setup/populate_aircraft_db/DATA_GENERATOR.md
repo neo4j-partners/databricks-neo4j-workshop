@@ -112,9 +112,9 @@ Defaults: 36 aircraft, seed 42, 90 days (2024-07-01 to 2024-09-28), 4-hour readi
 | Flights | 14,543 | yes | no |
 | Delays | 5,541 | yes | no |
 | Maintenance events | 286 | yes | no |
-| Removals | 165 | yes | no |
+| Removals | 57 | yes | no |
 
-Fleet composition: 35 B737-800, 25 A320-200, 20 A321neo, 10 A220-300, 10 E190, spread evenly across four operators (ExampleAir, SkyWays, RegionalCo, NorthernJet).
+Fleet composition: 13 B737-800, 9 A320-200, 7 A321neo, 4 E190, 3 A220-300, spread evenly across four operators at 9 aircraft each (ExampleAir, SkyWays, RegionalCo, NorthernJet). The model split is a fixed proportion of `--aircraft`, so it changes with the fleet size and the operator split stays even.
 
 ## When to use which database
 

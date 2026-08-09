@@ -204,9 +204,16 @@ ORDER BY avg_vibration DESC
 
 Click **Save** to preserve your Genie space configuration.
 
-### 5.2 Record the Genie space Name
+### 5.2 Record the Genie space ID
 
-Note the exact name of your Genie space (e.g., `Aircraft Sensor Analyst RK`). You'll need this in Part B when configuring the multi-agent supervisor.
+Copy the space ID out of the browser address bar. The URL reads
+`.../genie/rooms/<SPACE_ID>`, and the ID is the 32-character value after
+`rooms/`.
+
+Save it. Lab 5 asks for it as `GENIE_SPACE_ID` in Section 1, and Lab 6 asks for
+the same value in Section 2. The space name is not a substitute: every
+participant titles their space differently, so nothing downstream looks a space
+up by name.
 
 ---
 

@@ -76,9 +76,11 @@ lab, not a setup step somebody skipped.
 Two administrator cases need an instance loaded ahead of time, and both use the
 `populate_aircraft_db` CLI in this directory:
 
-- **The Lab 4 reference instance.** Lab 4 queries one administrator-managed
-  instance rather than a participant's, so every participant gets the full graph
-  no matter how far they got in Lab 2.
+- **The instructor's demo instance for Lab 4 Part B.** Part B is a demo the
+  instructor runs, and the MCP server behind it points at an instance the
+  instructor loads before class. Part A queries Unity Catalog and touches no
+  graph at all, so no participant reads this instance and none needs credentials
+  for it.
 - **A participant who fell behind.** `--skip-extraction` chunks, embeds and
   indexes the maintenance manual without an extractor LLM, so no OpenAI or
   Anthropic key is needed. It creates no `ExtractedLimit` nodes and none of the
@@ -102,8 +104,8 @@ not surface at all.
 The privilege is manual too. `workshop.py` used to grant
 `CREATE CONNECTION ON METASTORE` to `account users`; that was removed on
 2026-08-08, because it gave every participant a metastore-wide create privilege
-for a step only an administrator performs. Part B has participants verify a
-connection an administrator already made, so they never needed it. Every grant
+for a step only an administrator performs. Part B is a demo participants watch,
+so they never touch the connection and never needed it. Every grant
 `provision_infrastructure` makes is now a read.
 
 The administrator does not get `CREATE CONNECTION` by signing in, and being an
@@ -113,9 +115,10 @@ account, and **Step 0 of [MCP-MANUAL-SETUP.md](MCP-MANUAL-SETUP.md)** is where
 that statement lives. The grant is on the metastore, an account-level object, so
 it survives the workspaces being torn down between cohorts.
 
-Lab 4 Part B is optional. The required labs, including the Lab 5 LangGraph
-agent, reach Neo4j with the Python driver against each participant's own
-instance and need none of this.
+Lab 4 Part B is an instructor demo, so this whole section is instructor
+preparation. The participant labs, including the Lab 5 LangGraph agent and the
+Lab 6 memory agent, reach Neo4j with the Python driver against each
+participant's own instance and need none of this.
 
 ### The storage that backs the catalog
 

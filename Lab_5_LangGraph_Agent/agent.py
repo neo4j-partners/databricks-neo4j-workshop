@@ -24,6 +24,7 @@ model rather than a library beside it.
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import uuid
 from collections.abc import Iterator, Mapping, Sequence
@@ -58,15 +59,18 @@ from tools import (
 )
 
 __all__ = [
+    "AGENT_ENDPOINT_PREFIX",
     "AGENT",
     "DEFAULT_CONFIG",
     "ENV_NEO4J_PASSWORD",
     "ENV_NEO4J_URI",
     "ENV_NEO4J_USERNAME",
     "MISSING_CREDENTIAL_MESSAGE",
+    "UC_MODEL_NAME",
     "AgentRuntime",
     "FleetOpsAgent",
     "build_runtime",
+    "endpoint_name",
     "export_neo4j_env",
     "resolve_database",
     "serving_environment_vars",
@@ -76,6 +80,23 @@ __all__ = [
 # =============================================================================
 # Configuration
 # =============================================================================
+
+# The two names Lab 5 and Lab 6 both have to agree on. They mirror
+# AGENT_MODEL_FULL_NAME and AGENT_ENDPOINT_PREFIX in lab/workshop.py, which is
+# where the workshop's object names are defined; that file provisions the
+# `agents` schema so a model can be registered into it, and cannot be imported
+# from a notebook because it does not ship to the workspace.
+#
+# Lab 6 redeploys this endpoint rather than creating a second one, so the name
+# is a contract rather than a preference. A serving endpoint name is unique
+# across the account, so it carries the participant's slug; a registered model
+# name is scoped to its catalog, so it does not.
+UC_MODEL_NAME = "databricks-neo4j-workshop.agents.fleet_ops_assistant"
+AGENT_ENDPOINT_PREFIX = "fleet-ops-assistant"
+
+# Serving endpoint names are limited to 63 characters, and the scope slug is
+# allowed to be longer than that on its own.
+_MAX_ENDPOINT_SLUG = 63 - len(AGENT_ENDPOINT_PREFIX) - 1
 
 # The three names the endpoint's environment block binds to secret references.
 # They are read here and nowhere else, so a rename is one edit.
@@ -106,6 +127,27 @@ MISSING_CREDENTIAL_MESSAGE = (
     "endpoint carries all three, and that whoever created the endpoint can "
     "still read that scope."
 )
+
+
+def endpoint_name(scope: str) -> str:
+    """Name this participant's serving endpoint, from their secret scope.
+
+    The slug is taken from the scope rather than derived again, so the endpoint
+    and the scope cannot disagree about who a participant is. Lab 6 calls this
+    with the same scope and gets the same endpoint back, which is what makes a
+    redeploy a redeploy.
+
+    Args:
+        scope: Scope name from ``tools.secret_scope_name``.
+
+    Returns:
+        The serving endpoint name.
+    """
+    from data_utils import SECRET_SCOPE_PREFIX
+
+    prefix = f"{SECRET_SCOPE_PREFIX}-"
+    slug = scope[len(prefix) :] if scope.startswith(prefix) else scope
+    return f"{AGENT_ENDPOINT_PREFIX}-{slug[:_MAX_ENDPOINT_SLUG]}"
 
 
 def export_neo4j_env(dbutils: Any, scope: str) -> tuple[str, ...]:
@@ -369,7 +411,6 @@ class FleetOpsAgent(ResponsesAgent):
                 self._build_error = f"{type(error).__name__}: {error}"
         return self._runtime
 
-    @mlflow.trace(name="fleet_ops_agent")
     def predict(self, request: ResponsesAgentRequest) -> ResponsesAgentResponse:
         """Answer one question.
 
@@ -439,7 +480,15 @@ class FleetOpsAgent(ResponsesAgent):
             )
 
 
-mlflow.langchain.autolog()
+# MLflow traces every ResponsesAgent.predict on its own, so this adds only the
+# node-level spans inside the LangGraph run. It is guarded because
+# mlflow.langchain.autolog() imports the `langchain` package to read its
+# version, and nothing in this agent needs `langchain` itself: the nodes call
+# Databricks endpoints through data_utils, and langgraph depends on
+# langchain-core alone. Unguarded, this line turns a missing optional package
+# into a container that cannot load the model.
+if importlib.util.find_spec("langchain") is not None:
+    mlflow.langchain.autolog()
 
 AGENT = FleetOpsAgent()
 set_model(AGENT)

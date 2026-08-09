@@ -29,6 +29,7 @@ Agent Bricks version.
 |---|---|
 | `01_langgraph_agent.ipynb` | Build the three tools, write the supervisor, wire the graph, run it, measure the routing |
 | `tools.py` | Node builders, prompts, and the graph schema the text-to-Cypher tool is given |
+| `agent.py` | The same graph wrapped as an MLflow `ResponsesAgent`, for Model Serving. It reads credentials from environment variables bound to `{{secrets/<scope>/<key>}}` rather than from `dbutils`, and everything else from model config logged beside it. Lab 6's `memory.py` subclasses its `FleetOpsAgent` |
 
 `tools.py` imports the embedder, the LLM, and the secret-scope helpers from
 `../Lab_3_Semantic_Search/data_utils.py` rather than carrying copies. That is not
@@ -210,6 +211,40 @@ tested against them.
 
 ## What comes next
 
-Notebook 02 logs this graph as an MLflow model, deploys it to Model Serving, and
-evaluates it against a question set with MLflow's LLM judges. Lab 6 gives it
-memory, in Neo4j, so it can be asked a follow-up.
+`agent.py` is this same graph as an MLflow `ResponsesAgent`, which is what gets
+logged to Unity Catalog and deployed to Model Serving. Lab 6 then gives it
+memory, in Neo4j, so it can be asked a follow-up, and redeploys the one endpoint
+rather than standing up a second.
+
+## Notebook 02, deploy and evaluate
+
+`02_deploy_and_evaluate.ipynb` takes the graph from notebook 01 and puts it
+behind an endpoint. It logs `agent.py` to Unity Catalog as
+`databricks-neo4j-workshop.agents.fleet_ops_assistant`, deploys it as
+`fleet-ops-assistant-<your user slug>`, asks it the same questions notebook 01
+asked, and scores the answers with MLflow's judges.
+
+Three things in it are worth reading even if the run goes smoothly.
+
+**Resources and credentials are different mechanisms.** Databricks things are
+declared at log time and granted to the serving principal from that list. Your
+Aura password cannot be, so it travels as `{{secrets/<scope>/<key>}}` in the
+endpoint's environment block and is resolved when the endpoint starts.
+
+**The Genie space is not enough on its own.** A model logged with
+`DatabricksGenieSpace` and no `DatabricksSQLWarehouse` deploys cleanly, routes
+correctly, and answers every sensor question with `is not authorized to use or
+monitor this SQL Endpoint`. The space grants the space; the SQL underneath it is
+a separate resource. Measured, not theorised.
+
+**Pin `pip_requirements`.** Inferred requirements read the cluster, and a
+cluster carrying the Lab 6 memory wheel produces a requirement with a local
+version segment that resolves from no index. The container then fails to build,
+about fifteen minutes after you stopped watching.
+
+A first deploy takes roughly sixteen minutes. Notebook 02 polls and prints where
+it got to.
+
+The two names Lab 5 and Lab 6 share, the registered model and the endpoint, come
+from `agent.py` rather than from a string a participant types, because Lab 6
+redeploys this endpoint rather than creating a second one.
