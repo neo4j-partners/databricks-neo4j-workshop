@@ -63,7 +63,9 @@ The split Lab 5 sets up is the production split, so nothing here needs redesign:
 
 Lab 5 uses a direct Bolt driver rather than the MCP connection Lab 4's demo shows, because one Unity Catalog HTTP connection per participant is not something a classroom provisions. That trade reverses as you grow.
 
-Once an instance has several users and several agents reaching it, the governed MCP connection is worth its setup: one admin-managed object, OAuth2 M2M auth, and access that Unity Catalog can audit. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers carrying Unity Catalog permissions across into the graph.
+Once an instance has several users and several agents reaching it, the governed MCP connection is worth its setup: one admin-managed object, OAuth2 M2M auth, and access that Unity Catalog can audit.
+
+Carrying Unity Catalog's own table-level permissions across into the graph is a further step, and not a solved one. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers a JDBC federation prototype and the governance gap it aims at. Read it as direction of travel rather than as something to build on today.
 
 == Watch the Index Count, Not the Node Count
 

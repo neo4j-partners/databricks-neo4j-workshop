@@ -5,152 +5,144 @@ Suggested improvements to `site/`, drawn from the Antora site in
 the same shape of workshop through six labs and a deck set, so its choices are
 directly comparable.
 
-**Scope:** structure, flow and format only. `fix-site-slides.md` already owns the
+**Status:** implemented. Each item below records what shipped. Two were skipped
+on purpose, and both say why.
+
+**Scope:** structure, flow and format only. `fix-site-slides.md` owns the
 content fixes: dataset counts, the AuraDB Free tier claim, the notebook-first
 split, the deck build. Nothing below repeats those.
 
-**Reference layout:** 31 pages, 4 part pages, 1 slides page, 8 decks published as
-their own gallery. **This site:** 13 pages plus 24 seven-line slide stubs, no part
-pages, decks embedded as iframes.
-
 ---
 
-## 1. The home page is a stub
+## 1. The home page was a stub. Done
 
-- **Now:** `index.adoc` is 13 lines. Three links and a paragraph. The arc, the
-  dataset, the architecture and the lab table all sit one click away in
-  `workshop-overview.adoc`.
-- **Reference:** `index.adoc` is 140 lines and is the whole front door. Welcome,
-  At a Glance, the four-stage arc, the dataset, two architecture diagrams, lab
-  tables with durations, prerequisites.
-- **Do:** fold `workshop-overview.adoc` into `index.adoc`. Keep the arc, the
-  diagram, the lab table with durations and the prerequisites. A participant
-  landing cold should see what they are building without a second click.
-- **Watch:** `workshop-overview.adoc` has two tables the reference has no
-  equivalent of, "Which Aura Instance Each Lab Uses" and "Key Technologies".
-  Both are good. Keep them, on the merged page.
+- **Was:** `index.adoc` at 13 lines. Three links and a paragraph. The arc, the
+  dataset, the architecture and the lab table all sat one click away.
+- **Now:** `workshop-overview.adoc` is folded into `index.adoc` and deleted.
+  The home page carries the welcome, an At a Glance, the dataset, both
+  architecture diagrams, the lab table with durations and part rows,
+  prerequisites and the reference links.
+- **Kept:** the two tables the reference has no equivalent of, "Which Aura
+  Instance Each Lab Uses" and "Key Technologies".
+- **Followed through:** the four inbound xrefs on `lab6.adoc`,
+  `databricks-platform.adoc` and `nav.adoc`, plus the `README.md` link, which
+  pointed at a page that no longer exists.
 
-## 2. No part pages, so the arc is invisible
+## 2. No part pages, so the arc was invisible. Done
 
-- **Now:** `nav.adoc` has a bare text node, `Labs`, over six flat entries. Bare
-  text does not click and has no landing page.
-- **Reference:** four part pages group the labs into a story. Each is 11 to 19
-  lines: what this part gets you, then its labs.
-- **Do:** add three part pages and nest the labs under them. Suggested split,
-  matching what the labs already do:
-  - **Part 1, Graph Foundations:** Labs 1 and 2.
-  - **Part 2, Retrieval:** Lab 3.
-  - **Part 3, Agents:** Labs 4, 5 and 6.
-- **Cost:** three files of about 15 lines each. It is the cheapest change here
-  and it is the one that makes the sidebar readable.
+- **Was:** a bare text node, `Labs`, over six flat entries. Bare text does not
+  click and has no landing page.
+- **Now:** three part pages, each with an At a Glance, a lab table, its decks
+  and a Next Steps:
+  - `part1-graph-foundations.adoc`, Labs 1 and 2.
+  - `part2-retrieval.adoc`, Lab 3.
+  - `part3-agents.adoc`, Labs 4, 5 and 6.
+- **`nav.adoc` nests the labs under them.** No bare text nodes are left.
 
-## 3. Slides are 24 nav entries of iframe
+## 3. Slides were 15 nav entries of iframe. Done, the cheaper way
 
-- **Now:** 24 pages under `pages/slides/`, each 7 lines wrapping an iframe at a
-  fixed 600px. Every one has its own nav line. Slides outnumber labs four to
-  one in the sidebar.
-- **Reference:** one `slides.adoc`. A table of `Deck | Covers | Pairs With`,
-  linking out to a standalone gallery at `/slides`. The gallery index is
-  generated from a deck manifest carrying title and description.
-- **Do, recommended:** publish the decks as their own surface, the way the
-  reference does. `deploy-antora.yml` copies `site/build/site` to `_site/workshop`,
-  the deck build to `_site/slides`, and a small `landing/index.html` to the root.
-  Replace the 24 stubs with one `slides.adoc` table.
-- **Do, cheaper:** keep the iframes, but collapse the 24 nav lines to one
-  `slides.adoc` index that links them, and add a full-screen "open deck" link on
-  each. Fixes the sidebar, not the reading experience.
-- **Take the first.** It also deletes the `../../site/modules/ROOT/images/` path
-  mirroring in `build-slides.sh`, because a self-contained deck folder reaches
-  nothing outside itself.
+- **Was:** 15 pages under `pages/slides/`, each 7 lines wrapping an iframe at a
+  fixed 600px, each with its own nav line.
+- **Now:** `slides.adoc` is one index carrying two `Deck | Covers | Pairs With`
+  tables, workshop decks and additional background. It is the nav entry; the 15
+  wrappers nest under it. Every wrapper gained an **Open full screen** link and
+  a link back to the index.
+- **The reference's own-surface gallery was rejected.** It would have reworked
+  `deploy-antora.yml` into `_site/workshop` plus `_site/slides` plus a landing
+  page, moving every published URL, and it reverses the iframe-wrapper decision
+  `fix-site-slides.md` already made and CI already implements.
 
-## 4. Lab pages have no link to their deck
+## 4. Lab pages had no link to their deck. Done
 
-- **Now:** zero lab pages reference a deck. The mapping exists only in the
+- **Was:** zero lab pages referenced a deck. The mapping lived in the
   presenter's head.
-- **Reference:** `slides.adoc` carries a `Pairs With` column pointing at labs.
-- **Do:** both directions. A `Pairs With` column on the slides index, and one
-  line on each lab page: "Slides for this lab: <deck>."
+- **Now:** both directions. `slides.adoc` carries the `Pairs With` column, and
+  every lab page plus `appendix-a.adoc` carries a "Slides for this lab" line
+  above its Next Steps. The part pages list their decks too.
 
-## 5. The lab page template is inconsistent
+## 5. The lab page template was inconsistent. Done
 
-Six lab pages, four shapes. Verified:
+- **Was:** six lab pages, four shapes. `lab4`, `lab5` and `appendix-a` had no
+  `TIP` block pointing at their notebooks.
+- **Now:** all seven pages are Title, lede, `TIP` to the notebooks,
+  `.**At a Glance**`, concept sections, `== Next Steps`. Lab 4's "What You Build
+  in This Lab" stayed, with the `TIP` above it.
 
-| Page | At a Glance | TIP to notebook | Next Steps |
-|---|---|---|---|
-| lab1, lab2, lab3, lab6 | yes | yes | yes |
-| lab4 | yes | no, uses "What You Build in This Lab" | yes |
-| lab5 | yes | no | yes |
-| appendix-a | yes | no | yes |
-
-- **Reference:** every lab page is the same five parts, in order. Title, one
-  paragraph placing the lab in the arc, `TIP` jump to the steps, `.**At a
-  Glance**`, concept sections, `== Next Steps`.
-- **Do:** add the missing `TIP` block to lab4, lab5 and appendix-a. Lab 4's
-  "What You Build in This Lab" is useful content, so keep it as a section and
-  put the `TIP` above it.
-
-## 6. Lab 6 instructions page, done
+## 6. Lab 6 was the only lab with an instructions page. Done
 
 - **Was:** `lab6-instructions.adoc`, 706 lines, ten numbered procedure sections,
   cell-by-cell code. The last instructions page on the site.
-- **Done:** deleted. `01_agent_memory.ipynb` already carried every section,
+- **Now:** deleted. `01_agent_memory.ipynb` already carried every section,
   including the cleanup, so nothing moved. The three xrefs on `lab6.adoc` and
-  the nav entry now point at the notebook, matching Labs 1 to 5.
+  the nav entry point at the notebook, matching Labs 1 to 5.
 
-## 7. Missing pages the reference has
+## 7. Missing pages the reference has. Partly done
 
-- **Lab 0, sign in.** The reference opens with a 26-line page on getting into the
-  cloud console. This site starts at Lab 1 and assumes the Databricks workspace
-  is already open. `vocareum/docs/README.md` covers it and never reaches the
-  site. **Add a Lab 0 page.**
-- **Configuration reference.** The reference has one page listing every
-  credential, what it is and where it comes from. Here the secret scope,
-  `GENIE_AGENT_ID`, `WAREHOUSE_ID` and the Aura URI are scattered across four lab
-  pages. **Add `configuration.adoc`, one table.**
-- **Production path.** The reference closes with 65 lines on what changes between
-  a workshop and production, plus a resource list. This site ends at Lab 6 with
-  no closing page. **Add one.** Most of the material is already written inside
-  lab5 and lab6 as asides.
-- **Admin setup.** The reference publishes its admin guide. Here
-  `workshop-setup/README.md` stays in the repo. **Optional.** Publish it only if
-  instructors are expected to read the site rather than the repo.
+- **Production path. Added.** `production-path.adoc` covers what changes between
+  the workshop and production: the tier, memory off the hot path, the pinned
+  fork, degrade-do-not-fail, the credential split, and index quota. Every claim
+  comes from a measurement or a decision `lab5.adoc` and `lab6.adoc` already
+  record.
+- **Lab 0, sign in. Skipped.** Not requested.
+- **Configuration reference. Dropped from the plan.** Every credential name
+  (`SECRET_SCOPE`, `GENIE_AGENT_ID`, `WAREHOUSE_ID`) already lives in the
+  notebook that uses it, and the site pages only mention them in prose. A config
+  table on the site would be a second copy of notebook content, which is exactly
+  the leak item 6 removed.
+- **Admin setup. Skipped.** `workshop-setup/README.md` stays in the repo, where
+  instructors already read it.
 
-## 8. The dual-database explanation runs three times
+## 8. The dual-database explanation ran three times. Done
 
-- **Now:** `dual-database-architecture.svg` appears on `workshop-overview.adoc`
-  and `lab1.adoc`, and the same argument is made a third time in prose on
+- **Was:** `dual-database-architecture.svg` on `workshop-overview.adoc` and
+  `lab1.adoc`, and the same argument a third time in prose on
   `databricks-platform.adoc`.
-- **Reference:** one page owns each concept. The lab pages xref it rather than
-  restating it.
-- **Do:** the merged home page owns the dual-database split. `lab1.adoc` keeps
-  its collapsible aside and drops the diagram. `databricks-platform.adoc` keeps
-  the depth, the five integration patterns, and stops re-arguing the premise.
+- **Now:** the merged home page owns the split and the diagram. `lab1.adoc`
+  keeps its collapsible aside, drops the diagram and xrefs the overview.
+  `databricks-platform.adoc` keeps the depth and the five integration patterns,
+  and points at the overview rather than restating the roadmap.
 
-## 9. Sample queries cover two labs of six
+## 9. Sample queries covered two labs of six. Done for Lab 6
 
-- **Now:** `lab2-sample-queries.adoc` and `lab3-sample-queries.adoc` exist. Labs
-  1, 5 and 6 have none, and Lab 6 has the most interesting Cypher in the
-  workshop, the query that crosses memory and fleet.
-- **Do:** add `lab6-sample-queries.adoc`. The cross-half query and the
-  reasoning-trace query are worth a page a participant can paste from.
+- **Was:** `lab2-sample-queries.adoc` and `lab3-sample-queries.adoc` only, while
+  Lab 6 held the most interesting Cypher in the workshop.
+- **Now:** `lab6-sample-queries.adoc` carries the memory-half schema table, the
+  counting queries, the shift-handover query that crosses both halves, and the
+  reasoning-trace audit query. Every query is copied verbatim from
+  `01_agent_memory.ipynb` or `02_instructor_demos.ipynb` rather than written for
+  the page.
+- **Labs 1 and 5 still have none.** Lab 1's Cypher is inline on the page already,
+  and Lab 5 runs its queries through the agent rather than by hand.
 
-## 10. Small format items
+## 10. Small format items. Done
 
-- **Home has no At a Glance.** Every reference overview page opens with one.
-  Add it to the merged home page.
-- **`Slides` and `Labs` in nav are bare text.** Point them at the slides index
-  and at Part 1 once those pages exist.
-- **Page length spread is wide.** 7 lines to 706. Under the changes above the
-  spread lands at roughly 80 to 200, which matches the reference.
+- **Home now opens with an At a Glance**, matching every reference overview page.
+- **No bare text nav nodes remain.** `Labs` became three part pages and `Slides`
+  became `slides.adoc`.
+- **Page length spread is now 9 to 353 lines**, against 7 to 706 before. The
+  353 is `lab3-sample-queries.adoc`, a query reference that is meant to be long.
+  Excluding the two sample-query pages, the spread is 9 to 216.
 - **`site-extra.css` is 17 lines and identical to the reference.** Nothing to do.
 
 ---
 
-## Order to do it in
+## Verification
 
-1. **Part pages and nav.** Cheapest, and it makes the rest visible.
-2. **Merge `workshop-overview.adoc` into `index.adoc`.**
-3. **Slides gallery.** Deletes 24 pages and the asset mirroring together.
-4. **Lab page template sweep.** Three `TIP` blocks, one deck link per lab.
-5. ~~**Cut `lab6-instructions.adoc` into the notebook.**~~ Done.
-6. **New pages:** Lab 0, configuration, production path.
+- `npm run build` in `site/` is warning-free.
+- A link check across all 17 emitted pages finds 0 broken local `href` or `src`,
+  which covers fragment anchors and all 15 deck iframes.
+- All 7 lab pages carry exactly one each of `TIP`, `At a Glance`, "Slides for
+  this lab" and `== Next Steps`.
+- Every `Covers` cell in `slides.adoc` was checked against its deck's own
+  headings. Ten were rewritten after that check, including two that were wrong:
+  the retriever deck covers Text2Cypher rather than hybrid retrievers, and the
+  auth-sync deck is a prototype under review rather than shipped guidance.
+- Every query in `lab6-sample-queries.adoc` is copied from a notebook cell.
+
+## Open defect, not fixed
+
+`lab4.adoc` and `lab5.adoc` both say the Databricks secret scope was **written
+in Lab 3**. `Lab_1_Aura_Setup/02_credentials_and_cypher.ipynb` is what creates
+it, and `lab1.adoc` says so. Two pages against one notebook and one page.
+Left alone pending a decision, because it is pre-existing content rather than
+part of this work.
