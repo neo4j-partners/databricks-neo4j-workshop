@@ -6,7 +6,9 @@ Supersedes the status and planning halves of `expand.md`. The reasoning, the mea
 
 **Closed this pass, both verified rather than inferred.** `genie_node` authorization is fixed: the endpoint holds three READY versions, and a fleet-average EGT question routed to `genie_node` and returned **866.65373875 C**, matching the rebuilt CSV average of 866.7 with no authorization error anywhere in the response. Defect F is fixed and measured at 0 invented, 0 loose and 0 zero-row across 10 after-runs. The gold-table Genie edit is applied. Before that: the Lab 6 `CALL {}` blocker is fixed, the resource list moved into one shared `build_resources` at `agent.py:147` and grew from four entries to twelve, and Lab 6 now registers into the same UC model Lab 5 created rather than logging an unregistered run. The pass before that landed `b82ca4b` and `5fb3097`, closing 9.1; rebuilt the lakehouse gold tables; fixed defect E; and closed 16 of 24 documentation findings.
 
-**Two things a reader should not misread.** The `neo4j-database` change is **still uncommitted** and has grown to 14 modified files, so `HEAD` at `5fb3097` shows none of this. And the Lab 6 timing measurement, which is Phase 3's completion criterion, is **still unmeasured**: two attempts have now failed for environment reasons rather than lab reasons, and the third is running. Every line below follows the section 8 rules: three states, evidence named, verified against disk.
+**The timing is now recorded, and it found something worse than a slow lab.** The per-section table is in section 2 and the total is 3:56 of machine time against a 75 minute budget, so time is not what threatens Lab 6. Running it end to end surfaced **defect H: Lab 6's central claim did not hold.** Section 9's own scorer printed `0/2 off, 0/2 on`. Memory bought nothing measurable, and on the vibration question the memory-on agent was worse than memory-off. Phase 3 is **not passed**, and the reason is now a defect rather than a missing number.
+
+**One more thing a reader should not misread.** `Lab_5_LangGraph_Agent/02_deploy_and_evaluate.ipynb` is committed with **no executed cells**, so the deploy path is proven by the job that ran a harness copy of it, not by the file a participant will open. Every line below follows the section 8 rules: three states, evidence named, verified against disk.
 
 ---
 
@@ -67,7 +69,7 @@ Verified against code on disk unless marked otherwise.
 
   **Four caveats ship with it and must be read beside it.** `genie_node` was unauthorized at capture time, so routing is valid and Genie answer text is not. The endpoint returns an empty usage block, so there are no token counts, only latency. Three of six questions called more tools than expected, because the supervisor retries on an empty or failed tool, so **expected-tools is a subset test, never an exact match**. And the `cypher_maintenance_history` answer is known-bad, captured before defect E was fixed: **a memory-on run returning 23 events is the defect E fix landing, not memory improving recall.**
 - **MEASURED: a `DatabricksGenieSpace` resource on its own does not reach the warehouse under the space.** The endpoint deployed cleanly, routed correctly, and answered every sensor question with "is not authorized to use or monitor this SQL Endpoint".
-- **LANDED: the fix for it, and it is now twelve resources rather than four.** `Lab_5_LangGraph_Agent/agent.py` gained `GOLD_SCHEMA`, `GOLD_TABLES` and `build_resources(genie_space_id, warehouse_id)`, which returns the Genie space, the SQL warehouse, the **eight gold `DatabricksTable` entries**, and the two `DatabricksServingEndpoint` entries. `02_deploy_and_evaluate.ipynb` cell 7 and `Lab_6_Agent_Memory/01_agent_memory.ipynb` cell 50 both call it, so the two labs cannot drift. `mlflow.models.resources` is imported inside the function, because it is a log-time API the serving container never calls. **Unmeasured: the redeploy is running as this line is written.** This is still the single item between here and Phase 2's completion criterion.
+- **LANDED: the fix for it, and it is now twelve resources rather than four.** `Lab_5_LangGraph_Agent/agent.py` gained `GOLD_SCHEMA`, `GOLD_TABLES` and `build_resources(genie_space_id, warehouse_id)`, which returns the Genie space, the SQL warehouse, the **eight gold `DatabricksTable` entries**, and the two `DatabricksServingEndpoint` entries. `02_deploy_and_evaluate.ipynb` cell 7 and `Lab_6_Agent_Memory/01_agent_memory.ipynb` cell 50 both call it, so the two labs cannot drift. `mlflow.models.resources` is imported inside the function, because it is a log-time API the serving container never calls. **MEASURED: the fix works.** The redeploy succeeded on job `640691439045913`, run `755260286752906`, the endpoint holds three READY versions, and a direct fleet-average EGT question routed to `genie_node` and returned **866.65373875 C** against a rebuilt CSV average of 866.7, with no authorization error anywhere in the response. Phase 2's completion criterion is met.
 
   **Why the tables joined the list.** Declaring the space grants the space and declaring the warehouse grants the compute. Neither grants the data. The four-entry list was written from an error message naming the SQL endpoint, and it was never tested against a query that reads a table.
 - **LANDED: `02_deploy_and_evaluate.ipynb`**, 30 cells, 13 code, committed in `b82ca4b`. Configuration, a pre-log run, resources, log, credentials, deploy, wait, ask, evaluate, and a "when it fails" section. Closes the Lab 5 README gap that the documentation audit flagged.
@@ -155,21 +157,84 @@ The Track A Lab 5 measurement graph, and the instance the secret scope points at
 - **Labs 1 and 4 ship as notebooks.** `Lab_1_Aura_Setup/01_aura_setup.ipynb` at 25 cells and `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` at 31 cells, both nbformat 4.5 with no stale outputs and every image URL resolving to a tracked file. A Vocareum student never clones the repository and never sees a rendered README, so a browser lab whose instructions live only in markdown reaches them as no instructions. The click-through steps are markdown cells beside the few runnable ones. The source markdown files stay where they are. **Part B carries zero code cells by design**, so a participant who scrolls into the instructor demo can run nothing.
 - **`Lab_5_LangGraph_Agent/` is complete as a lab.** `agent.py` at 19.7K, `tools.py` at 41.4K, `01_langgraph_agent.ipynb` at 35.4K, `02_deploy_and_evaluate.ipynb` at 27.6K, `README.md` at 12.3K. Corrects an earlier line here that read "`02_deploy_and_evaluate.ipynb` does not" exist.
 
-### In flight, uncommitted
+### Committed in `1be478f`
 
-**State: LANDED in the working tree, not in `HEAD`.** Recorded separately because a reader checking out `5fb3097` sees none of it.
+**State: COMMITTED.** This subsection recorded work sitting in the working tree against `5fb3097`. `1be478f` swept all of it in, so a reader on `HEAD` now sees every item below. Kept because the change it describes is subtle and worth reading once.
 
 - **A fourth secret key, `neo4j-database`.** `data_utils.py` gains `SECRET_KEY_NEO4J_DATABASE` and `DEFAULT_NEO4J_DATABASE`, and `read_neo4j_secrets` returns a fourth key, falling back to `neo4j` when a scope written before this change has only three. `agent.py` gains `ENV_NEO4J_DATABASE`, a `scope_has_key` probe that reads key names and never values, and a `serving_environment_vars` that adds the reference only when the key exists, so an older three-key scope still deploys. `memory.py` reads the same variable in `open_from_env` and the same scope key in `open_from_secrets`. `lab/workshop.py` names the key.
 - **What it fixes.** `verify_connectivity()` succeeds against an instance whose home database is not named `neo4j`, and the first real query then fails with `Neo.ClientError.Database.DatabaseNotFound`. This is the caveat 9.5 records, turned into a credential path instead of a warning. Resolution order is model config, then the environment variable, then `SHOW DATABASES`.
-- **Still uncommitted, and now 14 files.** `git status` against `5fb3097`: `Lab_3_Semantic_Search/` notebooks 01, 02 and 03, its README and `data_utils.py`; `Lab_5_LangGraph_Agent/` notebooks 01 and 02, `agent.py` and `tools.py`; `Lab_6_Agent_Memory/` notebooks 01 and 02 and `memory.py`; `lab/workshop.py`; and this file. **9.1's rule has now been broken twice on the same change**: work that has been measured gets committed before the next measurement starts.
-- **The resource and registration work rides in the same uncommitted tree.** `build_resources`, the twelve-entry list, the Lab 6 UC registration and the cell 20 `UNION` rewrite are all in these 14 files, so a reader on `HEAD` sees a four-entry resource list and an unregistered Lab 6 log call.
-- **`tools.py` is modified, and not by the `neo4j-database` change.** The defect E fix is committed at `5fb3097` and the 48 of 48 regression suite was run against that committed file. Defect F is what the separate edit is.
+- **Committed as part of `1be478f`**, along with `Lab_3_Semantic_Search/` notebooks 01, 02 and 03, its README and `data_utils.py`; `Lab_5_LangGraph_Agent/` notebooks 01 and 02, `agent.py` and `tools.py`; `Lab_6_Agent_Memory/` notebooks 01 and 02 and `memory.py`; and `lab/workshop.py`. **9.1's rule was broken twice on this change before it landed**: work that has been measured gets committed before the next measurement starts. It is worth restating rather than deleting, because the same pressure recurs every time a measurement finishes late.
+- **The resource and registration work rode in the same tree and is in.** `build_resources`, its twelve entries, the Lab 6 UC registration and the cell 20 `UNION` rewrite are all in `HEAD`.
+- **`tools.py` carried two separate changes.** The defect E fix was committed at `5fb3097` and the 48 of 48 regression suite ran against that committed file. The defect F fix is the separate edit, and it came in with `1be478f`.
+- **Still uncommitted, three files.** `Lab_6_Agent_Memory/01_agent_memory.ipynb`, `Lab_6_Agent_Memory/memory.py` and this document.
 
-### In flight, running now
+### End-to-end job runs, both finished
 
-- **`lab5-02-deploy-e2e`, job `640691439045913`.** Runs a harness copy of `02_deploy_and_evaluate.ipynb` that prepends the `VOC_COURSE_LIBRARIES` install and asserts the write target, and changes nothing else. It logs, registers version 2, deploys, waits for READY, asks one question per tool and runs the MLflow evaluation. **It settles Phase 2's completion criterion**, which is a Genie answer through the endpoint.
-- **`lab6-timed-e2e`, job `38420397665184`.** Runs an instrumented copy of `01_agent_memory.ipynb` that stamps a wall clock at the end of every code cell and prints a per-section report against 75 minutes. **It settles Phase 3's timing criterion.** Lab 6 never queries the serving endpoint, so the two runs are independent and run together.
-- **Two earlier attempts failed for environment reasons, not lab reasons.** One ran a stale workspace copy of `data_utils.py`; one hit a `CALL {}` rejection that is now fixed. Neither produced a timing.
+- **`lab5-02-deploy-e2e`, job `640691439045913`. SUCCESS**, run `755260286752906`, after one FAILED run `801746467058561`. It runs a harness copy of `02_deploy_and_evaluate.ipynb` that prepends the `VOC_COURSE_LIBRARIES` install and asserts the write target, and changes nothing else. It logs, registers, deploys, waits for READY, asks one question per tool and runs the MLflow evaluation. **It settled Phase 2's completion criterion**, a Genie answer through the endpoint, since confirmed directly at 866.65373875 C.
+- **`lab6-timed-e2e`, job `38420397665184`. SUCCESS**, runs `884966419450137` and `207669517090391`, after two FAILED runs `680572422586272` and `442737496719052`. It runs an instrumented copy of `01_agent_memory.ipynb` that stamps a wall clock at the end of every code cell and prints a per-section report against 75 minutes. **It settles Phase 3's timing criterion.** Lab 6 never queries the serving endpoint, so the two jobs were independent and ran together.
+- **The earlier failures were environment, not lab.** One ran a stale workspace copy of `data_utils.py`; one hit a `CALL {}` rejection that is now fixed.
+
+### The Lab 6 timing, measured
+
+Run `825975650673796`, read off the run rather than estimated. Machine time only: no reading, no typing, no filling in a Genie space id.
+
+```
+section                                          seconds     m:ss
+------------------------------------------------------------------
+Section 1: Install                                  41.3     0:41
+Section 2: Configuration                            20.0     0:20
+Section 3: Connecting the memory client              4.2     0:04
+Section 4: Adopting the fleet graph                  1.4     0:01
+Section 5: A week of shift history                   9.7     0:09
+Section 6: The query that needs both halves          1.2     0:01
+Section 7: Recall and remember                       2.0     0:02
+Section 8: The thing Lab 5 could not do             36.8     0:36
+Section 9: What did memory actually buy?           111.4     1:51
+Section 10: Redeploying the endpoint                 7.8     0:07
+Section 11: What you built, and what to be ca        0.2     0:00
+------------------------------------------------------------------
+TOTAL                                              236.1     3:56
+
+Budget is 75:00. Headroom: 4264 s
+```
+
+**What it says.** Cell time is not the constraint and no demo needs cutting for time. One cell dominates: Section 9's memory-off versus memory-on comparison at 1:51, because it runs four full agent invocations. Everything else in the lab is under 45 seconds. The remaining 71 minutes are reading, typing and the instructor talking, which this harness cannot measure and which a dry run with a human has to.
+
+### Defect H, Lab 6's central claim did not hold
+
+**State: OPEN, one fix attempted and measured as not sufficient.** Section 9's own scorer, verbatim from run `825975650673796`:
+
+```
+Referring questions resolved: 0/2 off, 0/2 on
+```
+
+Memory-on scored the same as memory-off, and on the vibration question it was worse: memory-off answered about N10000, memory-on refused entirely.
+
+**The cause, read from the code rather than guessed.** `recalled` had exactly one consumer, `memory.py:1329`, and the supervisor's only output was `{"route": chosen}`. The tool nodes read `state["question"]` verbatim, so memory could choose which tool ran and could never tell that tool which aircraft. The trace proves it: `genie_node -> cypher_node -> genie_node -> cypher_node`, with Genie replying that it needs a tail number. Retrieval itself is fine. Section 7's probe returns the seeded N10011 message every run.
+
+**The fix applied, option A, chosen by Ryan.** The memory supervisor now emits a `RESOLVED:` line above its `NEXT:` line and rewrites `question` once, on the first pass only, keeping the original in a new `asked` state key. Route parsing reads below the `RESOLVED:` line so a tail number inside the rewritten question cannot win the `rfind`. `memory.py` only; Lab 5's tools are untouched, which is what keeps the memory-off comparison honest.
+
+**Measured after the fix, run `884966419450137`: still `0/2 off, 0/2 on`.** The rewrite did not fire.
+
+**Run `222802513615534` instrumented it and settled the cause. The rewrite machinery works. Recall is what is broken, and it is broken in a way nobody would have guessed from the score.** Verbatim from the harness cell, which prints what recall returned for the follow-up question and what the supervisor then replied:
+
+```
+--- what recall found ---
+- Are there any vibration readings I should worry about on that aircraft?
+- Are there any vibration readings I should worry about on that aircraft?
+- Are there any vibration readings I should worry about on that aircraft?
+
+--- what the supervisor replied ---
+RESOLVED: Are there any vibration readings I should worry about on that aircraft?
+NEXT: genie_node
+
+--- parsed RESOLVED ---
+'Are there any vibration readings I should worry about on that aircraft?'
+```
+
+**Defect H2: memory recalls the question being asked.** `remember_node` writes the question as well as the answer, so every run leaves a verbatim copy of every question in the graph. `recall_node` then runs a vector search over message content using that same question text, and an exact copy of a string is the nearest neighbour any embedding can return. Three prior runs put three copies of this question into `f024ea61`, and they took all three recall slots. The seeded N10011 shift history never had a chance. The supervisor did exactly the right thing with what it was given: memory said nothing about an aircraft, so it repeated the question unchanged, which is what the prompt asks for.
+
+**Two consequences worth separating.** The self-recall is real on any instance, because `remember` runs on the first question of every session. The three-identical-copies form is an artifact of re-running the same notebook against the same instance, which a participant does not do on their first pass. **The scale of the defect on a clean instance is unmeasured**, and `f024ea61`'s memory subgraph now has to be cleared before any measurement of it means anything.
 
 ---
 
@@ -193,6 +258,7 @@ The Track A Lab 5 measurement graph, and the instance the secret scope points at
 **Most of this phase ran. The list is now short and the completion criterion is one call.** What closed moved up to section 2.
 
 - ~~**Redeploy with `DatabricksSQLWarehouse` and the gold `DatabricksTable` entries declared, then put one Genie question through the endpoint.**~~ **DONE, Phase 2's completion criterion met.** The declaration is written and shared, `build_resources` at `agent.py:147`, twelve entries: one `DatabricksGenieSpace`, one `DatabricksSQLWarehouse`, the eight gold `DatabricksTable` entries, and two `DatabricksServingEndpoint` entries for the supervisor and embedding models. The endpoint now holds three READY versions with `config_update: NOT_UPDATING`. Verified by asking it the fleet-average EGT question: it routed to `genie_node`, wrote SQL joining `sensor_readings` to `sensors` on `type = 'EGT'`, and returned **866.65373875 C** against a rebuilt CSV average of 866.7. The string "not authorized" appears nowhere in the response. Section 5 question 2 closed.
+- **New defect G, the tool is handed the question rather than the finding.** The anchor question in notebook 02 routed all three tools and still reported "The maintenance history of this aircraft is not available", attributed to `cypher_node`. That is wrong: the gold tables hold 18 maintenance events for N10000, 23 for N10004 and 21 for N10011, read the same day. The anchor names no aircraft. `genie_node` found N10000 first, then `cypher_node` received the original question text, because the supervisor's only output is a route. It had nothing to put in a `WHERE` clause, so it refused. **This is the same shape as defect H in Lab 6**, with a finding in place of a memory, and the Lab 6 `RESOLVED:` fix would close both. Recorded in `worklog/lab5-test-results.md` round 5 and left unfixed, because it changes Lab 5. Moderate severity: single-tool questions are unaffected and those are what the labs demonstrate.
 - **Re-capture the memory-off baseline on that redeploy.** The existing one is dated on four axes: a superseded `tools.py`, a pre-rebuild lakehouse, no Genie answer at all, and a `cypher_maintenance_history` answer taken before defect E was fixed. See 9.4.
 - **Deploy a second endpoint as a different user and confirm both stay healthy.** Untouched, and it depends on the quota check.
 - **MLflow evaluation against the fixed question set**, run against the deployed endpoint. Notebook 02 section 8 holds the cells; the scores are unmeasured.
@@ -203,9 +269,10 @@ The Track A Lab 5 measurement graph, and the instance the secret scope points at
 
 **The files are written. What is left is execution.** The build items that closed moved up to section 2. Everything below is a measurement Phase 3 cannot complete without, plus one thing outside the lab.
 
-- **Run `01_agent_memory.ipynb` end to end against a live instance. RUNNING**, job `38420397665184`. Two earlier attempts stopped early, one on a stale workspace module and one on the `CALL {}` guard, and both causes are fixed. **The write target is settled** and the run costs `f024ea61`'s status as a clean Lab 5 measurement graph. The memory schema has already landed there, so that cost is paid rather than pending.
+- ~~Run `01_agent_memory.ipynb` end to end against a live instance.~~ **DONE. SUCCESS** on job `38420397665184`, runs `884966419450137` and `207669517090391`. Two earlier attempts stopped early, one on a stale workspace module and one on the `CALL {}` guard, and both causes are fixed. **The write target is settled** and the run cost `f024ea61`'s status as a clean Lab 5 measurement graph. The memory schema has already landed there, so that cost is paid rather than pending. **The timing came back at 3:56 of machine time against a 75 minute budget, so timing is not the problem.** The run surfaced defect H instead: Lab 6's central claim did not hold, scored `0/2 off, 0/2 on`. Phase 3 is blocked by that, not by a missing number.
 - ~~Decide which Aura instance the test writes to.~~ **Decided: option B, `f024ea61`, as the secret scope already points.** Recorded in section 7. The consequence is that adoption puts an `:Entity` label and a `type` property on all 36 `Aircraft` permanently, so any Lab 5 measurement taken after it names the memory schema as part of the graph it measured.
-- **Time each hands-on demo individually against its share of 75 minutes.** MEASURED, not estimated, per the Phase 3 completion criterion. **Nothing is timed today**, and the running job is the third attempt to change that. The instrumented copy stamps a wall clock at the end of every code cell and maps each cell to the `## Section N` heading above it, so the report is per section rather than one total.
+- ~~**Time each hands-on demo individually against its share of 75 minutes.**~~ **DONE and recorded.** The per-section table is in section 2. Total 3:56 of machine time, largest section 1:51. No demo needs cutting for time. What is still owed is a dry run with a human, because reading and typing are the other 71 minutes and no harness can measure them.
+- **Close defect H, which is now the thing blocking Phase 3.** Section 2 carries the measurement, the cause and the one fix already tried. Until Section 9 scores above `0/2 on`, Lab 6 teaches a claim its own scorer contradicts, and that is worse than a lab that runs slow. **This is the highest-priority open item in the plan.**
 - **Test the `extraction_mode="explicit"` batch path.** The spike measured only singular `add_message`; the seed helper uses `add_messages`. Still unmeasured.
 - **Verify the two Foundation Model endpoints from this workspace.** `databricks-bge-large-en` returning 1024-dimension vectors, and `databricks-meta-llama-3-3-70b-instruct` answering. Written into three probe runs, never reached a successful execution.
 - **Memory off versus on evaluation harness.** **No longer blocked on a missing baseline. Blocked on a usable one.** `worklog/lab5_memory_off_baseline.json` exists and its routing half is sound, but its Genie half is empty, its `tools.py` is superseded and its lakehouse numbers are pre-rebuild. Either re-capture on the Phase 2 redeploy, or compare routing only and say so. See 9.4.
@@ -328,7 +395,7 @@ Six phases. Each has an entry condition, a body, and a completion criterion that
 
 ### Phase 1: Lab 5 core agent
 
-**Status:** Core built and measured. The re-measure is done at 48 of 48 against `5fb3097`. Defect F is what stands between here and completion.
+**Status:** Core built and measured. The re-measure is done at 48 of 48 against `5fb3097`, and defect F closed after it at 0 invented, 0 loose and 0 zero-row across 10 runs. Nothing outstanding in Phase 1 except defect D, which is cosmetic and held.
 
 1. ~~Re-measure routing with the refusal rule in place.~~ Done. 48 of 48 across 9 groups, defects A, B, C and E fixed.
 2. ~~Close defect F, the nondeterministic components-for-an-aircraft question.~~ **Done.** 10 runs after the fix at 0 invented, 0 loose, 0 zero-row, regression 48 of 48.
@@ -603,16 +670,16 @@ Inert and wrong are different things. A wrong comment on an unattached table cos
 
 ### 9.8 Next steps, in order
 
-**Rewritten 2026-08-09.** Steps 2 and 6 of the previous order are running right now, so the list below starts from what happens when they land.
+**Rewritten 2026-08-09, second revision.** Both jobs have finished and the tree is committed, so the list below starts from what those runs left owed.
 
-0. **Commit.** Fourteen files, `HEAD` at `5fb3097`. **This is the second pass in a row that opens with this line**, which is the point 9.1 keeps making. The two running jobs are measuring code that exists in one working tree, so their results have the same provenance problem F4c named. Commit as soon as they report.
-1. **Read the two running jobs and record what they say.**
-   - `640691439045913` closes Phase 2 or reopens the resource question. **Read the per-tool cell first**: a `genie_node` answer with real numbers is the criterion, and a deploy that reaches READY is not.
-   - `38420397665184` prints a per-section table against 75 minutes. **Record the table verbatim into a worklog**, not a summary sentence, because the per-section split is what says which demo to cut.
+0. ~~**Commit.**~~ **Done, `1be478f`.** Fourteen files went in. `HEAD` had opened this list at `5fb3097` for two passes running, which is the point 9.1 keeps making. Three files remain modified, both Lab 6 working files and this document.
+1. **Read the two finished job runs and record what they say. Both succeeded; neither has been read into this document.**
+   - `640691439045913`, run `755260286752906`, SUCCESS. Phase 2's criterion is met independently: a direct query to the endpoint routed to `genie_node` and returned 866.65373875 C. **What is still owed is the per-tool cell**, which says whether `cypher_node` and `graphrag_node` answered as well, and that has not been read.
+   - `38420397665184`, runs `884966419450137` and `207669517090391`, both SUCCESS. Read and recorded: 3:56 of machine time against 75 minutes, and the per-section table is in section 2. **The timing is the good news and it is not the finding.** The same run produced defect H, `0/2 off, 0/2 on`, which is now what blocks Phase 3.
 2. **Re-capture the memory-off baseline on the version 2 endpoint.** F4b, F4e and F4f. The current one is dated on four axes and step 1 forces the redeploy regardless. Carry forward what is still valid: the 15.8 minute cold deploy, the `results_interpretation` block, the subset-not-exact rule for expected tools, and the defect notes. **Score Section 9 with the rules already agreed**: expected tools as a subset test, a zero-row components result as defect F variance rather than a memory result, and `cypher_maintenance_history` at 23 events as defect E landing rather than memory improving recall.
 3. **Provision a fresh AuraDB Free instance and run the index tolerance check**, reading the home database out of `SHOW DATABASES` rather than assuming `neo4j`. F5. **Still the only remaining no-go, still unrun**, and it touches nothing else, so it can run beside anything here. `scratchpad/aura_free_index_check.py` is written and has a read-only `check` and an apply-then-roll-back `probe`. **Ryan's to provision.**
-4. **Add `Lab_5_LangGraph_Agent/02_deploy_and_evaluate.ipynb` to `VOC_COURSE_NOTEBOOKS`**, between `01_langgraph_agent.ipynb` and `tools.py`. Minutes, and without it Lab 6's prerequisite is a notebook no participant receives. **Verified this pass by reading `lab/course.env:134-146`: the list holds 13 entries and both Lab 6 rows are already there**, `01_agent_memory.ipynb` and `memory.py`. The only Lab 5 or Lab 6 file missing is notebook 02. Whether `02_instructor_demos.ipynb` joins them is section 5 question 8.
-5. **Close defect F**, the nondeterministic components question, and edit `worklog/lab5-test-results.md` in place so its closing section stops reading as an open defect list.
+4. ~~**Add `Lab_5_LangGraph_Agent/02_deploy_and_evaluate.ipynb` to `VOC_COURSE_NOTEBOOKS`.**~~ **Done, `lab/course.env:143`.** Participants now receive the notebook Lab 6 lists as its prerequisite. Whether `02_instructor_demos.ipynb` joins the list is section 5 question 8, still open.
+5. ~~**Close defect F**, the nondeterministic components question.~~ **Done**, at `tools.py:295-305`, measured at 0 invented, 0 loose and 0 zero-row across 10 after-runs, recorded as Round 4 in `worklog/lab5-test-results.md`. **What is left of this step is the tidy-up**: edit that worklog's closing section in place so it stops reading as an open defect list.
 6. **Answer the delivery questions in section 5**, questions 6 through 10, all of which Phase 4 hits whether or not they are answered first. Question 5 and question 14 are now closed.
 7. **Get the `MENTIONS` fix upstream into `neo4j-labs/agent-memory`.** Worth doing whether or not Lab 6 ships, and it has been carried unactioned across three passes.
 8. F6 and 9.6 in any gap. F7 is taken.
