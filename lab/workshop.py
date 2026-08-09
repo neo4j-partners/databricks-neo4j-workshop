@@ -174,9 +174,10 @@ AGENT_SECRET_KEY_NEO4J_URI = "neo4j-uri"
 AGENT_SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 AGENT_SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 
-# The database inside that instance. AuraDB Free serves one named neo4j, and a
-# scope written before this key existed has no fourth key at all, so Lab 3 falls
-# back to that name. Multi-database instances need it set.
+# The database inside that instance. Aura names it, often after the instance ID
+# rather than "neo4j", so Lab 1's 02_credentials_and_cypher.ipynb detects the
+# real name and writes it here. A scope written before this key existed has no
+# fourth key at all, and Lab 3 falls back to "neo4j" for those.
 AGENT_SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
 # The model behind the supervisor's routing decision, and behind GraphRAG answer
