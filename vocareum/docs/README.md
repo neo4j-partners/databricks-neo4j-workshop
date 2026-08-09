@@ -41,9 +41,8 @@ Every lab has a notebook in your workspace, including Labs 1 and 4. Those two ar
 Your Databricks home folder contains:
 
 ```
-00_cluster_smoke_test.ipynb          <- start here
 Lab_1_Aura_Setup/
-  01_aura_setup.ipynb
+  01_aura_setup.ipynb                <- start here
 Lab_2_Databricks_ETL_Neo4j/
   01_aircraft_etl_to_neo4j.ipynb
 Lab_3_Semantic_Search/
@@ -65,9 +64,8 @@ Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 need
 ## Getting Started
 
 1. Open the Databricks workspace (left pane)
-2. Open `00_cluster_smoke_test` and attach it to your assigned cluster, to confirm your compute and catalog are there
-3. Open **Lab_1_Aura_Setup** → `01_aura_setup` and work through it to create your Neo4j Aura instance and save your credentials
-4. Continue lab by lab, attaching each notebook to the same cluster
+2. Open **Lab_1_Aura_Setup** → `01_aura_setup` and attach it to your assigned cluster, then work through it to create your Neo4j Aura instance and save your credentials. Its preflight cell confirms your compute, the Neo4j Spark Connector, and your catalog are there
+3. Continue lab by lab, attaching each notebook to the same cluster
 
 ## Neo4j Credentials
 

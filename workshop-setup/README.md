@@ -288,8 +288,8 @@ file here.
 
 Under Vocareum, `user_setup.sh` writes the landing page into
 `$VOC_IPC_DATA_FILE` and Vocareum redirects the browser there, so a participant
-lands on `00_cluster_smoke_test` in their own folder with their cluster already
-building. Nothing has to be handed out.
+lands on `Lab_1_Aura_Setup/01_aura_setup` in their own folder with their cluster
+already building. Nothing has to be handed out.
 
 On a hand-provisioned workspace, a handout or slide carries:
 

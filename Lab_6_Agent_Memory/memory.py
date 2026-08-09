@@ -1496,6 +1496,21 @@ def build_memory_supervisor_node(
 
     tools = tuple(available_tools if available_tools is not None else TOOL_NAMES)
     ceiling = MAX_TOOL_CALLS if max_tool_calls is None else max_tool_calls
+    allowed = (*tools, "synthesize")
+
+    # Narrowed to the tools this agent was actually given, exactly as Lab 5
+    # narrows ROUTE_SCHEMA. A participant without a vector index has no
+    # graphrag_node, and a schema the model cannot leave is the guard.
+    route_format = json_schema_format(
+        "memory_routing_decision",
+        {
+            **MEMORY_ROUTE_SCHEMA,
+            "properties": {
+                **MEMORY_ROUTE_SCHEMA["properties"],
+                "next": {"type": "string", "enum": list(allowed)},
+            },
+        },
+    )
 
     def supervisor_node(state: MemoryAgentState) -> dict[str, Any]:
         trace = state.get("trace", [])
@@ -1508,31 +1523,54 @@ def build_memory_supervisor_node(
             findings=_format_findings(state.get("findings", [])),
             recalled=state.get("recalled", "(memory not consulted)"),
         )
-        decision = llm.invoke(rendered).content
+        decision = llm.invoke(rendered, response_format=route_format).content
+
+        try:
+            reply = json.loads(decision)
+            chosen = reply["next"]
+            resolved = reply.get("resolved")
+        except (KeyError, TypeError, ValueError):
+            chosen, resolved = None, None
+
+        update: dict[str, Any] = {}
+
+        if chosen is None:
+            # Nothing usable came back as JSON, so read both the rewrite and
+            # the route out of the reply's own words. This is what the node did
+            # before the schema existed, kept for the participant who rewrites
+            # the prompt or points the lab at an endpoint that ignores
+            # response_format.
+            resolved = _parse_resolved(decision)
+
+            # Read the route from below the RESOLVED line. The resolved
+            # question is the participant's words, and a tool name inside it
+            # would otherwise win the rfind.
+            tail = decision
+            marker = tail.find(RESOLVED_PREFIX)
+            if marker >= 0:
+                newline = tail.find("\n", marker)
+                tail = tail[newline + 1:] if newline >= 0 else ""
+
+            chosen, best = _pick_tool(tail, tools)
+            if best < 0:
+                # A reply that put the route above RESOLVED leaves nothing
+                # below it.
+                chosen, best = _pick_tool(decision, tools)
+            if best < 0:
+                chosen = "synthesize"
 
         # The rewrite happens on the first pass only. After a tool has run the
         # question already carries the tail number, and rewriting a rewrite is
         # how a question drifts.
-        update: dict[str, Any] = {}
-        resolved = _parse_resolved(decision) if not trace else None
+        if trace:
+            resolved = None
         if resolved and resolved != state["question"]:
             update["asked"] = state.get("asked") or state["question"]
             update["question"] = resolved
 
-        # Read the route from below the RESOLVED line. The resolved question is
-        # the participant's words, and a tool name inside it would otherwise
-        # win the rfind.
-        tail = decision
-        marker = tail.find(RESOLVED_PREFIX)
-        if marker >= 0:
-            newline = tail.find("\n", marker)
-            tail = tail[newline + 1:] if newline >= 0 else ""
-
-        chosen, best = _pick_tool(tail, tools)
-        if best < 0:
-            # A reply that put NEXT above RESOLVED leaves nothing below it.
-            chosen, best = _pick_tool(decision, tools)
-        update["route"] = chosen if best >= 0 else "synthesize"
+        # A name outside the tools this agent was given becomes synthesize
+        # rather than a call, the same guard Lab 5 keeps after the schema.
+        update["route"] = chosen if chosen in allowed else "synthesize"
         return update
 
     return supervisor_node

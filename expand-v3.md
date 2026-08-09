@@ -243,8 +243,8 @@ TOTAL                                              260.4     4:20
 
 - **Full dry run of Labs 1 through 6** on a fresh Aura instance and a fresh workspace user, with timings recorded per lab and per demo.
 - **Rerun Part B as an instructor demo** against the instructor's own instance.
-- **Finish the Vocareum notebook list.** 13 entries at `lab/course.env:134-146`, all backed by files.
-  - **The list is order sensitive.** The first entry is the student's landing page, so the smoke test stays first and anything new goes where a student reaches it, never appended.
+- **Finish the Vocareum notebook list.** 14 entries at `lab/course.env:139-152`, all backed by files.
+  - **The list is order sensitive.** The first entry is the student's landing page, so `Lab_1_Aura_Setup/01_aura_setup.ipynb` stays first and anything new goes where a student reaches it, never appended.
   - **Confirm each `.py` helper uploads as a FILE and not a NOTEBOOK.** This behavior lives in a pinned external package, so an upload against an old lock ships the defect and hash-verifies cleanly. Whoever runs the final upload checks that first.
   - **Two checks before any helper joins the list:** a notebook the student opens must import it, and its first line must not be the Databricks notebook marker. Both current helpers pass, and the importing notebook does not have to live in the same lab.
 - **Confirm nothing in Labs 5 or 6 reads a fallback instance.** The fallback is dropped, so a leftover override path is a credential nobody should have.

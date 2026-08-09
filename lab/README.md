@@ -17,7 +17,6 @@ This file is never uploaded. `dbx-vocareum-upload` skips `README.md` by name.
 | `course.env.example` | the package | no, copy it |
 | `course.env` | this course | yes, and keep it out of git if it ever holds anything sensitive |
 | `workshop.py` | this course | yes |
-| `00_cluster_smoke_test.ipynb` | this course | yes |
 | `Lab_*/` | the repository root, through symlinks | no, edit the real directory |
 | `courseware/dlt_fleet_etl.py` | this course | yes |
 | `courseware/wheels/*.whl` | built from a pinned fork, committed | no, rebuild and replace |
