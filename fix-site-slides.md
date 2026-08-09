@@ -157,7 +157,6 @@ There are six, and they total 1,049 lines.
   | `site/modules/ROOT/pages/workshop-overview.adoc` | 24, 35 | `345,600+`, plus `sensors` (160) / `systems` (80) / `aircraft` (20) inline |
   | `site/modules/ROOT/pages/lab4.adoc` | 3 | `345,600+` in the sentence motivating the whole lab |
   | `slides/platform-overview/01-workshop-over.md` | **85-91**, 101 | The full per-label table, not just the readings row |
-  | `slides/docs/overview-and-genai-foundations.md` | **49-55**, 63 | The same table, duplicated |
   | `slides/organize.md` | 63 | "A fleet of 20 aircraft" |
   | `slides/kg-construction/05-building-knowledge-graphs-slides.md` | 102 | "20 aircraft across 4 operators" |
   | `README.md` | **57** | "roughly 155K readings". Dies anyway with the 30-line cut, but do not leave it for that |
@@ -566,7 +565,7 @@ There are six, and they total 1,049 lines.
 
 ### Open, do not write around it
 
-- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and the AuraDB Free index and constraint question in `expand-v3.md` section 5 stays the single remaining no-go.
+- **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of Lab 3's, untested on a fresh Free instance. **CORRECTION: 33 and 12 is the library's full schema, not what this lab installs.** `memory.py` narrows it with `UNUSED_MEMORY_SUBSYSTEMS`, so the real cost is 25 indexes and 9 constraints, which is what `verify_aura_caps/main.py` encodes and probes. The figure here overstates it. Moot now that the tier question is cancelled, but do not carry 33 and 12 forward. If the combined total exceeds the cap, Lab 6 fails for the whole room at once. **Do not publish a Lab 6 page promising it works until this is measured.** The tier decision does not close this one, it confirms it: Free is the tier, so the cap applies, and the AuraDB Free index and constraint question in `expand-v3.md` section 5 stays the single remaining no-go.
 
   **The check script does not exist.** Both this document and the plan of record used to describe `scratchpad/aura_free_index_check.py` as written, with "a read-only `check` and an apply-then-roll-back `probe`." There is no `scratchpad/` directory in the repository and nothing in git history ever created one. It was written into an ephemeral session scratchpad and is gone. **Correct both documents and treat the script as unwritten.**
 
@@ -650,6 +649,8 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 **Step 0, and it starts before everything:** the AuraDB Free index-cap check, which is **write the script, then run it**. The version both this document and the plan of record described as existing did not. Give it a durable home under `workshop-setup/verify/`. Writing it blocks on nothing; running it blocks on Ryan provisioning a fresh Free instance. It is the only item here that can invalidate work already written.
 
 > **STATUS: script written, run still owed.** `workshop-setup/verify/src/verify_aura_caps/main.py`, registered as `verify-aura-caps` in that package's `pyproject.toml`. Two commands as decided: read-only `check` and apply-then-roll-back `probe`. Ruff clean. `check` was run against the instructor instance `f024ea61` and reports 59 indexes and 24 constraints, so Lab 6 would project to 92 and 36 there. **That is not the answer**, because `f024ea61` is not Free. The run that closes this needs a fresh Free instance.
+>
+> **SUPERSEDED 2026-08-09: Ryan cancelled the tier question.** The run is no longer owed. See the STATUS under "Blocks step 8 alone" at the end of this document for what did run and why it settles nothing about Free. The script itself stays and is still worth having.
 >
 > **It already earned its keep once.** `home_database()` reads the home database out of `SHOW DATABASES` rather than assuming `neo4j`, and on `f024ea61` the answer is `f024ea61`. A version that assumed `neo4j` would have failed on the first real query.
 >
@@ -785,6 +786,22 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 > **What Lab 6 still owes, once the step 0 probe passes:** `lab6.adoc`, its nav entry, the xref at the end of `lab5.adoc` (plain text today), the `Lab 6` row in the `workshop-overview.adoc` lab table (plain text today), and the README shrink. Nothing else in step 8 is waiting on it.
 >
 > **Verified.** `npm run build` in `site/`, clean, three times across the step. `lab5.html` and `appendix-a.html` both publish, and the README's deep link was checked against the generated anchor id rather than guessed.
+
+> **STATUS: Lab 6 done, 2026-08-09. Step 8 is closed and so is the work order's last open item.** The gate that held this back was cancelled by Ryan, not satisfied.
+>
+> **`lab6.adoc` written**, 184 lines, concepts only, modeled on `lab5.adoc`. It carries the two nodes added around an unchanged supervisor, the adoption argument and what "the same node" costs, the headline query, the three measured recall defects, the three memory layers, the latency cost, the single redeployed endpoint, why the wheel is a pinned fork rather than a PyPI version, and where memory belongs. 2026 taxonomy, with the 2025 conflict named in one sentence.
+>
+> **The other four.** `site/nav.adoc` gains Lab 6 inside `* Labs`, leaving the Slides groups alone. `lab5.adoc`'s closing line and the `workshop-overview.adoc` lab table row are both xrefs now instead of plain text. `Lab_6_Agent_Memory/README.md` cut from 383 lines to 157 and changed job to module documentation, matching Lab 5's README shape, with everything conceptual moved into `lab6.adoc` rather than deleted.
+>
+> **The lab table needed no new number.** The row already said 75 min, which matches notebook 01's own budget table and the root `README.md`.
+>
+> **One Antora trap worth recording.** `{recalled}` is substituted as an attribute reference **even inside backticks**, so it built as `skipping reference to missing attribute: recalled`. Escaped as `\{recalled}`. Any prose quoting a brace-delimited placeholder hits this.
+>
+> **Dating the measured numbers.** `worklog/lab6-memory-defects.md` records run ids but no date for the round it reports, so the page says "Recorded 2026-08-08 to 2026-08-09" with the run id rather than picking a day. Tighten it if the day is known.
+>
+> **Verified.** `npm run build` in `site/` warning-free, `lab6.html` publishes. Every xref checked in the generated HTML rather than assumed: `lab5.html`, `workshop-overview.html` and the nav all resolve `href="lab6.html"`, `lab6.html` resolves back to both, and the README's deep link target exists as a real heading id.
+>
+> **The unconfirmed-index-count caveat was cut, on Ryan's call.** `lab6.adoc`'s "What the graph itself costs" block had a closing paragraph saying the combined Lab 3 plus Lab 6 index count was unconfirmed against a known Free instance. With the tier question cancelled, that hedged a decision already made, on a participant-facing page. The rest of the block stays: the Free caps, and the `UNUSED_MEMORY_SUBSYSTEMS` narrowing, which is worth copying anywhere index quota is finite. Rebuilt and verified warning-free.
 > **STATUS: review pass over steps 1 through 8. Seven defects found and fixed.**
 >
 > A full read of every changed surface: site pages, `nav.adoc`, the slides, the root and per-lab READMEs, the touched notebooks, and the deploy workflow.
@@ -832,8 +849,24 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 >
 > **Verified.** `npm run build:html` emits 24 HTML decks. A link check across the emitted HTML finds 17 local asset references, all resolving, counting CSS `url()` backgrounds as well as `src=` and `href=`, because Marp writes background images as the former and a naive checker misses them. `npm run build` in `site/` is warning-free and produces 24 wrapper pages whose `iframe` targets all resolve.
 >
-> **Left alone.** `fix-site-slides.md:162` still cites `slides/kg-construction/05-building-knowledge-graphs-slides.md`, the pre-split path. This document uses pre-split paths throughout, so repointing one line would make it inconsistent with itself. `slides/docs/` is still excluded from the build and still unconfirmed.
+> **Left alone.** `fix-site-slides.md:162` still cites `slides/kg-construction/05-building-knowledge-graphs-slides.md`, the pre-split path. This document uses pre-split paths throughout, so repointing one line would make it inconsistent with itself. `slides/docs/` has since been confirmed as scratch and deleted; see the STATUS on that below.
 
 **Gates the last step, not the whole plan:** `02_instructor_demos.ipynb` needs its `course.env` entry before the memory deck can rely on slides 5 and 8.
 
 **Blocks step 8 alone:** the AuraDB Free index-cap check from step 0. Do not publish `lab6.adoc` promising the lab works until it passes.
+
+> **STATUS: cancelled by Ryan on 2026-08-09. Step 8 is unblocked.** Index and node counts were trimmed in half, so the Free tier no longer plausibly binds and the Free-versus-Professional question stops mattering. **Nothing gates `lab6.adoc` now.**
+>
+> **The one run that happened, for the record, and it is not the answer.** `verify-aura-caps check` then `probe` against `471c14c2`, the instance behind `workshop-setup/.env.webui`. The instance was empty: 0 nodes, 0 constraints, and only the two default lookup indexes. **PASS.** All 9 constraints, 11 range indexes and 5 vector indexes created one at a time, none failed, all 25 dropped on the way out with the before and after inventories matching. **But `gds.version()` returns `2026.07.0` there, so it is not a Free instance**, and the probe's own docstring says a Professional instance is not evidence. Read it as ruling out a hard no-go, not as granting a go.
+>
+> **`verify-aura-caps` stays.** It is the only thing in the repository that can measure a tier against Lab 6's schema, and the next time somebody trims or grows that schema it answers the question in one command.
+
+> **STATUS: `slides/docs/` confirmed scratch and deleted, 2026-08-09.** The open question this document raised at step 10 is closed, by measurement rather than by opinion.
+>
+> **The three files were duplicates of decks that already publish.** `building-knowledge-graphs.md` was 79% verbatim duplicate of the five KG construction decks; `overview-and-genai-foundations.md` was 74% verbatim duplicate of `platform-overview/01-workshop-over.md` plus the three `genai-foundations` decks. The residual quarter in each was reworded prose, a framing line and an obsolete LLM provider list, not new material. `slides.md` was a 15-line planning outline for the graph-ml narrative arc, whose headings are already realized in `graph-ml/03-graph-enrichment-slides.md`.
+>
+> **They had started to mislead.** `overview-and-genai-foundations.md` still said "Hourly-scale telemetry" after that error was corrected in the published deck. An unbuilt duplicate that nobody sees is a trap for whoever reads it next.
+>
+> **Recoverable** with `git show d7faca2:slides/docs/<file>`.
+>
+> **Six live references removed**, not two. `slides/README.md` had a whole "Participant Reference Docs" section linking two of them, which would have been broken links. `slides/organize.md` carried four entries treating them as kept reference docs; its three inventory rows now record the deletion the way that file already records `overview-databricks-neo4j/SUMMARY.md`. `worklog/docs-audit.md:325` lost its citation. The `docs/` comment in `slides/build-slides.sh` is retired. **Historical STATUS records in this document, at the Aura Agents sweep and the diagram collapse, were left**, because they correctly describe edits made when those files existed.

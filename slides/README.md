@@ -59,15 +59,6 @@ Authorization sync and the semantic layer. One file covering four patterns for a
 
 ---
 
-## Participant Reference Docs
-
-Condensed reference documents combining multiple slide decks into single-page markdown for easy review.
-
-| Document | Covers |
-|----------|--------|
-| [Overview & GenAI Foundations](docs/overview-and-genai-foundations.md) | Workshop overview, digital twins, GenAI limitations, traditional RAG, Context ROT, and the GraphRAG solution |
-| [Building Knowledge Graphs](docs/building-knowledge-graphs.md) | GraphRAG pipeline, schema design, chunking strategies, entity resolution, and vectors/semantic search |
-
 ## Slide Format
 
 All slides use Marp markdown format with pagination, syntax-highlighted code blocks, tables, and two-column layouts. See any slide file for the frontmatter template.

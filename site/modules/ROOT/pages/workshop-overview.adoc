@@ -84,7 +84,7 @@ Lab 4 shows the same routing idea reached a second way, without code. The instru
 | The LangGraph Supervisor Agent, built and deployed
 | 90 min
 
-| Lab 6
+| xref:lab6.adoc[Lab 6]
 | Agent Memory in Neo4j
 | 75 min
 

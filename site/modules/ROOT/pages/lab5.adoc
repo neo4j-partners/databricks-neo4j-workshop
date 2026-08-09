@@ -154,4 +154,4 @@ Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in your workspace, set `GE
 
 `tools.py` and `agent.py` sit next to the notebooks. They are worth opening in an editor rather than a cell, and `Lab_5_LangGraph_Agent/README.md` documents them.
 
-Then continue to Lab 6, which gives this agent memory in the same graph as the fleet.
+Then continue to xref:lab6.adoc[Lab 6], which gives this agent memory in the same graph as the fleet.

@@ -153,7 +153,6 @@ All `.md` slide files under `slides/`. Does not touch images, node_modules, or t
 | `agents/02-power-of-graphrag-slides.md` | No action | Canonical for agents. LLM limitations intro is two slides, fully covered by `genai-foundations/02-genai-and-limitations-slides.md`. No merge needed. |
 | `graph-ml/04-future-graph-enrichment-slides.md` | No action | Canonical for graph ML. Agents content is application-specific to enrichment; not a duplicate of any agents canonical. |
 | `platform-overview/01-databricks-neo4j-integration-slides.md` | No action | Canonical for platform-overview (aircraft lens). Cross-cluster content (semantic layer, JDBC, MCP overview) is complementary to dedicated canonicals, not duplicative. |
-| `docs/overview-and-genai-foundations.md` | No action | Reference doc kept as-is per Phase 2 decision. Different delivery format; content mirrored by Marp files. |
 
 ---
 
@@ -306,9 +305,9 @@ Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` an
 | `graph-ml/03-graph-enrichment-slides.md` | Marp | Workshop | graph ML and enrichment | deep dive | portfolio | GDS algorithms, feature engineering, MLflow lift comparison, bidirectional data loop, incremental sync with Change Data Feed. |
 | `graph-ml/04-future-graph-enrichment-slides.md` | Marp | Workshop | graph ML and enrichment * | deep dive | portfolio | * Also covers agents (agentic enrichment loop, multi-agent supervisor for gap detection). Overlaps with 03 on incremental sync. |
 | `background/governance/auth-sync-slides.md` | Marp | Background | governance and integration | deep dive | generic | Unique content: four authorization sync patterns between Unity Catalog and Neo4j, plus the semantic layer data model, plus the JDBC federation status update it opens with. No substantial overlap with other files. Partner and internal briefing rather than a teaching deck, which is why it sits on the Background track. |
-| `docs/slides.md` | Outline | n/a | graph ML and enrichment | n/a | portfolio | Narrative arc and section flow notes for the graph enrichment decks now in `graph-ml/`. Not a deliverable slide file. |
-| `docs/building-knowledge-graphs.md` | Reference | n/a | knowledge graph construction | practitioner | aircraft | Participant reference doc combining the five KG construction decks, now split across `background/kg-construction/05`, `06`, `08` and `kg-construction/07`, `09`. Content is covered by those five Marp files; this serves a different delivery format. |
-| `docs/overview-and-genai-foundations.md` | Reference | n/a | GenAI foundations * | overview / practitioner | aircraft | * Also covers platform overview (workshop overview, digital twin). Participant reference doc combining `platform-overview/01-workshop-over.md` and `genai-foundations/02`, `03`, `04`. Serves a different delivery format than those four Marp files. |
+| `docs/slides.md` | Outline | n/a | graph ML and enrichment | n/a | portfolio | Deleted 2026-08-09, no current path. Was a 15-line narrative arc for the graph enrichment decks, already realized in `graph-ml/03-graph-enrichment-slides.md`. Never a deliverable slide file. |
+| `docs/building-knowledge-graphs.md` | Reference | n/a | knowledge graph construction | practitioner | aircraft | Deleted 2026-08-09, no current path. Was 79% verbatim duplicate of the five KG construction decks now at `background/kg-construction/05`, `06`, `08` and `kg-construction/07`, `09`. No unique content. |
+| `docs/overview-and-genai-foundations.md` | Reference | n/a | GenAI foundations * | overview / practitioner | aircraft | Deleted 2026-08-09, no current path. Was 74% verbatim duplicate of `platform-overview/01-workshop-over.md` and `genai-foundations/02`, `03`, `04`, and had drifted: it still carried the "Hourly-scale" telemetry error after the deck was corrected. |
 | `platform-overview/01-databricks-neo4j-integration-slides.md` | Marp | Workshop | platform overview * | overview | aircraft | * Also covers agents (MCP, multi-agent supervisor) and governance (semantic layer, JDBC federation). Most complete single-file overview of the full partnership. |
 | `overview-databricks-neo4j/SUMMARY.md` | Reference | n/a | platform overview | overview | aircraft | Deleted in Phase 4, no current path. Was a condensed plain-text summary of `platform-overview/01-databricks-neo4j-integration-slides.md`. No unique content. |
 | `platform-overview/01-neo4j-aura-overview-slides.md` | Marp | Workshop | platform overview | overview | generic | Neo4j Aura managed cloud: what Aura is, why a graph database, the value of Aura for GenAI, graph analytics in Explore, and the three tools (Query Workspace, Explore, Dashboards). Description corrected: the deck carries no Aura Agents content. No substantial overlap with other files. |
@@ -336,7 +335,6 @@ Phase 1 complete. Every `.md` file under `slides/` (excluding `node_modules/` an
 - `agents/02-power-of-graphrag-slides.md`: agents and multi-agent systems + GenAI foundations
 - `graph-ml/04-future-graph-enrichment-slides.md`: graph ML and enrichment + agents and multi-agent systems
 - `platform-overview/01-databricks-neo4j-integration-slides.md`: platform overview + agents and multi-agent systems + governance and integration
-- `docs/overview-and-genai-foundations.md`: GenAI foundations + platform overview
 
 ---
 
@@ -401,12 +399,7 @@ slides/
 | `overview-databricks-neo4j/SUMMARY.md` | Condensed plain-text version of `platform-overview/01-databricks-neo4j-integration-slides.md`. No unique content. | Marked for deletion in Phase 3, deleted in Phase 4. No current path. |
 | `databricks-in-depth/slides.md` | Narrative arc planning document, not a deliverable slide deck. No slide content to preserve. | Moved to `docs/slides.md` in Phase 4; not a candidate for a topic folder. |
 
-**Reference docs kept as-is (not moved to topic folders):**
-
-| File | Kept Because |
-|------|-------------|
-| `docs/building-knowledge-graphs.md` | Participant reference format (no Marp). Serves a different delivery need than the five Marp files it mirrors. Content is preserved in those files. |
-| `docs/overview-and-genai-foundations.md` | Same reasoning: reference format for a different delivery context than the four Marp files it mirrors. |
+**Reference docs, deleted 2026-08-09.** `docs/` held three long-form markdown files that were never built and never linked from anywhere except audit records. Measured against the decks, `building-knowledge-graphs.md` was 79% verbatim duplicate of the five KG construction decks and `overview-and-genai-foundations.md` was 74% verbatim duplicate of `platform-overview/01-workshop-over.md` plus the three `genai-foundations` decks. The residual was reworded prose and an obsolete provider list, not new material. `slides.md` was a 15-line planning outline for the graph-ml narrative arc, already realized in `graph-ml/03-graph-enrichment-slides.md`. They had also drifted: `overview-and-genai-foundations.md` still carried the "Hourly-scale" telemetry error after the deck was corrected. Recoverable with `git show d7faca2:slides/docs/<file>`.
 
 ### Gaps Identified in Phase 2
 

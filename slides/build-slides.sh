@@ -27,9 +27,6 @@ OUT="$ATTACH/slides"
 # Workshop decks. One output directory per topic folder.
 WORKSHOP_TOPICS="platform-overview genai-foundations retrieval-patterns agents kg-construction graph-ml"
 
-# docs/ is deliberately absent. It holds three long-form markdown files that are
-# not decks, and building them would publish scratch material.
-
 build_decks() {
   for topic in $WORKSHOP_TOPICS; do
     echo "  building $topic"
