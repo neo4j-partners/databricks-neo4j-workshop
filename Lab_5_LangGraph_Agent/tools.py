@@ -283,6 +283,15 @@ Facts that change the query you write:
     traversal returns the same limit once per sensor and fills the result with
     identical rows even though the nodes behind them are unique. Where a
     traversal is unavoidable, RETURN DISTINCT.
+  - A question naming an aircraft does not mean the arrow leaves the aircraft.
+    AFFECTS_AIRCRAFT and AFFECTS_SYSTEM both run FROM the MaintenanceEvent TO
+    the thing affected, so the maintenance events for a tail number are reached
+    by matching (:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(:Aircraft
+    {tail_number: ...}). Writing
+    (:Aircraft {tail_number: 'N10004'})-[:AFFECTS_AIRCRAFT]->(:MaintenanceEvent)
+    points the arrow away from the named noun and matches nothing, returning
+    zero rows with no error, even though N10004 has 23 maintenance events and
+    more of them than any other aircraft in the fleet.
   - minValue and maxValue are both FLOAT. Compare them directly.
   - minValue is null on ten of the twenty, because a vibration or speed limit
     is a ceiling with no floor. Check ol.minValue IS NOT NULL before comparing
