@@ -6,7 +6,9 @@ Supersedes the status and planning halves of `expand.md`. The reasoning, the mea
 
 **Closed this pass, both verified rather than inferred.** `genie_node` authorization is fixed: the endpoint holds three READY versions, and a fleet-average EGT question routed to `genie_node` and returned **866.65373875 C**, matching the rebuilt CSV average of 866.7 with no authorization error anywhere in the response. Defect F is fixed and measured at 0 invented, 0 loose and 0 zero-row across 10 after-runs. The gold-table Genie edit is applied. Before that: the Lab 6 `CALL {}` blocker is fixed, the resource list moved into one shared `build_resources` at `agent.py:147` and grew from four entries to twelve, and Lab 6 now registers into the same UC model Lab 5 created rather than logging an unregistered run. The pass before that landed `b82ca4b` and `5fb3097`, closing 9.1; rebuilt the lakehouse gold tables; fixed defect E; and closed 16 of 24 documentation findings.
 
-**The timing is now recorded, and it found something worse than a slow lab.** The per-section table is in section 2 and the total is 3:56 of machine time against a 75 minute budget, so time is not what threatens Lab 6. Running it end to end surfaced **defect H: Lab 6's central claim did not hold.** Section 9's own scorer printed `0/2 off, 0/2 on`. Memory bought nothing measurable, and on the vibration question the memory-on agent was worse than memory-off. Phase 3 is **not passed**, and the reason is now a defect rather than a missing number.
+**Defects H, H2 and I are closed, and Lab 6's central claim now holds.** Running the lab end to end to time it surfaced three defects in a row, each one only visible after the previous was fixed. Section 9 went `0/2 off, 0/2 on` to `0/2 off, 2/2 on`, on a cleared instance and against a scorer tightened because the old one had already reported a false pass. The full account is `worklog/lab6-memory-defects.md`; section 2 carries the summary and the timing.
+
+**Timing: 4:20 of machine time against a 75 minute budget**, measured on run `241421965631969`, with the job's own `execution_duration` at 266 seconds against 260.4 seconds of stamped cell time. Time is not what threatens Lab 6.
 
 **One more thing a reader should not misread.** `Lab_5_LangGraph_Agent/02_deploy_and_evaluate.ipynb` is committed with **no executed cells**, so the deploy path is proven by the job that ran a harness copy of it, not by the file a participant will open. Every line below follows the section 8 rules: three states, evidence named, verified against disk.
 
@@ -76,7 +78,12 @@ Verified against code on disk unless marked otherwise.
 - **LANDED: version 5, deployed 2026-08-08, and it is what the endpoint serves.** `fleet-ops-assistant-ryan-knight-neo4j-com` is READY with four served entities, versions 1, 2, 3 and 5, and **100 percent of traffic on 5**. Versions 1, 2 and 3 sit at zero. Version 5 is the first logged after the table rebuild, so it is the first whose table grants are intact. **Versions 1, 2 and 3 are deliberately left in place** as the rollback path; they cost nothing at zero traffic. The memory-off baseline in `worklog/lab5_memory_off_baseline.json` was captured against version 1 and is not a version 5 measurement.
 - **LANDED: `02_deploy_and_evaluate.ipynb`**, 30 cells, 13 code, committed in `b82ca4b`. Configuration, a pre-log run, resources, log, credentials, deploy, wait, ask, evaluate, and a "when it fails" section. Closes the Lab 5 README gap that the documentation audit flagged.
 
-  **One known flaw ships in it.** Cell 19 ends with `print("Usage:", result["usage"])`, and the endpoint returns an empty usage block, so **every participant sees `Usage: {}`**. The same emptiness is already recorded above as a caveat on the baseline artifact. Here it is worse than a caveat, because the notebook prints it as though it were a result and offers the reader no way to tell an empty block from a broken cell. Either drop the line or replace it with a sentence saying token counts are not returned.
+  **One known flaw ships in it.** Cell 19 ends with `print("Usage:", result["usage"])`, and the endpoint returns an empty usage block, so **every participant sees `Usage: {}`**. The same emptiness is already recorded above as a caveat on the baseline artifact. Here it is worse than a caveat, because the notebook prints it as though it were a result and offers the reader no way to tell an empty block from a broken cell. Either drop the line or replace it with a sentence saying token counts are not returned. **Confirmed on the top-to-bottom run below: cell 19 printed `Usage: {}`.**
+- **MEASURED: notebook 02 ran top to bottom, 13 code cells, zero errors, and the committed file now carries the outputs.** Executed 2026-08-08 against `aws-partner-rk` with the notebook source unmodified. It registered **version 9**, deployed it, and the endpoint was **READY after 9.1 minutes**, against 15.8 for the cold deploy of version 1. Cells were renumbered 1 to 13 after execution, because the harness that supplies `spark` and `dbutils` off Databricks occupies the first slot and is dropped before the file is written. **No credential reached any output:** the four `NEO4J_*` values were checked against the saved notebook by value and none appear, cell 5 prints variable names only, cell 13 prints `{{secrets/...}}` references, and no instance id appears anywhere in the outputs.
+
+  **Routing was 3 of 3 on the per-tool questions and the anchor routed all three tools.** The evaluation scored 6 pairs: **`routing` 1.0 on all six**, `Correctness` yes on five and no on one, `RelevanceToQuery` yes on five and no on one. **The single failure is the anchor, and it fails on defect G**, not on routing. The maintenance-history pair returned "Aircraft N10004 had 23 maintenance events", which is the defect E fix holding through the endpoint.
+
+  **The harness gap worth recording, because it is not a lab defect.** The first attempt died at cell 9 with `RESOURCE_DOES_NOT_EXIST: Could not find experiment with ID None`. A notebook on Databricks has an implicit default experiment, its own path, and cell 9 opens a run against it before cell 15 names one. Off Databricks there is no default. **Any harness running this notebook outside a Databricks notebook has to set an experiment before cell 9.**
 - **LANDED: `pip_requirements` pinned rather than inferred.** Inferred requirements read the cluster, and a cluster carrying the Lab 6 memory wheel yields a requirement with a local version segment that resolves from no index. The container then fails to build about fifteen minutes after anybody stopped watching. Recorded at `Lab_5_LangGraph_Agent/README.md:240-244`.
 
 ### Memory research
@@ -181,33 +188,35 @@ The Track A Lab 5 measurement graph, and the instance the secret scope points at
 
 ### The Lab 6 timing, measured
 
-Run `825975650673796`, read off the run rather than estimated. Machine time only: no reading, no typing, no filling in a Genie space id.
+Run `241421965631969`, read off the run rather than estimated. Machine time only: no reading, no typing, no filling in a Genie space id. The job's own `execution_duration` was 266 seconds against 260.4 seconds of stamped cell time, so the stamps account for the run.
 
 ```
 section                                          seconds     m:ss
 ------------------------------------------------------------------
-Section 1: Install                                  41.3     0:41
-Section 2: Configuration                            20.0     0:20
-Section 3: Connecting the memory client              4.2     0:04
-Section 4: Adopting the fleet graph                  1.4     0:01
-Section 5: A week of shift history                   9.7     0:09
-Section 6: The query that needs both halves          1.2     0:01
+Section 1: Install                                  40.5     0:40
+Section 2: Configuration                            18.5     0:18
+Section 3: Connecting the memory client              4.3     0:04
+Section 4: Adopting the fleet graph                  1.2     0:01
+Section 5: A week of shift history                  10.1     0:10
+Section 6: The query that needs both halves          1.0     0:01
 Section 7: Recall and remember                       2.0     0:02
-Section 8: The thing Lab 5 could not do             36.8     0:36
-Section 9: What did memory actually buy?           111.4     1:51
-Section 10: Redeploying the endpoint                 7.8     0:07
+Section 8: The thing Lab 5 could not do             38.5     0:38
+Section 9: What did memory actually buy?           136.9     2:16
+Section 10: Redeploying the endpoint                 7.1     0:07
 Section 11: What you built, and what to be ca        0.2     0:00
 ------------------------------------------------------------------
-TOTAL                                              236.1     3:56
+TOTAL                                              260.4     4:20
 
-Budget is 75:00. Headroom: 4264 s
+Budget is 75:00. Headroom: 4240 s
 ```
 
-**What it says.** Cell time is not the constraint and no demo needs cutting for time. One cell dominates: Section 9's memory-off versus memory-on comparison at 1:51, because it runs four full agent invocations. Everything else in the lab is under 45 seconds. The remaining 71 minutes are reading, typing and the instructor talking, which this harness cannot measure and which a dry run with a human has to.
+**What it says.** Cell time is not the constraint and no demo needs cutting for time. One cell dominates: Section 9's memory-off versus memory-on comparison at 2:16, because it runs four full agent invocations twice over. Everything else in the lab is under 45 seconds. The remaining 70 minutes are reading, typing and the instructor talking, which this harness cannot measure and which a dry run with a human has to.
+
+**Reading this session's own history in `recall_node` cost nothing measurable.** Section 7 was 2.0 seconds here against 2.1 before the change, and Section 8 fell from 44.9 to 38.5, which is model variance rather than a saving.
 
 ### Defect H, Lab 6's central claim did not hold
 
-**State: OPEN, one fix attempted and measured as not sufficient.** Section 9's own scorer, verbatim from run `825975650673796`:
+**State: CLOSED.** Section 9's own scorer, verbatim from run `825975650673796`, is where it started:
 
 ```
 Referring questions resolved: 0/2 off, 0/2 on
@@ -239,7 +248,34 @@ NEXT: genie_node
 
 **Defect H2: memory recalls the question being asked.** `remember_node` writes the question as well as the answer, so every run leaves a verbatim copy of every question in the graph. `recall_node` then runs a vector search over message content using that same question text, and an exact copy of a string is the nearest neighbour any embedding can return. Three prior runs put three copies of this question into `f024ea61`, and they took all three recall slots. The seeded N10011 shift history never had a chance. The supervisor did exactly the right thing with what it was given: memory said nothing about an aircraft, so it repeated the question unchanged, which is what the prompt asks for.
 
-**Two consequences worth separating.** The self-recall is real on any instance, because `remember` runs on the first question of every session. The three-identical-copies form is an artifact of re-running the same notebook against the same instance, which a participant does not do on their first pass. **The scale of the defect on a clean instance is unmeasured**, and `f024ea61`'s memory subgraph now has to be cleared before any measurement of it means anything.
+**Two consequences worth separating.** The self-recall is real on any instance, because `remember` runs on the first question of every session. The three-identical-copies form is an artifact of re-running the same notebook against the same instance, which a participant does not do on their first pass. `f024ea61`'s memory subgraph is now cleared before every measurement, `User`, `Conversation` and `Message` only, with the `Aircraft` and `Chunk` counts printed afterwards to prove the fleet graph and the Lab 3 chunks survived.
+
+**The H2 fix, chosen by Ryan.** `_norm` plus one filter in `recall_node`: drop any recalled message whose content matches the question being asked. Run `394080770155682`, on a cleared instance, scored `0/2 off, 2/2 on`, and the resolved question printed for the first time.
+
+### Defect I, the reference resolved to the wrong aircraft
+
+**State: CLOSED, and it was caught by reading the answers rather than the score.** That `2/2` was not real. Pair 2 asks "Which system was that on?" after "Tell me about the EGT exceedance on N10004" and expects N10004, and the score said resolved while the printed answer began "The systems on N10011 are ...". The lab prints the first 600 characters of an answer and scored with `expected in answer`, so an answer confidently about the wrong aircraft passed because N10004 appeared past the cut.
+
+A harness cell was added to print each answer in full with the character offset of the expected tail number. Run `445728862637519`, on a cleared instance:
+
+```
+Q:         Which system was that on?
+expected:  N10004
+answer len 328   expected found at char -1
+----------------------------------------------------------------------
+The system on N10011 was the "CFM56-7B #1" and "CFM56-7B #2", both of type
+"Engine".
+
+Referring questions resolved: 0/2 off, 1/2 on
+```
+
+**Cause.** `recall_node` was a pure semantic search across every session and every technician. "Which system was that on?" is short and generic, so its nearest neighbours are whatever the busiest aircraft in memory happens to be. The N10004 setup question, asked five seconds earlier in the same session, lost to a week of seeded N10011 shift notes. Semantic search finds what is related. It cannot know what "that" means, because that is a fact about time, not meaning.
+
+**The fix, two parts, both chosen by Ryan.** `recall_node` reads the conversation's own recent turns first through `get_conversation(session_id, limit=RECENT_LIMIT)` and puts the search behind them, deduped, with the H2 filter applied to both. Section 7 calls the node by hand with a question and nothing else, so it reads `state.get("session_id")` and skips the history when absent rather than raising `KeyError` mid-lab. And the scorer was tightened, because the old one had already reported a false pass: `resolved()` now requires the expected tail number to appear and no other one to appear.
+
+**Measured, run `241421965631969`, cleared instance, stricter scorer: `0/2 off, 2/2 on`.** Pair 2's answer names N10004 at character 15 and no other aircraft, and the engine names are a second independent check, because N10004 flies a CF34-10E and N10011 a CFM56-7B.
+
+Full account, including what each round cost and the two Databricks quirks that shaped the harness, in `worklog/lab6-memory-defects.md`.
 
 ---
 
@@ -247,7 +283,7 @@ NEXT: genie_node
 
 ### Blocking the plan
 
-- **Confirm AuraDB Free tolerates the Lab 3 plus Lab 6 index and constraint total on one instance.** Lab 6 installs 33 indexes and 12 constraints on top of whatever Lab 3 already created. **The number that matters is the combined total, not Lab 6 alone.** `f024ea61` carries 59 indexes today and that is not evidence, because `f024ea61` is a multi-database instance and not Free. Closing this needs a fresh Free instance. **This is the one item that can still flip Lab 6 to no-go.**
+- **Confirm AuraDB Free tolerates the Lab 3 plus Lab 6 index and constraint total on one instance.** Lab 6 installs 33 indexes and 12 constraints on top of whatever Lab 3 already created. **The number that matters is the combined total, not Lab 6 alone.** That total is now measured: `1a2c98cc`, carrying Lab 3 and Lab 6 together, holds **59 indexes and 24 constraints**, at 177,382 nodes and 207,605 relationships. What is still missing is the tier. `dbms.components()` reports `enterprise` on every Aura instance regardless of tier, so neither that probe nor `f024ea61`'s 59 indexes is evidence about Free. Closing this needs the tier read off the Aura console, or a fresh Free instance. **This is the one item that can still flip Lab 6 to no-go.**
 - **Check the Model Serving endpoint quota** against the largest expected class size. Deployment is required, so this is a hard prerequisite.
 - **Confirm `populate_aircraft_db` installs and runs from a serverless notebook cell**, or pick the job or vendored fallback. Admin path only now, so it no longer blocks any lab.
 
@@ -264,6 +300,8 @@ NEXT: genie_node
 
 - ~~**Redeploy with `DatabricksSQLWarehouse` and the gold `DatabricksTable` entries declared, then put one Genie question through the endpoint.**~~ **DONE, Phase 2's completion criterion met.** The declaration is written and shared, `build_resources` at `agent.py:147`, twelve entries: one `DatabricksGenieSpace`, one `DatabricksSQLWarehouse`, the eight gold `DatabricksTable` entries, and two `DatabricksServingEndpoint` entries for the supervisor and embedding models. The endpoint now holds three READY versions with `config_update: NOT_UPDATING`. Verified by asking it the fleet-average EGT question: it routed to `genie_node`, wrote SQL joining `sensor_readings` to `sensors` on `type = 'EGT'`, and returned **866.65373875 C** against a rebuilt CSV average of 866.7. The string "not authorized" appears nowhere in the response. Section 5 question 2 closed.
 - **New defect G, the tool is handed the question rather than the finding.** The anchor question in notebook 02 routed all three tools and still reported "The maintenance history of this aircraft is not available", attributed to `cypher_node`. That is wrong: the gold tables hold 18 maintenance events for N10000, 23 for N10004 and 21 for N10011, read the same day. The anchor names no aircraft. `genie_node` found N10000 first, then `cypher_node` received the original question text, because the supervisor's only output is a route. It had nothing to put in a `WHERE` clause, so it refused. **This is the same shape as defect H in Lab 6**, with a finding in place of a memory, and the Lab 6 `RESOLVED:` fix would close both. Recorded in `worklog/lab5-test-results.md` round 5 and left unfixed, because it changes Lab 5. Moderate severity: single-tool questions are unaffected and those are what the labs demonstrate.
+
+  **It now has a score rather than an anecdote, and it reproduced on the top-to-bottom run.** The anchor is the only one of six evaluation pairs to fail, and it fails both `Correctness` and `RelevanceToQuery` while scoring `routing` 1.0. Its answer says in as many words that `cypher_node` could not answer and that the maintenance history "is not explicitly stated", on a graph holding 23 events for N10004 alone. **Routing is not the problem and the scorecard says so.** That raises the stakes on leaving it: the notebook a participant runs now ends on a visible 5 of 6, with the failure on the question the lab builds toward.
 - **Re-capture the memory-off baseline on that redeploy.** The existing one is dated on four axes: a superseded `tools.py`, a pre-rebuild lakehouse, no Genie answer at all, and a `cypher_maintenance_history` answer taken before defect E was fixed. See 9.4.
 - **Deploy a second endpoint as a different user and confirm both stay healthy.** Untouched, and it depends on the quota check.
 - ~~**MLflow evaluation against the fixed question set**, run against the deployed endpoint.~~ **DONE and scored.** See section 2, Lab 5 deployment, for the numbers. What is left is a judgement rather than a run: the anchor is the only failing pair and it fails on defect G, so **decide whether the shipped notebook ends on a scoreboard reading 5 of 6.**
@@ -275,10 +313,10 @@ NEXT: genie_node
 
 **The files are written. What is left is execution.** The build items that closed moved up to section 2. Everything below is a measurement Phase 3 cannot complete without, plus one thing outside the lab.
 
-- ~~Run `01_agent_memory.ipynb` end to end against a live instance.~~ **DONE. SUCCESS** on job `38420397665184`, runs `884966419450137` and `207669517090391`. Two earlier attempts stopped early, one on a stale workspace module and one on the `CALL {}` guard, and both causes are fixed. **The write target is settled** and the run cost `f024ea61`'s status as a clean Lab 5 measurement graph. The memory schema has already landed there, so that cost is paid rather than pending. **The timing came back at 3:56 of machine time against a 75 minute budget, so timing is not the problem.** The run surfaced defect H instead: Lab 6's central claim did not hold, scored `0/2 off, 0/2 on`. Phase 3 is blocked by that, not by a missing number.
+- ~~Run `01_agent_memory.ipynb` end to end against a live instance.~~ **DONE. SUCCESS** on job `38420397665184`, most recently run `241421965631969`. Two early attempts stopped short, one on a stale workspace module and one on the `CALL {}` guard, and both causes are fixed. **The write target is settled** and the run cost `f024ea61`'s status as a clean Lab 5 measurement graph. The memory schema has already landed there, so that cost is paid rather than pending. **Timing came back at 4:20 of machine time against a 75 minute budget, so timing is not the problem.** The runs surfaced defects H, H2 and I instead, all three now closed, with Section 9 scoring `0/2 off, 2/2 on`.
 - ~~Decide which Aura instance the test writes to.~~ **Decided: option B, `f024ea61`, as the secret scope already points.** Recorded in section 7. The consequence is that adoption puts an `:Entity` label and a `type` property on all 36 `Aircraft` permanently, so any Lab 5 measurement taken after it names the memory schema as part of the graph it measured.
-- ~~**Time each hands-on demo individually against its share of 75 minutes.**~~ **DONE and recorded.** The per-section table is in section 2. Total 3:56 of machine time, largest section 1:51. No demo needs cutting for time. What is still owed is a dry run with a human, because reading and typing are the other 71 minutes and no harness can measure them.
-- **Close defect H, which is now the thing blocking Phase 3.** Section 2 carries the measurement, the cause and the one fix already tried. Until Section 9 scores above `0/2 on`, Lab 6 teaches a claim its own scorer contradicts, and that is worse than a lab that runs slow. **This is the highest-priority open item in the plan.**
+- ~~**Time each hands-on demo individually against its share of 75 minutes.**~~ **DONE and recorded.** The per-section table is in section 2. Total 4:20 of machine time, largest section 2:16. No demo needs cutting for time. What is still owed is a dry run with a human, because reading and typing are the other 70 minutes and no harness can measure them.
+- ~~**Close defect H, which is now the thing blocking Phase 3.**~~ **DONE, and it took three fixes rather than one.** H was the supervisor never passing memory to the tools; H2 was recall returning the question being asked; I was recall preferring a semantically similar message from another session over this session's previous turn. Section 9 now scores **`0/2 off, 2/2 on`** on a cleared instance against a scorer tightened because the old one reported a false pass. Run `241421965631969`. Section 2 carries all three, `worklog/lab6-memory-defects.md` carries the full account.
 - **Test the `extraction_mode="explicit"` batch path.** The spike measured only singular `add_message`; the seed helper uses `add_messages`. Still unmeasured.
 - **Verify the two Foundation Model endpoints from this workspace.** `databricks-bge-large-en` returning 1024-dimension vectors, and `databricks-meta-llama-3-3-70b-instruct` answering. Written into three probe runs, never reached a successful execution.
 - **Memory off versus on evaluation harness.** **No longer blocked on a missing baseline. Blocked on a usable one.** `worklog/lab5_memory_off_baseline.json` exists and its routing half is sound, but its Genie half is empty, its `tools.py` is superseded and its lakehouse numbers are pre-rebuild. Either re-capture on the Phase 2 redeploy, or compare routing only and say so. See 9.4.
@@ -368,11 +406,11 @@ Fifteen, numbered. Each says what the decision is, what the evidence is, and wha
 
 ### Holding up delivery
 
-**The order below is importance, not number.** Question 15 asks whether a lab teaches something true and question 6 asks whether that lab can run at all, so those two outrank the four scoping decisions under them.
+**The order below is importance, not number.** Question 6 asks whether Lab 6 can run at all, so it outranks the scoping decisions under it.
 
-15. **Defect H: Lab 6's central claim did not hold, and it is the largest open item in the project.** Section 9's own scorer printed `0/2 off, 0/2 on` on the end-to-end run. Memory bought nothing measurable, and on the vibration question the memory-on agent was **worse** than memory-off. Timing is fine, 3:56 of machine time against a 75 minute budget, so **Phase 3 is blocked by a defect rather than by a slow lab**, which is a harder problem than the one anybody was expecting to solve. Every other open question here is a formatting or scoping decision. This one asks whether Lab 6 teaches something true. **The decision is not "fix it or ship it".** It is which of three: fix the memory retrieval so the claim holds, change the claim Lab 6 makes so it matches what memory actually does here, or cut Lab 6 from the delivered course and keep it as instructor material. Detail in section 2 under "Defect H". Held by whoever measured it; not independently verified from the main session.
+15. ~~**Defect H: Lab 6's central claim did not hold, and it is the largest open item in the project.**~~ **ANSWERED by fixing it.** The three-way decision, fix the retrieval or change the claim or cut the lab, resolved to the first: Section 9 scores `0/2 off, 2/2 on` on a cleared instance with a scorer that no longer passes an answer about the wrong aircraft. It took three fixes, H, H2 and I, each visible only once the previous one landed. Section 2 and `worklog/lab6-memory-defects.md` carry the detail. **What is still owed is an independent look.** Every measurement here was taken by the session that wrote the fixes, on one instance, against one Genie space, and the three scores that matter are two-question samples.
 
-6. **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of whatever Lab 3 already created. **The number that matters is Lab 3 plus Lab 6 on one instance, not Lab 6 alone.** If Free caps below the combined total, **Lab 6 fails for every participant simultaneously**. Closing this empirically needs a fresh Free instance, which is Ryan's to provision. Blocks Phase 3 entirely, and it is the one remaining no-go.
+6. **AuraDB Free index and constraint caps.** Lab 6 installs 33 indexes and 12 constraints on top of whatever Lab 3 already created. **The number that matters is Lab 3 plus Lab 6 on one instance, not Lab 6 alone, and it is now measured at 59 indexes and 24 constraints** on `1a2c98cc`, which also carries 177,382 nodes and 207,605 relationships. What that measurement cannot tell you is the tier, because `dbms.components()` says `enterprise` on every Aura instance. So the question is now narrow and cheap: **read `1a2c98cc`'s tier off the Aura console.** If it is Free, this closes. If Free caps below 59 or 24, **Lab 6 fails for every participant simultaneously**. Blocks Phase 3 entirely, and it is the one remaining no-go.
 
 9. **The Antora site is stale.** `site/nav.adoc` stops at Lab 4 and the site carries pre-regeneration numbers, 345,600 readings / 160 sensors / 80 systems / 20 aircraft, against the actual **155,520 / 288 / 144 / 36**. It is linked from line 1 of the root `README.md` and published on every push to `main`. **Regenerate it, or drop the link on README line 1?** Nothing else in Phase 5 can be scoped until this is answered.
 

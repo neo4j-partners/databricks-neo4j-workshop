@@ -46,7 +46,7 @@ the import resolves on its own.
                        v
               +------------------+
               |    supervisor    |<---------+
-              | Llama 3.3 70B    |          |
+              | Claude Sonnet 5  |          |
               +------------------+          |
                        |                    |
         +--------------+--------------+     |

@@ -42,9 +42,9 @@ from mlflow.types.responses import (
 )
 
 from tools import (
-    EMBEDDING_MODEL,
+    EMBEDDING_ENDPOINT,
+    LLM_ENDPOINT,
     MAX_TOOL_CALLS,
-    SUPERVISOR_MODEL,
     TOOL_NAMES,
     AgentState,
     build_cypher_node,
@@ -120,8 +120,8 @@ ENV_NEO4J_DATABASE = "NEO4J_DATABASE"
 DEFAULT_CONFIG: dict[str, Any] = {
     "genie_space_id": "",
     "neo4j_database": "",
-    "supervisor_model": SUPERVISOR_MODEL,
-    "embedding_model": EMBEDDING_MODEL,
+    "llm_endpoint": LLM_ENDPOINT,
+    "embedding_endpoint": EMBEDDING_ENDPOINT,
     "top_k": 3,
     "max_tool_calls": MAX_TOOL_CALLS,
 }
@@ -176,8 +176,8 @@ def build_resources(genie_space_id: str, warehouse_id: str) -> list[Any]:
             DatabricksTable(table_name=f"{GOLD_SCHEMA}.{table}")
             for table in GOLD_TABLES
         ],
-        DatabricksServingEndpoint(endpoint_name=SUPERVISOR_MODEL),
-        DatabricksServingEndpoint(endpoint_name=EMBEDDING_MODEL),
+        DatabricksServingEndpoint(endpoint_name=LLM_ENDPOINT),
+        DatabricksServingEndpoint(endpoint_name=EMBEDDING_ENDPOINT),
     ]
 
 
@@ -406,8 +406,8 @@ def build_runtime(config: Mapping[str, Any]) -> AgentRuntime:
         config.get("neo4j_database") or os.environ.get(ENV_NEO4J_DATABASE, ""),
     )
 
-    llm = get_llm(config.get("supervisor_model", SUPERVISOR_MODEL))
-    embedder = get_embedder(config.get("embedding_model", EMBEDDING_MODEL))
+    llm = get_llm(config.get("llm_endpoint", LLM_ENDPOINT))
+    embedder = get_embedder(config.get("embedding_endpoint", EMBEDDING_ENDPOINT))
 
     genie_node = build_genie_node(genie_space_id, WorkspaceClient())
     cypher_node = build_cypher_node(driver, llm, database=database)

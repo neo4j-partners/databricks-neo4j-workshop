@@ -6,6 +6,6 @@
     "build:assets": "mkdir -p ../site/modules/ROOT/attachments/images && cp ../images/dual-database-architecture.svg ../site/modules/ROOT/attachments/images/ && cp databricks-in-depth/fraud-ring-dual-architecture.svg databricks-in-depth/intelligence-platform-flow.svg ../site/modules/ROOT/attachments/slides/databricks-in-depth/"
   },
   "dependencies": {
-    "@marp-team/marp-cli": "^4.2.3"
+    "@marp-team/marp-cli": "^4.5.0"
   }
 }

@@ -60,7 +60,7 @@
 
 * **Authorization Sync**: Patterns for aligning access privileges between Unity Catalog and Neo4j when both systems hold overlapping data. Four approaches: shared identity provider, shared IdP plus a semantic layer, UC as source of truth pushing to Neo4j, and Neo4j as source of truth pushing to UC. Covered in: `databricks-in-depth/auth-sync-slides.md`
 
-* **Aircraft Digital Twin**: The workshop's running use case. A fleet of 20 aircraft modeled in both Neo4j and Databricks, with topology and maintenance in Neo4j and time-series sensor telemetry in Databricks. Illustrates the dual-database pattern with real query examples. Covered in: `overview-knowledge-graph/01-workshop-over.md`, `overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md`
+* **Aircraft Digital Twin**: The workshop's running use case. A multi-model aircraft fleet modeled in both Neo4j and Databricks, with topology and maintenance in Neo4j and time-series sensor telemetry in Databricks. Illustrates the dual-database pattern with real query examples. Covered in: `overview-knowledge-graph/01-workshop-over.md`, `overview-databricks-neo4j/01-databricks-neo4j-integration-slides.md`
 
 * **Financial Fraud Detection**: The secondary running use case in the deeper technical decks. Money laundering through circular account transfers illustrates why graph traversal outperforms recursive SQL for multi-hop connection queries. Covered in: `databricks-in-depth/01-intro-databricks-neo4j-slides.md`, `databricks-in-depth/auth-sync-slides.md`
 

@@ -10,7 +10,7 @@ TIP: Ready to start? Open `Lab_3_Semantic_Search/01_data_and_embeddings.ipynb` i
 * **SimpleKGPipeline** chunks the maintenance manual, extracts entities, generates embeddings, and stores everything in Neo4j
 * **GraphRAG** adds graph traversal after vector search: chunks anchor the search, then Cypher gathers connected entities and relationships
 * **VectorRetriever** vs **VectorCypherRetriever**: pure text retrieval vs graph-enriched context
-* **Databricks Foundation Model APIs** provide hosted embedding and LLM models (BGE-large, Llama 3.3)
+* **Databricks Foundation Model APIs** provide hosted embedding and LLM models (BGE-large, Claude Sonnet 5)
 
 == Embeddings and Vector Search
 
@@ -94,13 +94,13 @@ This lab uses Databricks-hosted embedding and LLM models, pre-deployed and acces
 | Embedding (1024-dim)
 | 8192 token context, for longer documents
 
+| `databricks-claude-sonnet-5`
+| LLM
+| Claude Sonnet 5 (default)
+
 | `databricks-meta-llama-3-3-70b-instruct`
 | LLM
-| Llama 3.3 70B (default)
-
-| `databricks-llama-4-maverick`
-| LLM
-| Llama 4 Maverick
+| Llama 3.3 70B
 |===
 
 == Sample Questions

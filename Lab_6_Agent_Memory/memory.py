@@ -106,9 +106,9 @@ def ensure_labs_on_path() -> tuple[Path, Path]:
 ensure_labs_on_path()
 
 from data_utils import (  # noqa: E402
-    DEFAULT_EMBEDDING_MODEL,
-    DEFAULT_LLM_MODEL,
     DEFAULT_NEO4J_DATABASE,
+    EMBEDDING_ENDPOINT,
+    LLM_ENDPOINT,
     read_neo4j_secrets,
     secret_scope_name,
 )
@@ -122,16 +122,16 @@ __all__ = [
     "ADOPT_NAME_PROPERTY",
     "DESTRUCTIVE_ADOPTION_LABELS",
     "EMBEDDING_DIMENSIONS",
-    "EMBEDDING_MODEL",
+    "EMBEDDING_ENDPOINT",
     "ENV_CREDENTIAL_NAMES",
     "ENV_DATABASE_NAME",
     "FLEET_ONLY_QUERY",
     "HEADLINE_QUERY",
     "HTTPX_REQUIREMENT",
     "INSTALL_COMMAND",
+    "LLM_ENDPOINT",
     "MEMORY_ONLY_QUERY",
     "MEMORY_SUPERVISOR_PROMPT",
-    "MEMORY_LLM_MODEL",
     "RECALL_LIMIT",
     "SEED_MESSAGES",
     "TAIL_NUMBER_RE",
@@ -192,10 +192,10 @@ INSTALL_COMMAND = f"%pip install {WHEEL_PATH} {HTTPX_REQUIREMENT}"
 # Model endpoints
 # =============================================================================
 
-# Aliases onto the two endpoints Lab 3 and Lab 5 already use, so Lab 6 does not
-# introduce a third place the endpoint names are written.
-EMBEDDING_MODEL = DEFAULT_EMBEDDING_MODEL
-MEMORY_LLM_MODEL = DEFAULT_LLM_MODEL
+# LLM_ENDPOINT and EMBEDDING_ENDPOINT are imported from data_utils above and
+# re-exported here under the same names. Lab 6 runs the memory extractor and the
+# supervisor on the same two endpoints Labs 3 and 5 use, and adds no third place
+# either string is written.
 
 # databricks-bge-large-en returns 1024 floats. The library reads this number
 # off the adapter and sizes all six of its vector indexes to match, then
@@ -325,7 +325,7 @@ class MemoryEmbeddings:
 
     def __init__(
         self,
-        model: str = EMBEDDING_MODEL,
+        model: str = EMBEDDING_ENDPOINT,
         *,
         dimensions: int = EMBEDDING_DIMENSIONS,
         batch_size: int = 16,
@@ -396,12 +396,12 @@ class MemoryLLM:
     Example:
         >>> llm = MemoryLLM()
         >>> llm.model
-        'databricks-meta-llama-3-3-70b-instruct'
+        'databricks-claude-sonnet-5'
     """
 
     def __init__(
         self,
-        model: str = MEMORY_LLM_MODEL,
+        model: str = LLM_ENDPOINT,
         *,
         default_max_tokens: int = 2048,
     ) -> None:

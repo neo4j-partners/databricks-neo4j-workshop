@@ -99,7 +99,7 @@ The key component for graph construction:
 Throughout this workshop, you'll work with a knowledge graph built from an Aircraft Digital Twin dataset.
 
 **This dataset models:**
-- 20 aircraft across 4 operators (Boeing 737, Airbus A320/A321, Embraer E190)
+- A multi-model fleet across several operators (Boeing 737, Airbus A320/A321, Embraer E190)
 - Systems per aircraft (engines, avionics, hydraulics)
 - Components within systems (turbines, compressors, pumps)
 - Sensors generating time-series telemetry (EGT, vibration, fuel flow)

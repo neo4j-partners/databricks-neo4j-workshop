@@ -54,7 +54,7 @@ Participants work through lab exercises in Databricks and Neo4j Aura, using Data
 
 The workshop uses a comprehensive **Aircraft Digital Twin** dataset that models a complete aviation fleet over 90 operational days. The data is split across two platforms, each chosen for the workload it handles best:
 
-- **Databricks Lakehouse** stores the **time-series sensor telemetry**, roughly 155K readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
+- **Databricks Lakehouse** stores the **time-series sensor telemetry**, hourly-scale readings across 90 days. Columnar storage and SQL make the Lakehouse ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
 - **Neo4j Aura** stores the **richly connected relational data**: aircraft topology, component hierarchies, maintenance events, flights, delays, and airport routes. A graph database handles multi-hop relationship traversals natively, avoiding the expensive JOINs a tabular database would require for queries like "Which components caused flight delays?"
 
 Together the dataset includes:
@@ -63,7 +63,7 @@ Together the dataset includes:
 - **Systems** (Engines, Avionics, Hydraulics)
 - **Components** (Turbines, Compressors, Pumps, etc.)
 - **Sensors** with monitoring metadata
-- **Sensor Readings** (telemetry every 4 hours over 90 days)
+- **Sensor Readings** (hourly-scale telemetry over 90 days)
 - **Flights** with departure/arrival information
 - **Maintenance Events** with fault severity and corrective actions
 - **Airports** in the route network
@@ -179,7 +179,7 @@ The knowledge graph models a commercial aviation fleet as a connected network of
 |-----------|------------|
 | Graph Database | Neo4j Aura |
 | Embeddings | Databricks BGE-large (databricks-bge-large-en) |
-| LLM | Databricks Llama 3.3 70B |
+| LLM | Databricks Claude Sonnet 5 (databricks-claude-sonnet-5) |
 | Vector Search | Neo4j Vector Index |
 | Multi-Agent | LangGraph. Databricks Agent Bricks in Lab 4 Part B |
 | Agent Memory | neo4j-agent-memory on the participant's own Aura instance |

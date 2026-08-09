@@ -180,12 +180,15 @@ AGENT_SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 AGENT_SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
 
 # The model behind the supervisor's routing decision, and behind GraphRAG answer
-# generation in Lab 3. One name so the two cannot diverge.
-SUPERVISOR_LLM_ENDPOINT = "databricks-meta-llama-3-3-70b-instruct"
+# generation in Lab 3. One name so the two cannot diverge. Mirrors LLM_ENDPOINT
+# in Lab_3_Semantic_Search/data_utils.py, which the notebooks read; this file is
+# standard-library-only and cannot import it, so the two are kept in sync by hand.
+LLM_ENDPOINT = "databricks-claude-sonnet-5"
 
 # The embedding endpoint Lab 3 writes maintenanceChunkEmbeddings with and Lab 5
 # reads it back with. Changing this invalidates every stored vector, because a
 # 1024-dimension index says nothing about which model produced the numbers in it.
+# Mirrors EMBEDDING_ENDPOINT in Lab_3_Semantic_Search/data_utils.py.
 EMBEDDING_ENDPOINT = "databricks-bge-large-en"
 EMBEDDING_DIMENSIONS = 1024
 

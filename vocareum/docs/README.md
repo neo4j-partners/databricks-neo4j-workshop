@@ -26,7 +26,7 @@ Every lab has a notebook in your workspace, including Labs 1 and 4. Those two ar
 ## Architecture
 
 **Dual Database Strategy:**
-- **Databricks Lakehouse** — time-series sensor telemetry, roughly 155K readings across 90 days
+- **Databricks Lakehouse** — time-series sensor telemetry, hourly-scale readings across 90 days
 - **Neo4j Aura** — graph relationships: aircraft topology, components, sensors, maintenance events, flights, delays, airports
 
 **Multi-Agent Supervisor (Lab 4):**

@@ -650,7 +650,36 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 >
 > **Left for step 5, as planned:** `README.md:96` and `:158`, which the 30-line cut rewrites, and `Lab_1_Aura_Setup/Aura_Free_Trial.md`, whose body is correct and whose filename is the problem.
 3. **Delete the three build-output slide folders, clear the stale attachments, then fix the build script three ways.** `overview-databricks-neo4j/`, `overview-knowledge-graph/` and `overview-retrievers/` go; `aircraft/` and `databricks-in-depth/` stay, because they hold diagram sources. Clear `site/modules/ROOT/attachments/slides/`, whose folder names describe where decks used to live. Then: point the script at real topic folders, drop the hardcoded `/opt/homebrew/opt/node@22/bin/node`, and **add a marp step to `deploy-antora.yml`**, which today never builds a deck at all. Items 1 and 2 without item 3 publish nothing.
+> **STATUS: DONE. The decks now reach the published site, which they never did before.**
+>
+> **Folders gone.** `overview-databricks-neo4j/`, `overview-knowledge-graph/` and `overview-retrievers/` are deleted. Only one file among them was tracked, a built PDF; the rest was untracked build output. `slides/databricks-in-depth/auth-sync-slides.pdf` went with them, for the same reason.
+>
+> **The script had already been half-fixed** by an uncommitted earlier pass: `build:decks` no longer feeds built HTML back in as input. What was left was the hardcoded interpreter and the missing CI step.
+>
+> **The hardcoded path was hiding a real break, not a preference.** `/opt/homebrew/opt/node@22/bin/node` was pinning marp to Node 22 because `@marp-team/marp-cli@4.2.3` dies on newer Node with `ReferenceError: require is not defined in ES module scope`, thrown from its bundled `yargs`. Dropping the path to a bare `marp` therefore broke the build until the real cause was fixed: **marp-cli is upgraded to `^4.5.0`**, which builds clean on the Node 26 this machine runs and on the Node 20 CI runs. `slides/package-lock.json` moved with it.
+>
+> **CI builds decks now.** `deploy-antora.yml` gained `npm ci` and `npm run build:html` in `slides/`, both ahead of the Antora build, and `cache-dependency-path` now lists both lockfiles.
+>
+> **Committed build output is retired**, which is what makes the CI step the delivery path rather than a duplicate of it. `site/modules/ROOT/attachments/` is gitignored and `git rm -r --cached`'d. Three tracked HTML decks and one stale PNG left the index. Nothing under that directory is authored; all six files it holds are produced by `build:html`.
+>
+> **Verified from a clean tree.** `rm -rf site/modules/ROOT/attachments`, then `npm run build:html` in `slides/`, then `npm run build` in `site/`. Antora finished with no warnings and the three decks plus three SVGs land in `site/build/site/databricks-neo4j-workshop/1.0/_attachments/slides/`.
 4. **Sweep the dataset counts out** of the nine files tabled in section 0, **including both full per-label tables** and `README.md:57`. Mechanical, but larger than the earlier list implied.
+> **STATUS: DONE. Every tabled file swept, plus three the table missed.**
+>
+> **The seven tabled files.** `workshop-overview.adoc:24,35`, `lab4.adoc:3`, `01-workshop-over.md:85-91,101`, `overview-and-genai-foundations.md:49-55,63`, `organize.md:63`, `05-building-knowledge-graphs-slides.md:102`, `README.md:57`. Both per-label tables lost their `Count` column outright rather than losing seven rows, which keeps the entity list, the part that teaches, and drops the part that drifts.
+>
+> **Replacement language, used consistently:** "hourly-scale telemetry over 90 days" and "a multi-model fleet". Table cells that existed only to hold a number are gone.
+>
+> **Three the verified list missed**, all the same class and all participant-facing:
+> - `README.md:66` said "telemetry every 4 hours over 90 days" while the site said hourly. A second live contradiction in the same fact, sitting nine lines below the one the table did catch.
+> - `vocareum/docs/README.md:29` carried the "roughly 155K" figure. This is the front page of the participant's own Databricks workspace, so it is not a minor surface.
+> - `Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb` said "155,520 sensor readings" in the very cell that argues the dual-database split. The sentence reads better without it.
+>
+> **What deliberately stayed.** The same notebook cell's "20 documented takeoff thresholds" and "these 20 rows and only these 20 rows" pass the decision's own test: they are transcribed from the manuals and Lab 3 compares its extraction against them. Re-running the generator does not move them. `workshop-setup/populate_aircraft_db/DATA_GENERATOR.md` keeps its counts too, because there they are the specification of what the generator emits, not a claim to a participant.
+>
+> **Not fixed, and it is now wrong: `slides/organize.md` paths.** Step 3 deleted `overview-knowledge-graph/`, `overview-databricks-neo4j/` and `overview-retrievers/`, and roughly 60 lines of this inventory still cite files by those paths. It is an internal planning document, not a participant surface, and **step 10 rewrites the deck inventory anyway**, so the repair belongs there rather than as an unscoped edit here. Flagging it so it is not forgotten.
+>
+> **Verified.** `npm run build:html` in `slides/` then `npm run build` in `site/`, both clean.
 5. **Collapse the four participant-facing lab READMEs into their notebooks**, delete `PART_A.md`, keep `PART_B.md`, and shrink the Lab 5 and Lab 6 READMEs to module documentation. Cut the root `README.md` to about 30 lines of pointers, which also retires its two tier mentions and its count.
 6. **Move the 15 screenshots into per-lab `images/` folders** and reference them as `raw.githubusercontent.com` URLs, the pattern `04_genie_agent.ipynb` already uses. **Delete `lab1-backup-restore.png`**, whose only consumer was the dead backup-restore procedure. **Leave the 7 concept `.svg` files where they are**; they belong to pages that survive. Write the convention down once so nobody invents a third.
 7. **Collapse the duplicated diagram files, then redraw as two.** Delete `lab-architecture-overview.svg` and `dual-database-architecture.svg` from `site/modules/ROOT/images/` and point the site at the root `images/` copies, so there is one source per drawing. Then the Lab 5 topology becomes the default and the MCP drawing is retitled as the Part B demo, kept on `lab4.adoc` alone. Collapsing first is what stops the redraw shipping to half the consumers.

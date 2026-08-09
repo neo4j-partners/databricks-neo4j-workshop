@@ -17,6 +17,28 @@ returns the part of the state it changed, which is the shape LangGraph wants
 from a node. The graph itself is wired in ``01_langgraph_agent.ipynb`` so the
 wiring stays visible.
 
+Where this lab's defaults come from
+-----------------------------------
+
+Lab 5 declares almost no configuration of its own. Everything below is defined
+in ``Lab_3_Semantic_Search/data_utils.py`` and imported here under its original
+name, so there is one name per thing across the course and nothing to keep in
+sync. Read that file when you want to know what a value is:
+
+- ``LLM_ENDPOINT`` is the model behind the supervisor's routing decision and
+  behind every node that writes text.
+- ``EMBEDDING_ENDPOINT`` is the model that embeds the question ``graphrag_node``
+  searches with. It has to be the model Lab 3 wrote the index with.
+- ``secret_scope_name()`` names the Databricks secret scope holding your Aura
+  credentials, and ``read_neo4j_secrets()`` reads them back out.
+
+``lab/workshop.py`` names the same two endpoints for provisioning. That file is
+standard-library-only and cannot import ``data_utils``, so the two are kept in
+sync by hand. Change an endpoint in both or in neither.
+
+To try a different supervisor model for one run, pass it to ``get_llm`` in the
+notebook rather than editing anything here.
+
 Embeddings and the LLM come from ``Lab_3_Semantic_Search/data_utils.py``. That
 module is the workshop's one path to the Databricks Foundation Model endpoints,
 and the vectors in ``maintenanceChunkEmbeddings`` were written through it. A
@@ -78,8 +100,8 @@ def ensure_lab3_on_path() -> Path:
 ensure_lab3_on_path()
 
 from data_utils import (  # noqa: E402
-    DEFAULT_EMBEDDING_MODEL,
-    DEFAULT_LLM_MODEL,
+    EMBEDDING_ENDPOINT,
+    LLM_ENDPOINT,
     get_embedder,
     get_llm,
     read_neo4j_secrets,
@@ -89,13 +111,13 @@ from data_utils import (  # noqa: E402
 __all__ = [
     "CYPHER_GENERATION_PROMPT",
     "CYPHER_REPAIR_PROMPT",
-    "EMBEDDING_MODEL",
+    "EMBEDDING_ENDPOINT",
     "FULLTEXT_INDEX_NAME",
     "GRAPH_SCHEMA",
+    "LLM_ENDPOINT",
     "MANUAL_CONTEXT_QUERY",
     "MAX_TOOL_CALLS",
     "MISSING_INDEX_MESSAGE",
-    "SUPERVISOR_MODEL",
     "SUPERVISOR_PROMPT",
     "SYNTHESIS_PROMPT",
     "TOOL_NAMES",
@@ -124,17 +146,10 @@ __all__ = [
 # Model endpoints
 # =============================================================================
 
-# Aliases, not new names. Both endpoints are declared once for the course in
-# lab/workshop.py and mirrored once for the notebooks in data_utils.py. Binding
-# them here gives Lab 5 one constant to change without adding a third place the
-# string is written.
-#
-# The supervisor model is the provisional part of this lab. Routing across three
-# tools is a harder job than anything Lab 3 asks of it, so if the routing
-# measurement at the end of the notebook comes back poor, change this one line
-# to a stronger tool-calling endpoint and rerun. Nothing else moves.
-SUPERVISOR_MODEL = DEFAULT_LLM_MODEL
-EMBEDDING_MODEL = DEFAULT_EMBEDDING_MODEL
+# LLM_ENDPOINT and EMBEDDING_ENDPOINT are imported from data_utils above and
+# re-exported here, under the same names, so `from tools import LLM_ENDPOINT`
+# works in the notebook. They are not redefined: this lab adds no third place
+# either string is written. See the module docstring for where they do live.
 
 # The indexes Lab 3 created. The vector index is what graphrag_node reads. The
 # fulltext index is optional and only the hybrid exercise touches it.

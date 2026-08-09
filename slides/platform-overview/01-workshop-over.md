@@ -78,18 +78,18 @@ section { font-size: 95%; }
 
 ## The Aircraft Digital Twin Dataset
 
-The workshop uses a comprehensive dataset modeling a complete aviation fleet over 90 operational days:
+The workshop models a multi-model aviation fleet over 90 operational days:
 
-| Entity | Count | Description |
-|--------|-------|-------------|
-| Aircraft | 20 | Tail numbers, models, operators |
-| Systems | 80 | Engines, Avionics, Hydraulics per aircraft |
-| Components | 320 | Turbines, Compressors, Pumps |
-| Sensors | 160 | Monitoring metadata |
-| Sensor Readings | 345,600+ | Hourly telemetry over 90 days |
-| Flights | 800 | Departure/arrival information |
-| Maintenance Events | 300 | Fault severity and corrective actions |
-| Airports | 12 | Route network |
+| Entity | Description |
+|--------|-------------|
+| Aircraft | Tail numbers, models, operators |
+| Systems | Engines, Avionics, Hydraulics per aircraft |
+| Components | Turbines, Compressors, Pumps |
+| Sensors | Monitoring metadata |
+| Sensor Readings | Hourly-scale telemetry over 90 days |
+| Flights | Departure/arrival information |
+| Maintenance Events | Fault severity and corrective actions |
+| Airports | Route network |
 
 ---
 
@@ -98,7 +98,7 @@ The workshop uses a comprehensive dataset modeling a complete aviation fleet ove
 The data is split across two platforms, each chosen for the workload it handles best:
 
 **Databricks Lakehouse** — Time-series sensor telemetry
-- 345,600+ hourly readings across 90 days
+- Hourly-scale readings across 90 days
 - Columnar storage and SQL for aggregations, trend analysis, statistical comparisons
 
 **Neo4j Aura** — Richly connected relational data

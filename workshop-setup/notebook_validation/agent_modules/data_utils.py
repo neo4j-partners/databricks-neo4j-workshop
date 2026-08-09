@@ -28,11 +28,15 @@ from neo4j_graphrag.types import LLMMessage
 
 
 # =============================================================================
-# Default Model Configuration
+# Model endpoints
 # =============================================================================
 
-DEFAULT_EMBEDDING_MODEL = "databricks-bge-large-en"
-DEFAULT_LLM_MODEL = "databricks-meta-llama-3-3-70b-instruct"
+# Mirrors LLM_ENDPOINT and EMBEDDING_ENDPOINT in
+# Lab_3_Semantic_Search/data_utils.py. This copy exists so the validation
+# harness can import without the lab folders on sys.path; it has to name the
+# same two endpoints the labs run on.
+LLM_ENDPOINT = "databricks-claude-sonnet-5"
+EMBEDDING_ENDPOINT = "databricks-bge-large-en"
 
 
 # =============================================================================
@@ -60,12 +64,12 @@ class DatabricksEmbeddings(Embedder):
         1024
     """
 
-    def __init__(self, model_id: str = "databricks-bge-large-en"):
+    def __init__(self, model_id: str = EMBEDDING_ENDPOINT):
         """Initialize the Databricks embeddings provider.
 
         Args:
             model_id: The Databricks Foundation Model endpoint name.
-                      Default: databricks-bge-large-en (1024 dimensions)
+                      Default: EMBEDDING_ENDPOINT (1024 dimensions)
         """
         self.model_id = model_id
         self._client = mlflow.deployments.get_deploy_client("databricks")
@@ -100,13 +104,13 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
     (for GraphRAG and LangChain compatibility).
 
     Supports Databricks-hosted LLM endpoints like:
+    - databricks-claude-sonnet-5
     - databricks-meta-llama-3-3-70b-instruct
-    - databricks-llama-4-maverick
 
     Uses MLflow deployments client for API calls.
     """
 
-    def __init__(self, model_id: str = "databricks-meta-llama-3-3-70b-instruct"):
+    def __init__(self, model_id: str = LLM_ENDPOINT):
         """Initialize the Databricks LLM provider.
 
         Args:
@@ -185,12 +189,12 @@ class DatabricksLLM(LLMInterface, LLMInterfaceV2):
 # AI Services Factory Functions
 # =============================================================================
 
-def get_embedder(model_id: str = DEFAULT_EMBEDDING_MODEL) -> DatabricksEmbeddings:
+def get_embedder(model_id: str = EMBEDDING_ENDPOINT) -> DatabricksEmbeddings:
     """Get embedder using Databricks Foundation Model APIs.
 
     Args:
         model_id: Databricks embedding endpoint name.
-                  Default: databricks-bge-large-en (1024 dimensions)
+                  Default: EMBEDDING_ENDPOINT (1024 dimensions)
 
     Returns:
         DatabricksEmbeddings configured for the specified model
@@ -198,12 +202,12 @@ def get_embedder(model_id: str = DEFAULT_EMBEDDING_MODEL) -> DatabricksEmbedding
     return DatabricksEmbeddings(model_id=model_id)
 
 
-def get_llm(model_id: str = DEFAULT_LLM_MODEL) -> DatabricksLLM:
+def get_llm(model_id: str = LLM_ENDPOINT) -> DatabricksLLM:
     """Get LLM using Databricks Foundation Model APIs.
 
     Args:
         model_id: Databricks LLM endpoint name.
-                  Default: databricks-meta-llama-3-3-70b-instruct
+                  Default: LLM_ENDPOINT
 
     Returns:
         DatabricksLLM configured for the specified model

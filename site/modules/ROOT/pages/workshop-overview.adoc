@@ -21,7 +21,7 @@ The dataset includes:
 * **Systems** such as Engines, Avionics, and Hydraulics
 * **Components** such as Turbines, Compressors, and Pumps
 * **Sensors** with monitoring metadata
-* **Sensor Readings** captured hourly over 90 days, 345,600+ in total
+* **Sensor Readings**, hourly-scale telemetry over 90 days
 * **Flights** with departure and arrival information
 * **Maintenance Events** with fault severity and corrective actions
 * **Airports** in the route network
@@ -32,7 +32,7 @@ image::dual-database-architecture.svg[Dual Database Architecture,align=center]
 
 The data splits across two platforms, each chosen for the workload it handles best:
 
-* **Databricks Lakehouse** stores the time-series sensor telemetry: `sensor_readings` (345,600+ hourly rows), `sensors` (160), `systems` (80), and `aircraft` (20). Columnar storage and SQL make it ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
+* **Databricks Lakehouse** stores the time-series sensor telemetry: `sensor_readings`, plus the `sensors`, `systems`, and `aircraft` tables it joins against. Columnar storage and SQL make it ideal for aggregations, trend analysis, and statistical comparisons over large volumes of timestamped data.
 * **Neo4j Aura** stores the knowledge graph: Aircraft, System, Component, Sensor, Flight, Delay, MaintenanceEvent, and Airport nodes connected by relationships such as HAS_SYSTEM, HAS_COMPONENT, OPERATES_FLIGHT, and HAS_EVENT, plus Document and Chunk nodes for GraphRAG retrieval over maintenance manuals. A graph traverses these multi-hop relationships natively, avoiding the expensive JOINs a tabular database would require.
 
 Aircraft, Systems, and Sensors exist in both platforms as join points, kept in sync by the Neo4j Spark Connector. Many real questions span both stores, which is why the workshop builds a Supervisor Agent to route each one and combine the results. xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] shows the SQL and Cypher query shapes side by side.
