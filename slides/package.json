@@ -1,9 +1,7 @@
 {
   "scripts": {
     "marp": "marp --allow-local-files",
-    "build:html": "npm run build:decks && npm run build:assets",
-    "build:decks": "npm run marp -- platform-overview/01-databricks-neo4j-integration-slides.md -o ../site/modules/ROOT/attachments/slides/overview/01-databricks-neo4j-integration-slides.html && npm run marp -- platform-overview/01-intro-databricks-neo4j-slides.md -o ../site/modules/ROOT/attachments/slides/databricks-in-depth/01-intro-databricks-neo4j-slides.html && npm run marp -- agents/02-power-of-graphrag-slides.md -o ../site/modules/ROOT/attachments/slides/databricks-in-depth/02-power-of-graphrag-slides.html",
-    "build:assets": "mkdir -p ../site/modules/ROOT/attachments/site/modules/ROOT/images && cp ../site/modules/ROOT/images/dual-database-architecture.svg ../site/modules/ROOT/attachments/site/modules/ROOT/images/ && cp databricks-in-depth/fraud-ring-dual-architecture.svg databricks-in-depth/intelligence-platform-flow.svg ../site/modules/ROOT/attachments/slides/databricks-in-depth/"
+    "build:html": "sh ./build-slides.sh"
   },
   "dependencies": {
     "@marp-team/marp-cli": "^4.5.0"

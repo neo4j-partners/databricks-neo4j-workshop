@@ -1,0 +1,7 @@
+= From Documents to Knowledge Graphs (Slides)
+
+++++
+<iframe src="../_attachments/slides/background/kg-construction/05-building-knowledge-graphs-slides.html"
+  style="width:100%;height:600px;border:none;">
+</iframe>
+++++

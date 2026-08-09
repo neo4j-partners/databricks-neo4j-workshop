@@ -62,7 +62,7 @@ Replaces `expand-v2.md`, which is deleted. Same facts, rewritten to be read.
 ### Lab 5, the agent itself
 
 - **Three tools built and live.** `genie_node`, `cypher_node`, `graphrag_node`, the last on `VectorCypherRetriever` lifted from Lab 3.
-- **Routing measured at 48 of 48 across 9 groups,** against the current `tools.py`, on a participant-shaped instance carrying zero `Reading` nodes. That last detail is what makes the numbers mean anything. **Measured on llama, before the supervisor moved to Claude.** See section 3.
+- **Routing measured at 48 of 48 across 9 groups, on both models.** Against the current `tools.py`, on a participant-shaped instance carrying zero `Reading` nodes. That last detail is what makes the numbers mean anything. **Re-run on `databricks-claude-sonnet-5` and it held at 48 of 48,** with two groups improving. See section 3 for what moved.
 - **The anchor question runs end to end.** Genie names the engines with abnormal EGT, the graph returns their maintenance history including a bearing wear fault, the manual's high-EGT procedure closes the answer.
 - **Supervisor model settled:** `databricks-claude-sonnet-5`, one constant, one endpoint across Labs 3 and 5.
 - **Credentials wired.** Lab 5 reads the `fleet-ops-<user-slug>` secret scope that Lab 3 creates. No plaintext password anywhere in Lab 5.
@@ -229,10 +229,15 @@ TOTAL                                              260.4     4:20
   - **The trap to avoid:** a memory-on run returning 23 maintenance events is the arrow fix landing, not memory improving recall. Whoever reads the comparison has to be told this inside the comparison.
   - **The worse trap, and the reason this is urgent.** Lab 6 redeploys this same endpoint. Redeploy from the current tree and the supervisor becomes Claude in the same operation that turns memory on. **A memory-off llama baseline compared against a memory-on Claude run attributes the whole difference to memory.** Baseline and comparison must sit on the same model.
   - Carry forward what is still valid: the 15.8 minute cold deploy, the interpretation notes, and the rule that expected-tools is a subset test and never an exact match, because the supervisor retries on an empty or failed tool.
-- **Re-measure routing on Claude.** The 48 of 48 figure and the deploy notebook's 6 of 6 routing score were both taken on llama. **A model change voids routing numbers exactly the way a prompt change does.** Two runs are owed.
-  - The 48-case routing suite across 9 groups. **Runs against `tools.py` on disk, so it needs no deploy** and is the one measurement not blocked above.
-  - The deploy notebook's 6-pair evaluation. Blocked on the redeploy.
-  - **The four Cypher schema bullets are the thing most likely to move.** Each was written against an observed llama failure. The backwards-arrow and invented-relationship sweeps are the two to re-run first.
+- **Re-measure routing on Claude.** The 48 of 48 figure and the deploy notebook's 6 of 6 routing score were both taken on llama. **A model change voids routing numbers exactly the way a prompt change does.** Two runs were owed; one is done.
+  - ~~The 48-case routing suite across 9 groups.~~ **DONE, 48 of 48 on `databricks-claude-sonnet-5`.** Same score as llama, measured 2026-08-09 against `tools.py` on disk, so it needed no deploy. Full report in `worklog/lab5-routing-on-claude.md`. **The four Cypher schema bullets all still land, and none became a no-op.**
+    - **Two groups moved, both for the better.** The direction sweep held at 0 misses of 6 and determinism improved to 10 runs of exactly 9 rows against llama's one outlier of 23.
+    - **`CAUSED_DELAY` flipped from refusal to a correct 25-row answer.** The llama run's over-refusal there was flagged in the worklog as wider than the rule it came from. That is now closed.
+    - **Group 5's trace collapsed from two tools to one,** `['genie_node']` alone. Claude calls one tool and synthesizes where llama over-called. Still 3 of 3, but **the cypher refusal path is no longer exercised inside group 5.** Group 8 covers it directly at 5 of 5 and is now the only place it is covered. **Any doc or test asserting the two-tool trace is now wrong and should be updated rather than treated as a regression.**
+    - **It ran on `471c14c2`, not on `f024ea61`,** because `f024ea61` was empty. `471c14c2` stores `OperatingLimit.maxValue` as FLOAT and reproduces the llama run's recorded outputs exactly; `1a2c98cc` stores it as STRING and would have failed three groups for a data-typing reason.
+    - **Not quite like for like, and in the strict direction.** The llama run had `Reading` nodes present, `471c14c2` has none, which makes the refusal groups a harder test rather than an easier one. **A true like-for-like needs an instance with Readings and float `maxValue`, which does not currently exist.**
+  - The deploy notebook's 6-pair evaluation. Authorized and running, behind the redeploy.
+  - **The four Cypher schema bullets were the thing most likely to move,** each written against an observed llama failure. All four survived the re-run.
 - ~~**One line prints an empty result to every participant.**~~ **DONE.** `print("Usage:", result["usage"])` is removed from the deploy notebook. The endpoint returns an empty usage block, so every participant was seeing `Usage: {}` immediately after a fifteen minute deploy. The `usage` key stays in the helper's return value and nothing prints it.
 - **Exercise the extracted-entity routing path** against a graph loaded with extraction on. Blocked on a working LLM key.
 - ~~**Decide whether `eval/questions.jsonl` is still wanted.**~~ **Decided: no, and it is gone from the plan.** The file never existed on disk. The deploy notebook carries its question set inline, which is one place instead of two and is the reason nobody missed the file.
@@ -297,7 +302,10 @@ TOTAL                                              260.4     4:20
 
 **Data and modeling**
 
-- **One embedding path, `databricks-bge-large-en`,** for the loader and for Lab 3 alike.
+- **One embedding path, `databricks-bge-large-en`,** for the loader and for Lab 3 alike. **The switch was deleted, not re-defaulted.** A default can be set back into the trap; a deleted branch cannot. The `bge` and `openai` branches, `EMBEDDING_PROVIDER`, and the `DimensionAwareOpenAIEmbeddings` class that existed only to serve the OpenAI branch are all gone.
+  - **The `openai` branch was the one real hazard, not just clutter.** It embedded at 1536 dimensions and would have built a vector index Lab 3, which hardcodes 1024, could not read. `bge` and `databricks` both resolved to 1024 and always agreed.
+  - **New prerequisite, stated because it is a real cost:** Databricks credentials are now required for every `setup` and `enrich`, `--skip-extraction` included. A full graph used to be buildable with no cloud credential at all.
+  - **The install got smaller, not larger.** `torch` and `transformers` left with `sentence-transformers`, `uv.lock` lost 835 lines, and the `databricks` extra was deleted so a bare `uv sync` now works.
 - **`databricks-claude-sonnet-5` as the supervisor model.** One named constant, `LLM_ENDPOINT` at `Lab_3_Semantic_Search/data_utils.py:46`, which `tools.py`, `agent.py` and `memory.py` all import. Labs 3, 5 and 6 cannot disagree about the model, because there is one place to disagree in.
   - The decision was first closed on `databricks-meta-llama-3-3-70b-instruct`, and the escape hatch it left open, that single constant, is what made the swap to Claude a one-line change.
   - **The 48 of 48 routing number was measured on llama and has not been re-measured on Claude.** Same for the deploy notebook's 6-pair evaluation. Both re-runs are listed in section 3.
@@ -314,10 +322,14 @@ TOTAL                                              260.4     4:20
 - **A recorded decision that never actually held, corrected here.** An earlier version of this line said the two derived tables were left uncommented on purpose, so Genie would be less likely to reach for them.
   - **That was never true in any provisioned workspace.** The pipeline has always commented `fleet_readiness` and `sensor_health`, and `workshop.py` could only add comments, never remove one. Not commenting a table does not make it uncommented.
   - **Steering Genie away from the two summary tables needs a different mechanism,** and is open.
-- **`sensor_health` carries a real defect, and it is not a comment problem.** Open, see section 5.
-  - **The health-status column can never emit its documented `ANOMALY` value.** The rule fires on `p95 > avg + 2*stddev` while `p95` is approximately `avg + 1.645*stddev`, so the threshold is unreachable. Measured across all 288 sensors: **284 WARNING, 4 NORMAL, 0 ANOMALY.**
-  - **The column is uninformative even where it works.** 284 of 288 sensors read WARNING, so the value separates nothing.
-  - Both tables keep their SELECT grant and stay browsable.
+- **`sensor_health` becomes pure descriptive statistics. `health_status` is dropped, not repaired.** Decided and landed 2026-08-09 in `dlt_fleet_etl.py`. The table keeps count, average, min, max, stddev, p95 and last-reading time with system and tail number attached, and carries no verdict.
+  - **No threshold fixes it, which is why the column went instead of the constant.** The rule compared each sensor's p95 against its own `avg + k*stddev`. For anything near normal, p95 sits at about `avg + 1.645*stddev`, so the ANOMALY branch at 2 sigma could never fire and the WARNING branch at 1 sigma fired for nearly everything: **284 WARNING, 4 NORMAL, 0 ANOMALY across all 288 sensors.** Lowering the constant inverts the problem rather than solving it. **The statistic measures the shape of a distribution, and every sensor has the same shape.**
+  - **A real verdict needs an outside reference the lakehouse does not have.** `nodes_operating_limits.csv` holds 20 limits and **the pipeline does not ingest it**; there is no `bronze_operating_limits`. Limits are Neo4j-only, which is the dual-database thesis working rather than a gap.
+  - **They would not join cleanly even if ingested.** The limits are keyed on aircraft type, parameter and **flight regime**, and a reading carries no regime. A SQL join has to pick one, which freezes an arbitrary choice into a gold table. Group 1 of the routing suite exists because of that same ambiguity.
+  - **Runner-up was ingesting the limits and computing exceedance against a named regime.** It would have made ANOMALY fire for real, since N1Speed maxes at 107.1 against a limit of 97.0. It lost because it moves into the lakehouse the one fact the workshop says lives in the graph.
+  - **The anomaly demo it would have provided already ships, and is better.** Lab 4's Genie subagent description carries per-model EGT thresholds and names "Find B737-800 EGT readings above 950 degrees" as an example, over raw `sensor_readings`. Real limits, no self-referential statistic. **`flights` is already a gold table,** so "which flights are affected" is a lakehouse join from the sensor through `aircraft` to `flights`.
+  - **`sensor_health` is not added to the Lab 4 Genie space.** The lesson there is the four-table join chain, and a fifth pre-aggregated table competes with it.
+  - Both summary tables keep their SELECT grant and stay browsable.
 
 **How Cypher defects get fixed**
 
@@ -538,7 +550,8 @@ Two Aura instances, so one line of work does not corrupt the other's evidence.
 - **Verify what is on `f024ea61` before trusting a measurement taken there.** It was found **empty** on 2026-08-09, with the fleet graph, the Lab 3 chunks and the memory schema all gone, contradicting several measurements recorded against it.
   - **Reloaded the same day** through `populate-aircraft-db setup --skip-extraction` in 5:04: 177,067 nodes, 207,597 relationships, 286 of 286 chunks embedded at 1024 dims, both GraphRAG indexes ONLINE, all 12 constraints present.
   - **The Lab 6 memory schema is not back.** Anything that depended on it has to re-run the lab.
-  - **The loader used to default to a local `bge` embedder rather than Databricks,** so a bare run pulled 1.3 GB of model weights onto the machine instead of calling the endpoint Lab 3 uses. **Being removed:** the provider switch goes entirely, leaving `databricks-bge-large-en` as the only path, so the trap cannot be re-entered by leaving a variable unset. Anything embedded before that change was embedded locally. Same model and same 1024 dimensions, so the vectors are interchangeable and nothing needs re-embedding.
+  - **The loader used to default to a local `bge` embedder rather than Databricks,** so a bare run pulled 1.3 GB of model weights onto the machine instead of calling the endpoint Lab 3 uses. **Removed 2026-08-09,** switch and all. Anything embedded before that change was embedded locally, and nothing needs re-embedding: same model, same 1024 dimensions, cross-path cosine 1.0000000000.
+- **`f024ea61` was found empty a second time,** on 2026-08-09, after the reload above. The routing suite could not run on it and used `471c14c2` instead. **Two wipes in two days is a pattern, not an accident, and nothing here explains it.** Until it does, treat that instance as untrusted and check `MATCH (n) RETURN count(n)` before every measurement taken there.
 - **Standing hazard.** `populate_aircraft_db/config.py:13` pins `populate_aircraft_db/.env` at import time, and that file points at `1a2c98cc`. **A bare `populate-aircraft-db clean` from any directory wipes the memory instance, regardless of what the caller thought they were pointed at.**
 
 ### Cadence

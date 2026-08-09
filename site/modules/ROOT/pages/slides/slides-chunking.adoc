@@ -1,0 +1,7 @@
+= Chunking Strategies (Slides)
+
+++++
+<iframe src="../_attachments/slides/kg-construction/07-chunking-slides.html"
+  style="width:100%;height:600px;border:none;">
+</iframe>
+++++

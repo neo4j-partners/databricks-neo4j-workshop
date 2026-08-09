@@ -1,5 +1,10 @@
-"""Simulate the Neo4j Aura Agent by sending natural language questions to the
-configured LLM, generating Cypher or vector searches, and executing them."""
+"""Answer a fixed list of natural language questions over the aircraft graph.
+
+Each question routes to one of two tools. The text2cypher tool has the configured
+LLM write Cypher from the graph schema below, then runs it. The similarity_search
+tool embeds the question and matches it against the document chunk vectors. Both
+print the query they built and the rows it returned.
+"""
 
 from __future__ import annotations
 

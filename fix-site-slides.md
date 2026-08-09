@@ -200,7 +200,7 @@ There are six, and they total 1,049 lines.
 
   - **Which folder each deck sits in** on disk, `slides/<topic>/` or `slides/background/<topic>/`
   - **Where it appears in the site sidebar**, under its lab or under a collapsed "Additional Background" group at the bottom
-  - **Whether it needs a slot in `agenda.md`.** A workshop deck costs minutes in a fixed day; a background deck costs nothing
+  - **Whether it needs a slot in `worklog/agenda.md`.** A workshop deck costs minutes in a fixed day; a background deck costs nothing
 
   **The split, DECIDED:**
 
@@ -508,7 +508,7 @@ There are six, and they total 1,049 lines.
 
 - **The anchor question, end to end.** Genie names the engines with abnormal EGT, the graph returns their maintenance history including a bearing wear fault, the manual closes with the high-EGT procedure. One question, three tools, one answer. This is the demo the whole workshop builds toward and it belongs on the page.
 
-- **Deployment as its own beat.** Logging to Unity Catalog, then serving as an endpoint that authenticates as a **service principal** rather than as the notebook user. That is the line between a notebook demo and a product, and `agenda.md` already treats it as its own topic.
+- **Deployment as its own beat.** Logging to Unity Catalog, then serving as an endpoint that authenticates as a **service principal** rather than as the notebook user. That is the line between a notebook demo and a product, and `worklog/agenda.md` already treats it as its own topic.
 
   **Lab 5 ships two notebooks, and the second one is this beat.** `01_langgraph_agent.ipynb` builds the graph; `02_deploy_and_evaluate.ipynb` logs, registers, serves and evaluates it. The deck split decided below falls out of the folder structure rather than being a judgment call: one deck per notebook. It is also where the measured routing numbers get re-run, so the site states the claim and cites the date, and the notebook is what reproduces it.
 
@@ -522,9 +522,9 @@ There are six, and they total 1,049 lines.
 
 - **A LangGraph supervisor deck, `agents/03-langgraph-supervisor-slides.md`.** `agents/01-from-retrievers-to-agents-slides.md` teaches ReAct and tools generically and stops well before any of this.
 
-- **A deployment deck, `agents/04-deploy-the-agent-slides.md`.** MLflow `ResponsesAgent`, Unity Catalog registration, Model Serving, service principal auth. `agenda.md` lists "Deploying the Agent" as its own topic and no deck backs it.
+- **A deployment deck, `agents/04-deploy-the-agent-slides.md`.** MLflow `ResponsesAgent`, Unity Catalog registration, Model Serving, service principal auth. `worklog/agenda.md` lists "Deploying the Agent" as its own topic and no deck backs it.
 
-  **DECIDED:** Two decks. `agenda.md` already treats deployment as its own topic, and the audiences differ: the supervisor deck is for whoever is writing the graph, the deployment deck is for whoever has to explain service principal auth to a security reviewer. Merging them buries the second inside the first. Two decks also survive a shortened day better, since deployment is the one that gets cut.
+  **DECIDED:** Two decks. `worklog/agenda.md` already treats deployment as its own topic, and the audiences differ: the supervisor deck is for whoever is writing the graph, the deployment deck is for whoever has to explain service principal auth to a security reviewer. Merging them buries the second inside the first. Two decks also survive a shortened day better, since deployment is the one that gets cut.
 
 ---
 
@@ -594,7 +594,7 @@ There are six, and they total 1,049 lines.
 
 ### Slides
 
-- **`graph-ml/03-graph-enrichment-slides.md` and `04-future-graph-enrichment-slides.md`** are the conceptual half of this appendix and are unpublished. They cover the GDS algorithms, the MLflow lift comparison, and the bidirectional data loop, which is the `agenda.md` topic "Graph Algorithms: From Connected Data to Analytical Features."
+- **`graph-ml/03-graph-enrichment-slides.md` and `04-future-graph-enrichment-slides.md`** are the conceptual half of this appendix and are unpublished. They cover the GDS algorithms, the MLflow lift comparison, and the bidirectional data loop, which is the `worklog/agenda.md` topic "Graph Algorithms: From Connected Data to Analytical Features."
 
   **DECIDED:** Publish both as Workshop, per the answer above. They are the only decks backing a named agenda topic, and they are the half of Appendix A that survives the tier constraint. The notebooks go take-home; the argument stays on stage.
 
@@ -610,7 +610,7 @@ There are six, and they total 1,049 lines.
 
 ## Suggested Flow: Intro to Agent Memory
 
-The deck Lab 6 is missing, `agents/05-agent-memory-slides.md`. Nine slides, about 16 minutes. Full research and sources in `scratch-agent-memory-research.md`. Assumes GraphRAG and the Lab 5 supervisor are already taught, and lands on Lab 6's own demo.
+The deck Lab 6 is missing, `agents/05-agent-memory-slides.md`. Nine slides, about 16 minutes. Full research and sources were in `scratch-agent-memory-research.md`, deleted in the docs cleanup and readable at `git show 1be478f:scratch-agent-memory-research.md`. The slide-by-slide below is the working record. Assumes GraphRAG and the Lab 5 supervisor are already taught, and lands on Lab 6's own demo.
 
 ### The one decision to make before writing a word
 
@@ -804,7 +804,35 @@ Revised for the notebook-first split. The early steps are deletions, which is wh
 >
 > **New Aura Agents leftovers**, beyond the list already left for step 10: `agent_samples.py:1` and `main.py:506` docstrings. Cosmetic, in an admin CLI.
 9. **Write the three new decks:** LangGraph supervisor, deployment, agent memory. Two agent decks, not one, matching Lab 5's two notebooks.
+
+> **STATUS, step 9: done.** Three decks written, one agent each, in parallel.
+>
+> - **`slides/agents/03-langgraph-supervisor-slides.md`**, 16 slides. Carries the direction rule and the never-substitute-a-limit-for-a-measurement rule as slides of their own, since both are prompt fixes a participant has to recognise before they can debug their own routing. Draws the topology from `site/modules/ROOT/images/lab5-agent-topology.svg` rather than redrawing it in ASCII.
+> - **`slides/agents/04-deploy-the-agent-slides.md`**, 11 slides. The identity argument sits on slides 2 and 3 so it survives the deck being cut from the back, which is what happens when Lab 5 runs long.
+> - **`slides/agents/05-agent-memory-slides.md`**, title slide plus 9, 16.5 minutes. 2026 taxonomy throughout, as decided above.
+>
+> **Two things the design above got wrong, found while writing.**
+>
+> - **`slides/images/graph_mem.jpg` is not unused.** The inventory calls it orphaned; `genai-foundations/04-context-and-rag-slides.md:144` already uses it. Deck 05 uses it too, which is fine, but it was never a free image.
+> - **Slide 8's three ranked queries are not in `02_instructor_demos.ipynb`.** They live in `Lab_6_Agent_Memory/memory.py` and run from Section 6 of `01_agent_memory.ipynb`. Anyone demoing that slide should open notebook 01, not notebook 02.
+
 10. **Split and publish the remaining decks**, Workshop against Additional Background. **This is where the slides nav group lands**, along with the remaining `.adoc` wrappers. Three exist already under `site/modules/ROOT/pages/slides/` and are unreachable; the rest copy their `iframe` pattern. `governance/auth-sync-slides.md` needs its source rebuilt to HTML first, since it is PDF-only.
+
+> **STATUS, step 10: done. 24 decks published, all reachable.**
+>
+> **The split, by `git mv`.** `slides/governance/` to `slides/background/governance/`. Three of the five `kg-construction` decks to `slides/background/kg-construction/`: `05-building-knowledge-graphs`, `06-schema-design`, `08-entity-resolution`. `07-chunking` and `09-vectors` stayed, as decided. One casualty: `background/governance/auth-sync-slides.md:183` reached an image with `../` and now sits a directory deeper, so it needed a second `..`.
+>
+> **The build was rewritten, and that was the real work.** The old `build:decks` and `build:assets` one-liners named topic folders and individual image files by hand, which is how the site ended up serving decks whose source folder no longer existed. They are replaced by `slides/build-slides.sh`, run through `npm run build:html`. It clears `site/modules/ROOT/attachments/` first, builds each workshop topic folder, then passes `background/` whole and lets Marp recurse. It copies four asset roots rather than four files, so adding an image to a deck cannot silently ship a broken link. The header comments carry the two rules that make the paths look wrong: Marp copies a relative image path verbatim and never copies the file, and background decks emit one level deeper than workshop decks.
+>
+> **`auth-sync-slides.md` was not PDF-only.** The claim above is stale. It is ordinary Marp source and builds to HTML with everything else.
+>
+> **Wrappers.** The three under `site/modules/ROOT/pages/slides/` were deleted, not repaired: all three pointed at retired `databricks-in-depth/` attachment paths and one carried an em-dash. 24 replaced them, one per deck, generated from the same 6-line `iframe` template with each title taken from its deck's H1.
+>
+> **Nav.** `site/nav.adoc` gained a `Slides` group with six subgroups matching the topic folders, and an `Additional Background` group at the bottom with the four Background decks. Workshop decks stay under Slides; nothing was hidden.
+>
+> **Verified.** `npm run build:html` emits 24 HTML decks. A link check across the emitted HTML finds 17 local asset references, all resolving, counting CSS `url()` backgrounds as well as `src=` and `href=`, because Marp writes background images as the former and a naive checker misses them. `npm run build` in `site/` is warning-free and produces 24 wrapper pages whose `iframe` targets all resolve.
+>
+> **Left alone.** `fix-site-slides.md:162` still cites `slides/kg-construction/05-building-knowledge-graphs-slides.md`, the pre-split path. This document uses pre-split paths throughout, so repointing one line would make it inconsistent with itself. `slides/docs/` is still excluded from the build and still unconfirmed.
 
 **Gates the last step, not the whole plan:** `02_instructor_demos.ipynb` needs its `course.env` entry before the memory deck can rely on slides 5 and 8.
 

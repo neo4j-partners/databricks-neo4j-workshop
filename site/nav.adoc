@@ -10,3 +10,35 @@
 ** xref:lab4.adoc[Lab 4: Compound AI Agents]
 ** xref:lab5.adoc[Lab 5: LangGraph Agent]
 * xref:appendix-a.adoc[Appendix A: GDS Graph Analytics]
+* Slides
+** Platform Overview
+*** xref:slides/slides-workshop-overview.adoc[Neo4j and Databricks Workshop]
+*** xref:slides/slides-databricks-neo4j-integration.adoc[Databricks + Neo4j]
+*** xref:slides/slides-intro-databricks-neo4j.adoc[Building the Intelligence Platform]
+*** xref:slides/slides-neo4j-aura-overview.adoc[Neo4j Aura: Cloud Graph Database]
+** GenAI Foundations
+*** xref:slides/slides-genai-and-limitations.adoc[The GenAI Promise and Its Limits]
+*** xref:slides/slides-traditional-rag.adoc[Traditional RAG: Chunking and Vector Search]
+*** xref:slides/slides-context-and-rag.adoc[The Limits of Traditional RAG]
+** Knowledge Graph Construction
+*** xref:slides/slides-chunking.adoc[Chunking Strategies]
+*** xref:slides/slides-vectors.adoc[Vectors and Semantic Search]
+** Retrieval Patterns
+*** xref:slides/slides-retrievers-overview.adoc[Neo4j GraphRAG Retrievers Overview]
+*** xref:slides/slides-vector-retriever.adoc[Vector Retriever]
+*** xref:slides/slides-vector-cypher-retriever.adoc[Vector Cypher Retriever]
+*** xref:slides/slides-text2cypher-retriever.adoc[Text2Cypher Retriever]
+** Agents
+*** xref:slides/slides-from-retrievers-to-agents.adoc[From Retrievers to Agents]
+*** xref:slides/slides-power-of-graphrag.adoc[Activating the Intelligence Platform with GraphRAG]
+*** xref:slides/slides-langgraph-supervisor.adoc[The LangGraph Supervisor Agent]
+*** xref:slides/slides-deploy-the-agent.adoc[Deploying the Agent]
+*** xref:slides/slides-agent-memory.adoc[Intro to Agent Memory]
+** Graph ML
+*** xref:slides/slides-graph-enrichment.adoc[Graph Feature Engineering with Neo4j GDS and Databricks]
+*** xref:slides/slides-future-graph-enrichment.adoc[Beyond Entity Extraction]
+* Additional Background
+** xref:slides/slides-building-knowledge-graphs.adoc[From Documents to Knowledge Graphs]
+** xref:slides/slides-schema-design.adoc[Schema Design in SimpleKGPipeline]
+** xref:slides/slides-entity-resolution.adoc[Entity Resolution]
+** xref:slides/slides-auth-sync.adoc[Authorization Sync Between Unity Catalog and Neo4j]

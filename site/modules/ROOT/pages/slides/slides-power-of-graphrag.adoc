@@ -1,7 +1,7 @@
-= GraphRAG: Graph-Enhanced Retrieval — Slides
+= Activating the Intelligence Platform with GraphRAG (Slides)
 
 ++++
-<iframe src="../_attachments/slides/databricks-in-depth/02-power-of-graphrag-slides.html"
+<iframe src="../_attachments/slides/agents/02-power-of-graphrag-slides.html"
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++

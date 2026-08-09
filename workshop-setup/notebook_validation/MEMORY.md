@@ -78,7 +78,7 @@ The scripts do not replace any existing lab content. They validate the agent pat
 
 ## Decisions Locked In
 
-1. **neo4j-agent-memory:** Pre-installed on the cluster from a wheel on the Unity Catalog volume, `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/neo4j_agent_memory-0.5.1.dev0+mentions-py3-none-any.whl`, built from the `mentions` branch of the `neo4j-partners` fork because released 0.5.0 drops `MENTIONS` edges. MLflow pip requirements must name that volume path explicitly: the inferred requirement is `neo4j-agent-memory==0.5.1.dev0+mentions`, a local version segment that resolves from nowhere and will fail the serving build.
+1. **neo4j-agent-memory:** Pre-installed on the cluster from a wheel on the Unity Catalog volume, `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl`, built from the `mentions` branch of the `neo4j-partners` fork because released 0.5.0 drops `MENTIONS` edges. MLflow pip requirements must name that volume path explicitly: the inferred requirement is `neo4j-agent-memory==0.5.1.dev1+mentions`, a local version segment that resolves from nowhere and will fail the serving build.
 2. **LLM endpoint:** databricks-claude-sonnet-4-6.
 3. **Secrets scope:** New scope `aircraft-agent-secrets` with keys: neo4j-uri, neo4j-username, neo4j-password, warehouse-http-path. Created by setup.sh.
 4. **GraphRAG dependency:** Lab 3 validation built first. Agent Phase 1 works without it; Phase 2 adds knowledge tools after Lab 3 exists.

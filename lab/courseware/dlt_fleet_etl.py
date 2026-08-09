@@ -638,10 +638,25 @@ def gold_fleet_readiness():
 
 @dlt.table(
     name=f"{GOLD_SCHEMA}.sensor_health",
-    comment="Per-sensor health summary with latest reading, average value, min/max range, and anomaly flag based on 2-sigma deviation."
+    comment="Per-sensor descriptive statistics over the full 90-day window: reading count, average, min, max, standard deviation, 95th percentile, and the timestamp of the last reading, with system and tail number attached. Carries no health verdict. Whether a value is out of limits depends on the aircraft type and the flight regime, and the operating limits are not in the lakehouse."
 )
 def gold_sensor_health():
-    """Sensor health analytics for predictive maintenance."""
+    """Per-sensor descriptive statistics.
+
+    Deliberately carries no ``health_status`` column. The rule that used to set
+    one compared each sensor's p95 against its own ``avg + k*stddev``, which
+    measures the shape of a distribution rather than the condition of a sensor.
+    For anything near normal the p95 sits at about ``avg + 1.645*stddev``, so
+    the ANOMALY branch at 2 sigma could never fire and the WARNING branch at 1
+    sigma fired for almost everything: 284 WARNING, 4 NORMAL, 0 ANOMALY across
+    all 288 sensors. No constant fixes that, because every sensor has roughly
+    the same shape.
+
+    A real verdict needs an outside reference, and the OperatingLimit rows are
+    keyed on aircraft type, parameter and flight regime while a reading carries
+    no regime. Picking one here would freeze an arbitrary choice into a gold
+    table. That comparison belongs in the graph, which is where the limits live.
+    """
     sensors = dlt.read("silver_sensors")
     systems = dlt.read("silver_systems").select("system_id", "aircraft_id")
     aircraft = dlt.read("silver_aircraft").select("aircraft_id", "tail_number")
@@ -665,9 +680,4 @@ def gold_sensor_health():
         .join(stats, "sensor_id", "left")
         .join(systems, "system_id", "left")
         .join(aircraft, "aircraft_id", "left")
-        .withColumn("health_status",
-            when(col("p95_value") > col("avg_value") + 2 * col("stddev_value"), "ANOMALY")
-            .when(col("p95_value") > col("avg_value") + col("stddev_value"), "WARNING")
-            .otherwise("NORMAL")
-        )
     )

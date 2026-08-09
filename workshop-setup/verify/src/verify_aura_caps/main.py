@@ -1,6 +1,6 @@
 """Measure whether an AuraDB Free instance tolerates the Lab 3 plus Lab 6 schema.
 
-Lab 6's memory library creates 33 indexes and 12 constraints on first connect, on
+Lab 6's memory library creates 25 indexes and 9 constraints on first connect, on
 top of whatever Lab 3 already left behind. If AuraDB Free caps below the combined
 total, Lab 6 fails for every participant in the room at once. Nothing in the
 repository measures that, and a multi-database Professional instance is not
@@ -9,7 +9,7 @@ evidence.
 Two commands, in the order you should run them:
 
     check   Read-only. Counts what the instance already carries and says whether
-            Lab 6's 33 + 12 would fit under a stated ceiling. Safe anywhere.
+            Lab 6's 25 + 9 would fit under a stated ceiling. Safe anywhere.
 
     probe   Creates Lab 6's shape against a throwaway label, one object at a
             time, until something fails or the whole set lands. Drops every
@@ -37,11 +37,21 @@ from rich.table import Table
 # workshop-setup/.env is three levels up from this file (src/verify_aura_caps/main.py)
 _ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
-# What Lab_6_Agent_Memory/memory.py installs on first connect. Sourced from
-# memory.py:599 and Lab_6_Agent_Memory/README.md:361.
-LAB6_INDEXES = 33
-LAB6_CONSTRAINTS = 12
-LAB6_VECTOR_INDEXES = 6
+# What Lab_6_Agent_Memory/memory.py installs on first connect, with
+# UNUSED_MEMORY_SUBSYSTEMS skipping the four the workshop never reads. Sourced
+# from memory.py's MemorySession docstring. The full schema is 33 and 12.
+#
+# Stated as three populations rather than one total, because a uniqueness
+# constraint creates its own backing index and SHOW INDEXES counts it. The
+# nine constraints below are nine of the twenty-five indexes, so the probe
+# creates the constraints and then only the sixteen indexes that stand alone.
+LAB6_CONSTRAINTS = 9
+LAB6_RANGE_INDEXES = 11
+LAB6_VECTOR_INDEXES = 5
+
+# Every index object SHOW INDEXES reports afterwards: one backing index per
+# constraint, plus the two standalone populations.
+LAB6_INDEXES = LAB6_CONSTRAINTS + LAB6_RANGE_INDEXES + LAB6_VECTOR_INDEXES
 
 # The throwaway label every probe object hangs off. Nothing in the workshop
 # graph uses it, so a probe cannot collide with participant data.
@@ -210,8 +220,7 @@ def _probe_statements() -> list[tuple[str, str, str]]:
             )
         )
 
-    range_count = LAB6_INDEXES - LAB6_VECTOR_INDEXES
-    for i in range(range_count):
+    for i in range(LAB6_RANGE_INDEXES):
         name = f"{PROBE_PREFIX}range_{i:02d}"
         statements.append(
             (

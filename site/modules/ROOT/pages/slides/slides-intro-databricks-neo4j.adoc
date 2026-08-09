@@ -1,7 +1,7 @@
-= Architecture Deep Dive — Slides
+= Building the Intelligence Platform (Slides)
 
 ++++
-<iframe src="../_attachments/slides/databricks-in-depth/01-intro-databricks-neo4j-slides.html"
+<iframe src="../_attachments/slides/platform-overview/01-intro-databricks-neo4j-slides.html"
   style="width:100%;height:600px;border:none;">
 </iframe>
 ++++

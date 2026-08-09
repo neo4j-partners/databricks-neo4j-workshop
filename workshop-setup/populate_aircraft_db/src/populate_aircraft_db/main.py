@@ -489,8 +489,7 @@ def samples_cmd() -> None:
 
 @app.command("agent-samples")
 def agent_samples_cmd() -> None:
-    """Simulate the Neo4j Aura Agent: send natural language questions to the LLM,
-    generate Cypher or vector searches, execute them, and display results."""
+    """Answer sample natural language questions with LLM-generated Cypher and vector search."""
     from .agent_samples import run_agent_samples
 
     settings = Settings()  # type: ignore[call-arg]

@@ -383,17 +383,17 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
 # Column comments below stay, because a `@dlt.table` decorator has no column
 # argument. Nothing else writes them, so they restate nothing.
 #
-# One thing in the pipeline's comments is worth knowing about while reading
-# here, because it is the kind of thing this file used to work around.
-# `sensor_health` is described there as carrying an "anomaly flag based on
-# 2-sigma deviation", and the rule that sets it calls a sensor ANOMALY when its
-# p95 exceeds avg + 2*stddev. For anything close to a normal distribution the
-# p95 sits at about avg + 1.645*stddev, so that test can never pass. Measured
-# across all 288 sensors: 284 WARNING, 4 NORMAL, 0 ANOMALY. The comment
-# therefore advertises to Genie a status value the table can never hold, which
-# sends a room of participants hunting for rows that cannot exist while Genie
-# reports the empty result as a fact about the fleet. The fix is either the rule
-# or the wording, and both of them live in dlt_fleet_etl.py, not here.
+# One thing this file used to work around is now fixed at its source, and the
+# shape of the fix is worth keeping. `sensor_health` used to carry a
+# `health_status` column and a comment advertising an "anomaly flag based on
+# 2-sigma deviation". The rule compared each sensor's p95 against its own
+# avg + k*stddev, which measures the shape of a distribution and not the
+# condition of a sensor, so the ANOMALY branch could never fire: 284 WARNING,
+# 4 NORMAL, 0 ANOMALY across all 288 sensors. Genie was being told about a
+# status value the table could never hold. The column and the claim were both
+# removed in dlt_fleet_etl.py rather than reworded here. Rewording here would
+# have been this file writing a table comment again, which is the exact habit
+# the block above retired.
 COLUMN_COMMENTS = (
     ("aircraft", "tail_number", "Aircraft registration/tail number (e.g., N10000)"),
     ("aircraft", "model", "Aircraft model (e.g., B737-800, A320-200)"),
