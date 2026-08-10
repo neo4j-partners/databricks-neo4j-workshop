@@ -142,9 +142,7 @@ section { font-size: 25px; }
 - **Knowledge Graph Construction:** neo4j-graphrag-python, uses the Neo4j Python driver
 - **Data Analytics:** Spark Connector for Graph Data Science reads and write-back to Gold
 - **SQL Federation:** Neo4j Custom JDBC Unity Catalog Connector, SQL over the graph, joined with Delta in one query
-  - Covered in full in the *Neo4j Connectors in Depth* background deck
 - **GraphRAG Retrieval/Agent:** Neo4j MCP Server, Python driver, Aura Agent
-  - Covered in the *Neo4j MCP and Agent Bricks* deck
 
 Sample Projects: https://github.com/neo4j-partners/graph-on-databricks
 NeoCarta, semantic layer for Databricks and more: https://github.com/neo4j-labs/neocarta

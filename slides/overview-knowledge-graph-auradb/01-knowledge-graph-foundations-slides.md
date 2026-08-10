@@ -33,9 +33,9 @@ Graph databases, Cypher, the aircraft digital twin graph, and the managed servic
 
 <!--
 The deck runs in two movements. First the concept: what a graph
-database is, what makes it a knowledge graph, and the schema this
-workshop uses. Then the product: Aura, and the tools participants
-open in Lab 1.
+database is, what it is good at, what makes it a knowledge graph, and
+the schema this workshop uses. Then the product: Aura, the tools
+participants open in Lab 1, and the wider platform those tools sit in.
 -->
 
 
@@ -52,6 +52,18 @@ A graph database models data as **nodes** and **relationships**.
 Connections are **stored as first-class structures**, not computed at query time through joins.
 
 <!-- The whole workshop rests on this reframe: a relational database figures out how rows connect at query time, through a join. A graph database stores the connection itself, as a relationship, at write time. -->
+
+---
+
+![bg contain](../images/graph_is_flexible.svg)
+
+<!-- The first payoff of storing connections instead of computing them: new data attaches to what is already there. No migration, no new join tables, no rewriting the queries that already work. Lab 3 is this slide in practice, layering Document and Chunk nodes onto a finished aircraft graph without touching it. -->
+
+---
+
+![bg contain](../images/graph_explore_hidden_patterns.svg)
+
+<!-- Three question shapes a graph answers that a table cannot. What is important is centrality. What is unusual is a pattern that repeats where it should not, like two people sharing an email. What is next is a missing edge worth predicting. Keep this brief: it names the category of question the rest of the workshop asks about aircraft. -->
 
 ---
 
@@ -237,6 +249,12 @@ Nine node labels carry the fleet, its operating history, and its maintenance rec
 
 ---
 
+![bg contain](../images/graph_intelligence_business_use_cases.svg)
+
+<!-- The aircraft digital twin is one instance of a general shape. Fraud rings, Customer 360, recommendation and supply chain are all the same query: follow relationships far enough to see something a single table cannot show. Name the industry closest to the room and move on. This closes the concept half of the deck. -->
+
+---
+
 ## Neo4j Aura
 
 Neo4j Aura is a **fully managed cloud graph database service**. No infrastructure to maintain, automatic scaling with data and query volume, enterprise-grade security, deployed on AWS, GCP, or Azure.
@@ -262,3 +280,15 @@ section { font-size: 24px; }
 **Graph Analytics:** Explore includes centrality and community detection. The full 65-plus algorithm library runs through Aura Graph Analytics serverless sessions. AuraDB Free carries none of it: the GDS notebooks here are take-home material, read now, run later on an instance with the plugin.
 
 <!-- Query Workspace is where most lab time is spent, and the Cypher on the earlier slides is what participants type into it. Be direct about the Free tier limit: no PageRank or community detection on this instance. -->
+
+---
+
+![bg contain](../images/graph_intelligence_platform.svg)
+
+<!-- Where the tools from the last slide sit. Three layers: the database and its algorithms at the bottom, the graph tools in the middle, the AI layer on top. Participants touch the middle layer in Labs 1 and 2 and the top layer in Labs 3, 5 and 6. Do not read the boxes out. The point is that Aura is one product with a stack behind it, not a database with add-ons. -->
+
+---
+
+![bg contain](../images/neo4j_supercharges_agents.svg)
+
+<!-- The forward pointer, and the reason this workshop exists. Every one of the five shows up later: GraphRAG in Lab 3, the knowledge layer over the lakehouse in Lab 2, agent memory in Lab 6, and multi-hop reasoning in the Lab 5 supervisor agent. End here, then send the room to Lab 1 to create their Aura instance. -->

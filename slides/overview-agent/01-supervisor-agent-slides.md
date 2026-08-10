@@ -60,13 +60,11 @@ Retrievers become tools. The agent matches a question to a tool description, not
 
 **ReAct**: Reason, then Act, then Observe, then Respond, or loop again.
 
-```
-1. Receive: "How many critical events does Engine #1 on N10001 have?"
-2. Reason: this asks for a count
-3. Act: call the database query tool
-4. Observe: result = 7
-5. Respond: "Engine #1 on N10001 has 7 critical maintenance events."
-```
+1. **Receive:** "How many critical events does Engine #1 have?"
+2. **Reason:** this asks for a count
+3. **Act:** call the database query tool
+4. **Observe:** the result comes back, seven
+5. **Respond** in plain language, or loop again
 
 Complex questions cycle more than once. The supervisor ahead is this same loop, run over three stores instead of one.
 
@@ -80,6 +78,18 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 - **None of the three answers a real question alone.** This lab builds what decides which one to reach for
 
 <!-- Nothing here is new data, and the routing decision is the hard part. Lab 4's compound agent demo built this from a form in Agent Bricks; this lab writes it in code, with the rule visible. -->
+
+---
+
+## What a Genie Agent Is
+
+- **A Databricks-native agent over Unity Catalog tables**, built from a form in Lab 4 Part A
+- **Domain knowledge, then SQL:** it reads table and column descriptions, not the schema alone
+- **English in, governed SQL out.** Every generated query is read-only
+- **Measurement questions only:** averages, trends, comparisons over `sensor_readings`
+- **Here it is one tool among three**, called by the supervisor rather than asked directly
+
+<!-- Participants already built this one, so the slide is a reminder, not a lesson. The comments that carry the domain were written by the provisioning script, which is why the same Genie space answers the same way in thirty workspaces. It cannot see the graph or the manuals: that boundary is what makes routing a real decision. -->
 
 ---
 
@@ -105,88 +115,17 @@ Nothing in this graph writes to Neo4j.
 
 ---
 
-## Wiring the Graph
+## Wiring the LangGraph State Graph
 
-```python
-builder = StateGraph(AgentState)
-builder.add_node("supervisor", supervisor_node)
-builder.add_node("genie_node", genie_node)
-builder.add_node("cypher_node", cypher_node)
-builder.add_node("graphrag_node", graphrag_node)
-builder.add_node("synthesize", synthesize_node)
-builder.add_edge(START, "supervisor")
-builder.add_conditional_edges("supervisor", route_from_supervisor, {...})
-for tool_name in ("genie_node", "cypher_node", "graphrag_node"):
-    builder.add_edge(tool_name, "supervisor")
-builder.add_edge("synthesize", END)
-```
+**This graph is LangGraph's, not Neo4j's.** Nodes are functions, edges are control flow.
 
-State is a `TypedDict`: `question`, `route`, `trace`, `findings`, `answer`.
+- **Five nodes:** the supervisor, the three tools, and synthesize
+- **One conditional edge out of the supervisor**, choosing a tool or choosing to answer
+- **One plain edge back from every tool**, so the loop always returns to the decision
+- **State is a `TypedDict`:** question, route, trace, findings, answer
+- **Each node returns only what changed**, and `trace` records the tools in order
 
-<!-- Not the interesting part of the lab. Each node returns what changed; trace is the ordered list of tools called, read later by the routing measurement. -->
-
----
-
-## The Pair the Model Gets Wrong, and Where to Route It
-
-**`cypher_node` and `graphrag_node` both end in a Neo4j traversal.**
-
-```cypher
-WITH node
-OPTIONAL MATCH (previous:Chunk)-[:NEXT_CHUNK]->(node)
-OPTIONAL MATCH (node)-[:NEXT_CHUNK]->(following:Chunk)
-MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)
-OPTIONAL MATCH (doc)-[:APPLIES_TO]->(a:Aircraft)-[:HAS_SYSTEM]->(s:System)
-```
-
-That is the GraphRAG tail: the passage and the aircraft are one hop away, not in the embedding.
-
-**Describing tools by what they do at the end cannot tell these two apart.** Route on where the question starts instead:
-
-| Question | Route | Why |
-|---|---|---|
-| "What maintenance events did N10004 have?" | `cypher_node` | N10004 is a node |
-| "What is the procedure for an EGT exceedance?" | `graphrag_node` | EGT, Exhaust Gas Temperature, is a phrase in a manual, not a node |
-
-<!-- The Cypher tail is what makes graphrag_node worth having, and also what makes routing hard. Tune the prompt by adding the pair that went to the wrong tool, then rerun the measurement. Worth knowing before someone opens tools.py: the current 213-word prompt does not state this rule, and routes both rows here correctly 5 times out of 5 anyway. It is how to think about the pair, not a line the model needs read to it. What the prompt does keep is the case the model cannot infer, a documented limit being a graph property rather than a reading. -->
-
----
-
-## Two Prompt Rules, Each Bought with a Measured Failure
-
-**The wiring is thirty lines. The prompt is the lab.**
-
-**Rule One, the direction rule.** An `AFFECTS_AIRCRAFT` arrow written backwards matched nothing and returned zero rows with no error, on an aircraft that has maintenance events.
-
-```cypher
-// Wrong: arrow points away from the named noun, matches nothing
-(:Aircraft {tail_number: 'N10004'})-[:AFFECTS_AIRCRAFT]->(:MaintenanceEvent)
-// Right: the arrow runs FROM the event TO the thing affected
-(:MaintenanceEvent)-[:AFFECTS_AIRCRAFT]->(:Aircraft {tail_number: 'N10004'})
-```
-
-**Rule Two, never substitute a limit for a measurement.** Asked for the aircraft with the highest average vibration, `cypher_node` answered with an `OperatingLimit.maxValue`: a shared ceiling, not a reading. For any measured-value question, return exactly:
-
-```cypher
-RETURN 'The graph holds no sensor readings.' AS cannot_answer
-```
-
-<!-- Zero rows with no error is the worst failure mode: valid query, healthy database, confidently empty answer. Fixed with schema text in the prompt, not an undirected pattern, which would have shipped a habit Lab 1 argues against. The refusal string is exact, so synthesis can recognize it instead of papering over a limit. -->
-
----
-
-## Measured Routing
-
-Twelve questions, four per tool, scored on the first tool the supervisor chose.
-
-| Slice | Accuracy |
-|---|---|
-| Overall | 12/12 (100%) |
-| **`cypher_node` vs `graphrag_node` alone** | **8/8 (100%)** |
-
-Re-run 2026-08-09 against the current 213-word `SUPERVISOR_PROMPT`, five passes rather than one. Every pass identical, 60 out of 60, no spread. The 865-word prompt it replaced scored the same 12/12 on 2026-08-08.
-
-<!-- Both tools end in a graph traversal, so that pair is where routing fails first. Read the last sentence out loud: a prompt a quarter the length scores the same, which is what this set can tell you and also the limit of what it can tell you. Twelve questions no longer separate the two prompts, so the real comparison is the 17-question ablation in test-prompt/, where the short prompt scored 1.000 and the long one 0.982. A number without a date and a prompt version is decoration; Section 9 reproduces the figure above. -->
+<!-- Say the first line out loud: this room has spent all day in Neo4j graphs, and the collision of names is the one thing that confuses people here. Thirty lines of builder code, and not the interesting part of the lab. -->
 
 ---
 
@@ -218,17 +157,6 @@ aircraft's history, the manual returns the procedure.
 
 ---
 
-## Degradation, and Why a Bolt Driver Rather Than MCP
-
-- **`VectorCypherRetriever` raises when its index is missing.** The builder checks first: no `maintenanceChunkEmbeddings` index means `graphrag_node` is dropped from `available_tools`, and the routing enum narrows to what actually exists
-- **The graph still compiles and still answers** from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change
-- **The Lab 4 demo reached Neo4j through an MCP server**, the right shape for a governed, admin-managed instance. Your Aura instance is yours: its password sits in the secret scope Lab 1 wrote, and the Neo4j Python driver opens a Bolt session against it in one line
-- **Governance pays when the graph is shared.** It costs more than it returns when the graph has exactly one user
-
-<!-- Tool sets discovered at build time degrade; assumed at import time they fail. Not MCP being wrong, just the wrong shape for one user. No plaintext password is typed anywhere in Lab 5's normal path. -->
-
----
-
 ## Deploying the Agent: What Actually Changes
 
 - **A notebook demo runs with your permissions.** It works because you happen to have them
@@ -247,20 +175,12 @@ aircraft's history, the manual returns the procedure.
 
 ## The Wrapper: MLflow `ResponsesAgent`
 
-The graph is not served directly. It is wrapped.
-
-```python
-class FleetOpsAgent(ResponsesAgent):
-    def predict(self, request: ResponsesAgentRequest) -> ResponsesAgentResponse: ...
-    def predict_stream(self, request: ResponsesAgentRequest) -> Iterator[...]: ...
-
-AGENT = FleetOpsAgent()
-set_model(AGENT)
-```
+**The graph is not served directly. It is wrapped.**
 
 - **A compiled graph is an object in memory**, holding an open driver and a live session
 - **`ResponsesAgent`** is the interface Model Serving speaks: one request in, output items out
-- **`set_model(AGENT)`** makes the file the model rather than a library beside it
+- **Two methods to fill in:** one that answers, one that streams
+- **`set_model`** makes the file itself the model, rather than a library beside it
 
 <!-- A LangGraph object must be rebuilt from nothing on a machine no one logged into. Connections open on the first request, not at load, so a failure answers with its reason instead of hiding in build logs. -->
 
@@ -268,20 +188,11 @@ set_model(AGENT)
 
 ## Register to Unity Catalog: Resources vs Credentials
 
-```python
-mlflow.set_registry_uri("databricks-uc")
-logged = mlflow.pyfunc.log_model(
-    name="agent",
-    python_model="agent.py",           # models-from-code, not a pickle
-    resources=RESOURCES,               # everything the endpoint may reach
-    pip_requirements=PIP_REQUIREMENTS, # pinned, not inferred
-    registered_model_name=UC_MODEL_NAME,
-)
-```
-
-- **Databricks objects are declared and granted:** `DatabricksGenieSpace`, `DatabricksSQLWarehouse`, `DatabricksTable`, `DatabricksServingEndpoint`. A Genie grant is not a warehouse grant
-- **Everything else is a credential and travels as a reference:** `NEO4J_PASSWORD` arrives as `{{secrets/<scope>/neo4j-password}}`
-- **The trap:** log the Genie Agent without its warehouse and it deploys cleanly. Every sensor question then fails, `not authorized to use or monitor this SQL Endpoint`
+- **Logged as readable source**, not a pickle: `agent.py` ships as the model
+- **Requirements are pinned**, not inferred from the notebook that happened to run
+- **Databricks objects are declared and granted:** the Genie space, the SQL warehouse, the tables, the embedding endpoint. A Genie grant is not a warehouse grant
+- **Everything else is a credential and travels as a reference:** the Neo4j password stays a secret-scope pointer
+- **The trap:** declare the Genie space without its warehouse and it deploys cleanly, then every sensor question fails on authorization
 
 <!-- Models-from-code means agent.py ships as source, not a pickle. Aura cannot be granted, so it travels as an environment variable resolved at startup; dbutils does not exist in a serving container, which is why agent.py reads os.environ instead. The warehouse omission fails late and quietly: healthy endpoint, broken telemetry only. -->
 
@@ -289,27 +200,11 @@ logged = mlflow.pyfunc.log_model(
 
 ## Deploy, Then Score
 
-```python
-mlflow.set_experiment(f"/Users/{CURRENT_USER}/{ENDPOINT_NAME}")
-deployment = agents.deploy(
-    UC_MODEL_NAME, MODEL_VERSION,
-    endpoint_name=ENDPOINT_NAME,
-    environment_vars=ENVIRONMENT_VARS,
-    scale_to_zero=True,
-)
-```
-
-`agents.deploy` creates the endpoint, attaches the version, applies the environment block, and grants the declared resources. A first deploy takes roughly sixteen minutes; the call returns in under one.
-
-```python
-results = mlflow.genai.evaluate(
-    data=EVAL_PAIRS,
-    predict_fn=predict_fn,        # calls the endpoint, not a notebook copy
-    scorers=[routing, Correctness(), RelevanceToQuery()],
-)
-```
-
-**Low `Correctness` with `routing` at 1.0 is a prompt or data problem. Low `routing` is a supervisor problem.**
+- **One deploy call does four things:** creates the endpoint, attaches the version, applies the environment block, grants the declared resources
+- **It returns in under a minute.** The endpoint is live in roughly sixteen
+- **Set the MLflow experiment first**, or the endpoint runs with no traces to read
+- **Score the endpoint, not a notebook copy:** a routing scorer, plus correctness and relevance
+- **Low correctness with routing at 1.0** is a prompt or data problem. **Low routing** is a supervisor problem
 
 <!-- Set the experiment before deploying, or the endpoint produces no traces. routing needs no judge; predict_fn scores the deployed endpoint's own permissions, not a notebook copy. -->
 
@@ -317,14 +212,11 @@ results = mlflow.genai.evaluate(
 
 ## The Names Are a Contract
 
-```python
-model_name(scope)     # databricks-neo4j-workshop.agents.fleet_ops_assistant_<you>
-endpoint_name(scope)  # fleet-ops-assistant-<you>
-```
-
-- **Functions in `agent.py`**, not strings a participant types. Renaming either breaks Lab 6, which redeploys *this* endpoint with memory added rather than standing up a second one
-- **Both carry the participant's slug**, taken from the same secret scope the credentials come from. The endpoint has to: its name is unique across the account. The model does too, so that thirty people are not registering versions into one model the first of them owns
-- **Two write privileges pay for it:** `CREATE MODEL` on the `agents` schema to register, and `CREATE TABLE` on the same schema because every `agents.deploy` creates inference tables beside the model. Both granted to the class at provisioning time. No `MODIFY`, so nobody can touch anybody else's model
+- **The model name and the endpoint name are functions**, not strings a participant types
+- **Both carry the participant's slug**, taken from the same secret scope the credentials come from
+- **Endpoint names are unique across the account.** Model names carry the slug too, so thirty people are not writing versions into one model the first of them owns
+- **Two write privileges pay for it:** create a model, and create tables, because every deploy writes inference tables beside the model
+- **Renaming either breaks Lab 6**, which redeploys *this* endpoint with memory added rather than standing up a second one
 
 <!-- Model name, endpoint name and credentials all trace to the same secret scope so they cannot drift. Do not rename these: Lab 6 expects the same model and endpoint back. -->
 
