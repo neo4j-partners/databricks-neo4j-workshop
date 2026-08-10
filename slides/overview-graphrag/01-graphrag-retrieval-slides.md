@@ -279,6 +279,20 @@ Neither search alone covers every question. **Hybrid search runs vector search a
 
 ---
 
+## Hybrid Search Re-ranking
+
+Vector scores (cosine similarity) and fulltext scores (Lucene) are not on the same scale, so they cannot be merged as-is.
+
+- Each list is normalized first: every score divided by that list's own top score, so both land in a comparable 0–1 range
+- **Naive ranker** (the default): keep whichever normalized score is higher per node, then sort by that
+- **Linear ranker**: blend the two with a weight, `alpha`, so vector and fulltext contribute in a chosen proportion instead of winner-take-all
+
+Neo4j does this merge; there is no separate reranking model or extra network call.
+
+<!-- Two rankers, both just arithmetic on scores already returned by the two indexes. Naive: normalize each list to 0-1, take the max of the two per node. Linear: normalize the same way, then weighted sum with alpha (vector_score * alpha + fulltext_score * (1 - alpha)), so a technical corpus can be tuned to favor exact terms over paraphrase or vice versa. No cross-encoder, no LLM call, no added latency worth mentioning: it is the CALL subquery in the retriever's own Cypher. -->
+
+---
+
 ## Hybrid Retrievers
 
 - `HybridRetriever` takes the same driver and embedder as the other retrievers, plus **two** index names: `vector_index_name` and `fulltext_index_name`
