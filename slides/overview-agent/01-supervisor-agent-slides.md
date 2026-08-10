@@ -87,7 +87,7 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 - **Domain knowledge, then SQL:** it reads table and column descriptions, not the schema alone
 - **English in, governed SQL out.** Every generated query is read-only
 - **Measurement questions only:** averages, trends, comparisons over `sensor_readings`
-- **Here it is one tool among three**, called by the supervisor rather than asked directly
+- **Here it is `genie_node`**, one tool among three, called by the supervisor rather than asked directly
 
 <!-- Participants already built this one, so the slide is a reminder, not a lesson. The comments that carry the domain were written by the provisioning script, which is why the same Genie space answers the same way in thirty workspaces. It cannot see the graph or the manuals: that boundary is what makes routing a real decision. -->
 
@@ -97,15 +97,16 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 
 ![Supervisor routing to a Genie node, a Cypher node and a GraphRAG node](../../site/modules/ROOT/images/lab5-agent-topology.svg)
 
-Nothing in this graph writes to Neo4j.
+**A LangGraph graph, not a Neo4j one:** nodes are functions, edges are control flow.
 
-<!-- Five nodes, one decision: the supervisor picks a tool or picks synthesize. Every tool reports back rather than answering; point at those arrows, the slide's real content. -->
+Nothing here writes to Neo4j.
+
+<!-- Five nodes, one decision: the supervisor picks a tool or picks synthesize. Every tool reports back rather than answering; point at those arrows, the slide's real content. Get the name collision out of the way here, on the picture, because the room has spent all day calling something else a graph. -->
 
 ---
 
-## The Three Tools, and the Loop That Calls Them
+## The Graph Tools, and the Loop That Calls Them
 
-- **`genie_node`:** SQL over Delta telemetry, through the Genie Agent. The only tool that can see a reading
 - **`cypher_node`:** text to Cypher over your own Aura instance, read-only, one retry with the error carried back to the model
 - **`graphrag_node`:** a `VectorCypherRetriever` over the Lab 3 manual chunks, with a Cypher tail run from each hit
 - **Every tool edge points back to the supervisor.** It sees the result and can pick again, so one question can reach two stores
@@ -115,17 +116,16 @@ Nothing in this graph writes to Neo4j.
 
 ---
 
-## Wiring the LangGraph State Graph
+## What the Agent Carries Between Nodes
 
-**This graph is LangGraph's, not Neo4j's.** Nodes are functions, edges are control flow.
+**The builder is thirty lines, and none of them are the interesting part.**
 
-- **Five nodes:** the supervisor, the three tools, and synthesize
-- **One conditional edge out of the supervisor**, choosing a tool or choosing to answer
-- **One plain edge back from every tool**, so the loop always returns to the decision
 - **State is a `TypedDict`:** question, route, trace, findings, answer
-- **Each node returns only what changed**, and `trace` records the tools in order
+- **Each node returns only what changed**, not a whole new state
+- **`findings` accumulate**, so synthesize sees every tool's result at once
+- **`trace` is the ordered list of tools called**, and the routing score reads it
 
-<!-- Say the first line out loud: this room has spent all day in Neo4j graphs, and the collision of names is the one thing that confuses people here. Thirty lines of builder code, and not the interesting part of the lab. -->
+<!-- The wiring is on the previous picture; this is the part that picture cannot show. Findings accumulating is why one question can reach two stores and still come back as one answer. -->
 
 ---
 
@@ -225,8 +225,7 @@ aircraft's history, the manual returns the procedure.
 ## Summary
 
 - **One supervisor, three tool nodes**, over Delta telemetry, your own graph, and the Lab 3 manual chunks, looping back to itself until every part of a question has an answer against it
-- **`cypher_node` and `graphrag_node` are adjacent** because GraphRAG has a Cypher tail. Route on where the question starts, not on what a tool does at the end
-- **Two prompt rules, each bought with a measured failure:** a backwards arrow that returned zero rows silently, and a limit returned as a measurement
+- **Route on where a question starts**, not on what a tool does at the end: two of the three tools finish in a graph traversal
 - **Deployed, the graph becomes an endpoint** with its own identity: resources declared and granted, credentials referenced, the model logged as readable source
 - **That endpoint is a building block, too:** registered as a serving endpoint, it is what an Agent Bricks Supervisor can route to alongside a Genie Agent with no orchestration code, the same shape Lab 4's instructor demo showed over MCP
 
