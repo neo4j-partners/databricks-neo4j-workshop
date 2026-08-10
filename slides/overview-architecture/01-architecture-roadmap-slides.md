@@ -100,34 +100,6 @@ instructor's Aura instance, MCP server, or MCP connection.
 
 ---
 
-## Neo4j Aura
-
-Neo4j Aura is a **fully managed cloud graph database service**. No infrastructure to maintain, automatic scaling with data and query volume, enterprise-grade security, deployed on AWS, GCP, or Azure.
-
-This workshop runs on AuraDB Free.
-
-<!-- Aura is the hosted product everything else builds on. The graph-versus-relational argument already landed twice in the What is a Knowledge Graph deck, so do not run it again here. This slide is the product and the tier you are about to sign up for. -->
-
----
-
-<style scoped>
-section { font-size: 24px; }
-</style>
-
-## Aura Developer Tools
-
-**Query Workspace:** Cypher editor with syntax highlighting, auto-completion, saved query collections, and log forwarding to your cloud logging service.
-
-**Explore:** visual, no-code graph exploration on an interactive canvas, no Cypher required.
-
-**Dashboards:** low-code bar charts, line charts, geographic maps, and 3D graph visualizations for non-technical stakeholders.
-
-**Graph Analytics:** Explore includes centrality and community detection. The full 65-plus algorithm library runs through Aura Graph Analytics serverless sessions. AuraDB Free carries none of it: the GDS notebooks here are take-home material, read now, run later on an instance with the plugin.
-
-<!-- Query Workspace is where most lab time is spent. Be direct about the Free tier limit: no PageRank or community detection on this instance. -->
-
----
-
 ## Workshop Infrastructure: Personal Resources
 
 Each participant gets their own environment to work in.

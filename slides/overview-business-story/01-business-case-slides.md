@@ -165,6 +165,30 @@ product claims to what has been publicly announced.
 
 ---
 
+<style scoped>
+/* Four columns of prose need well under the theme's 29px to fit one slide. */
+section { font-size: 18px; }
+table { width: 100%; }
+td, th { vertical-align: top; }
+</style>
+
+# Neo4j + Databricks: 200+ Joint Customers
+
+| Customer | Vertical | Core Solution | Business Impact |
+| --- | --- | --- | --- |
+| Gilead | Healthcare & Life Sciences | Built an advanced graph analytics platform to combat **pharmaceutical fraud** by unifying disparate data sources | **1000x** faster fraud pattern detection, **50%** reduction in false positives for investigations and **20%** improvement in fraud detection rates |
+| iFood | Retail | Implemented a data-driven solution to process massive transaction volume for **real-time fraud intelligence** | **Real-Time Enforcement** against promotional fraud and financial crime to protect platform integrity |
+| Comcast | Communications | Developed a **Digital Twin** of its nationwide network, integrating over 20 data sources. | **Accelerate Issue Resolution** and **Enhance Operational Efficiency** by accurately identifying affected areas |
+| Ashley Furniture | Retail | Built an intelligent supply chain **Digital Twin** to model and analyze complex supply chain relationships with real-time connectivity | Enables modeling of complex supply chain relationships with **real-time connectivity** for **proactive OTIF Optimization** |
+
+<!--
+Instructor: the two Digital Twin rows are the ones to dwell on. Comcast and
+Ashley Furniture are the same pattern the workshop builds, in a different
+vertical, so point back here when Lab 2 loads the Aircraft Digital Twin.
+-->
+
+---
+
 ## Opening Demo
 
 See the finished build answer the hero question live.

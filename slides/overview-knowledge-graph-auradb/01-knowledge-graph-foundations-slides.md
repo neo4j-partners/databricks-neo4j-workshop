@@ -27,9 +27,17 @@ ol > li {
 }
 </style>
 
-# What is a Knowledge Graph
+# Knowledge Graphs and AuraDB
 
-Graph databases, Cypher, and the aircraft digital twin graph
+Graph databases, Cypher, the aircraft digital twin graph, and the managed service that runs it
+
+<!--
+The deck runs in two movements. First the concept: what a graph
+database is, what makes it a knowledge graph, and the schema this
+workshop uses. Then the product: Aura, and the tools participants
+open in Lab 1.
+-->
+
 
 ---
 
@@ -226,3 +234,31 @@ Nine node labels carry the fleet, its operating history, and its maintenance rec
 **Typed relationships** let traversal patterns follow specific paths efficiently.
 
 <!-- The alternative is one CONNECTED_TO type with a {kind: "affects_system"} property. Neo4j indexes relationship types, not arbitrary property values, so typed relationships stay fast as the graph grows. -->
+
+---
+
+## Neo4j Aura
+
+Neo4j Aura is a **fully managed cloud graph database service**. No infrastructure to maintain, automatic scaling with data and query volume, enterprise-grade security, deployed on AWS, GCP, or Azure.
+
+This workshop runs on AuraDB Free.
+
+<!-- The pivot from concept to product. Aura is what everything else builds on. The graph-versus-relational argument already landed twice earlier in this deck, so do not run it again here. This slide is the product and the tier participants are about to sign up for in Lab 1. -->
+
+---
+
+<style scoped>
+section { font-size: 24px; }
+</style>
+
+## Aura Developer Tools
+
+**Query Workspace:** Cypher editor with syntax highlighting, auto-completion, saved query collections, and log forwarding to your cloud logging service.
+
+**Explore:** visual, no-code graph exploration on an interactive canvas, no Cypher required.
+
+**Dashboards:** low-code bar charts, line charts, geographic maps, and 3D graph visualizations for non-technical stakeholders.
+
+**Graph Analytics:** Explore includes centrality and community detection. The full 65-plus algorithm library runs through Aura Graph Analytics serverless sessions. AuraDB Free carries none of it: the GDS notebooks here are take-home material, read now, run later on an instance with the plugin.
+
+<!-- Query Workspace is where most lab time is spent, and the Cypher on the earlier slides is what participants type into it. Be direct about the Free tier limit: no PageRank or community detection on this instance. -->

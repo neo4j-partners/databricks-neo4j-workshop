@@ -39,7 +39,7 @@ Eight workshop decks, one folder each, listed in run-of-show order. Anything not
 | # | Folder | Deck | Pairs with |
 |---|--------|------|-----------|
 | 1 | `overview-business-story/` | The Business Case for GraphRAG | Opening |
-| 2 | `overview-knowledge-graph/` | What is a Knowledge Graph | Labs 1 and 2 |
+| 2 | `overview-knowledge-graph-auradb/` | Knowledge Graphs and AuraDB | Labs 1 and 2 |
 | 3 | `overview-lakehouse-to-graph/` | Neo4j + Databricks | Labs 2 and 4A |
 | 4 | `overview-architecture/` | The Aircraft Digital Twin: Dataset and Setup | Before Lab 1 |
 | 5 | `overview-graphrag/` | GraphRAG Retrieval | Lab 3 |

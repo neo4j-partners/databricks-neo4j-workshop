@@ -26,7 +26,7 @@ ATTACH="../site/modules/ROOT/attachments"
 OUT="$ATTACH/slides"
 
 # Workshop decks, in run-of-show order. One output directory per topic folder.
-WORKSHOP_TOPICS="overview-business-story overview-knowledge-graph overview-lakehouse-to-graph overview-architecture overview-graphrag overview-agent overview-agent-memory overview-mcp"
+WORKSHOP_TOPICS="overview-business-story overview-knowledge-graph-auradb overview-lakehouse-to-graph overview-architecture overview-graphrag overview-agent overview-agent-memory overview-mcp"
 
 build_decks() {
   for topic in $WORKSHOP_TOPICS; do

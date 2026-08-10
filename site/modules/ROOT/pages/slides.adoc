@@ -17,8 +17,8 @@ Every deck is embedded on its own page. Each page also carries an **Open full sc
 | Why LLMs and vector search alone fall short, and what GraphRAG is worth
 | xref:part1-graph-foundations.adoc[Part 1]
 
-| xref:slides/slides-knowledge-graph-foundations.adoc[2. What is a Knowledge Graph]
-| Nodes, relationships and Cypher, then the aircraft schema itself
+| xref:slides/slides-knowledge-graph-foundations.adoc[2. Knowledge Graphs and AuraDB]
+| Nodes, relationships and Cypher, the aircraft schema itself, then Aura and its developer tools
 | xref:lab1.adoc[Lab 1], xref:lab2.adoc[Lab 2]
 
 | xref:slides/slides-neo4j-databricks.adoc[3. Neo4j + Databricks]
