@@ -101,7 +101,7 @@ Nothing in this graph writes to Neo4j.
 - **Every tool edge points back to the supervisor.** It sees the result and can pick again, so one question can reach two stores
 - **The decision returns as JSON**, constrained by a schema, not read out of prose
 
-<!-- No Reading nodes in Neo4j is a Lab 2 design choice, so every measurement question routes to Genie. MAX_TOOL_CALLS is the backstop; the prompt's stopping rule is what actually works. ROUTE_SCHEMA forces a reason field nobody reads, because writing one down sharpens the choice. -->
+<!-- No Reading nodes in Neo4j is a Lab 2 design choice, so every measurement question routes to the Genie Agent. MAX_TOOL_CALLS is the backstop; the prompt's stopping rule is what actually works. ROUTE_SCHEMA forces a reason field nobody reads, because writing one down sharpens the choice. -->
 
 ---
 

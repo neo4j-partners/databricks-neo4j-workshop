@@ -94,7 +94,7 @@ interested accounts.
 - **Table-level permissions:** UC grants (`SELECT`, `USE CATALOG`, `BROWSE`) on individual Neo4j-backed tables, not just connection-level access
 - **Managed OAuth:** built-in IdP flows (Entra ID, Okta) instead of manually embedding credentials
 - **Per-table audit logging:** every query appears in `system.access.audit` with full context
-- **Genie natural language queries:** users ask about graph data in plain English without materialized Delta copies
+- **Genie Agent natural language queries:** users ask about graph data in plain English without materialized Delta copies
 - **Optimized query pushdown:** filters, aggregates, sorts, and joins pushed down as Cypher rather than generic JDBC
 
 <!--

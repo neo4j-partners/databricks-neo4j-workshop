@@ -48,7 +48,7 @@ Use it when someone asks the question, not as part of the main run.
 - **Setup:** upload the connector to a UC Volume, register Neo4j as a JDBC connection
 - **The driver rewrites SQL as Cypher:** `SELECT COUNT(*) FROM Aircraft` arrives as `MATCH (n:Aircraft) RETURN count(n)`. Node labels behave like tables
 - **`remote_query`:** runs Cypher inside Neo4j and hands the rows back as a table
-- **Puts graph data in Power BI, Tableau and Genie** with nobody learning a second language
+- **Puts graph data in Power BI, Tableau and Genie Agents** with nobody learning a second language
 - **Public Preview:** custom-driver JDBC reached Public Preview at Runtime 18.1
 
 <!--
@@ -62,7 +62,7 @@ SELECT COUNT(*) FROM Aircraft arrives at the graph as MATCH
 The remote_query function is how you call it. It runs the query
 inside Neo4j and hands the rows back as a table, so one statement can
 join graph results to Delta tables. That is what puts graph data in
-Power BI, Tableau and Genie with nobody learning a second language.
+Power BI, Tableau and Genie Agents with nobody learning a second language.
 
 Custom-driver JDBC reached Public Preview at Runtime 18.1. No lab
 builds this. It is on the slide so you know the option exists.

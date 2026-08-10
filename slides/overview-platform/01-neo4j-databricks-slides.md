@@ -73,7 +73,7 @@ Databricks scales tables. Neo4j scales connections. Most problems need both.
 |---|-----------|-------|
 | **Stores** | Tables and files | Nodes and relationships |
 | **Answers** | How much, how often | How is this connected, what is affected |
-| **AI capability** | Foundation Models, Genie | Vector indexes, GraphRAG, MCP |
+| **AI capability** | Foundation Models, Genie Agents | Vector indexes, GraphRAG, MCP |
 | **Strength** | Scale, aggregation, ML | Relationships, traversal, pattern matching |
 
 **The Spark Connector** moves data. **The Neo4j Custom JDBC Unity Catalog Connector** reads the graph as SQL without moving it. **MCP** lets agents query the graph directly. Together, the platforms stay connected at every layer.
@@ -89,7 +89,7 @@ connections on the other, and three connectors keeping them in sync.
 One copies, one reads in place, one hands the graph to an agent as a
 tool.
 
-Genie appears once, in the AI capability row. Do not explain it here.
+Genie Agents appear once, in the AI capability row. Do not explain them here.
 Lab 4 Part A is where participants build one.
 -->
 
@@ -162,7 +162,7 @@ The heuristic, if anyone asks where the line falls:
 
 The hero question from the opener needs three different kinds of retrieval.
 
-- **Genie over Delta:** what did the sensors read. Columnar, high volume, aggregate. Lab 4 Part A
+- **Genie Agent over Delta:** what did the sensors read. Columnar, high volume, aggregate. Lab 4 Part A
 - **Cypher over Neo4j:** what is this part connected to, and what else does it touch. Connected, variable depth. Labs 1 and 2
 - **GraphRAG over the manuals:** what does the procedure say. Text, retrieved by meaning. Lab 3
 

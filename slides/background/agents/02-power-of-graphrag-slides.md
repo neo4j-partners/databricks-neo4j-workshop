@@ -264,7 +264,7 @@ coordinate them. That's what we build next.
 
 ---
 
-## Databricks Genie: Natural Language to SQL
+## Databricks Genie Agents: Natural Language to SQL
 
 - **Compound AI system:** turns natural language into governed SQL
 - **Purpose-built for tabular data:** optimized for SQL generation against rows and columns
@@ -273,13 +273,13 @@ coordinate them. That's what we build next.
 - **Read-only execution:** generated queries can never modify your data
 
 <!--
-Genie is not a single LLM. It's a compound AI system with multiple
-interacting components specialized for natural language to SQL.
+A Genie Agent is not a single LLM. It's a compound AI system with
+multiple interacting components specialized for natural language to SQL.
 
-Genie queries any data registered in Unity Catalog: managed tables,
-external tables, foreign tables from federated sources like
+A Genie Agent queries any data registered in Unity Catalog: managed
+tables, external tables, foreign tables from federated sources like
 Snowflake, PostgreSQL, and BigQuery, plus views and materialized
-views. Unity Catalog provides the metadata that makes Genie smart:
+views. Unity Catalog provides the metadata that makes a Genie Agent smart:
 table names, column descriptions, primary/foreign key relationships.
 Column-level context is intelligently filtered so only relevant
 metadata reaches the model.
@@ -306,7 +306,7 @@ your data.
 - **Read-only by default:** generated queries can never modify production data
 
 <!--
-Just as Genie is purpose-built for SQL against tabular data, this
+Just as a Genie Agent is purpose-built for SQL against tabular data, this
 agent is purpose-built for Cypher against connected data. It
 understands graph patterns: paths, multi-hop traversals, cycle
 detection, shared-attribute matching.
@@ -410,7 +410,7 @@ agent, then synthesizes a single answer.
 - **Data layer (Deck 01):** governed Delta tables ↔ graph nodes via the Spark Connector
 - **Knowledge layer:** unstructured docs → chunks, embeddings, entities in the graph
 - **Retrieval layer:** vector search + graph traversal = GraphRAG
-- **Agent layer:** Genie (SQL) + Neo4j MCP (Cypher), supervisor routes between them
+- **Agent layer:** Genie Agent (SQL) + Neo4j MCP (Cypher), supervisor routes between them
 - **Next:** hands-on labs — build the graph, configure agents, query both platforms
 
 <!--
@@ -423,7 +423,7 @@ turned unstructured AML policy documents into chunks with
 embeddings and extracted entities cross-linked to the operational
 graph. GraphRAG combines vector search with graph traversal so
 agents receive richer context than text search alone. Specialized
-agents master one platform each: Genie for SQL, the Neo4j MCP
+agents master one platform each: the Genie Agent for SQL, the Neo4j MCP
 agent for Cypher. A supervisor routes questions to the right
 specialist and decomposes multi-source questions across both.
 

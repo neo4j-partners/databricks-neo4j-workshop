@@ -95,12 +95,12 @@ The virtual graph suits exploration and analysis over data that already lives in
 
 The virtual graph queries the lakehouse as a graph. SQL federation is the mirror image: it queries the graph as SQL, and the data stays in Neo4j.
 
-The point is who gets to ask. An analyst who writes SQL every day and has never seen Cypher can query the graph directly, from a notebook, from Power BI, or through Genie. Nobody learns a second query language, and no copy of the graph lands in the lakehouse first.
+The point is who gets to ask. An analyst who writes SQL every day and has never seen Cypher can query the graph directly, from a notebook, from Power BI, or through a Genie Agent. Nobody learns a second query language, and no copy of the graph lands in the lakehouse first.
 
 The https://github.com/neo4j-labs/neo4j-unity-catalog-connector[Neo4j Custom JDBC Unity Catalog Connector] does the translating. It is a driver you install once: upload it to a Unity Catalog Volume, then register Neo4j as a `TYPE JDBC` connection. After that the driver rewrites incoming SQL as Cypher, so node labels behave like tables and node properties behave like columns. `SELECT COUNT(*) FROM Aircraft` reaches the graph as `MATCH (n:Aircraft) RETURN count(n)`.
 
 ....
-  BI tools (Power BI, Tableau) / Genie / notebooks
+  BI tools (Power BI, Tableau) / Genie Agents / notebooks
         │  SQL
         ▼
   Neo4j Custom JDBC
@@ -132,7 +132,7 @@ Four properties define the pattern:
 * **No Cypher required**: any SQL client that reaches Unity Catalog reaches the graph.
 * **Your governance**: the connection carries Unity Catalog credentials, permissions, and audit.
 
-Neo4j's schema can also be published into Catalog Explorer, so graph labels are listed beside Delta tables and Genie can answer questions about them in plain English.
+Neo4j's schema can also be published into Catalog Explorer, so graph labels are listed beside Delta tables and a Genie Agent can answer questions about them in plain English.
 
 One cost shapes where this fits. Databricks runs custom drivers inside an isolated sandbox, which needs a memory setting raised and adds seconds to every query. That suits interactive analysis and BI, and rules out anything latency-sensitive. For bulk movement or a persistent operational graph, the ELT data pipeline is still the right path.
 
@@ -156,9 +156,9 @@ Where the Spark Connector carries algorithm results back as tables, <<sql-federa
 
 === GraphRAG and Agents: Multi-Platform Retrieval
 
-Specialized agents query each platform independently. The Neo4j MCP agent discovers the graph schema through `get_neo4j_schema` and executes read-only Cypher through `read_neo4j_cypher`. The Genie agent translates natural language into SQL against the lakehouse. A supervisor agent routes questions based on their nature: aggregations and trends go to Genie, relationships and traversals go to the graph agent, and questions that span both platforms decompose into sub-tasks before the supervisor synthesizes a combined answer.
+Specialized agents query each platform independently. The Neo4j MCP agent discovers the graph schema through `get_neo4j_schema` and executes read-only Cypher through `read_neo4j_cypher`. The Genie Agent translates natural language into SQL against the lakehouse. A supervisor agent routes questions based on their nature: aggregations and trends go to the Genie Agent, relationships and traversals go to the graph agent, and questions that span both platforms decompose into sub-tasks before the supervisor synthesizes a combined answer.
 
-image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Databricks governs and refines data through the medallion layers, Neo4j connects and traverses it as nodes and relationships with GDS algorithms, and agents reason over both platforms through a supervisor that routes between Genie and the Neo4j MCP agent]
+image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Databricks governs and refines data through the medallion layers, Neo4j connects and traverses it as nodes and relationships with GDS algorithms, and agents reason over both platforms through a supervisor that routes between the Genie Agent and the Neo4j MCP agent]
 
 === Connection Patterns by Stage
 
@@ -205,10 +205,10 @@ Grants on that path stop at the connection. Access is given on the connection as
 Databricks provides the agent development and serving stack through Mosaic AI, from foundation model access to multi-agent orchestration:
 
 * **Foundation models** through the AI Gateway handle embedding generation for vector search and the reasoning layer that agents use to select tools and synthesize answers.
-* **Genie** translates natural language into governed SQL against any data registered in Unity Catalog. Domain experts configure Genie Agents with curated table sets, domain terminology, and example queries. In this architecture, Genie handles the sensor telemetry half of the multi-agent system: questions about averages, trends, and fleet-wide comparisons route to Genie, which generates SQL against the lakehouse. All generated queries are read-only.
+* **Genie Agents** translate natural language into governed SQL against any data registered in Unity Catalog. Domain experts configure Genie Agents with curated table sets, domain terminology, and example queries. In this architecture, a Genie Agent handles the sensor telemetry half of the multi-agent system: questions about averages, trends, and fleet-wide comparisons route to the Genie Agent, which generates SQL against the lakehouse. All generated queries are read-only.
 * **Agent Bricks** is the control plane for deploying and orchestrating agents. The supervisor agent pattern is configurable through the workspace UI: register sub-agents, which can be Genie Agents, MCP servers or Unity Catalog functions, provide a capability description for each, and the supervisor routes questions based on their nature. Agents package with MLflow, register in Unity Catalog, and deploy to Model Serving endpoints that scale automatically. Built-in tracing and feedback collection through the Review App support production monitoring.
 
-See xref:lab4.adoc[Lab 4] for the hands-on implementation of Genie, the Neo4j MCP agent, and the supervisor.
+See xref:lab4.adoc[Lab 4] for the hands-on implementation of the Genie Agent, the Neo4j MCP agent, and the supervisor.
 
 == Agent Memory
 
@@ -230,7 +230,7 @@ Agent memory plugs into Agent Bricks the same way the other sub-agents do. The s
 * https://neo4j.com/docs/spark/current/[Neo4j Spark Connector Documentation]: Databricks-certified connector for bidirectional data flow
 * https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Custom JDBC Unity Catalog Connector]: SQL federation over the graph, with runnable notebooks
 * https://neo4j.com/docs/jdbc-manual/current/sql2cypher/[Neo4j SQL to Cypher Translation]: what the JDBC driver translates, and what it does not
-* https://docs.databricks.com/en/genie/index.html[Databricks Genie]: natural language SQL
+* https://docs.databricks.com/aws/en/genie-agents/[Genie Agents]: natural language SQL
 
 == Next Steps
 

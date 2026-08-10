@@ -192,8 +192,8 @@ change what the next cycle discovers.
 
 Extract uses the Spark Connector to pull graph data into Delta
 Lake tables in the lakehouse. Analyze happens entirely within
-the Databricks compute layer: Genie queries the extracted Delta
-tables for structured holdings, the Knowledge Assistant reads
+the Databricks compute layer: the Genie Agent queries the extracted
+Delta tables for structured holdings, the Knowledge Assistant reads
 unstructured documents from Unity Catalog Volumes, and the
 supervisor synthesizes both in a single session without crossing
 system boundaries. The lakehouse is the environment where the
@@ -238,8 +238,8 @@ denser, more expressive structure.
 <!--
 The multi-agent system is built on Mosaic AI Agent Bricks. The
 supervisor agent sits at the top, routing questions to the right
-specialist based on data shape. Genie handles structured queries
-against Delta Lake tables. The Knowledge Assistant handles
+specialist based on data shape. The Genie Agent handles structured
+queries against Delta Lake tables. The Knowledge Assistant handles
 document analysis via retrieval-augmented generation. The
 augmentation agent calls the supervisor endpoint, reasons over
 combined results from both specialists, and generates enrichment
@@ -252,7 +252,7 @@ proposals with confidence scores.
 
 - **Multi-Agent Supervisor:** a coordinator on Mosaic AI Agent Bricks with access to both the Genie endpoint and the Knowledge Assistant endpoint
   - Routes questions to the right specialist, synthesizes responses into unified context
-- **Genie:** translates natural language into SQL against Delta Lake tables
+- **Genie Agent:** translates natural language into SQL against Delta Lake tables
   - Handles quantitative questions: account balances, portfolio values, position sizes
   - Knows what customers hold; cannot determine what they want
 - **Knowledge Assistant:** an Agent Bricks managed agent with access to unstructured data via RAG
@@ -261,7 +261,7 @@ proposals with confidence scores.
 
 <!--
 Three components handle data retrieval. The supervisor routes
-and synthesizes. Genie answers "what does this customer hold?" by
+and synthesizes. The Genie Agent answers "what does this customer hold?" by
 generating SQL queries against Delta Lake tables that contain
 graph data extracted by the Spark Connector — customer nodes,
 account details, holdings, and relationship edges. These aren't
@@ -271,7 +271,7 @@ does this customer want?" by searching unstructured documents in
 Unity Catalog Volumes: customer profiles, advisor notes, and
 market research.
 
-Neither agent alone can detect a gap. Genie knows the portfolio
+Neither agent alone can detect a gap. The Genie Agent knows the portfolio
 contains only tech stocks. The Knowledge Assistant knows the
 customer mentioned renewable energy. The supervisor brings both
 answers into the same context so the next layer can reason over
@@ -647,7 +647,7 @@ and columns. The graph tables preserve the full relationship
 structure: start node, relationship type and properties, end node.
 
 Both formats are registered as Unity Catalog governed assets,
-available to Genie for SQL queries and to downstream pipeline
+available to the Genie Agent for SQL queries and to downstream pipeline
 tasks.
 -->
 
@@ -656,14 +656,14 @@ tasks.
 ## Gap Detection via Multi-Agent Supervisor
 
 - **Supervisor** compares graph holdings against document profiles
-- **Genie** queries Delta tables for actual portfolio positions
+- **Genie Agent** queries Delta tables for actual portfolio positions
 - **Knowledge Assistant** reads customer profiles from Unity Catalog Volume
 - **Result:** customers with interests but no matching holdings
 
 <!--
 The multi-agent supervisor compares graph contents, the structured
 holdings, against customer profile documents stored in a Unity
-Catalog Volume. Genie queries the Delta tables to determine what
+Catalog Volume. The Genie Agent queries the Delta tables to determine what
 each customer actually holds. The Knowledge Assistant reads the
 customer profile documents to surface stated interests and
 preferences.

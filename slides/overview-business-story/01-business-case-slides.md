@@ -71,29 +71,29 @@ Similar text is not the same as connected fact.
 
 ## The Shift to GraphRAG
 
-A knowledge graph stores the fleet as records plus the links between them: this sensor sits on that engine, that engine sits on this aircraft, this repair closed that finding. GraphRAG grounds the agent in one:
+A knowledge graph stores the fleet as records plus the links between them: this sensor sits on that engine, that engine on this aircraft, this repair closed that finding.
 
-- Retrieval returns **connected, verifiable facts**, not pattern-matched chunks
-- Graph traversal adds fleet context on top of vector similarity
-- Every answer **traces back** through the relationships that produced it
-- **Fewer tokens**: the graph sends the handful of connected facts the answer needs, instead of stuffing the prompt with everything that looked similar
-- **Governed retrieval**: retrieval stays inside permissioned data, so governance lives in the same graph as the facts rather than being bolted on afterward
+- **Connected, verifiable facts**, not pattern-matched chunks
+- **Traversal on top of similarity**: fleet context vectors cannot reach
+- **Traceable**: every answer walks back through the relationships behind it
+- **Fewer tokens**: only the facts the answer needs, not everything that looked similar
+- **Governed retrieval**: permissions live in the same graph as the facts
 
-The agent answers from evidence the graph can defend, not from a statistical guess about what an engine manual probably says.
+The agent answers from evidence the graph can defend, not a guess about what a manual probably says.
 
 ---
 
 ## The Evidence
 
-The UK's National Innovation Centre for Data tested this across 510 complex questions, some needing dozens or hundreds of steps. Neo4j sponsored the study, NICD ran it:
+The UK's National Innovation Centre for Data ran 510 complex questions, some needing hundreds of steps. Neo4j sponsored the study, NICD ran it.
 
-- **80% more truthful**: a score of 63 against 35 for vector-only, on a measure that penalizes hallucination
-- **Over 2x precision and recall**: .38 against .18, and .35 against .15
-- **Half the refusals**: vector-only attempted 28.9% of the questions, GraphRAG answered 65.3%
-- **Fewer tokens per correct answer**: graph tools fetched the right sections instead of whole documents
-- **No ontology project**: the graph was built from the titles, sections and links the documents already had
+- **80% more truthful**: 63 vs 35 on a measure that penalizes hallucination
+- **Over 2x precision and recall**: .38 vs .18, .35 vs .15
+- **Half the refusals**: vector-only attempted 28.9% of questions, GraphRAG 65.3%
+- **Fewer tokens per correct answer**: sections fetched, not whole documents
+- **No ontology project**: built from the titles, sections and links the docs had
 
-An agent that declines two questions in three is as unusable on a dispatch desk as one that guesses.
+An agent that declines two questions in three is as unusable as one that guesses.
 
 <small>Source: [Independent study: GraphRAG makes AI agents 80% more truthful](https://neo4j.com/blog/agentic-ai/study-graphrag-ai-agents-80-percent-more-truthful/), Neo4j</small>
 

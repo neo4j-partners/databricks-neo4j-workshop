@@ -16,7 +16,7 @@ Parts 1 and 2 built the two stores and the retrievers over them. Part 3 puts an 
 | Lab | Description | Duration
 
 | xref:lab4.adoc[Lab 4]
-| Compound AI Agents: Genie + Supervisor
+| Compound AI Agents: Genie Agent + Supervisor
 | 40 min
 
 | xref:lab5.adoc[Lab 5]

@@ -159,7 +159,7 @@ can read. Everything else gets built by lab/workshop.py.
 - **Good at:** "average EGT for engine AC5 this month," "compare fuel flow between Boeing and Airbus aircraft"
 
 <!--
-Genie is the agent participants already built in Lab 4 Part A. It
+The Genie Agent is the one participants already built in Lab 4 Part A. It
 reads table and column descriptions from Unity Catalog, applies
 domain instructions about normal sensor ranges, and generates SQL
 against sensor_readings, sensors, systems, and aircraft. Every
@@ -198,7 +198,7 @@ read_neo4j_cypher, so it can only read.
         (Lakehouse / SQL)    (Graph / Cypher)
 ```
 
-- **Numbers and trends** go to the Genie agent
+- **Numbers and trends** go to the Genie Agent
 - **Relationships and structure** go to the Neo4j MCP agent
 - **Both needed:** the supervisor calls each in turn, then combines the answers
 
@@ -214,7 +214,7 @@ answer.
 
 ## Routing in Action
 
-- **"What is the average EGT for engine AC5?"** goes to the **Genie agent**, a numeric aggregation
+- **"What is the average EGT for engine AC5?"** goes to the **Genie Agent**, a numeric aggregation
 - **"Which components were serviced on aircraft AC1001?"** goes to the **Neo4j MCP agent**, a relationship traversal
 - **"Find aircraft with high EGT and show their maintenance history"** goes to **both agents in sequence**, then the supervisor combines the results
 
@@ -232,14 +232,14 @@ is required from the person asking.
 
 "Which engines are showing abnormal EGT readings, what maintenance history do those aircraft have, and what does the maintenance manual say to do about high EGT?"
 
-- **Part one, abnormal EGT readings:** the Genie agent, SQL over `sensor_readings`
+- **Part one, abnormal EGT readings:** the Genie Agent, SQL over `sensor_readings`
 - **Part two, maintenance history for those aircraft:** the Neo4j MCP agent, Cypher traversal
 - **Part three, what the manual says:** no subagent in this demo answers it
 
 <!--
 This is the workshop's hero question. Running it against this exact
 demo shows where a two-agent supervisor runs out of road. This
-supervisor has exactly two subagents, Genie and the Neo4j MCP agent,
+supervisor has exactly two subagents, the Genie Agent and the Neo4j MCP agent,
 so it answers the first two clauses well. The third clause needs the
 GraphRAG retrievers built in Lab 3, which this demo never wires in
 as a subagent. The gap is the point, not a flaw to patch here.
@@ -270,7 +270,7 @@ subagents return, with no data access of its own.
 | | Agent Bricks Supervisor, this demo | Lab 5 LangGraph Agent |
 |---|---|---|
 | **Build method** | Configuration page, no code | Python graph in `tools.py` and `agent.py` |
-| **Subagents** | Genie and the Neo4j MCP agent, two specialists | Genie, Cypher over your own Aura, and GraphRAG retrieval, three specialists |
+| **Subagents** | The Genie Agent and the Neo4j MCP agent, two specialists | The Genie Agent, Cypher over your own Aura, and GraphRAG retrieval, three specialists |
 | **Graph target** | The instructor's demo Aura instance | The Aura instance you set up in Lab 1 |
 | **Hero question** | Answers the sensor and maintenance-history parts | Answers all three parts, including what the manual says |
 

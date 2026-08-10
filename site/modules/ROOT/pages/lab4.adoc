@@ -16,7 +16,7 @@ TIP: Ready to start? Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` in you
 * **Agents** run the ReAct loop: perceive, reason, call tools, observe results, repeat
 * **Genie Agent** translates natural language to SQL for sensor telemetry analytics over Delta tables. **This is what you build**
 * **Neo4j MCP Agent** translates natural language to Cypher for graph traversal via MCP tools (get_neo4j_schema, read_neo4j_cypher). **Optional demo**
-* **Supervisor Agent**, built in Agent Bricks, routes questions to the right specialist: SQL questions to Genie, graph questions to Neo4j, combined questions to both. **Optional demo, and Lab 5 rebuilds this in code**
+* **Supervisor Agent**, built in Agent Bricks, routes questions to the right specialist: SQL questions to the Genie Agent, graph questions to Neo4j, combined questions to both. **Optional demo, and Lab 5 rebuilds this in code**
 * One agent per platform stops the two idioms mixing. SQL thinks in rows and aggregations, Cypher thinks in paths and patterns
 
 == What an Agent Is
@@ -54,18 +54,18 @@ Unity Catalog provides governance across all of these capabilities, so that mode
 Rather than a single product, Mosaic AI is the layer that the agent-specific tools build on. Genie uses Mosaic AI's model serving infrastructure to run its compound AI pipeline. Agent Bricks deploys agents to Mosaic AI's serverless compute and monitors them through MLflow tracing. The platform handles the operational concerns of model hosting, authentication, scaling and observability, so that agent development can focus on the reasoning and tool-calling logic that makes each agent useful.
 ====
 
-=== Genie
+=== Genie Agents
 
-Genie specializes in one problem: turning natural language questions into correct SQL. It is purpose-built for structured data analytics, translating conversational questions into queries, executing them against a SQL warehouse, and returning results as tables, summaries, and visualizations.
+A **Genie Agent** (formerly Genie Space) specializes in one problem: turning natural language questions into correct SQL. It is purpose-built for structured data analytics, translating conversational questions into queries, executing them against a SQL warehouse, and returning results as tables, summaries, and visualizations.
 
-.How Genie works
+.How a Genie Agent works
 [%collapsible]
 ====
-Rather than relying on a single language model to handle everything from parsing the question to generating SQL to summarizing results, Genie operates as a compound AI system. Multiple specialized components work together: one parses the question, another generates SQL, another summarizes the result, and so on. This multi-component design lets the platform select the best-suited model for each subtask and evolve individual components independently.
+Rather than relying on a single language model to handle everything from parsing the question to generating SQL to summarizing results, a Genie Agent operates as a compound AI system. Multiple specialized components work together: one parses the question, another generates SQL, another summarizes the result, and so on. This multi-component design lets the platform select the best-suited model for each subtask and evolve individual components independently.
 
-The accuracy of any natural-language-to-SQL system depends on how much context the model has about the data it queries. Genie draws its context from Unity Catalog metadata: table names and descriptions, column names and descriptions, primary and foreign key relationships, and sample column values. Domain experts configure **Genie Agents** by curating a set of tables (up to 30 per agent), writing plain-text instructions that teach business terminology and rules, defining JOIN relationships, and supplying example SQL queries that demonstrate correct patterns. When a user's question matches a parameterized example query, Genie marks the response as **Trusted**, signaling that the answer follows a verified pattern rather than a generated one.
+The accuracy of any natural-language-to-SQL system depends on how much context the model has about the data it queries. A Genie Agent draws its context from Unity Catalog metadata: table names and descriptions, column names and descriptions, primary and foreign key relationships, and sample column values. Domain experts configure **Genie Agents** by curating a set of tables (up to 30 per agent), writing plain-text instructions that teach business terminology and rules, defining JOIN relationships, and supplying example SQL queries that demonstrate correct patterns. When a user's question matches a parameterized example query, Genie marks the response as **Trusted**, signaling that the answer follows a verified pattern rather than a generated one.
 
-Genie also provides a **Knowledge Store** where agent authors can define structured business semantics:
+Genie Agents also provide a **Knowledge Store** where agent authors can define structured business semantics:
 
 * **Column-level synonyms**
 * **Local join relationships**
@@ -98,9 +98,9 @@ Putting two schemas, two query languages and two sets of conventions in one prom
 
 === Genie Agent: Sensor Telemetry Analytics
 
-The Genie Agent in this lab is configured against the Lakehouse sensor data: `sensor_readings`, `sensors`, `systems`, and `aircraft` tables registered in Unity Catalog. Domain instructions teach Genie the aircraft terminology (EGT, fuel flow, vibration amplitude) and the JOIN paths between tables. Example queries demonstrate the aggregation patterns that sensor analytics requires.
+The Genie Agent in this lab is configured against the Lakehouse sensor data: `sensor_readings`, `sensors`, `systems`, and `aircraft` tables registered in Unity Catalog. Domain instructions teach the agent the aircraft terminology (EGT, fuel flow, vibration amplitude) and the JOIN paths between tables. Example queries demonstrate the aggregation patterns that sensor analytics requires.
 
-.How Genie handles a sensor question
+.How the Genie Agent handles a sensor question
 [%collapsible]
 ====
 When a user asks "What is the average EGT temperature for aircraft N95040A?", Genie matches the question against its configured context, generates a SQL query that joins `sensor_readings` to `sensors` to `aircraft`, applies the appropriate aggregation, and returns the result. The compound AI system handles the full translation from conversational English to correct SQL without the user needing to know the schema.
@@ -158,9 +158,9 @@ Each column suits a different situation. Agent Bricks is faster to stand up and 
 |===
 | Question Type | Route To | Example
 
-| Time-series aggregations | Genie | "What's the average EGT over the last 30 days?"
-| Statistical analysis | Genie | "Show sensors with readings above 95th percentile"
-| Trend analysis | Genie | "Compare fuel flow rates between 737 and A320"
+| Time-series aggregations | Genie Agent | "What's the average EGT over the last 30 days?"
+| Statistical analysis | Genie Agent | "Show sensors with readings above 95th percentile"
+| Trend analysis | Genie Agent | "Compare fuel flow rates between 737 and A320"
 | Relationship traversals | Neo4j | "Which components are connected to Engine 1?"
 | Pattern matching | Neo4j | "Find all aircraft with maintenance delays"
 | Topology exploration | Neo4j | "Show the system hierarchy for N95040A"

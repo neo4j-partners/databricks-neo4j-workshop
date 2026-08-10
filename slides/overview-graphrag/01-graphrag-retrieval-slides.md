@@ -422,4 +422,4 @@ Ask three questions: content or facts? Do I need related entities? Does the word
 
 The Lab 5 supervisor agent wraps each retriever as a tool and routes each part of the question to the one that answers it.
 
-<!-- This single question needs several retrieval patterns plus Genie. No one tool answers it alone. The next deck covers the LangGraph supervisor: how it decides which tool to call for which clause, and how it stitches the answers together. -->
+<!-- This single question needs several retrieval patterns plus the Genie Agent. No one tool answers it alone. The next deck covers the LangGraph supervisor: how it decides which tool to call for which clause, and how it stitches the answers together. -->
