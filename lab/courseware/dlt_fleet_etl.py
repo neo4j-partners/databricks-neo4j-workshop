@@ -3,7 +3,7 @@
 # MAGIC # Aircraft Fleet Digital Twin — DLT Pipeline
 # MAGIC
 # MAGIC **Medallion Architecture ETL** ingesting raw CSV sensor data from aircraft digital twins
-# MAGIC into production-ready Delta tables for Genie analytics and Neo4j graph integration.
+# MAGIC into production-ready Delta tables for Genie Agent analytics and Neo4j graph integration.
 # MAGIC
 # MAGIC | Layer | Tables | Purpose |
 # MAGIC |-------|--------|---------|
@@ -49,8 +49,9 @@ VOLUME_NAME = _setting("WORKSHOP_VOLUME_NAME", "raw_data")
 VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"
 
 # Bronze + silver land in the pipeline default schema. Only gold is published into
-# the participant-facing schema, so Catalog and Genie show 8 tables instead of 40.
-# The schema-qualified name resolves against the pipeline's default catalog.
+# the participant-facing schema, so Catalog and the Genie Agent show 8 tables
+# instead of 40. The schema-qualified name resolves against the pipeline's
+# default catalog.
 GOLD_SCHEMA = _setting("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
 
 # Enable column mapping for Neo4j CSV headers with special chars like :ID(Aircraft)

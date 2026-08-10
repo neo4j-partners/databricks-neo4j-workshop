@@ -183,8 +183,8 @@ CSV files are read from `workshop-setup/aircraft_digital_twin_data/`.
 The sensor readings file is not loaded into Neo4j. `nodes_readings.csv` holds
 155,520 measurements, and the dual-database design puts every one of them in
 the Databricks `sensor_readings` Delta table instead. `Sensor` nodes carry
-metadata only, so a question about a measured value routes to Genie rather
-than to Cypher.
+metadata only, so a question about a measured value routes to the Genie
+Agent rather than to Cypher.
 
 The removal data includes tracking, work order, technician, part/serial,
 warranty, priority, cost, installation, and shop-visit fields on `Removal`

@@ -54,10 +54,10 @@
   <line x1="260" y1="353" x2="363" y2="353" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
   <text x="312" y="345" text-anchor="middle" fill="#64748B" font-size="10.5">JDBC</text>
 
-  <!-- Unity Catalog -> Genie -->
+  <!-- Unity Catalog -> Genie Agent -->
   <line x1="155" y1="376" x2="155" y2="408" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
 
-  <!-- Genie -> Supervisor -->
+  <!-- Genie Agent -> Supervisor -->
   <path d="M260,433 C 480,433 480,475 678,475" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)"/>
   <text x="445" y="450" text-anchor="middle" fill="#64748B" font-size="10.5">SQL</text>
 
@@ -89,7 +89,7 @@
     <text x="155" y="358" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Unity Catalog</text>
 
     <rect x="50" y="410" width="210" height="46" rx="8" fill="#ffffff" stroke="#FF3621" stroke-width="1.5"/>
-    <text x="155" y="438" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Genie (SQL)</text>
+    <text x="155" y="438" text-anchor="middle" fill="#1E293B" font-size="13.5" font-weight="600">Genie Agent (SQL)</text>
   </g>
 
   <!-- Neo4j lane -->

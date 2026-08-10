@@ -138,6 +138,79 @@ All nine files below ship. `build-slides.sh:29` builds the eight `overview-*` to
 - **`overview-agent-memory:204`, `:208`** "reaches Genie as `N10011`", "hands the word 'that' to Genie". Describes what a tool call carries. Behavior.
 - **`slides/organize.md`**, 15 mentions. A planning and inventory doc, same category as this file and `expand.md`. Not built by `build-slides.sh` and not published. Updating it would edit a record of intent.
 
-### Not in scope of this audit
+## Audit: OPTIONAL_COMPOUND_AGENT_DEMO.md, README files, images
 
-`Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md` and the lab `README.md` files were not checked.
+Same rule as the two rounds above. Product name where the text names the thing;
+bare "Genie" where it names behavior or an identifier.
+
+### `Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`
+
+15 mentions, 11 already correct. Four to change:
+
+- `:1` title `# Optional: Compound AI Agent over Genie and Neo4j MCP` -> `over the Genie Agent and Neo4j MCP`.
+- `:5` "It takes the Genie agent you built in the lab" -> "the Genie Agent you built". Lowercase `agent` in a product name.
+- `:155` heading `### 4.2 Configure the Genie subagent` -> `Configure the Genie Agent subagent`. Debatable: "Genie subagent" is arguably a role, not a product name, and `:145` and `:146` already say "Genie Agent" three lines up.
+- `:407` bullet `- **Genie plus Lakehouse for time-series data.**` -> `- **Genie Agent plus Lakehouse for time-series data.**`. A takeaways bullet naming the product.
+
+Already correct and untouched: `:11`, `:20`, `:141`, `:143`, `:145` (the literal UI label "click **Genie Agent**"), `:146`, `:213`, `:360`, `:420`, `:437`, `:441`.
+
+### `workshop-setup/README.md`
+
+- `:342` troubleshooting heading `**Genie answers plausibly rather than correctly**` -> `**The Genie Agent answers plausibly rather than correctly**`. `:14` in the same file already says "a Genie Agent that answered plausibly", so the two drifted apart.
+- `:398` link `[Databricks Genie](https://docs.databricks.com/en/genie/index.html)` -> `[Genie Agents](https://docs.databricks.com/aws/en/genie-agents/)`. Same fix already applied at `databricks-platform.adoc:233`. The old path still resolves; this is a name fix.
+- Leave `:265` "debugging the Genie comments". Internal shorthand for the table `COMMENT` DDL, and the sentence's subject is the `genie` CLI subcommand.
+
+### `workshop-setup/docs/MANUAL_SETUP.md`
+
+- `:40` "the summaries Lab 4 asks Genie about" -> "asks the Genie Agent about". `:33` and `:42` already correct.
+
+### `workshop-setup/populate_aircraft_db/README.md`
+
+- `:186` "a question about a measured value routes to Genie rather" -> "routes to the Genie Agent rather".
+
+### `workshop-setup/populate_aircraft_db/DATA_GENERATOR.md`
+
+- `:98` "for SQL analytics and Genie natural language queries" -> "and Genie Agent natural language queries".
+- `:125` table cell `| Genie queries Delta tables |` -> `| The Genie Agent queries Delta tables |`.
+- Leave `:77` "Genie queries over the readings surface", `:189` "the gold tables Genie reads", `:198` "lets Genie answer questions like". All three describe what the model does at query time, not the object you create.
+
+### `vocareum/docs/README.md`
+
+- `:19` table cell "Genie and Agent Bricks, guided by a notebook" -> "Genie Agents and Agent Bricks". Parallel to the product name next to it.
+- Leave `:35` "**Genie node**", a LangGraph node name matching `build_genie_node`. `:42`, `:75`, `:102` already correct.
+
+### Images
+
+Two published SVGs carry a bare "Genie" label. These are decisions for you, not
+obvious fixes.
+
+- **`site/modules/ROOT/images/graphrag-multiplatform-retrieval.svg`** has the visible label `Genie (SQL)`. Hand-authored SVG, so a one-word text edit is safe. It is now out of sync with `background/agents/02-power-of-graphrag-slides.md:413`, which this round changed to "Genie Agent (SQL)". Referenced at `databricks-platform.adoc:161`, whose alt text is already updated. **I would change this one.**
+- **`site/modules/ROOT/images/dual-database-architecture.svg`** has "Natural language queries via Genie" inside the Databricks box. Behavior phrasing, so it is defensible as-is. It is also Excalidraw-exported, source at `images/dual-database-architecture.excalidraw`, so a correct fix means editing both files; and `slides/organize.md:498` records this asset was deliberately left alone despite other stale content. It ships as a full-bleed background at `overview-platform/01-neo4j-databricks-slides.md:58` and on the site index. **I would leave this one.**
+
+`images/workshop-infrastructure.{svg,excalidraw}` already read "Genie Agent + Neo4j MCP Agent". No change.
+
+### Code comments and docstrings
+
+Bare "Genie" in non-published Python and shell comments. Lower priority, and
+none of it is participant-facing text: `Lab_5_LangGraph_Agent/tools.py:5`,
+`:244`, `:293`; `Lab_5_LangGraph_Agent/agent.py:14`, `:165`;
+`Lab_6_Agent_Memory/memory.py:1405`, `:1505`; `lab/workshop.py:271`, `:423`,
+`:439`; `lab/courseware/dlt_fleet_etl.py:6`, `:52`, `:300`, `:309`, `:482`,
+`:493`; `lab/workspace_init.sh:129`, `:141`; `lab/course.env:117`;
+`workshop-setup/auto_scripts/sync_notebooks.py:6`.
+
+### Identifiers, never change
+
+The `genie` CLI subcommand, `genie_statements()`, `provision_genie`,
+`genie_node`, `build_genie_node`, `DatabricksGenieSpace`, `genie_space_id`.
+
+### Clean, no changes needed
+
+`Lab_5_LangGraph_Agent/README.md`, root `README.md`, `lab/README.md`,
+`workshop-setup/auto_scripts/README.md`, `vocareum/SETUP_GUIDE.md`, `CLAUDE.md`,
+`Lab_3_Semantic_Search/data_utils.py`,
+`workshop-setup/auto_scripts/workshop_module.py`.
+
+### Excluded
+
+`worklog/*` (historical records) and `.venv/` (dependencies).

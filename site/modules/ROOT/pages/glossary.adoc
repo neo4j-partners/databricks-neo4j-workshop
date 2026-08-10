@@ -33,7 +33,7 @@ Four sensor types are fitted to every engine in the fleet, and to nothing else. 
 | Fuel delivered to the combustor per second. Flow that climbs while thrust holds steady is another degradation signal.
 |===
 
-**Reading.** One sensor value at one timestamp. The 155,520 readings span 90 days at hourly scale and live in the Databricks `sensor_readings` table. They are never loaded into Neo4j, which is why sensor trend questions route to the Genie Agent and not to Cypher.
+**Reading.** One sensor value at one timestamp. The 155,520 readings span 90 days at 4-hour intervals, 540 per sensor, and live in the Databricks `sensor_readings` table. They are never loaded into Neo4j, which is why sensor trend questions route to the Genie Agent and not to Cypher.
 
 **Operating limit.** The manufacturer's allowed range for one parameter on one aircraft model, transcribed from that model's maintenance manual. Twenty `OperatingLimit` nodes cover five models times four parameters. Every one carries `regime: 'takeoff'`, because takeoff is the limiting case. `sourceRef` names the manual, section, and line the number came from, so any limit can be traced back to its page.
 

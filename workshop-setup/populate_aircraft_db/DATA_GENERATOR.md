@@ -95,7 +95,7 @@ It exits nonzero and lists offending rows if any check fails.
 
 # Architecture and Schema Reference
 
-The dataset feeds two complementary databases. Neo4j holds the relationship-rich graph: topology, maintenance, flights, removals. Databricks Delta Lake holds the high-volume sensor telemetry for SQL analytics and Genie natural language queries. Aircraft, systems, and sensors exist in both as join points.
+The dataset feeds two complementary databases. Neo4j holds the relationship-rich graph: topology, maintenance, flights, removals. Databricks Delta Lake holds the high-volume sensor telemetry for SQL analytics and Genie Agent natural language queries. Aircraft, systems, and sensors exist in both as join points.
 
 ## Dataset summary
 
@@ -122,7 +122,7 @@ Fleet composition: 13 B737-800, 9 A320-200, 7 A321neo, 4 E190, 3 A220-300, sprea
 |------------|-----|-----|
 | Relationship traversals, topology | Neo4j | Graph optimized for connections and pattern matching |
 | Time-series aggregations, statistics | Databricks | Delta Lake optimized for temporal data; SQL analytics |
-| Natural language sensor questions | Databricks | Genie queries Delta tables |
+| Natural language sensor questions | Databricks | The Genie Agent queries Delta tables |
 | Maintenance and flight correlation | Neo4j | Multi-hop relationships |
 | Semantic search over manuals | Neo4j | Vector index over enriched manual chunks |
 

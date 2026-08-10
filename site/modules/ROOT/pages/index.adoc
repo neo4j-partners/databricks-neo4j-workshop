@@ -32,7 +32,7 @@ The dataset includes:
 * **Systems** such as Engines, Avionics, and Hydraulics
 * **Components** such as Turbines, Compressors, and Pumps
 * **Sensors** with monitoring metadata
-* **Sensor Readings**, hourly-scale telemetry over 90 days
+* **Sensor Readings**, telemetry every 4 hours over 90 days
 * **Flights** with departure and arrival information
 * **Maintenance Events** with fault severity and corrective actions
 * **Airports** in the route network

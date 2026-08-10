@@ -16,7 +16,7 @@ Full lab instructions live on the workshop site:
 | **Lab 1** | Graph Databases and Neo4j Aura | Aura console, guided by a notebook | [Lab 1](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab1.html) |
 | **Lab 2** | Databricks ETL to Neo4j | Notebook in this workspace | [Lab 2](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab2.html) |
 | **Lab 3** | Semantic Search / GraphRAG | Notebooks in this workspace | [Lab 3](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab3.html) |
-| **Lab 4** | Compound AI Agents | Genie and Agent Bricks, guided by a notebook | [Lab 4](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab4.html) |
+| **Lab 4** | Compound AI Agents | Genie Agents and Agent Bricks, guided by a notebook | [Lab 4](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab4.html) |
 | **Lab 5** | LangGraph Agent | Notebooks in this workspace | [Lab 5](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html) |
 | **Lab 6** | Agent Memory | Notebook in this workspace | `Lab_6_Agent_Memory/01_agent_memory.ipynb` |
 
@@ -27,7 +27,7 @@ Every lab has a notebook in your workspace, including Labs 1 and 4. Those two ar
 ## Architecture
 
 **Dual Database Strategy:**
-- **Databricks Lakehouse** — time-series sensor telemetry, hourly-scale readings across 90 days
+- **Databricks Lakehouse** — time-series sensor telemetry, readings every 4 hours across 90 days
 - **Neo4j Aura** — graph relationships: aircraft topology, components, sensors, maintenance events, flights, delays, airports
 
 **Supervisor Agent (Lab 5), the one you build:**

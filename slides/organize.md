@@ -495,7 +495,7 @@ Six content fixes applied:
 | 3 Knowledge Graph | The SQL versus Cypher pair read as an apology for the Databricks schema | Reframed as an escalation: state what the question needs, show what SQL reaches, then run the real question in Cypher. Also fixed a question written with a period and dropped the explanatory parentheses in the language labels |
 | 7 Agent Memory | Instructor note cited "the GenAI foundations deck", a name Phase 7 retired | Now cites the GraphRAG Foundations deck, which is where Context Rot lives |
 
-**Open, needs a decision:** `site/modules/ROOT/images/dual-database-architecture.svg` has stale figures baked into it, 345,600+ readings, 160 sensors, 80 systems, 20 aircraft. The committed CSVs hold 155,520 readings, 288 sensors, 144 systems, 36 aircraft, and deck 2's own instructor note says roughly 155,000. The file is a shared site asset used outside the slides, so it was left alone.
+**Closed 2026-08-09.** This entry claimed `site/modules/ROOT/images/dual-database-architecture.svg` had stale figures baked into it, 345,600+ readings, 160 sensors, 80 systems, 20 aircraft. That was wrong: the SVG carries no numeric labels at all. The stale figures lived in prose, and the same audit's "Hourly-scale" telemetry error had survived in four site and docs pages after the decks were corrected. Both are now fixed against the committed CSVs, which hold 155,520 readings at 4-hour intervals, 540 per sensor, over 288 sensors, 144 systems and 36 aircraft.
 
 **Deviations from plan, recorded:**
 

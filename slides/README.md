@@ -40,7 +40,7 @@ Eight workshop decks, one folder each, listed in run-of-show order. Anything not
 |---|--------|------|-----------|
 | 1 | `overview-business-story/` | The Business Case for GraphRAG | Opening |
 | 2 | `overview-knowledge-graph/` | What is a Knowledge Graph | Labs 1 and 2 |
-| 3 | `overview-platform/` | Neo4j + Databricks | Labs 2 and 4A |
+| 3 | `overview-lakehouse-to-graph/` | Neo4j + Databricks | Labs 2 and 4A |
 | 4 | `overview-architecture/` | The Aircraft Digital Twin: Dataset and Setup | Before Lab 1 |
 | 5 | `overview-graphrag/` | GraphRAG Retrieval | Lab 3 |
 | 6 | `overview-agent/` | The Supervisor Agent and Deployment | Labs 4A and 5 |

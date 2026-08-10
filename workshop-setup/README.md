@@ -339,7 +339,7 @@ or never ran against that workspace.
 The Lab 2 ETL writes in overwrite mode. If duplicates persist, participants can
 clear the graph with `MATCH (n) DETACH DELETE n`.
 
-**Genie answers plausibly rather than correctly**
+**The Genie Agent answers plausibly rather than correctly**
 The table and column comments are what it grounds against, and
 `provision_genie` applies them. Confirm the eight gold tables carry comments
 before adding sample questions to the agent.
@@ -395,4 +395,4 @@ nothing automatic ever does.
 
 - [Neo4j Spark Connector](https://neo4j.com/docs/spark/current/)
 - [Databricks Unity Catalog](https://docs.databricks.com/en/data-governance/unity-catalog/index.html)
-- [Databricks Genie](https://docs.databricks.com/en/genie/index.html)
+- [Genie Agents](https://docs.databricks.com/aws/en/genie-agents/)

@@ -1,6 +1,6 @@
 = Lab 4: Compound AI Agents for Aircraft Analytics
 
-Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, hourly-scale readings over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT (Exhaust Gas Temperature) for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
+Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, readings every 4 hours over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT (Exhaust Gas Temperature) for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
 
 TIP: Ready to start? Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 

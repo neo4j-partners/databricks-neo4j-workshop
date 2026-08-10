@@ -69,6 +69,12 @@ Similar text is not the same as connected fact.
 
 ---
 
+<style scoped>
+/* 5% under the default theme's 29px. A percentage here would resolve against
+   the root, not the theme's section size, and shrink far more than 5%. */
+section { font-size: 27.55px; }
+</style>
+
 ## The Shift to GraphRAG
 
 A knowledge graph stores the fleet as records plus the links between them: this sensor sits on that engine, that engine on this aircraft, this repair closed that finding.
@@ -82,6 +88,11 @@ A knowledge graph stores the fleet as records plus the links between them: this 
 The agent answers from evidence the graph can defend, not a guess about what a manual probably says.
 
 ---
+
+<style scoped>
+/* 5% under the default theme's 29px. See the note on the previous slide. */
+section { font-size: 27.55px; }
+</style>
 
 ## The Evidence
 

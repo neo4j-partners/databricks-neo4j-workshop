@@ -1,8 +1,8 @@
-# Optional: Compound AI Agent over Genie and Neo4j MCP
+# Optional: Compound AI Agent over the Genie Agent and Neo4j MCP
 
 > **This section is optional.** It requires a hosted Neo4j MCP server and the Unity Catalog connection that fronts it, both of which are outside the scope of the workshop. The instructor demos it.
 >
-> **Why it is here.** It takes the Genie agent you built in the lab and makes it one half of a compound AI agent. A supervisor sits above it and a second agent queries Neo4j over MCP, so one question box reaches both the Lakehouse and the graph. Agent Bricks Supervisor Agent gets there through configuration alone, with no code. A Unity Catalog HTTP connection using OAuth2 M2M against a hosted MCP server is what governed agent access to Neo4j looks like in production.
+> **Why it is here.** It takes the Genie Agent you built in the lab and makes it one half of a compound AI agent. A supervisor sits above it and a second agent queries Neo4j over MCP, so one question box reaches both the Lakehouse and the graph. Agent Bricks Supervisor Agent gets there through configuration alone, with no code. A Unity Catalog HTTP connection using OAuth2 M2M against a hosted MCP server is what governed agent access to Neo4j looks like in production.
 >
 > **[Lab 5](../Lab_5_LangGraph_Agent)** builds the same routing in code, against your own graph, and it is where the lab continues.
 >
@@ -152,7 +152,7 @@ DO NOT USE FOR:
 > the agent's URL, after `/genie/rooms/`. Substitute your own id if you built the
 > demo agent yourself rather than reusing `aircraft-genie`.
 
-### 4.2 Configure the Genie subagent
+### 4.2 Configure the Genie Agent subagent
 
 1. **Agent Name:** `sensor_data_agent`
    - Edit the auto-populated name if needed
@@ -404,7 +404,7 @@ print(response.json())
 
 The demo shows a multi-agent system that combines two purpose-built data platforms:
 
-- **Genie plus Lakehouse for time-series data.** SQL analytics over sensor telemetry readings, right for aggregations, trends, and statistics.
+- **Genie Agent plus Lakehouse for time-series data.** SQL analytics over sensor telemetry readings, right for aggregations, trends, and statistics.
 - **Neo4j for relationship data.** Graph traversals across aircraft topology, maintenance events, flights, and delays, right for relationship queries and multi-hop navigation.
 - **Intelligent routing.** The supervisor directs each question to the right data source on its own.
 - **Cross-source synthesis.** Questions that span both systems get answered by querying each in turn and combining the results.

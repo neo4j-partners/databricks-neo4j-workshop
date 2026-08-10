@@ -458,11 +458,12 @@ COLUMN_COMMENTS = (
 
 
 def genie_statements() -> list[tuple[str, str, bool]]:
-    """The column comments Genie reads, and the grants that let a participant see them.
+    """The column comments the Genie Agent reads, and the grants that let a
+    participant see them.
 
     These comments are the reason a SQL warehouse is provisioned at all. Lab 4
-    asks a Genie Agent questions in English, and a space with no table or column
-    comments answers plausibly rather than correctly. So a comment that did not
+    asks a Genie Agent questions in English, and an agent with no table or
+    column comments answers plausibly rather than correctly. So a comment that did not
     land is a failure here rather than the warning it used to be. The table
     comments arrive with the pipeline; only the column comments are written from
     here, for the reason set out above ``COLUMN_COMMENTS``.

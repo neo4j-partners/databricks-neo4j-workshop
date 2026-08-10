@@ -2,8 +2,9 @@
 
 Three retrieval tools and the two reasoning nodes that sit around them:
 
-- ``genie_node``     Databricks Genie over the Lakehouse telemetry from Lab 4
-                     Part A. Every reading and every aggregation over readings.
+- ``genie_node``     Databricks Genie Agent over the Lakehouse telemetry from
+                     Lab 4 Part A. Every reading and every aggregation over
+                     readings.
 - ``cypher_node``    Text to Cypher over the Aura instance from Lab 2, run in a
                      read transaction.
 - ``graphrag_node``  ``VectorCypherRetriever`` over the ``maintenanceChunkEmbeddings``
@@ -290,7 +291,8 @@ class AgentState(TypedDict, total=False):
 # What Lab 2 loaded plus what Lab 3 added, and nothing else. Reading nodes are
 # deliberately absent: Lab 2 never loads them, sensor readings live in Delta,
 # and the supervisor prompt below leans on that fact to route reading questions
-# to Genie. Adding Reading here would break the lesson and the routing at once.
+# to the Genie Agent. Adding Reading here would break the lesson and the
+# routing at once.
 GRAPH_SCHEMA = """\
 Node labels and their properties:
 

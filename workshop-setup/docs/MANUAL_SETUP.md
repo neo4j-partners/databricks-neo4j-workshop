@@ -37,7 +37,7 @@ tables and nothing else.
 
 Published into `aircraft` by the `Fleet Digital Twin ETL` pipeline, in the order
 a reader meets them: the fleet, what is on it, what it did, then the two
-summaries Lab 4 asks Genie about.
+summaries Lab 4 asks the Genie Agent about.
 
 | Table | Comment the Genie Agent reads |
 |-------|-------------------------------|
