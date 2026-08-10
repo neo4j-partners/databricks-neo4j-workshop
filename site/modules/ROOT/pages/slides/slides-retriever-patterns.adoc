@@ -1,9 +1,0 @@
-= GraphRAG Retriever Patterns (Slides)
-
-++++
-<iframe src="../_attachments/slides/overview-retrievers/01-retriever-patterns-slides.html"
-  style="width:100%;height:600px;border:none;">
-</iframe>
-++++
-
-link:../_attachments/slides/overview-retrievers/01-retriever-patterns-slides.html[Open full screen^] | xref:slides.adoc[All decks]

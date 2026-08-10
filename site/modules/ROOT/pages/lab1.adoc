@@ -132,7 +132,7 @@ The Aura console provides three tools you will use throughout the workshop:
 * **Explore**, powered by Neo4j Bloom, provides visual graph exploration through an interactive canvas. Search for nodes by label or property, expand their relationships, and discover patterns visually. Natural language search translates questions into graph queries without writing Cypher.
 * **Dashboards** offer low-code data visualization including bar charts, geographic maps, and 3D graph visualizations for presenting graph data to non-technical stakeholders.
 
-Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[Knowledge Graph Foundations].
+Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[What is a Knowledge Graph].
 
 == Next Steps
 

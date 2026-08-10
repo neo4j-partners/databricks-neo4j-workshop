@@ -29,7 +29,7 @@ ol > li {
 
 # The Business Case for GraphRAG
 
-Why an AI agent flying a fleet needs to be grounded in a knowledge graph
+A sensor reading says an engine is running hot. Only the parts, aircraft and manuals behind it say what to do about it.
 
 ---
 
@@ -41,7 +41,7 @@ An airline is putting GenAI agents into workflows where a wrong answer grounds a
 - **Airworthiness**: safety findings missed or misread against the maintenance record
 - **Compliance and audit**: maintenance actions that must be traceable back to the manual that required them
 
-An answer that cannot be explained cannot be used.
+Every one of these needs two things at once: what the sensors read, and what the part those readings came from is attached to. An answer that cannot be explained cannot be used.
 
 ---
 
@@ -71,27 +71,46 @@ Similar text is not the same as connected fact.
 
 ## The Shift to GraphRAG
 
-GraphRAG grounds the agent in a knowledge graph:
+A knowledge graph stores the fleet as records plus the links between them: this sensor sits on that engine, that engine sits on this aircraft, this repair closed that finding. GraphRAG grounds the agent in one:
 
 - Retrieval returns **connected, verifiable facts**, not pattern-matched chunks
 - Graph traversal adds fleet context on top of vector similarity
 - Every answer **traces back** through the relationships that produced it
+- **Fewer tokens**: the graph sends the handful of connected facts the answer needs, instead of stuffing the prompt with everything that looked similar
+- **Governed retrieval**: retrieval stays inside permissioned data, so governance lives in the same graph as the facts rather than being bolted on afterward
 
 The agent answers from evidence the graph can defend, not from a statistical guess about what an engine manual probably says.
 
 ---
 
-## Context Graphs and Decision Governance
+## The Evidence
 
-An agent that routes across tools and answers over many turns needs a record of what it knew and when.
+The UK's National Innovation Centre for Data tested this across 510 complex questions, some needing dozens or hundreds of steps. Neo4j sponsored the study, NICD ran it:
 
-Lab 6 builds exactly that:
+- **80% more truthful**: a score of 63 against 35 for vector-only, on a measure that penalizes hallucination
+- **Over 2x precision and recall**: .38 against .18, and .35 against .15
+- **Half the refusals**: vector-only attempted 28.9% of the questions, GraphRAG answered 65.3%
+- **Fewer tokens per correct answer**: graph tools fetched the right sections instead of whole documents
+- **No ontology project**: the graph was built from the titles, sections and links the documents already had
 
-- A **recall node** reads what the graph already knows about an aircraft before the supervisor answers
-- A **remember node** writes new facts back afterward
-- Both writes land as **nodes and relationships** in the same graph that holds the Aircraft Digital Twin, not a separate log a different team owns
+An agent that declines two questions in three is as unusable on a dispatch desk as one that guesses.
 
-Governance is not bolted on afterward. It lives in the same graph as the data.
+<small>Source: [Independent study: GraphRAG makes AI agents 80% more truthful](https://neo4j.com/blog/agentic-ai/study-graphrag-ai-agents-80-percent-more-truthful/), Neo4j</small>
+
+<!--
+Full NICD report: neo4j.com/whitepapers/nicd-reducing-hallucinations-graphrag/
+
+Two points to land in the room:
+
+The refusal number is the one that changes minds. Vector-only RAG mostly fails
+by declining, not by lying, so teams who have only measured hallucination rate
+think their system is fine. Ask how useful an assistant is that shrugs at two
+out of three real questions.
+
+The last bullet answers the objection that always comes: "a graph means a
+six-month data modeling project." NICD hand-engineered nothing. That is the
+same thing Lab 3 does to the maintenance manuals in about an hour.
+-->
 
 ---
 
@@ -99,7 +118,7 @@ Governance is not bolted on afterward. It lives in the same graph as the data.
 
 > Which engines are showing abnormal EGT readings, what maintenance history do those aircraft have, and what does the maintenance manual say to do about high EGT?
 
-Answering this needs three stores at once:
+Answering this needs three stores at once. One of them is the graph: the fleet stored as records plus the links between them, so an engine knows which aircraft it hangs off and which repairs it has seen.
 
 - **Telemetry** for the EGT, Exhaust Gas Temperature, readings themselves, in the Databricks Lakehouse
 - **The graph** for the maintenance history behind each aircraft
@@ -125,8 +144,6 @@ The demo you are about to see is the artifact you will build.
 ## Neo4j + Databricks Partnership
 
 - **Joint focus**: grounding enterprise AI agents in verified data to reduce hallucinations
-- **Spark Connector**: projects governed Delta tables directly into a Neo4j graph, the same pattern this workshop's own data pipeline uses
-- **Neo4j MCP Server**: exposes schema discovery and read-only Cypher as standard agent tools, reachable from Databricks Agent Bricks and from any MCP-aware framework
 - Neo4j and Databricks continue to deepen this integration across the agent and lakehouse stack
 
 <!--

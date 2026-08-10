@@ -1,4 +1,4 @@
-= Knowledge Graph Foundations (Slides)
+= What is a Knowledge Graph (Slides)
 
 ++++
 <iframe src="../_attachments/slides/overview-knowledge-graph/01-knowledge-graph-foundations-slides.html"

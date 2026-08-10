@@ -39,17 +39,17 @@ Eight workshop decks, one folder each, listed in run-of-show order. Anything not
 | # | Folder | Deck | Pairs with |
 |---|--------|------|-----------|
 | 1 | `overview-business-story/` | The Business Case for GraphRAG | Opening |
-| 2 | `overview-architecture/` | Workshop Architecture and Roadmap | Opening |
-| 3 | `overview-knowledge-graph/` | Knowledge Graph Foundations | Labs 1 and 2 |
-| 4 | `overview-graphrag/` | GraphRAG Foundations | Lab 3 |
-| 5 | `overview-retrievers/` | GraphRAG Retriever Patterns | Lab 3 |
+| 2 | `overview-knowledge-graph/` | What is a Knowledge Graph | Labs 1 and 2 |
+| 3 | `overview-platform/` | Neo4j + Databricks | Labs 2 and 4A |
+| 4 | `overview-architecture/` | The Aircraft Digital Twin: Dataset and Setup | Before Lab 1 |
+| 5 | `overview-graphrag/` | GraphRAG Retrieval | Lab 3 |
 | 6 | `overview-agent/` | The Supervisor Agent and Deployment | Labs 4A and 5 |
 | 7 | `overview-agent-memory/` | Agent Memory with Neo4j | Lab 6 |
 | 8 | `overview-mcp/` | Neo4j MCP and Agent Bricks | Lab 4B, instructor demo |
 
 ### Assets
 
-- **`aircraft/`** — the aircraft digital twin diagrams used by decks 3 and 4
+- **`aircraft/`** — the aircraft digital twin diagrams used by decks 2 and 5
 - **`databricks-in-depth/`** — platform architecture diagrams
 - **`images/`** — concept art shared across decks
 
@@ -57,7 +57,8 @@ Eight workshop decks, one folder each, listed in run-of-show order. Anything not
 
 Reference material kept for reuse, never presented in the run of show.
 
-- **`background/agents/`** — the long-form GraphRAG and multi-agent deck decks 1, 4 and 8 were drawn from
+- **`background/agents/`** — the long-form GraphRAG and multi-agent deck decks 1, 5 and 8 were drawn from
+- **`background/connectors/`**: the Neo4j Custom JDBC Unity Catalog Connector and the Virtual Graph, in depth
 - **`background/graph-ml/`** — Graph Data Science, MLflow lift comparison, and the agentic graph enrichment loop
 - **`background/governance/`** — four patterns for aligning access privileges between Unity Catalog and Neo4j
 - **`background/kg-construction/`** — SimpleKGPipeline, schema design, and entity resolution

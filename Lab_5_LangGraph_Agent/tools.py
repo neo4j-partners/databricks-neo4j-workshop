@@ -479,118 +479,49 @@ Error:
 # The supervisor prompt
 # =============================================================================
 
-# Grown from the Agent Bricks supervisor instructions in Lab 4 Part B. Two
-# things changed. There is a third tool, and the boundary between cypher_node
-# and graphrag_node is stated as its own section, because both tools end in a
-# graph traversal and that is the pair the model gets wrong.
+# Measured, not written. An ablation over four lengths, 17 questions x 5 trials
+# each, put this one and a 380-word version at a perfect routing score and the
+# 865-word original below both. What survives here is the two things the tool
+# names do not say: a documented limit is a graph property, and a question
+# about what a document says goes to the manuals. The harness that produced
+# that result, and the run it came from, are in test-prompt/.
+#
+# Point 1 reads oddly for a prompt this short, and it is the way it is because
+# three other wordings were measured and each cost something. The word
+# "documented" is load-bearing in both directions. Drop it and the model reads
+# "maintenance history is documented information" and sends that to the
+# manuals, five times out of five. Say it twice and limits are anchored to the
+# graph so hard that an empty graph result ends the question instead of falling
+# through to the manuals, again five times out of five. One "documented", in
+# this position, is the setting that does neither.
 SUPERVISOR_PROMPT = """\
-# Fleet Operations Assistant, routing instructions
+You route questions about an aircraft fleet to one of three tools.
 
-You coordinate three tools over one aircraft fleet. Read the question, read
-what has already been gathered, then name the one tool to call next, or say
-the answer can be assembled from what is already here.
+  genie_node      sensor telemetry in the Databricks Lakehouse
+  cypher_node     the fleet knowledge graph in Neo4j
+  graphrag_node   the maintenance manuals
 
-## The tools
+Two things you cannot get from those names:
 
-### genie_node, sensor telemetry in the Databricks Lakehouse
-Every measured value and every aggregation over measured values. Averages,
-maxima, percentiles, trends, rolling windows, daily or monthly breakdowns,
-comparisons of readings across aircraft or models, anomaly detection over
-readings. The readings are EGT, Vibration, N1Speed and FuelFlow, sampled every
-four hours across 90 days.
+  1. A documented limit is what the fleet is held to, not what a sensor
+     measured: the graph holds one operating limit per aircraft model, a
+     ceiling on EGT, vibration, N1 speed or fuel flow. It goes to cypher_node,
+     even when the question names the same parameter a reading would.
+  2. If a question names an entity and asks what a document says about it, the
+     document is what is being asked for, so use graphrag_node.
 
-This is the only tool that can see a reading. The graph holds no reading
-values at all, so any question about what a sensor measured goes here.
-
-### cypher_node, the fleet knowledge graph in Neo4j
-Questions that start from a named thing in the graph and are answered by
-following relationships from it. A tail number, an aircraft model, a system, a
-component, a maintenance event, a flight, an airport, a part removal, or a
-documented operating limit attached to a sensor.
-
-Use it for topology, component hierarchy, maintenance and fault history,
-flights, routes, delays, part removals, and the documented limit values stored
-on OperatingLimit nodes.
-
-It cannot see a reading. A documented limit is what the fleet is held to, not
-what a sensor measured, so a question about a measured value goes to
-genie_node even when the graph holds a limit on the same parameter.
-
-### graphrag_node, the maintenance manuals
-Questions that start from language in a manual rather than from a named node.
-What a document says: a procedure, a troubleshooting sequence, an inspection
-interval, what a fault code means, what to do when something happens. Semantic
-similarity finds the passage, then a Cypher tail returns the surrounding
-passages and the aircraft the manual applies to.
-
-## The line between cypher_node and graphrag_node
-
-Both end in a graph traversal, so do not decide on the ending. Decide on where
-the question starts.
-
-  Starts with a name you could put in a WHERE clause  -> cypher_node
-  Starts with a phrase you would search a manual for  -> graphrag_node
-
-  "What maintenance events did N10004 have?"
-      -> cypher_node. N10004 is a node.
-  "What is the procedure for an EGT exceedance?"
-      -> graphrag_node. An EGT exceedance is a phrase in a manual, not a node.
-  "What is the documented EGT limit for the A320-200?"
-      -> cypher_node. The limit is a maxValue property on an OperatingLimit.
-  "How do I troubleshoot engine vibration?"
-      -> graphrag_node. A procedure, so it lives in the manual text.
-  "Which components are in the hydraulic system of N10000?"
-      -> cypher_node. A hierarchy walk from a named aircraft.
-  "What does the manual say about borescope inspection intervals?"
-      -> graphrag_node. It says so in words.
-
-If the question names an entity and asks what a document says about it, the
-document is what is being asked for, so use graphrag_node.
-
-## Questions that need more than one tool
-
-Ask for one tool at a time and let the result come back before choosing the
-next. A typical order:
-
-  1. genie_node    finds which aircraft or engine the readings point at
-  2. cypher_node   returns that aircraft's maintenance and component history
-  3. graphrag_node returns the procedure the manuals give for it
-
-## Rules for choosing
-
-  1. Call each tool at most once. A tool that has already run has given you
-     everything it has, and calling it again returns the same thing. Tools
-     already called are listed below and are not offered to you again.
-  2. Choose synthesize as soon as every part of the question has a finding
-     against it, even a partial finding. A partial answer beats another call
-     that returns the same rows.
-  3. Choose synthesize when the only part left is one no tool can answer.
-  4. A question with one part needs one tool, then synthesize.
-  5. A finding marked [NO DATA RETRIEVED] came back empty. Treat that part of
-     the question as still unanswered, and do not count it as covered under
-     rule 2.
-
-## What to answer with
+Name the one tool to call next, or synthesize when the findings already answer
+the question. Tools already called are not offered again.
 
 Reply with a JSON object holding exactly three fields:
 
-  next    the one tool to call: genie_node, cypher_node, graphrag_node, or
-          synthesize
+  next    the one tool to call, or synthesize
   task    the one part of the question that tool should answer, written as a
-          standalone question in the participant's own terms. Carry over any
-          aircraft, engine or system named elsewhere in the question, because
-          the tool sees only this text and not the rest. Give the whole
-          question when it has only one part, and when next is synthesize.
-  reason  one sentence, naming that same tool, saying why it is the next one
-
-## Why task matters
-
-Each tool sees only what you put in task. A question that asks for readings,
-maintenance history and a procedure at once has three parts, and the tools
-answer one each. Sending all three to one tool is how a part gets lost: the
-graph holds no sensor readings, so cypher_node given the whole question
-answers the readings clause with a refusal and never reaches the maintenance
-history it could have returned.
+          standalone question. Each tool sees only this text and not the rest
+          of the question, so carry over any aircraft or system named
+          elsewhere in it. Sending every part to one tool is how a part gets
+          lost.
+  reason  one sentence
 
 ## The question
 
@@ -648,8 +579,12 @@ Findings:
 # Shared helpers
 # =============================================================================
 
-# Appended to a finding's heading when the tool retrieved nothing. Read by the
-# supervisor and the synthesizer, both of which are told what it means.
+# Appended to a finding's heading when the tool retrieved nothing. SYNTHESIS_PROMPT
+# is told what it means; SUPERVISOR_PROMPT is deliberately not. The ablation in
+# test-prompt/ found that the supervisor recovers from an empty finding more
+# reliably with no rule about the mark than with the rule the prompt used to
+# carry, which told it to keep the part unanswered and got it to re-pick the
+# exhausted tool instead of the one that could still answer.
 UNGROUNDED_MARK = "  [NO DATA RETRIEVED]"
 
 

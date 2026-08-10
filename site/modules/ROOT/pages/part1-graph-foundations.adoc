@@ -23,7 +23,7 @@ Part 1 gets you a graph database of your own and loads the Aircraft Digital Twin
 | 45 min
 |===
 
-Slides for this part: xref:slides/slides-business-case.adoc[The Business Case for GraphRAG], xref:slides/slides-architecture-roadmap.adoc[Workshop Architecture and Roadmap] and xref:slides/slides-knowledge-graph-foundations.adoc[Knowledge Graph Foundations].
+Slides for this part: xref:slides/slides-business-case.adoc[The Business Case for GraphRAG], xref:slides/slides-knowledge-graph-foundations.adoc[What is a Knowledge Graph], xref:slides/slides-neo4j-databricks.adoc[Neo4j + Databricks] and xref:slides/slides-architecture-roadmap.adoc[The Aircraft Digital Twin: Dataset and Setup].
 
 == Next Steps
 

@@ -9,7 +9,7 @@ TIP: Ready to start? Open `Lab_3_Semantic_Search/01_data_and_embeddings.ipynb` i
 * **Embeddings** convert text to numerical vectors that capture meaning: "engine overheating" and "thermal runaway in turbine" match by similarity, not keywords
 * **SimpleKGPipeline** chunks the maintenance manual, extracts entities, generates embeddings, and stores everything in Neo4j
 * **GraphRAG** adds graph traversal after vector search: chunks anchor the search, then Cypher gathers connected entities and relationships
-* **VectorRetriever** vs **VectorCypherRetriever**: pure text retrieval vs graph-enriched context
+* **Four retrievers**, two search methods (vector, hybrid) times two return shapes (chunk text, chunk plus graph traversal)
 * **Databricks Foundation Model APIs** provide hosted embedding and LLM models (BGE-large, Claude Sonnet 5)
 
 == Embeddings and Vector Search
@@ -65,17 +65,56 @@ image::lab3-graphrag-retrieval-flow.svg[Aircraft maintenance GraphRAG retrieval 
 A user question enters as text, and vector or fulltext search finds the matching Chunk nodes. Graph traversal then follows the entities and relationships surrounding those chunks, gathering the specific components, maintenance events, and systems connected to them. The result is graph-enriched context that reaches the agent or LLM, not just the chunk text. Without extracted entities linked to chunks and cross-linked to the operational graph, there would be nothing for the traversal to follow.
 ====
 
-== Retriever Comparison: Vector vs. VectorCypher
+== Two Ways to Search Text
 
-The `neo4j-graphrag` package provides two retriever patterns relevant to this lab:
+Every retriever in this lab starts by finding chunks. Two search methods do that job, and they fail in opposite directions:
+
+* **Vector search** matches by meaning. "Engine running too hot" finds the chunk about thermal limits even when the two share no words. It is weak on exact strings: `V2500`, `925`, a part number or a fault code get blurred into general meaning rather than matched literally.
+* **Fulltext search** matches by word. This is classic keyword search, and it is strong at exactly what vector search is weak at: codes, numbers, part names, the manual's own abbreviations. It is weak when the question's words differ from the manual's.
+* **Hybrid search** runs both and merges the two ranked lists. It covers both failure modes at once.
+
+Notebook 01 builds two indexes over the same Chunk nodes for this reason: `maintenanceChunkEmbeddings` for vector search and `maintenanceChunkText` for fulltext search. Hybrid retrievers read both.
+
+== The Four Retrievers
+
+The `neo4j-graphrag` package gives this lab four retrievers. They are a two-by-two: how the chunk is found (vector or hybrid) times what comes back (chunk text, or chunk text plus a graph traversal).
+
+[cols="2,2,2,1"]
+|===
+| Retriever | Finds chunks by | Returns | Notebook
+
+| `VectorRetriever`
+| meaning
+| chunk text
+| 02
+
+| `VectorCypherRetriever`
+| meaning
+| chunk plus a graph traversal
+| 02
+
+| `HybridRetriever`
+| meaning and keywords
+| chunk text
+| 03
+
+| `HybridCypherRetriever`
+| meaning and keywords
+| chunk plus a graph traversal
+| 03
+|===
 
 * **VectorRetriever** performs pure semantic search. It converts the user's question to an embedding, finds the most similar chunks by vector index lookup, and returns their text. This works well for conceptual questions like "How do I troubleshoot engine vibration?" where the answer lives within the matched chunks themselves.
-* **VectorCypherRetriever** adds a graph traversal step after vector search. It finds semantically similar chunks the same way, then executes a custom Cypher query that traverses from each matched chunk to related entities in the graph. The chunk acts as an anchor: vector search determines relevance, then Cypher gathers the structured context around it.
+* **VectorCypherRetriever** adds a graph traversal step after vector search. It finds semantically similar chunks the same way, then executes a custom Cypher query that traverses from each matched chunk to related entities in the graph. The chunk acts as an anchor: vector search determines relevance, then Cypher gathers the structured context around it. This is the retriever Lab 5's `graphrag_node` uses.
+* **HybridRetriever** is VectorRetriever with fulltext search added. It queries the vector index and the fulltext index, merges the results, and returns chunk text. Reach for it when questions carry engine designations, fault codes or numeric thresholds.
+* **HybridCypherRetriever** is the combination of both ideas: hybrid search finds the chunks, then a custom Cypher query traverses out from them. Notebook 03 uses it to walk `Chunk -> Document -> Aircraft -> System -> Sensor -> OperatingLimit`, returning the authoritative limit as structured fields rather than prose.
 
 .When to use which retriever
 [%collapsible]
 ====
-The key constraint: traversal starts from what vector search found. If the question does not surface relevant chunks, no amount of graph traversal compensates. Questions targeting a specific entity by name ("How many faults affect AC1001?") may be better served by direct Cypher queries.
+The key constraint: traversal starts from what search found. If the question does not surface relevant chunks, no amount of graph traversal compensates. Questions targeting a specific entity by name ("How many faults affect AC1001?") may be better served by direct Cypher queries.
+
+Questions carrying a code, a part number or a threshold favor the hybrid pair, because the fulltext component catches the literal token that vector search would smooth over. Notebook 03 runs the same three questions through `VectorRetriever` and `HybridRetriever` side by side so you can see the difference in the scores.
 ====
 
 == Databricks Foundation Model APIs
@@ -115,7 +154,7 @@ After completing this lab, you can ask questions like:
 
 `EGT` is Exhaust Gas Temperature, the parameter these manuals set takeoff limits on. The answers come back in the manuals' own vocabulary, so expect terms like HPT, FADEC, and ATA chapter alongside it. xref:glossary.adoc[The glossary] expands all of them.
 
-Slides for this lab: xref:slides/slides-graphrag-foundations.adoc[GraphRAG Foundations] and xref:slides/slides-retriever-patterns.adoc[GraphRAG Retriever Patterns].
+Slides for this lab: xref:slides/slides-graphrag-retrieval.adoc[GraphRAG Retrieval].
 
 == Next Steps
 

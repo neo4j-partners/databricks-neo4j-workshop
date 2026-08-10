@@ -464,18 +464,21 @@ These are content gaps to address in a future content phase, not part of the reo
 | Build verification | Done | 15 decks built, 8 workshop and 7 background. Every image reference in the built HTML resolves to a file under `attachments/`. Zero broken links |
 | Quality and flow review | Done | Eight decks read end to end. Six fixes applied, listed below. Rebuilt and re-verified after |
 
-**Deck sizes as shipped:**
+**Deck inventory, in run-of-show order, after the nine-deck revision:**
 
-| # | Deck | Lines | Slides |
-|---|------|-------|--------|
-| 1 | `overview-business-story/01-business-case-slides.md` | 162 | 9 |
-| 2 | `overview-architecture/01-architecture-roadmap-slides.md` | 387 | 16 |
-| 3 | `overview-knowledge-graph/01-knowledge-graph-foundations-slides.md` | 337 | 19 |
-| 4 | `overview-graphrag/01-graphrag-foundations-slides.md` | 259 | 15 |
-| 5 | `overview-retrievers/01-retriever-patterns-slides.md` | 452 | 18 |
-| 6 | `overview-agent/01-supervisor-agent-slides.md` | 340 | 18 |
-| 7 | `overview-agent-memory/01-agent-memory-slides.md` | 299 | 13 |
-| 8 | `overview-mcp/01-mcp-agent-bricks-slides.md` | 285 | 13 |
+| # | Deck | Slides |
+|---|------|--------|
+| 1 | `overview-business-story/01-business-case-slides.md` | 9 |
+| 2 | `overview-knowledge-graph/01-knowledge-graph-foundations-slides.md` | 15 |
+| 3 | `overview-platform/01-neo4j-databricks-slides.md` | 10 |
+| 4 | `overview-architecture/01-architecture-roadmap-slides.md` | 9 |
+| 5 | `overview-graphrag/01-graphrag-foundations-slides.md` | 17 |
+| 6 | `overview-retrievers/01-retriever-patterns-slides.md` | 19 |
+| 7 | `overview-agent/01-supervisor-agent-slides.md` | 19 |
+| 8 | `overview-agent-memory/01-agent-memory-slides.md` | 14 |
+| 9 | `overview-mcp/01-mcp-agent-bricks-slides.md` | 14 |
+
+Nine workshop decks and eight background decks, seventeen in all. The new background deck is `background/connectors/09-neo4j-connectors-slides.md`. The Lines column and the Phase 7 slide counts this table replaced were both stale: the counts read one low on every deck.
 
 #### Review pass, 2026-08-09
 
@@ -519,6 +522,8 @@ Measured against the sibling workshop at `/Users/ryanknight/projects/aws/neo4j-b
 #### The Eight Decks
 
 Folder convention is `overview-<topic>/01-<topic>-slides.md`, one file per folder. This retires the `01-` prefix collision and the numeric sort problem recorded as issues 2 and 7 in Phase 5.
+
+The numbering and the two titles below are Phase 7's. The nine-deck inventory above supersedes them.
 
 | # | Deck | Built from |
 |---|------|-----------|

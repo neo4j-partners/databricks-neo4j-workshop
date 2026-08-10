@@ -35,9 +35,8 @@ Bridging two privilege models through a common semantic map
 
 ## Neo4j JDBC Lakehouse Federation: Shipping
 
-- **Released connector:** the Neo4j Unity Catalog Connector JAR registers Neo4j as a `TYPE JDBC` connection in Unity Catalog
-- **Neo4j JDBC driver enables SQL-to-Cypher translation:** `SELECT COUNT(*) FROM Aircraft` becomes `MATCH (n:Aircraft) RETURN count(n)` automatically
-- **Federated queries:** `remote_query()` pushes aggregates into Neo4j and joins the results with Delta tables in one SQL statement
+- **The connector itself:** introduced in `background/connectors/09-neo4j-connectors-slides.md`, which covers the JDBC connection, SQL-to-Cypher translation, and `remote_query()`
+- **What this deck adds:** the connector governs the SQL path only, and everything below is the gap that leaves
 - **Public Preview:** custom-driver JDBC connections reached Public Preview at Databricks Runtime 18.1 and Databricks SQL 2025.40
 - **Remaining cost:** custom connectors run in an isolated sandbox, adding 13-16 seconds of overhead per query
 

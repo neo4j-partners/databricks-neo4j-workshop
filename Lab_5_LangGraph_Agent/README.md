@@ -20,7 +20,7 @@ Builds the three nodes and carries the two prompts that matter.
 | `build_genie_node` | Calls your Genie Agent. Needs `GENIE_AGENT_ID` |
 | `build_cypher_node` | Text to Cypher, run in a read transaction, one retry with the error attached |
 | `build_graphrag_node` | `VectorCypherRetriever` over `maintenanceChunkEmbeddings`. Returns a self-explaining stub if the index is missing, rather than raising |
-| `SUPERVISOR_PROMPT` | Routes on where a question *starts*, not on what a tool does at the end |
+| `SUPERVISOR_PROMPT` | 213 words. Names the three tools, then the only two things their names do not say: a documented limit is a graph property, and a question about what a document says goes to the manuals |
 | `GRAPH_SCHEMA` | The schema string given to the Cypher tool |
 
 `GRAPH_SCHEMA` is not generated from the live graph and should not be. It states
@@ -87,3 +87,17 @@ Routing accuracy, the anchor question, and the caveat on both are on the
 [site page](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/lab5.html#measured-routing).
 Section 9 of notebook 01 is what reproduces them. **If you edit
 `SUPERVISOR_PROMPT`, re-run it and update the site page.**
+
+**`SUPERVISOR_PROMPT` was replaced, and the numbers survived it.** The prompt is
+now 213 words instead of 865, chosen by an ablation rather than written: four
+lengths, 17 questions, 5 trials each, scoring the short prompt 1.000 and the
+long one 0.982 on the fraction of expected tools called. `test-prompt/` is the
+harness and `trimprompt.md` is the write-up, including the eleven words in the
+old prompt that stopped it recovering when a tool came back empty.
+
+Section 9 was re-run against the replacement on 2026-08-09, five passes instead
+of one. 12/12 overall and 8/8 on the pair, identical every pass, 60 out of 60
+with no spread. **Which also says what the twelve questions can no longer do.**
+They score both prompts perfectly, so they cannot tell you the shorter one is as
+good, only that neither fails here. The 17 questions in `test-prompt/` are the
+instrument that separates them.

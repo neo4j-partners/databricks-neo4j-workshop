@@ -148,7 +148,7 @@ That is the GraphRAG tail: the passage and the aircraft are one hop away, not in
 | "What maintenance events did N10004 have?" | `cypher_node` | N10004 is a node |
 | "What is the procedure for an EGT exceedance?" | `graphrag_node` | EGT, Exhaust Gas Temperature, is a phrase in a manual, not a node |
 
-<!-- The Cypher tail is what makes graphrag_node worth having, and also what makes routing hard. Tune the prompt by adding the pair that went to the wrong tool, then rerun the measurement. -->
+<!-- The Cypher tail is what makes graphrag_node worth having, and also what makes routing hard. Tune the prompt by adding the pair that went to the wrong tool, then rerun the measurement. Worth knowing before someone opens tools.py: the current 213-word prompt does not state this rule, and routes both rows here correctly 5 times out of 5 anyway. It is how to think about the pair, not a line the model needs read to it. What the prompt does keep is the case the model cannot infer, a documented limit being a graph property rather than a reading. -->
 
 ---
 
@@ -184,9 +184,9 @@ Twelve questions, four per tool, scored on the first tool the supervisor chose.
 | Overall | 12/12 (100%) |
 | **`cypher_node` vs `graphrag_node` alone** | **8/8 (100%)** |
 
-Recorded 2026-08-08 from a full run of `01_langgraph_agent.ipynb`, against `SUPERVISOR_PROMPT` as it stands today. These numbers go stale the moment someone edits the prompt.
+Re-run 2026-08-09 against the current 213-word `SUPERVISOR_PROMPT`, five passes rather than one. Every pass identical, 60 out of 60, no spread. The 865-word prompt it replaced scored the same 12/12 on 2026-08-08.
 
-<!-- Both tools end in a graph traversal, so that pair is where routing fails first. A number without a date and a prompt version is decoration; Section 9 of the notebook reproduces it. -->
+<!-- Both tools end in a graph traversal, so that pair is where routing fails first. Read the last sentence out loud: a prompt a quarter the length scores the same, which is what this set can tell you and also the limit of what it can tell you. Twelve questions no longer separate the two prompts, so the real comparison is the 17-question ablation in test-prompt/, where the short prompt scored 1.000 and the long one 0.982. A number without a date and a prompt version is decoration; Section 9 reproduces the figure above. -->
 
 ---
 

@@ -97,15 +97,16 @@ The virtual graph queries the lakehouse as a graph. SQL federation is the mirror
 
 The point is who gets to ask. An analyst who writes SQL every day and has never seen Cypher can query the graph directly, from a notebook, from Power BI, or through Genie. Nobody learns a second query language, and no copy of the graph lands in the lakehouse first.
 
-The https://github.com/neo4j-labs/neo4j-unity-catalog-connector[Neo4j Unity Catalog Connector] does the translating. It is a driver you install once: upload it to a Unity Catalog Volume, then register Neo4j as a `TYPE JDBC` connection. After that the driver rewrites incoming SQL as Cypher, so node labels behave like tables and node properties behave like columns. `SELECT COUNT(*) FROM Aircraft` reaches the graph as `MATCH (n:Aircraft) RETURN count(n)`.
+The https://github.com/neo4j-labs/neo4j-unity-catalog-connector[Neo4j Custom JDBC Unity Catalog Connector] does the translating. It is a driver you install once: upload it to a Unity Catalog Volume, then register Neo4j as a `TYPE JDBC` connection. After that the driver rewrites incoming SQL as Cypher, so node labels behave like tables and node properties behave like columns. `SELECT COUNT(*) FROM Aircraft` reaches the graph as `MATCH (n:Aircraft) RETURN count(n)`.
 
 ....
   BI tools (Power BI, Tableau) / Genie / notebooks
         │  SQL
         ▼
-  Unity Catalog JDBC ──── translates SQL to Cypher ────▶ Neo4j graph
-        ▲                                                 (graph stays in Neo4j)
-        └──────────── results as rows / columns ──────────┘
+  Neo4j Custom JDBC
+  Unity Catalog Connector ──── translates SQL to Cypher ────▶ Neo4j graph
+        ▲                                                     (graph stays in Neo4j)
+        └────────────── results as rows / columns ────────────┘
 ....
 
 Queries go through `remote_query()`, a SQL function that sends a query through a connection and hands the answer back as a table. Because the answer is a table, one statement can join it to Delta tables:
@@ -182,7 +183,7 @@ image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Datab
 | GDS algorithm results written back to gold Delta tables
 
 | SQL Federation
-| Neo4j Unity Catalog Connector (JDBC)
+| Neo4j Custom JDBC Unity Catalog Connector
 | SQL over the graph via `remote_query()`; joins with Delta tables in one statement
 
 | GraphRAG / Agent
@@ -195,9 +196,9 @@ image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Datab
 For the GraphRAG architecture, Unity Catalog plays two specific roles:
 
 * **Governance of graph-bound data**: the silver tables that feed the Spark Connector are governed assets with lineage tracking. When graph data quality issues surface, lineage traces back through the exact transformations and source records that produced the data.
-* **Federated access to Neo4j**: the Neo4j Unity Catalog Connector registers the graph as a `TYPE JDBC` connection, so federated queries that combine graph relationships and lakehouse metrics run under the same credentials, permissions, and audit as any other lakehouse query. <<sql-federation-over-the-graph,SQL Federation over the Graph>> above has the mechanics.
+* **Federated access to Neo4j**: the Neo4j Custom JDBC Unity Catalog Connector registers the graph as a `TYPE JDBC` connection, so federated queries that combine graph relationships and lakehouse metrics run under the same credentials, permissions, and audit as any other lakehouse query. <<sql-federation-over-the-graph,SQL Federation over the Graph>> above has the mechanics.
 
-Grants on that path stop at the connection. Access is given on the connection as a whole rather than on individual node labels, so anyone who can use it can read the whole graph behind it. Neo4j is not an officially supported federation source yet, and official status is what would bring per-table grants, a browsable foreign catalog, and column-level lineage. The xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers that gap in full.
+Grants on that path stop at the connection. Access is given on the connection as a whole rather than on individual node labels, so anyone who can use it can read the whole graph behind it. Neo4j is not an officially supported federation source yet, and official status is what would bring per-table grants, a browsable foreign catalog, and column-level lineage. The xref:slides/slides-neo4j-connectors.adoc[Neo4j Connectors deck] covers how that connection is built and what it can read, and the xref:slides/slides-auth-sync.adoc[Authorization Sync deck] covers the gap in full.
 
 == Agent Systems
 
@@ -227,7 +228,7 @@ Agent memory plugs into Agent Bricks the same way the other sub-agents do. The s
 * https://docs.databricks.com/en/delta/index.html[Delta Lake Documentation]: ACID transactions, schema enforcement, time travel
 * https://docs.databricks.com/en/data-governance/unity-catalog/index.html[Unity Catalog Documentation]: unified governance across data and AI
 * https://neo4j.com/docs/spark/current/[Neo4j Spark Connector Documentation]: Databricks-certified connector for bidirectional data flow
-* https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Unity Catalog Connector]: SQL federation over the graph, with runnable notebooks
+* https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Custom JDBC Unity Catalog Connector]: SQL federation over the graph, with runnable notebooks
 * https://neo4j.com/docs/jdbc-manual/current/sql2cypher/[Neo4j SQL to Cypher Translation]: what the JDBC driver translates, and what it does not
 * https://docs.databricks.com/en/genie/index.html[Databricks Genie]: natural language SQL
 

@@ -4,7 +4,7 @@ Every deck is embedded on its own page. Each page also carries an **Open full sc
 
 .**At a Glance**
 * **Eight workshop decks**, in the order an instructor presents them.
-* **Seven background decks**, deeper material that no lab depends on.
+* **Eight background decks**, deeper material that no lab depends on.
 * **Decks are built, not committed.** `slides/build-slides.sh` renders the Markdown sources into HTML, and CI runs it before every publish.
 
 == Workshop Decks
@@ -17,20 +17,20 @@ Every deck is embedded on its own page. Each page also carries an **Open full sc
 | Why LLMs and vector search alone fall short, and what GraphRAG is worth
 | xref:part1-graph-foundations.adoc[Part 1]
 
-| xref:slides/slides-architecture-roadmap.adoc[2. Workshop Architecture and Roadmap]
-| The digital twin dataset, the dual-database split, and the medallion architecture under it
-| xref:part1-graph-foundations.adoc[Part 1]
-
-| xref:slides/slides-knowledge-graph-foundations.adoc[3. Knowledge Graph Foundations]
+| xref:slides/slides-knowledge-graph-foundations.adoc[2. What is a Knowledge Graph]
 | Nodes, relationships and Cypher, then the aircraft schema itself
 | xref:lab1.adoc[Lab 1], xref:lab2.adoc[Lab 2]
 
-| xref:slides/slides-graphrag-foundations.adoc[4. GraphRAG Foundations]
-| Chunking, embeddings, and what the graph adds to retrieval
-| xref:lab3.adoc[Lab 3]
+| xref:slides/slides-neo4j-databricks.adoc[3. Neo4j + Databricks]
+| The dual-database split, what each platform brings, and the three tools one agent needs
+| xref:lab2.adoc[Lab 2], xref:lab4.adoc[Lab 4 Part A]
 
-| xref:slides/slides-retriever-patterns.adoc[5. GraphRAG Retriever Patterns]
-| Vector, VectorCypher and Text2Cypher retrievers, and when each wins
+| xref:slides/slides-architecture-roadmap.adoc[4. The Aircraft Digital Twin: Dataset and Setup]
+| The digital twin dataset, the accounts and instances you need, and the lab roadmap
+| xref:part1-graph-foundations.adoc[Part 1]
+
+| xref:slides/slides-graphrag-retrieval.adoc[5. GraphRAG Retrieval]
+| Chunking and embeddings, what the graph adds to retrieval, then the four retrievers and Text2Cypher
 | xref:lab3.adoc[Lab 3]
 
 | xref:slides/slides-supervisor-agent.adoc[6. The Supervisor Agent and Deployment]
@@ -77,6 +77,10 @@ No lab depends on these. They go deeper on topics the workshop only touches.
 | xref:slides/slides-future-graph-enrichment.adoc[Beyond Entity Extraction]
 | Enrichment that starts from the graph rather than the documents, as a loop
 | xref:appendix-a.adoc[Appendix A]
+
+| xref:slides/slides-neo4j-connectors.adoc[Neo4j Connectors in Depth]
+| The Neo4j Custom JDBC Unity Catalog Connector and the Virtual Graph, the two paths that read the graph without moving it
+| xref:databricks-platform.adoc[Platform]
 
 | xref:slides/slides-auth-sync.adoc[Authorization Sync Between Unity Catalog and Neo4j]
 | A JDBC federation prototype, and the governance gap it is meant to close

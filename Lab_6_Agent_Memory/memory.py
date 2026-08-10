@@ -1405,8 +1405,8 @@ Routing is not the only thing memory is for. The tools receive the question
 text, so a question saying "that aircraft" reaches Genie as "that aircraft"
 and Genie asks you which one. Resolve it here instead.
 
-So in this lab the JSON object carries a third field as well as next and
-reason, and all three are required:
+So in this lab the JSON object carries a fourth field as well as next, task
+and reason, and all four are required:
 
   resolved  the question, with every reference to an earlier one replaced
 
@@ -1421,6 +1421,7 @@ Memory holds: N10011 is the one I care about, the EGT margin has been trending.
 The reply:
 
 {{"next": "genie_node",
+  "task": "Are there any vibration readings I should worry about on N10011?",
   "reason": "genie_node holds the vibration readings this asks for.",
   "resolved": "Are there any vibration readings I should worry about on N10011?"}}
 """

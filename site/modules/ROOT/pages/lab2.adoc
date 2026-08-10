@@ -66,7 +66,7 @@ Three paths connect the two platforms, and only one of them copies data.
 
 * **Spark Connector**, what this lab uses. It copies: Delta rows become nodes and relationships inside Neo4j. Pick it when you want a graph that persists, traversal speed at scale, or graph algorithm results written back to Delta.
 * **Virtual graph**. Cypher in, SQL out. Neo4j tooling queries Delta tables where they already sit.
-* **Neo4j Unity Catalog Connector**. SQL in, Cypher out. Analysts and BI tools query the graph as SQL, with no Cypher to learn and no copy in the lakehouse.
+* **Neo4j Custom JDBC Unity Catalog Connector**. SQL in, Cypher out. Analysts and BI tools query the graph as SQL, with no Cypher to learn and no copy in the lakehouse.
 
 The last two read data where it already lives. This lab copies, because every lab after this one traverses the graph and expects it to be there. See xref:databricks-platform.adoc[How Neo4j + Databricks Work Together] for all six integration patterns.
 ====
@@ -156,7 +156,7 @@ The cost is that your Aura instance cannot hold anything else you want to keep. 
 2. **Nodes first, relationships second** ensures endpoints exist before connections are created
 3. **Cypher queries from Databricks** verify data loaded correctly by checking node and relationship counts against source row counts
 
-Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[Knowledge Graph Foundations].
+Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[What is a Knowledge Graph].
 
 == Next Steps
 

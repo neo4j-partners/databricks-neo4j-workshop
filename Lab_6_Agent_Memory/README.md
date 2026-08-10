@@ -81,7 +81,7 @@ count is the scarce resource on AuraDB Free, not node count.
 `neo4j-agent-memory` is a `neo4j-labs` project: pre-1.0, no compatibility
 promise. `WHEEL_PATH` is built from the `mentions` branch of
 <https://github.com/neo4j-partners/agent-memory>, checked into
-`lab/courseware/wheels/`, and uploaded by `workshop.py provision-data`. Three
+`lab/courseware/wheels/`, and uploaded by `workshop.py upload-data`. Three
 reasons, and each of them fails silently rather than loudly:
 
 1. **Released 0.5.0 drops `MENTIONS` edges** on the automatic extraction path.
@@ -155,3 +155,9 @@ recall defects and the section-by-section timing behind the 75 minute budget.
 9 and read the answers, not just the score.** The failure mode here is a
 confident answer about the wrong aircraft, and a substring test scored one of
 those as a pass.
+
+**That comparison predates the current supervisor prompt.**
+`MEMORY_SUPERVISOR_PROMPT` wraps Lab 5's `SUPERVISOR_PROMPT`, which was replaced
+with a measured 213-word version after these timings were taken. The wrapping
+still holds, the prefix and the suffix both attach the same way, but nothing on
+the Lab 6 path was re-measured. See `trimprompt.md`.

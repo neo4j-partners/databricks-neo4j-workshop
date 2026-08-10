@@ -15,8 +15,9 @@
 #    "The one odd path, and why it is not a mistake" in site/README.md.
 #
 # 2. Decks under background/ emit one directory deeper than workshop decks, so
-#    their `../` references need one more `..` than a workshop deck's. There is
-#    one such reference today, in background/governance/auth-sync-slides.md.
+#    their `../` references need one more `..` than a workshop deck's. There are
+#    two such references today, in background/governance/auth-sync-slides.md and
+#    background/connectors/09-neo4j-connectors-slides.md.
 
 set -eu
 
@@ -25,7 +26,7 @@ ATTACH="../site/modules/ROOT/attachments"
 OUT="$ATTACH/slides"
 
 # Workshop decks, in run-of-show order. One output directory per topic folder.
-WORKSHOP_TOPICS="overview-business-story overview-architecture overview-knowledge-graph overview-graphrag overview-retrievers overview-agent overview-agent-memory overview-mcp"
+WORKSHOP_TOPICS="overview-business-story overview-knowledge-graph overview-platform overview-architecture overview-graphrag overview-agent overview-agent-memory overview-mcp"
 
 build_decks() {
   for topic in $WORKSHOP_TOPICS; do
@@ -34,7 +35,8 @@ build_decks() {
   done
 
   # background/ is passed whole. Marp recurses and preserves the subdirectory
-  # structure, so this emits background/governance/ and background/kg-construction/.
+  # structure, so this emits background/connectors/, background/governance/ and
+  # background/kg-construction/.
   echo "  building background"
   "$MARP" --allow-local-files -I background -o "$OUT/background"
 }

@@ -184,7 +184,7 @@ Every required lab reads and writes the **one AuraDB Free instance you create in
 | **Neo4j Spark Connector**
 | ETL between Databricks and Neo4j
 
-| **Neo4j Unity Catalog Connector**
+| **Neo4j Custom JDBC Unity Catalog Connector**
 | SQL access to the graph from Databricks. Referenced in xref:databricks-platform.adoc[the architecture page], not built in a lab
 |===
 
@@ -204,7 +204,7 @@ No local software installation is required. Everything runs in the browser or in
 * https://neo4j.com/docs/aura/[Neo4j Aura Documentation]
 * https://neo4j.com/docs/neo4j-graphrag-python/[neo4j-graphrag Python Library]
 * https://neo4j.com/docs/spark/current/[Neo4j Spark Connector]
-* https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Unity Catalog Connector]
+* https://neo4j-partners.github.io/neo4j-uc-connector-demos[Neo4j Custom JDBC Unity Catalog Connector]
 * https://neo4j.com/docs/cypher-manual/current/[Cypher Query Language]
 * https://github.com/neo4j/mcp[Neo4j MCP Server]
 

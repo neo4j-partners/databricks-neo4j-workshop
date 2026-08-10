@@ -9,7 +9,7 @@ TIP: Ready to start? Open `Lab_5_LangGraph_Agent/01_langgraph_agent.ipynb` in yo
 * **LangGraph** models the agent as a **state graph**: nodes that read and write a shared state object, and edges that decide what runs next.
 * **One supervisor node, three tool nodes.** `genie_node` for SQL over Delta telemetry, `cypher_node` for traversal over your own Aura instance, `graphrag_node` for a `VectorCypherRetriever` over the Lab 3 manual chunks.
 * **Every tool returns to the supervisor**, which can then pick another tool. That return edge is what makes this a supervisor rather than a router.
-* **The routing rules live in the prompt.** Two of them were each written to fix a specific failure seen in testing.
+* **The routing lives in the prompt**, and it is short. The three tool names do most of the work; the prompt spells out only the two things those names cannot say.
 * **A direct Bolt driver**, not an MCP server. The demo's MCP connection is an admin-managed Unity Catalog object, and one per participant is not a thing a classroom can stand up.
 * **Deployment is a separate step.** The agent is logged to Unity Catalog and served as an endpoint that authenticates as a **service principal** rather than as you.
 
@@ -35,14 +35,21 @@ The tail walks sideways along `NEXT_CHUNK`, so a procedure split across a chunk 
 
 == Routing Lives in the Prompt
 
-The wiring is about thirty lines of Python. The prompt is what decides which tool runs. Two of the three tools end in a Neo4j traversal, so a prompt that describes its tools by what they do at the *end* cannot tell those two apart. It sends manual questions to Cypher, where they return nothing, because manual text is not a property you can filter on.
+The wiring is about thirty lines of Python. The prompt is what decides which tool runs, and it is shorter than you would expect: a little over 200 words. The three tool names carry most of the routing on their own, and the model gets most questions right from those names and nothing else. What the prompt adds is the two things the names cannot say.
 
-The prompt routes on where the question **starts** instead:
+**A documented limit is a graph property, not a reading.** Both stores talk about EGT. The Lakehouse holds what a sensor measured; the graph holds the ceiling the aircraft model is held to, one `OperatingLimit` per model. So "what is the documented EGT limit for the A320-200" goes to `cypher_node`, even though it names the same parameter a reading would.
 
-* If it starts with a name you could put in a `WHERE` clause, `cypher_node` takes it.
-* If it starts with a phrase you would search a manual for, `graphrag_node` takes it.
+**"What does the manual say about X" means the manual.** Naming an aircraft does not make it a graph question. If the question asks what a document says about something, `graphrag_node` takes it.
 
-The two rules below were each added after a specific failure. Both are worth reading before you write your own routing prompt.
+That length is measured rather than guessed. A four-way ablation put this version level with one nearly twice as long, and both above the 865-word prompt it replaced. `test-prompt/` in the repository holds the harness and the run.
+
+.Why not simply say "graph questions go to the graph tool"
+[%collapsible]
+====
+Two of the three tools end in a Neo4j traversal, so a rule phrased around what a tool does at the *end* separates nothing. It sends manual questions to `cypher_node`, where they return zero rows, because manual text is not a property you can filter on. The two rules above are phrased around what the question is asking for instead, which is the part the tool names already get right most of the time.
+====
+
+Two more rules live in a different prompt: the graph schema `cypher_node` is handed. Each was added after a specific failure, and both are worth reading before you write your own text-to-Cypher tool.
 
 === The direction rule
 
@@ -98,7 +105,15 @@ Twelve questions, four per tool, each scored on the first tool the supervisor ch
 
 **The last row is the one to read.** Both tools end in a graph traversal, so that pair is where a weak routing prompt fails first. The overall average hides that result, which is why it is broken out.
 
-NOTE: Recorded 2026-08-08 from a full run of `01_langgraph_agent.ipynb`, against `SUPERVISOR_PROMPT` in `Lab_5_LangGraph_Agent/tools.py` as it stands today. These numbers are a claim about this workshop's prompt, so they go stale when someone edits it and not before. Section 9 of the notebook re-runs the measurement.
+NOTE: Re-run 2026-08-09 against `SUPERVISOR_PROMPT` in `Lab_5_LangGraph_Agent/tools.py` as it stands today, five passes rather than one. Every pass identical, 60 out of 60, no spread. These numbers are a claim about this workshop's prompt, so they go stale when someone edits it and not before. Section 9 of the notebook re-runs the measurement.
+
+.What these twelve questions cannot tell you
+[%collapsible]
+====
+The prompt these numbers were re-run against is a quarter the length of the one they were first recorded against on 2026-08-08, and both score 12/12. That is the useful result and also the limit of it: on this set the two prompts are indistinguishable, so a perfect score here is evidence that neither fails, not evidence that the shorter one is as good.
+
+The comparison that does separate them is a four-way ablation over seventeen questions, five trials each, scoring routing on the fraction of expected tools called rather than on the first pick alone. The short prompt scored 1.000, the long one 0.982. It also found a defect in the long prompt: eleven words telling the supervisor to keep a part unanswered after a tool came back empty, which made it re-pick the tool that had already returned nothing instead of the one that could still answer. Deleting those eleven words took recovery from 0 in 10 to 10 in 10.
+====
 
 .One limitation on these numbers
 [%collapsible]

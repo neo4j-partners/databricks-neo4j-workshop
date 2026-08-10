@@ -27,7 +27,7 @@ ol > li {
 }
 </style>
 
-# Knowledge Graph Foundations
+# What is a Knowledge Graph
 
 Graph databases, Cypher, and the aircraft digital twin graph
 
@@ -44,6 +44,20 @@ A graph database models data as **nodes** and **relationships**.
 Connections are **stored as first-class structures**, not computed at query time through joins.
 
 <!-- The whole workshop rests on this reframe: a relational database figures out how rows connect at query time, through a join. A graph database stores the connection itself, as a relationship, at write time. -->
+
+---
+
+## From Graph Database to Knowledge Graph
+
+A graph database stores connections. A knowledge graph gives them **meaning**.
+
+- **Typed entities and relationships:** `Component`, `HAS_EVENT`, `AFFECTS_SYSTEM`, not generic nodes and edges
+- **A schema the business recognizes:** aircraft, systems, sensors, maintenance events, the same words a maintenance engineer uses
+- **Documents connected to entities:** manual text linked to the parts it describes, which is what Lab 3 builds
+
+An agent reasons over the second one. It cannot reason over the first.
+
+<!-- The distinction pays off three times later. Deck 3's Knowledge Layer slide assumes it, Lab 3's entity extraction produces it, and Lab 5's Cypher tool depends on the schema being legible enough for an LLM to write against. -->
 
 ---
 
@@ -84,24 +98,6 @@ RETURN s.name, c.name, c.type
 The query reads like the traversal it executes.
 
 <!-- Quick preview. A harder question gets the full side-by-side treatment two slides from now. -->
-
----
-
-## Cypher Query Language
-
-Cypher uses **pattern-matching syntax** that mirrors graph structure:
-
-```cypher
-MATCH (a:Aircraft {model: 'A320-200'})-[:HAS_SYSTEM]->(s:System {type: 'Engine'})
-RETURN s.name ORDER BY s.name LIMIT 10
-```
-
-- `MATCH` finds nodes and relationships that fit a pattern
-- `(a:Aircraft {model: 'A320-200'})` binds an Aircraft node to variable `a`
-- `-[:HAS_SYSTEM]->` follows outbound HAS_SYSTEM relationships
-- `RETURN` selects which properties to include in results
-
-<!-- Every Cypher query in this workshop is built from these four pieces. -->
 
 ---
 
@@ -154,7 +150,15 @@ RETURN DISTINCT other.tail_number, other.model
 
 Searching two hops deeper means changing `*2..6` to `*2..10`. One number, no new tables, no new joins.
 
-<!-- Walk the pattern: the component sits under a system, under an aircraft, and from there the query fans out through Flight and Airport nodes to any aircraft within the hop range. The variable-length pattern is the whole point. In SQL, each extra hop is another join; here it is a digit. -->
+<!--
+Walk the pattern: the component sits under a system, under an aircraft, and from there the query fans out through Flight and Airport nodes to any aircraft within the hop range. The variable-length pattern is the whole point. In SQL, each extra hop is another join; here it is a digit.
+
+Cypher glossary, if the room needs it:
+- `MATCH` finds nodes and relationships that fit a pattern
+- `(c:Component {component_id: 'AC1001-S01-C04'})` binds a Component node to variable `c`
+- `-[:HAS_SYSTEM]->` follows outbound HAS_SYSTEM relationships
+- `RETURN` selects which properties to include in results
+-->
 
 ---
 
@@ -225,24 +229,6 @@ Nine node labels carry the fleet, its operating history, and its maintenance rec
 
 ---
 
-## Multi-Hop Queries
-
-The graph answers questions that require traversing multiple connections:
-
-```cypher
-MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System {type: 'Engine'})
-      -[:HAS_COMPONENT]->(c:Component)
-      -[:HAS_EVENT]->(m:MaintenanceEvent {severity: 'CRITICAL'})
-RETURN a.tail_number, c.name, m.fault, m.reported_at
-ORDER BY m.reported_at DESC
-```
-
-Three hops: Aircraft to System to Component to MaintenanceEvent. Each hop follows a stored connection rather than computing a join.
-
-<!-- Each arrow is a relationship that already exists in the graph; nothing is computed at query time. -->
-
----
-
 ![bg contain](../aircraft/step1-flat-tables-foreign-keys.svg)
 
 <!--
@@ -284,68 +270,3 @@ and queryable. The rest of the workshop, GraphRAG in Lab 3 through the
 supervisor agent in Lab 5, builds on this graph existing and staying
 queryable.
 -->
-
----
-
-## Neo4j Aura
-
-Neo4j Aura is a **fully managed cloud graph database service**. No infrastructure to maintain, automatic scaling with data and query volume, enterprise-grade security, deployed on AWS, GCP, or Azure.
-
-Traditional relational databases struggle with connected data. Finding friends of friends means chained joins that slow as the chain grows. Graphs traverse those chains natively, so relationship-heavy queries that would need dozens of joins in SQL run as a single pattern match.
-
-This workshop runs on AuraDB Free.
-
-<!-- Aura is the hosted product everything else builds on. Same argument as the earlier SQL-vs-Cypher slides, restated for the database service itself. -->
-
----
-
-<style scoped>
-section { font-size: 24px; }
-</style>
-
-## Aura Developer Tools
-
-**Query Workspace:** Cypher editor with syntax highlighting, auto-completion, saved query collections, and log forwarding to your cloud logging service.
-
-**Explore:** visual, no-code graph exploration on an interactive canvas, no Cypher required.
-
-**Dashboards:** low-code bar charts, line charts, geographic maps, and 3D graph visualizations for non-technical stakeholders.
-
-**Graph Analytics:** Explore includes centrality and community detection. The full 65-plus algorithm library runs through Aura Graph Analytics serverless sessions. AuraDB Free carries none of it: the GDS notebooks here are take-home material, read now, run later on an instance with the plugin.
-
-<!-- Query Workspace is where most lab time is spent. Be direct about the Free tier limit: no PageRank or community detection on this instance. -->
-
----
-
-## The Value of Aura for AI and GenAI
-
-Aura is the foundation this workshop builds GraphRAG on.
-
-- **Built-in vector indexes** for embeddings, the same index type Lab 3 uses over maintenance manual chunks
-- **Cypher** as the query language for graph-context retrieval
-- **Graph traversal** for relationship reasoning: a match plus everything it connects to
-- **APIs** for integration with LLM frameworks
-
-Store the knowledge graph once. Query it for structure, for meaning, or for both.
-
-<!-- The bridge into the rest of the workshop: one database holding both the structured aircraft graph and the semantic layer over the maintenance manuals, queryable together. -->
-
----
-
-## Indexes That Power Search
-
-Beyond the uniqueness constraints used during loading, the graph carries indexes that make retrieval fast, the foundation GraphRAG builds on in Lab 3.
-
-**Vector index**, over Chunk embeddings from the maintenance manuals:
-```cypher
-CREATE VECTOR INDEX maintenanceChunkEmbeddings IF NOT EXISTS
-FOR (c:Chunk) ON (c.embedding)
-OPTIONS {indexConfig: {`vector.dimensions`: 1024,
-         `vector.similarity_function`: 'cosine'}}
-```
-
-**Fulltext index**, `maintenanceChunkText`, supports keyword search over chunk text, complementing vector search.
-
-**Constraints** enforce uniqueness, on `Aircraft.aircraft_id` and every other node label's key property, so `MERGE` matches an existing node instead of scanning the whole label.
-
-<!-- 1024 dimensions because embeddings always come from the databricks-bge-large-en serving endpoint, cosine similarity for distance. No constraint means no index means a full label scan on every load. -->

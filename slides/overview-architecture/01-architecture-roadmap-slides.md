@@ -27,7 +27,7 @@ ol > li {
 }
 </style>
 
-# Workshop Architecture and Roadmap
+# The Aircraft Digital Twin: Dataset and Setup
 
 Aircraft Digital Twins with Neo4j and Databricks
 
@@ -47,43 +47,6 @@ Lab 4 splits in two: Part A is the Genie Agent every participant
 builds, Part B is an instructor demo participants only watch. Lab 5's
 supervisor ties Genie, Cypher, and GraphRAG together, Lab 6 adds
 memory.
--->
-
----
-
-## What Is a Digital Twin?
-
-A **digital twin** is a virtual representation of a physical system, its structure, state, and behavior modeled in data.
-
-For an aircraft fleet, that means capturing:
-- **Topology:** aircraft, systems, components, sensors, and how they connect
-- **Operations:** flights, routes, delays
-- **Maintenance:** events, faults, component removals, corrective actions
-- **Documentation:** maintenance manuals, procedures, operating limits
-
-<!--
-Four kinds of data tied to the same physical aircraft: the parts, the
-flights, the repairs, and the manuals that explain how to fix them.
--->
-
----
-
-## Why Knowledge Graphs for Digital Twins?
-
-Digital twins are fundamentally about **relationships**: a component belongs to a system, a system belongs to an aircraft, a fault affects a component.
-
-**Knowledge graphs model this naturally:**
-- Entities become **nodes** with properties
-- Connections become **relationships** with types and properties
-- Multi-hop traversals are native, no expensive joins
-- The graph **is** the twin: query it, reason over it, extend it
-
-Tables can store the same data, but "which components caused flight delays" means chaining joins across many tables. In a graph, it is one traversal.
-
-<!--
-Tabular storage holds the twin's data fine. Anything shaped like "how
-is X connected to Y" gets expensive in SQL fast, and stays cheap in
-Cypher no matter how many hops deep the question goes.
 -->
 
 ---
@@ -115,213 +78,6 @@ has a home in the graph.
 
 ---
 
-## Dual Database Architecture
-
-The data splits across two platforms, each chosen for the workload it handles best.
-
-**Databricks Lakehouse:** time-series sensor telemetry
-- Readings every 4 hours across 90 days
-- Columnar storage and SQL for aggregation, trend analysis, statistical comparison
-
-**Neo4j Aura:** richly connected relational data
-- Aircraft topology, component hierarchies, maintenance events, flights, delays, airport routes
-- Native multi-hop traversal, no expensive joins
-
-A multi-agent supervisor routes questions to the right database automatically.
-
-<!--
-Databricks owns the high-volume time series, a columnar workload.
-Neo4j owns the connected data, a traversal workload. Lab 5's
-supervisor decides, per question, which side to ask.
--->
-
----
-
-![bg contain](../../site/modules/ROOT/images/dual-database-architecture.svg)
-
-<!--
-Databricks tables on one side, the Neo4j graph on the other, join
-points where the same entity, aircraft, systems, sensors, exists in
-both. The Spark Connector is the bridge between them.
--->
-
----
-
-## Why Combine Databricks and Neo4j?
-
-- **Databricks:** tables, aggregations, time-series, ML at scale
-- **Neo4j:** relationships, patterns, structure
-- Most problems need **both**
-
-<!--
-Databricks excels at large volumes of data, aggregations, and machine
-learning over tables. Neo4j excels at understanding how things
-connect. Most real-world problems need both.
--->
-
----
-
-## The Medallion Architecture
-
-- **Bronze:** raw data lands from cloud storage, no transformation
-- **Silver:** cleaned, typed, governed tables; the Spark Connector reads from here
-- **Gold:** business-ready outputs enriched by graph insights, for example maintenance alerts, component health scores, ML features
-- **Bidirectional flow:** data flows forward through the layers, graph insights flow back
-
-<!--
-Bronze is the raw landing zone. Silver is schema enforcement and
-column renaming, tail_number becomes aircraft_id, and it feeds the
-Spark Connector. Gold is where graph algorithm results, component
-criticality scores, community groupings, write back as columns
-alongside operational data that never left the lakehouse. Silver
-feeds the graph, Gold captures what the graph discovers.
--->
-
----
-
-![bg contain](../databricks-in-depth/spark-connector-virtual-graph.png)
-
-<!--
-This diagram shows a production pattern, not this workshop's build. No
-lab here creates a Neo4j Virtual Graph or composite graphs.
-
-This is where a team takes the workshop's pattern once they operate
-at enterprise scale, so read it as "later," not "Lab 2." The
-Medallion Architecture with Neo4j attached to it. Structured and
-unstructured sources land in Bronze as raw staging. Bronze feeds
-Silver, the cleaned and conformed Delta tables, and Silver is the
-layer everything else reads from.
-
-Two arrows leave Silver. The Neo4j Spark Connector batch-loads Silver
-tables into the Neo4j Enterprise Knowledge Graph as nodes and
-relationships. The dashed arrow coming back is graph enrichment:
-algorithm results, community scores, and derived relationships
-written back into Silver so they become ordinary columns other
-consumers can join on. That round trip is the point. Silver feeds the
-graph, the graph feeds Silver.
-
-Silver also flows down to Gold, the curated business analytics layer.
-
-The Neo4j Virtual Graph on the lower right is a composite, logical
-view rather than a second copy of the data. Silver and Gold tables
-project into it, and the dashed line from the Enterprise Knowledge
-Graph shows composite graphs stitching the materialized graph and the
-lakehouse tables into one queryable surface. An agent asking a Cypher
-question does not need to know which side a given property physically
-lives on. This workshop's graph is a direct load, not a virtual
-projection, so none of this appears again until you take the pattern
-into production.
--->
-
----
-
-<style scoped>
-section { font-size: 25px; }
-</style>
-
-## Neo4j Connection Patterns by Platform Stage
-
-- **Data Pipeline:** Neo4j Spark Connector, batch writes
-- **Knowledge Graph Construction:** neo4j-graphrag-python, uses the Neo4j Python driver
-- **Data Analytics:** Spark Connector for Graph Data Science reads and write-back to Gold
-- **SQL Federation:** Neo4j Unity Catalog Connector, SQL over the graph, joined with Delta in one query
-- **GraphRAG Retrieval/Agent:** Neo4j MCP Server, Python driver, Aura Agent
-
-<!--
-Each platform stage uses a different connector optimized for its
-workload. The Data Pipeline uses the Spark Connector for batch
-DataFrame writes into Neo4j. This is the primary path for bulk
-loading structured data, and it is what Lab 2 does.
-
-Knowledge Graph Construction uses the Neo4j Python driver directly,
-not the Spark Connector. The SimpleKGPipeline from
-neo4j-graphrag-python handles chunking, LLM-based entity extraction,
-and embedding generation, none of which are Spark operations. This is
-Lab 3.
-
-Data Analytics uses the Spark Connector for its first-class GDS
-integration: invoke PageRank, community detection, and other graph
-algorithms directly, get results as DataFrames for ML features and
-Gold Delta tables. Neo4j's docs position this as a "graph
-co-processor" in existing Spark ML workflows.
-
-SQL Federation is the one that moves nothing, and it is for the
-analyst who knows SQL and has never written Cypher. Upload the Neo4j
-Unity Catalog Connector to a UC Volume, register Neo4j as a JDBC
-connection, and the driver rewrites SQL as Cypher on the way in.
-SELECT COUNT(*) FROM Aircraft arrives at the graph as MATCH
-(n:Aircraft) RETURN count(n). Node labels behave like tables.
-
-The remote_query function is how you call it. It runs the query
-inside Neo4j and hands the rows back as a table, so one statement can
-join graph results to Delta tables. That is what puts graph data in
-Power BI, Tableau and Genie with nobody learning a second language.
-
-Custom-driver JDBC reached Public Preview at Runtime 18.1. No lab
-builds this. It is on the slide so you know the option exists.
-
-GraphRAG Retrieval uses the Neo4j MCP Server to expose schema
-inspection and read-only Cypher as agent tools. The Python driver
-powers the retrievers underneath, combining vector search with graph
-traversal in a single query. This is Lab 4 Part B and Lab 5.
--->
-
----
-
-<style scoped>
-section { font-size: 80%; }
-</style>
-
-## Data Intelligence, Graph Intelligence, or Both?
-
-- **SQL:** total sensor readings per aircraft, a single GROUP BY aggregation
-- **Cypher:** components within three hops of a flagged sensor, a single traversal query
-
-Most questions need **both**.
-
-| Question | Platform |
-|---|---|
-| Total sensor readings per aircraft | Databricks, SQL aggregation |
-| Components within three hops of a flagged sensor | Neo4j, graph traversal |
-| Find the affected aircraft, then total their flight hours | Both |
-
-| Signal | Stay in SQL | Move to Cypher |
-|--------|-------------|----------------|
-| Number of hops | 1-2 fixed joins | 3+ or variable depth |
-| Query shape | Known at design time | Depends on the data encountered |
-| Result type | Aggregated numbers | Paths, subgraphs, connected components |
-| Latency requirement | Batch is fine | Sub-second for interactive investigation |
-| Data volume per query | Millions of rows scanned | Thousands of entities traversed |
-
-<!--
-SQL is built for aggregation, Cypher for traversal. The third row is
-why you need both: Neo4j finds the affected aircraft, Databricks
-totals their flight hours. This is the same choice Lab 5's supervisor
-makes automatically at runtime.
--->
-
----
-
-## What Each Platform Brings
-
-| | Databricks | Neo4j |
-|---|-----------|-------|
-| **Stores** | Tables and files | Nodes and relationships |
-| **Answers** | How much, how often | How is this connected, what is affected |
-| **AI capability** | Foundation Models, Genie | Vector indexes, GraphRAG, MCP |
-| **Strength** | Scale, aggregation, ML | Relationships, traversal, pattern matching |
-
-**The Spark Connector** moves data. **Unity Catalog JDBC** reads the graph as SQL without moving it. **MCP** lets agents query the graph directly. Together, the platforms stay connected at every layer.
-
-<!--
-The same division of labor as a lookup table: scale on one side,
-connections on the other, and three connectors keeping them in
-sync. One copies, one reads in place, one hands the graph to an
-agent as a tool.
--->
-
----
-
 <style scoped>
 section { font-size: 95%; }
 </style>
@@ -341,6 +97,34 @@ Shared resources are pre-configured by administrators so participants can focus 
 Everything here exists before Day 1. Participants never touch the
 instructor's Aura instance, MCP server, or MCP connection.
 -->
+
+---
+
+## Neo4j Aura
+
+Neo4j Aura is a **fully managed cloud graph database service**. No infrastructure to maintain, automatic scaling with data and query volume, enterprise-grade security, deployed on AWS, GCP, or Azure.
+
+This workshop runs on AuraDB Free.
+
+<!-- Aura is the hosted product everything else builds on. The graph-versus-relational argument already landed twice in the What is a Knowledge Graph deck, so do not run it again here. This slide is the product and the tier you are about to sign up for. -->
+
+---
+
+<style scoped>
+section { font-size: 24px; }
+</style>
+
+## Aura Developer Tools
+
+**Query Workspace:** Cypher editor with syntax highlighting, auto-completion, saved query collections, and log forwarding to your cloud logging service.
+
+**Explore:** visual, no-code graph exploration on an interactive canvas, no Cypher required.
+
+**Dashboards:** low-code bar charts, line charts, geographic maps, and 3D graph visualizations for non-technical stakeholders.
+
+**Graph Analytics:** Explore includes centrality and community detection. The full 65-plus algorithm library runs through Aura Graph Analytics serverless sessions. AuraDB Free carries none of it: the GDS notebooks here are take-home material, read now, run later on an instance with the plugin.
+
+<!-- Query Workspace is where most lab time is spent. Be direct about the Free tier limit: no PageRank or community detection on this instance. -->
 
 ---
 
