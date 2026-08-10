@@ -174,17 +174,9 @@ The bottom layer is structure: the aircraft and systems the manual describes, al
 
 Beyond the uniqueness constraints used during loading, the graph carries indexes that make retrieval fast, the foundation GraphRAG builds on in Lab 3.
 
-**Vector index**, over Chunk embeddings from the maintenance manuals:
-```cypher
-CREATE VECTOR INDEX maintenanceChunkEmbeddings IF NOT EXISTS
-FOR (c:Chunk) ON (c.embedding)
-OPTIONS {indexConfig: {`vector.dimensions`: 1024,
-         `vector.similarity_function`: 'cosine'}}
-```
-
-**Fulltext index**, `maintenanceChunkText`, supports keyword search over the same chunk text. Two indexes over one set of chunks is what makes the hybrid retrievers later in this deck possible.
-
-**Constraints** enforce uniqueness, on `Aircraft.aircraft_id` and every other node label's key property, so `MERGE` matches an existing node instead of scanning the whole label.
+- **Vector index**, `maintenanceChunkEmbeddings`, over Chunk embeddings from the maintenance manuals: 1024 dimensions, because embeddings always come from the `databricks-bge-large-en` serving endpoint, and cosine similarity as the distance metric
+- **Fulltext index**, `maintenanceChunkText`, supports keyword search over the same chunk text. Two indexes over one set of chunks is what makes the hybrid retrievers later in this deck possible
+- **Constraints** enforce uniqueness, on `Aircraft.aircraft_id` and every other node label's key property, so `MERGE` matches an existing node instead of scanning the whole label
 
 <!-- 1024 dimensions because embeddings always come from the databricks-bge-large-en serving endpoint, cosine similarity for distance. No constraint means no index means a full label scan on every load. Flag the fulltext index as something we come back to; participants who skip notebook 03 never use it, and that is fine. -->
 
@@ -220,21 +212,9 @@ Everything from here on is this diagram in code. -->
 
 The simplest retriever. Finds content by meaning, no traversal.
 
-```python
-from neo4j_graphrag.retrievers import VectorRetriever
-
-vector_retriever = VectorRetriever(
-    driver=driver,
-    index_name='maintenanceChunkEmbeddings',
-    embedder=embedder,
-    return_properties=['text']
-)
-
-results = vector_retriever.search(
-    query_text="What maintenance procedures apply to engine bearing wear?",
-    top_k=5
-)
-```
+- Built from three things: a driver connected to Neo4j, the name of the vector index to search, and an embedder to turn the question into a vector
+- `.search()` takes the question text and `top_k`, how many results to return
+- Each result carries the chunk text and a similarity score, nothing more. This is the diagram's left half: it stops at the matched chunk
 
 **Best for** conceptual questions where the answer sits inside the chunk: "What causes hydraulic system failures?" **Not for** entity-specific questions: "What maintenance events affect Aircraft N10001?" returns chunks about maintenance in general.
 
@@ -263,56 +243,47 @@ On the anchor: ask "What maintenance events affect Aircraft N10001?" and vector 
 
 ## Creating a Vector Cypher Retriever
 
-```python
-from neo4j_graphrag.retrievers import VectorCypherRetriever
+- Same three arguments as `VectorRetriever` (driver, index name, embedder), plus one new one: `retrieval_query`
+- `retrieval_query` is plain Cypher. The library runs the vector search automatically and hands this query two values: the matched chunk as `node`, and its `score`
+- From `node`, the query hops `FROM_DOCUMENT` to the manual, `APPLIES_TO` to the aircraft, `HAS_SYSTEM` to its systems, then collects up to three systems and three components per chunk
+- Uses `OPTIONAL MATCH` for the component hop, not `MATCH`. A plain `MATCH` there would filter the whole row out, so a chunk about a system with no components recorded would never reach the LLM at all
+- Returns aircraft type, tail number, systems, and components as structured fields, alongside the chunk text
 
-system_context_query = """
-WITH node
-// From the matched chunk to its manual, to the aircraft that manual applies to
-MATCH (node)-[:FROM_DOCUMENT]->(doc:Document)-[:APPLIES_TO]->(a:Aircraft)
-MATCH (a)-[:HAS_SYSTEM]->(s:System)
-// OPTIONAL so systems with no components still appear
-OPTIONAL MATCH (s)-[:HAS_COMPONENT]->(comp:Component)
+<!-- Verbatim logic from Lab 3 notebook 02. The retrieval query runs per matched chunk, so one missing relationship silently loses a result if OPTIONAL MATCH is skipped. -->
 
-WITH node, doc, a, s, comp
-RETURN doc.aircraftType AS aircraft_type,
-       a.tail_number AS aircraft,
-       COLLECT(DISTINCT s.name)[0..3] AS systems,
-       COLLECT(DISTINCT comp.name)[0..3] AS components,
-       node.text AS context
-"""
+---
 
-retriever = VectorCypherRetriever(
-    driver=driver,
-    index_name='maintenanceChunkEmbeddings',
-    embedder=embedder,
-    retrieval_query=system_context_query
-)
-```
+## Full-Text Search
 
-<!-- Verbatim from Lab 3 notebook 02. Same driver, index, and embedder as VectorRetriever, plus one new argument: retrieval_query. The library runs the vector search automatically and hands this query `node` and `score`. Everything after is plain Cypher: reach the manual, cross APPLIES_TO to the aircraft, then collect its systems and components. Cypher comments use two forward slashes.
+Vector search matches by meaning. It is not built to match by exact string.
 
-Do not skip the OPTIONAL MATCH. A plain MATCH there filters the whole row out, so a chunk about a system with no components recorded never reaches the LLM at all. The retrieval query runs per matched chunk, so one missing relationship silently loses a result. -->
+- **Full-text search** matches on the literal words in the text, built from an inverted index: a lookup from each word to every chunk containing it
+- Strong at exact tokens vector search smooths over: `V2500`, a part number, `925`, a fault code
+- Weak at paraphrase: a full-text search for "turbine" will not find a chunk that only says "engine," even though the two are related
+- Neo4j's fulltext index, `maintenanceChunkText`, was created back on the "Indexes That Power Search" slide. It exists so this search has something to run against
+
+<!-- The complement to embeddings, not a replacement. Vector search's whole value is matching on meaning across different wording; that same strength is why it treats an exact code or number as just another token to smooth over. Full-text search is the other half. -->
+
+---
+
+## Hybrid Search
+
+Neither search alone covers every question. **Hybrid search runs vector search and full-text search on the same question, then merges the two ranked lists into one.**
+
+- Conceptual questions ("what causes bearing wear") are answered well by the vector side
+- Literal-term questions ("V2500 EGT limit 925 degrees") are answered well by the full-text side
+- A question that has both parts benefits from neither list alone. Merging is what makes the combined result better than either search run by itself
+- The two indexes run independently; hybrid search is the merge step on top, not a third index
+
+<!-- This is the concept; the next slide is the two Neo4j retriever classes that implement it. The bar exam question later in the deck, "V2500 EGT limit 925 degrees," is the canonical case: vector alone drifts toward generic engine chunks, full-text alone finds the number but no context, hybrid gets both. -->
 
 ---
 
 ## Hybrid Retrievers
 
-Vector search matches by meaning, and smooths over exact strings: `V2500`, `925`, a part number, a fault code. Fulltext search matches by word and catches them. **Hybrid search runs both and merges the ranked lists.**
-
-```python
-from neo4j_graphrag.retrievers import HybridRetriever
-
-hybrid_retriever = HybridRetriever(
-    driver=driver,
-    vector_index_name='maintenanceChunkEmbeddings',
-    fulltext_index_name='maintenanceChunkText',
-    embedder=embedder,
-    return_properties=['text']
-)
-```
-
-`HybridCypherRetriever` takes the same two indexes and adds a `retrieval_query`, so hybrid search finds the chunks and Cypher traverses out from them.
+- `HybridRetriever` takes the same driver and embedder as the other retrievers, plus **two** index names: `vector_index_name` and `fulltext_index_name`
+- It runs both searches and merges the ranked lists automatically. No extra step from the caller
+- `HybridCypherRetriever` adds a `retrieval_query`, the same way `VectorCypherRetriever` extends `VectorRetriever`, so hybrid search finds the chunks and Cypher traverses out from them
 
 <!-- The two-by-two: search by meaning or by meaning plus keywords, return chunk text or chunk text plus a traversal. Four retrievers, two arguments' difference between them.
 
@@ -328,14 +299,8 @@ Some questions need precise facts, not semantic search. No embeddings involved: 
 **Generated:** `MATCH (a:Aircraft {tail_number:'N10001'})-[:HAS_SYSTEM]->()-[:HAS_COMPONENT]->()-[:HAS_EVENT]->(e:MaintenanceEvent {severity:'CRITICAL'}) RETURN count(e)`
 **Result:** `7`
 
-```python
-from neo4j_graphrag.retrievers import Text2CypherRetriever
-from neo4j_graphrag.schema import get_schema
-
-text2cypher_retriever = Text2CypherRetriever(
-    driver=driver, llm=llm, neo4j_schema=get_schema(driver)
-)
-```
+- Built from a driver, an LLM, and the graph's schema, pulled live via `get_schema(driver)`: the actual node labels, property types, and relationship patterns. Without that schema the LLM guesses and invents properties that do not exist
+- Given a question, the LLM writes and runs Cypher directly. No embeddings, no vector index involved at any step
 
 **Security:** this executes LLM-generated queries. Use read-only credentials, validate for DELETE and DROP, enforce LIMIT, log every generated query.
 
@@ -349,22 +314,11 @@ Best for counts, lists, and aggregations. It fails when the question does not ma
 
 Retrievers find context. The **GraphRAG** class combines a retriever with an LLM to produce a grounded answer in one call.
 
-```python
-from neo4j_graphrag.generation import GraphRAG
+- Built from just two things: any retriever instance, and an LLM
+- `.search()` takes the question text plus retriever-specific config, like `top_k`, and returns a response with an `.answer` field
+- The retriever argument is a straight swap: Vector, Vector Cypher, Hybrid, Hybrid Cypher, or Text2Cypher all plug in the same way
 
-rag = GraphRAG(
-    retriever=vector_retriever,   # any retriever type
-    llm=llm
-)
-
-response = rag.search(
-    query_text="What maintenance procedures apply to engine bearing wear?",
-    retriever_config={"top_k": 5}
-)
-print(response.answer)
-```
-
-Swap `vector_retriever` for any of the other three to change the retrieval strategy without touching another line.
+Swap the retriever for any of the other four to change the retrieval strategy without touching another line.
 
 <!-- This closes the loop: the retriever finds context, GraphRAG hands that context to the LLM, and the LLM generates the answer. The retriever type is a swap-in argument, nothing else changes. That is why the labs can compare retrievers by editing one word. -->
 
@@ -374,23 +328,14 @@ Swap `vector_retriever` for any of the other three to change the retrieval strat
 
 GraphRAG's vector store is pluggable. If a team already uses **Databricks Vector Search**, vectors stay in the Lakehouse while Neo4j supplies graph context.
 
-```python
-from neo4j_graphrag.retrievers import ExternalRetriever
-
-retriever = ExternalRetriever(
-    driver=driver,
-    id_property="chunkId",
-    external_embedder=databricks_embedder,
-    fetcher=databricks_vector_search_fetcher
-)
-```
+- Built from a driver, the chunk property that holds each chunk's ID, an external embedder, and a fetcher function that calls out to the external store
+- The fetcher runs the similarity search externally and returns matching IDs, nothing more
+- Neo4j resolves those IDs back to chunk nodes and takes over from there: traversal, Cypher, everything downstream is unchanged
 
 | Vector Store | How It Works |
 |---|---|
 | **Neo4j, built-in** | Vectors and graph in one database, simplest setup |
 | **Databricks Vector Search** | Vectors stay in the Lakehouse alongside Delta tables |
-
-The external store runs the similarity search and returns matching IDs. Neo4j resolves those IDs to nodes and traverses the graph.
 
 <!-- The graph context is the value-add regardless of where the vectors live. Teams already invested in Databricks Vector Search keep their existing embeddings pipeline and still get graph enrichment. -->
 
