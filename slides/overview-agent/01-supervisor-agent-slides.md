@@ -33,11 +33,15 @@ One supervisor, three tools, one endpoint that answers for someone else
 
 ---
 
-## Why a Single Retriever Is Not Enough
+## What a Genie Agent Is
 
-- **Vector, vector-Cypher, Text2Cypher:** three retrieval patterns, one shape of question each
-- **Users do not name a pattern.** They ask "What causes turbine bearing wear?" or "Which aircraft have engines with components that had recent faults?"
-- One retriever answers one shape of question. Real questions do not arrive sorted by shape.
+- **A Databricks-native agent over Unity Catalog tables**, built from a form in Lab 4 Part A
+- **Domain knowledge, then SQL:** it reads table and column descriptions, not the schema alone
+- **English in, governed SQL out.** Every generated query is read-only
+- **Measurement questions only:** averages, trends, comparisons over `sensor_readings`
+- **Here it is `genie_node`**, one tool among three, called by the supervisor rather than asked directly
+
+<!-- Participants already built this one, so the slide is a reminder, not a lesson. The comments that carry the domain were written by the provisioning script, which is why the same Genie space answers the same way in thirty workspaces. It cannot see the graph or the manuals: that boundary is what makes routing a real decision. -->
 
 ---
 
@@ -67,6 +71,38 @@ Retrievers become tools. The agent matches a question to a tool description, not
 5. **Respond** in plain language, or loop again
 
 Complex questions cycle more than once. The supervisor ahead is this same loop, run over three stores instead of one.
+
+---
+
+## Why a Single-Tool Agent Is Not Enough
+
+- **Vector, vector-Cypher, Text2Cypher:** three retrieval patterns, each a tool an agent could hold, each answering one shape of question
+- **Users do not name a pattern.** They ask "What causes turbine bearing wear?" or "Which aircraft have engines with components that had recent faults?"
+- **One tool answers one shape of question.** An agent built around a single tool hits the same wall a single retriever does
+
+---
+
+## What Is a Supervisor Agent
+
+- **An agent whose tools are other agents and retrievers**, not just functions
+- **Same four parts, one level up:** perception reads the question, reasoning picks a tool, action calls it, response sees the result and decides: answer, or call another tool
+- **It owns the routing decision, not the answer.** Each tool still does its own reasoning over its own store
+- **Three tools here:** a Genie Agent over telemetry, a Cypher retriever over the graph, a GraphRAG retriever over the manuals
+- **Get the routing wrong and a correct answer still comes from the wrong tool, or not at all**
+
+<!-- This is the pattern this lab writes in code. Lab 4's demo built the same pattern from a form in Agent Bricks; the difference is not the concept, it is who is allowed to see the rule. -->
+
+---
+
+## The Shape of the Agent
+
+![Supervisor routing to a Genie node, a Cypher node and a GraphRAG node](../../site/modules/ROOT/images/lab5-agent-topology.svg)
+
+**A LangGraph graph, not a Neo4j one:** nodes are functions, edges are control flow.
+
+Nothing here writes to Neo4j.
+
+<!-- Five nodes, one decision: the supervisor picks a tool or picks synthesize. Every tool reports back rather than answering; point at those arrows, the slide's real content. Get the name collision out of the way here, on the picture, because the room has spent all day calling something else a graph. -->
 
 ---
 
@@ -120,30 +156,6 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 - **Lab 6 redeploys this endpoint**, rather than standing up a second one
 
 <!-- Score the endpoint, not a notebook copy, so the deployed identity's permissions are what gets graded. Say plainly that Lab 6 introduces no new Databricks surface: the new machinery is all Neo4j. -->
-
----
-
-## What a Genie Agent Is
-
-- **A Databricks-native agent over Unity Catalog tables**, built from a form in Lab 4 Part A
-- **Domain knowledge, then SQL:** it reads table and column descriptions, not the schema alone
-- **English in, governed SQL out.** Every generated query is read-only
-- **Measurement questions only:** averages, trends, comparisons over `sensor_readings`
-- **Here it is `genie_node`**, one tool among three, called by the supervisor rather than asked directly
-
-<!-- Participants already built this one, so the slide is a reminder, not a lesson. The comments that carry the domain were written by the provisioning script, which is why the same Genie space answers the same way in thirty workspaces. It cannot see the graph or the manuals: that boundary is what makes routing a real decision. -->
-
----
-
-## The Shape of the Agent
-
-![Supervisor routing to a Genie node, a Cypher node and a GraphRAG node](../../site/modules/ROOT/images/lab5-agent-topology.svg)
-
-**A LangGraph graph, not a Neo4j one:** nodes are functions, edges are control flow.
-
-Nothing here writes to Neo4j.
-
-<!-- Five nodes, one decision: the supervisor picks a tool or picks synthesize. Every tool reports back rather than answering; point at those arrows, the slide's real content. Get the name collision out of the way here, on the picture, because the room has spent all day calling something else a graph. -->
 
 ---
 
