@@ -128,7 +128,7 @@ These terms appear in the maintenance manuals that Lab 3 chunks and Lab 5 retrie
 | Term | Meaning
 
 | Tail number
-| The aircraft registration painted on the tail, such as `N95040A`. Unique per aircraft, and the identifier people actually use. It is the join key you will type most often.
+| The aircraft registration painted on the tail, such as `N10000`. Unique per aircraft, and the identifier people actually use. It is the join key you will type most often.
 
 | icao24
 | The 24-bit address broadcast by the aircraft transponder, written as six hex characters. Unique per airframe, and how live tracking feeds identify an aircraft.

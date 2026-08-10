@@ -5,7 +5,7 @@
 **Effective Date:** October 1, 2024
 **Applicability:** A320-200 series aircraft equipped with IAE V2500-A1 engines
 **Operator:** SkyWays Airlines
-**Fleet:** N30268B, N81338F, N32276J, N76758N, N63098R
+**Fleet:** N10015, N10016, N10022, N10032, N10033
 
 ---
 
@@ -52,14 +52,16 @@
 
 ### 1.2 Fleet Configuration
 
-The A320-200 fleet operates across four partner carriers configured for medium-haul operations. The combined fleet of approximately 30 aircraft is distributed as follows:
+The A320-200 fleet operates across four partner carriers configured for medium-haul operations. The combined A320-200 fleet of 9 aircraft is distributed as follows:
 
-| Operator | Aircraft Count | Primary Routes |
+| Operator | A320-200 Count | Primary Routes |
 |----------|---------------|----------------|
-| ExampleAir | 8 | Domestic medium-haul |
-| SkyWays | 8 | Domestic medium-haul |
-| RegionalCo | 7 | Mixed domestic/regional |
-| NorthernJet | 7 | Domestic medium-haul |
+| SkyWays | 5 | Domestic medium-haul |
+| NorthernJet | 2 | Domestic medium-haul |
+| ExampleAir | 1 | Domestic medium-haul |
+| RegionalCo | 1 | Mixed domestic/regional |
+
+Each carrier operates 9 aircraft in total across all types; the counts above cover the A320-200 portion only.
 
 Aircraft entered service between 2017 and 2023, configured in a single-class or dual-class layout for 150–180 passengers.
 
@@ -152,10 +154,10 @@ Components are identified using the following nomenclature:
 ```
 [Aircraft ID]-[System]-[Component]
 
-Example: AC1002-S01-C03
-         │       │    └── Component: High-Pressure Turbine
+Example: AC1016-S01-C03
+         │       │    └── Component: Combustor
          │       └─────── System: Engine #1
-         └─────────────── Aircraft: AC1002 (N30268B)
+         └─────────────── Aircraft: AC1016 (N10015)
 ```
 
 **System Codes:**

@@ -119,11 +119,17 @@ with `explicit_mentions=[EntityRef(...)]`, and `EntityRef` itself, which is not
 exported at package root and has to come from
 `neo4j_agent_memory.schema.models`.
 
-Two more constraints worth knowing before editing anything. `add_messages_batch`
+Three more constraints worth knowing before editing anything. `add_messages_batch`
 takes no `extraction_mode` and no `explicit_mentions`, which is why `seed_memory`
-loops over the singular call. And `MemorySession.cypher()` is read-only by
+loops over the singular call. `MemorySession.cypher()` is read-only by
 design and rejects a write before the round trip, so notebook 02's cleanup cell
 goes through a plain driver from `tools.open_driver_from_secrets` instead.
+
+And **`short_term.get_conversation(session_id, limit=n)` returns the oldest `n`
+messages, not the newest.** Its Cypher is `ORDER BY m.timestamp ASC LIMIT $limit`,
+so from the third turn of a session onward the turn immediately before this one
+is not in the result. `build_recall_node` needs the newest, and reads them with
+`RECENT_TURNS_QUERY` instead. Do not swap that back for the library call.
 
 ## Cross-lab imports, and why the folders must stay siblings
 
@@ -134,8 +140,9 @@ carries no copies of either.
 
 **Keep `Lab_3_Semantic_Search`, `Lab_5_LangGraph_Agent` and
 `Lab_6_Agent_Memory` as siblings**, in the repository and in the workspace, and
-`ensure_labs_on_path()` resolves both on its own. Moving any one of them breaks
-the other two.
+`ensure_labs_on_path()` resolves both on its own. Move either of the other two
+and `memory.py` stops importing: it falls back to the directory it is run from,
+which only helps when the modules were copied there.
 
 `agent.py` is imported by the generated `memory_agent.py`, never by `memory.py`.
 Importing it runs its `mlflow.models.set_model()` call, and a notebook that

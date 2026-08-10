@@ -60,7 +60,7 @@ ORDER BY c.index
 LIMIT 10
 ```
 
-> **Concepts**: `substring()` truncates long text for readable output. `WHERE c.index IS NOT NULL` filters nulls before sorting — always required when using `ORDER BY`.
+> **Concepts**: `substring()` truncates long text for readable output. `ORDER BY` does not need the null filter — Cypher sorts nulls last on an ascending sort. `WHERE c.index IS NOT NULL` is here to keep unindexed chunks out of the preview entirely.
 
 ### Walk the chunk chain
 

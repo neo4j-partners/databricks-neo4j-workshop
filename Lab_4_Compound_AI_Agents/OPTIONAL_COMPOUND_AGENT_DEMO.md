@@ -111,24 +111,33 @@ BEST FOR:
 - Relationship patterns: "Which airports does ExampleAir fly to?"
 - Graph traversals: "Show the path from aircraft to sensor"
 
-DATA AVAILABLE (loaded from /Volumes/databricks-neo4j-workshop/aircraft/raw_data/):
+NODE LABELS:
 - Aircraft: Fleet inventory with tail numbers, models, operators
-- Systems: Engines, Avionics, Hydraulics per aircraft
-- Components: Turbines, Compressors, Pumps, etc.
-- Sensors: Monitoring equipment metadata
-- MaintenanceEvents: Faults, severity, corrective actions
-- Flights: Operations with departure/arrival
-- Delays: Delay causes and durations
-- Airports: Route network locations
+- System: Engines, Avionics, Hydraulics per aircraft
+- Component: Turbines, Compressors, Pumps, etc.
+- Sensor: Monitoring equipment metadata
+- MaintenanceEvent: Faults, severity, corrective actions
+- Removal: Component removals, with the reason and the replacement part
+- OperatingLimit: Per-model manual limits for each sensor type
+- Flight: Operations with departure/arrival
+- Delay: Delay causes and durations
+- Airport: Route network locations
 
 RELATIONSHIP TYPES:
 - HAS_SYSTEM: Aircraft -> System
 - HAS_COMPONENT: System -> Component
 - HAS_SENSOR: System -> Sensor
+- HAS_LIMIT: Sensor -> OperatingLimit
 - HAS_EVENT: Component -> MaintenanceEvent
+- AFFECTS_SYSTEM: MaintenanceEvent -> System
+- AFFECTS_AIRCRAFT: MaintenanceEvent -> Aircraft
+- HAS_REMOVAL: Aircraft -> Removal
+- REMOVED_COMPONENT: Removal -> Component
 - OPERATES_FLIGHT: Aircraft -> Flight
 - DEPARTS_FROM / ARRIVES_AT: Flight -> Airport
 - HAS_DELAY: Flight -> Delay
+
+For "what was serviced" or "what was replaced", use Removal and REMOVED_COMPONENT, not MaintenanceEvent.
 
 DO NOT USE FOR:
 - Time-series sensor readings (use sensor_data_agent instead)
@@ -167,7 +176,7 @@ DATA LOCATION:
 - Tables: sensor_readings, sensors, systems, aircraft
 
 BEST FOR:
-- Time-series analytics: "What is the average EGT over the last 30 days?"
+- Time-series analytics: "What is the average EGT in September 2024?"
 - Statistical analysis: "Show sensors above the 95th percentile"
 - Trend detection: "Show daily vibration trends for Engine 1"
 - Fleet comparisons: "Compare fuel flow between Boeing and Airbus"
@@ -175,15 +184,17 @@ BEST FOR:
 - Aggregations: "What was the maximum N1 speed recorded?"
 
 DATA AVAILABLE:
-- sensor_readings: Telemetry every 4 hours over 90 days
+- sensor_readings: Telemetry every 4 hours, 2024-07-01 through 2024-09-28
 - sensors: Sensor metadata (type, unit, system)
 - systems: Aircraft system information
 - aircraft: Fleet metadata (model, operator)
 
+The data ends on 2024-09-28. Read "recent" and "the last month" as September 2024, and never filter on CURRENT_DATE.
+
 SENSOR TYPES:
-- EGT: Exhaust Gas Temperature (unit column value °C). Per model: A320-200 620-680, A220-300 855-890, E190 870-900, B737-800 900-950, A321neo 980-1040
-- Vibration: Engine vibration (0.05-0.50, unit column value ips)
-- N1Speed: Fan speed (85-100, unit column value % RPM)
+- EGT: Exhaust Gas Temperature (unit column value C, no degree sign). Per model: A320-200 620-680, A220-300 855-890, E190 870-900, B737-800 900-950, A321neo 980-1040
+- Vibration: Engine vibration (unit column value ips). Per-model maximum, no minimum: A320-200 2.0, A220-300 2.5, A321neo 2.5, B737-800 3.0, E190 3.0
+- N1Speed: Fan speed (unit column value % RPM). Per-model maximum, no minimum: A321neo 97, A220-300 100, E190 100, A320-200 104, B737-800 104
 - FuelFlow: Fuel consumption (unit column value kg/s). Per model: E190 1.00-1.20, A220-300 1.15-1.35, B737-800 1.20-1.50, A320-200 1.20-1.95, A321neo 1.50-2.00
 
 DO NOT USE FOR:
@@ -306,9 +317,9 @@ Verify: The query is routed to mcp-neo4j-agentcore-mcp and returns engine, avion
 
 **Test 3: Maintenance Events (should route to mcp-neo4j-agentcore-mcp)**
 ```
-Show me all critical maintenance events in the last month
+Show me all critical maintenance events in September 2024
 ```
-Verify: Returns maintenance events with severity=CRITICAL
+Verify: Returns maintenance events with severity=CRITICAL. Say the month rather than "the last month": the data ends 2024-09-28, so a relative date returns nothing
 
 **Test 4: Fleet Comparison (should route to sensor_data_agent)**
 ```
@@ -329,7 +340,7 @@ Expected behavior:
 
 **Test 6: Another Combined Query**
 ```
-Which engines had above-average vibration, and what components were recently serviced on those engines?
+Which engines had above-average vibration, and what components were removed from those engines in September 2024?
 ```
 Expected behavior:
 1. Get high-vibration engines from sensor_data_agent
@@ -466,7 +477,7 @@ What airports are in the route network?
 
 ### Combined Queries (both agents)
 ```
-Find aircraft with high EGT and show their recent maintenance
+Find aircraft with high EGT and show their September 2024 maintenance
 Which engines have abnormal vibration and what was serviced?
 Compare sensor trends for aircraft that had delays vs. those that didn't
 Show maintenance events for aircraft with the lowest fuel efficiency

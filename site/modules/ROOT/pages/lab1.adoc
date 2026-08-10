@@ -47,7 +47,7 @@ Cypher is the query language for interacting with Neo4j. It uses a pattern-match
 [source,cypher]
 ----
 MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)-[:HAS_COMPONENT]->(c:Component)
-WHERE a.tail_number = 'N95040A'
+WHERE a.tail_number = 'N10000'
 RETURN s.name, c.name
 ----
 
@@ -89,7 +89,7 @@ These entities connect through typed relationships that reflect real-world struc
 (Component)-[:HAS_EVENT]->(MaintenanceEvent)
 ----
 
-A question like "Which components caused flight delays for aircraft N95040A?" requires traversing from Aircraft through Flight to Delay, then back through MaintenanceEvent to Component. That multi-hop traversal is what the graph handles natively.
+A question like "Which components caused flight delays for aircraft N10000?" requires traversing from Aircraft through Flight to Delay, then back through MaintenanceEvent to Component. That multi-hop traversal is what the graph handles natively.
 
 .Dual-database architecture
 [%collapsible]

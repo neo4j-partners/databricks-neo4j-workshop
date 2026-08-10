@@ -1,6 +1,6 @@
 = Lab 4: Compound AI Agents for Aircraft Analytics
 
-Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, readings every 4 hours over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT (Exhaust Gas Temperature) for aircraft N95040A?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
+Lab 3 built a knowledge graph from maintenance documentation and enabled semantic search over it. GraphRAG grounds LLM answers in retrieved content enriched with graph context: entities, relationships, connected chunks. But GraphRAG can only reach data in the graph. The full sensor telemetry ledger, readings every 4 hours over 90 days, stays in Delta Lake. GraphRAG cannot answer "what is the average EGT (Exhaust Gas Temperature) for aircraft N10000?" because that requires SQL aggregation over rows that never entered the graph. To answer questions that span both platforms, the architecture needs agents.
 
 TIP: Ready to start? Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 
@@ -9,7 +9,7 @@ TIP: Ready to start? Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` in you
 * **You build the Genie Agent.** It runs over the Lakehouse telemetry, with four gold tables attached. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie Agent ID that Lab 5 and Lab 6 both use.
 * **The compound AI agent is an optional instructor demo.** A no-code Supervisor Agent in Agent Bricks puts the Genie Agent and a Neo4j MCP agent behind one question box. It stays optional because it needs a hosted MCP server and the Unity Catalog connection that fronts it, both outside the scope of the workshop. The procedure is in `Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`.
 
-**Lab 5 is the workshop's final architecture.** It builds the same routing behaviour in code, against your own graph, with no MCP server. Watching the demo first shows you the no-code version of that routing and what it takes to run, so you can compare the two when you write the code.
+**Lab 5 is the architecture you build.** It builds the same routing behaviour in code, against your own graph, with no MCP server, and Lab 6 then gives that agent memory in Neo4j. Watching the demo first shows you the no-code version of that routing and what it takes to run, so you can compare the two when you write the code.
 
 .**At a Glance**
 
@@ -89,7 +89,7 @@ The platform offers managed agent builders for common patterns:
 * **Custom LLM** handles specialized generation tasks like summarization and text transformation.
 * **Supervisor Agent** orchestrates multi-agent systems by routing questions to the right specialist. This is the builder most relevant to this lab.
 
-The Supervisor Agent supports up to 20 subagents of four types: Genie Agents for natural language analytics over structured data, agent endpoints for document-based Q&A, Unity Catalog functions for custom tool logic, and MCP servers for external services. Each subagent is registered with a name and a detailed description of its capabilities. The supervisor reads these descriptions to determine which subagent should handle each incoming question. When a question requires multiple subagents, the supervisor delegates to each and synthesizes a unified response. Access control flows through the platform: end users only reach subagents they have explicit permissions for.
+The Supervisor Agent supports up to 50 tools and subagents. Four types matter for this lab: Genie Agents for natural language analytics over structured data, agent endpoints for document-based Q&A, Unity Catalog functions for custom tool logic, and MCP servers for external services. Others are available, among them published dashboards, Unity Catalog tables and volumes, Vector Search indexes, and web search. Each subagent is registered with a name and a detailed description of its capabilities. The supervisor reads these descriptions to determine which subagent should handle each incoming question. When a question requires multiple subagents, the supervisor delegates to each and synthesizes a unified response. Access control flows through the platform: end users only reach subagents they have explicit permissions for.
 ====
 
 == Specialized Agents for Different Data Structures
@@ -103,7 +103,7 @@ The Genie Agent in this lab is configured against the Lakehouse sensor data: `se
 .How the Genie Agent handles a sensor question
 [%collapsible]
 ====
-When a user asks "What is the average EGT temperature for aircraft N95040A?", Genie matches the question against its configured context, generates a SQL query that joins `sensor_readings` to `sensors` to `aircraft`, applies the appropriate aggregation, and returns the result. The compound AI system handles the full translation from conversational English to correct SQL without the user needing to know the schema.
+When a user asks "What is the average EGT temperature for aircraft N10000?", Genie matches the question against its configured context, generates a SQL query that joins `sensor_readings` to `sensors` to `aircraft`, applies the appropriate aggregation, and returns the result. The compound AI system handles the full translation from conversational English to correct SQL without the user needing to know the schema.
 ====
 
 === Neo4j Graph Agent: Natural Language to Cypher
@@ -112,7 +112,7 @@ The Neo4j agent is purpose-built for connected data: paths, multi-hop traversals
 
 The agent accesses Neo4j through the Model Context Protocol, an open standard that exposes data sources as tools any agent framework can discover and call. The rest of this workshop uses **MCP** for short. The server used in this lab exposes two MCP tools:
 
-* **`get_neo4j_schema`** introspects the live database using APOC, returning a token-efficient representation of every node label, relationship type, and property key.
+* **`get_neo4j_schema`** introspects the live database with `apoc.meta.schema` over a sample of nodes, returning a token-efficient representation of every node label, relationship type, and property key. APOC ships with Aura, so nothing needs installing.
 * **`read_neo4j_cypher`** executes read-only Cypher queries with parameterized inputs.
 
 Write operations are hidden entirely, so agents can never modify production data.
@@ -158,21 +158,24 @@ Each column suits a different situation. Agent Bricks is faster to stand up and 
 |===
 | Question Type | Route To | Example
 
-| Time-series aggregations | Genie Agent | "What's the average EGT over the last 30 days?"
+| Time-series aggregations | Genie Agent | "What's the average EGT in September 2024?"
 | Statistical analysis | Genie Agent | "Show sensors with readings above 95th percentile"
-| Trend analysis | Genie Agent | "Compare fuel flow rates between 737 and A320"
+| Trend analysis | Genie Agent | "Show the daily EGT trend for N10000 through August 2024"
+| Fleet comparisons | Genie Agent | "Compare fuel flow rates between 737 and A320"
 | Relationship traversals | Neo4j | "Which components are connected to Engine 1?"
 | Pattern matching | Neo4j | "Find all aircraft with maintenance delays"
-| Topology exploration | Neo4j | "Show the system hierarchy for N95040A"
-| Combined analytics | Both | "Find aircraft with high vibration AND recent maintenance events"
+| Topology exploration | Neo4j | "Show the system hierarchy for N10000"
+| Combined analytics | Both | "Find aircraft with high vibration AND September 2024 maintenance events"
 |===
+
+NOTE: The telemetry runs from July 1 to September 28, 2024, and stops there. Ask for a named month rather than "the last 30 days", or the agent filters against today's date and returns nothing.
 
 == Sample Questions
 
 === Genie Agent (Sensor Analytics)
 
-* "What is the average EGT temperature for aircraft N95040A?"
-* "Show daily vibration trends for Engine 1 over the last month"
+* "What is the average EGT temperature for aircraft N10000?"
+* "Show daily vibration trends for Engine 1 in September 2024"
 * "Which sensors have readings above their 95th percentile?"
 * "Compare fuel flow rates between Boeing and Airbus aircraft"
 
@@ -185,8 +188,8 @@ Each column suits a different situation. Agent Bricks is faster to stand up and 
 
 === Multi-Agent (Combined Queries)
 
-* "Find aircraft with high EGT readings and show their recent maintenance history"
-* "Which engines have above-average vibration, and what components were recently serviced?"
+* "Find aircraft with high EGT readings and show their September 2024 maintenance history"
+* "Which engines have above-average vibration, and what components were removed from them in September 2024?"
 * "Compare sensor trends for aircraft that had delays versus those that didn't"
 
 Slides for this lab: xref:slides/slides-mcp-agent-bricks.adoc[Neo4j MCP and Agent Bricks].

@@ -137,6 +137,8 @@ __all__ = [
     "MEMORY_ROUTE_SCHEMA",
     "MEMORY_SUPERVISOR_PROMPT",
     "RECALL_LIMIT",
+    "RECENT_LIMIT",
+    "RECENT_TURNS_QUERY",
     "SEED_MESSAGES",
     "TAIL_NUMBER_RE",
     "WHEEL_PATH",
@@ -168,7 +170,7 @@ __all__ = [
 # The wheel is built from the `mentions` branch of
 # https://github.com/neo4j-partners/agent-memory, checked into
 # lab/courseware/wheels/, and uploaded to the volume by
-# `workshop.py provision-data`. Three reasons it is a wheel on a volume rather
+# `workshop.py upload-data`. Three reasons it is a wheel on a volume rather
 # than a PyPI pin, and each of them fails silently rather than loudly:
 #
 #   1. Released 0.5.0 drops most MENTIONS edges on the automatic extraction
@@ -240,11 +242,26 @@ ENV_DATABASE_NAME = "NEO4J_DATABASE"
 # this trades answer context against nothing much.
 RECALL_LIMIT = 3
 
-# How many of this conversation's own turns the recall node reads before it
-# searches. A reference like "that aircraft" almost always points at the turn
-# just before it, and a vector search cannot know that: it ranks by meaning,
-# not by when. Four covers two question-and-answer pairs.
+# How many of this conversation's own most recent turns the recall node reads
+# before it searches. A reference like "that aircraft" almost always points at
+# the turn just before it, and a vector search cannot know that: it ranks by
+# meaning, not by when. Four covers two question-and-answer pairs.
 RECENT_LIMIT = 4
+
+# The most recent turns of one conversation, oldest first.
+#
+# `short_term.get_conversation(session_id, limit=n)` is the obvious call and it
+# is the wrong one here: its Cypher is `ORDER BY m.timestamp ASC LIMIT $limit`,
+# so it returns the *opening* n messages of the session and the turn just
+# before this one stops being visible from the third turn onward. The ordering
+# has to be reversed before the limit, which is what the inner WITH does, and
+# reversed back afterwards so the prompt reads in the order it was said.
+RECENT_TURNS_QUERY = """
+MATCH (:Conversation {session_id: $session_id})-[:HAS_MESSAGE]->(m:Message)
+WITH m ORDER BY m.timestamp DESC LIMIT $limit
+RETURN m.content AS content, m.timestamp AS timestamp
+ORDER BY timestamp ASC
+"""
 
 
 # =============================================================================
@@ -990,6 +1007,13 @@ def aircraft_mentions(text: str) -> list[Any]:
     imported from ``neo4j_agent_memory.schema.models``, which looks internal
     and is the documented path.
 
+    ``name`` and ``type`` are the whole reference. ``EntityRef`` carries a
+    third field, ``label``, and the explicit-mention writer never reads it:
+    it resolves ``id`` first and falls back to ``MERGE (e:Entity {name, type})``.
+    Setting it here would read as load-bearing and do nothing. What makes
+    these land on your ``Aircraft`` nodes is adoption, in Section 4, which
+    gave them ``type = "AIRCRAFT"`` and ``name = tail_number``.
+
     Args:
         text: Message content.
 
@@ -1002,9 +1026,7 @@ def aircraft_mentions(text: str) -> list[Any]:
     for tail in TAIL_NUMBER_RE.findall(text):
         if tail not in seen:
             seen.append(tail)
-    return [
-        EntityRef(name=tail, type="AIRCRAFT", label="Aircraft") for tail in seen
-    ]
+    return [EntityRef(name=tail, type="AIRCRAFT") for tail in seen]
 
 
 # =============================================================================
@@ -1031,9 +1053,16 @@ class SeedMessage:
 
 # Five technicians, five sessions, ten messages, replayed from the Phase 0
 # spike so the demos read against a known answer. The distribution is the
-# demo: three separate technicians each pulled the EGT trend on N10011
-# without knowing the others had, and the graph ranks N10011 last of
-# six on critical events. Neither source says anything interesting alone.
+# demo: three separate technicians each pulled the EGT trend on N10013
+# without knowing the others had, and the maintenance record has nothing
+# critical on it at all. Three engine write-ups, two MAJOR and one MINOR, so
+# it never reaches a ranking by critical count. Neither source says anything
+# interesting alone.
+#
+# The tail number matters and is not interchangeable. N10013 is the aircraft
+# the fleet data leaves quiet: 0 of its 3 maintenance events are CRITICAL.
+# Point these messages at a busy tail instead and the punchline inverts,
+# because the maintenance record then agrees with the technicians.
 #
 # This is seeded in a setup step rather than written by the participant in a
 # loop, because a message costs about 5.6 seconds and ten of them is a minute
@@ -1048,7 +1077,7 @@ SEED_MESSAGES: tuple[SeedMessage, ...] = (
     SeedMessage(
         "tech:rivera",
         "shift-rivera-01",
-        "Also pulled the trend data on N10011, the EGT margin looks like it "
+        "Also pulled the trend data on N10013, the EGT margin looks like it "
         "is walking down.",
     ),
     SeedMessage(
@@ -1076,7 +1105,7 @@ SEED_MESSAGES: tuple[SeedMessage, ...] = (
     SeedMessage(
         "tech:navarro",
         "shift-navarro-01",
-        "N10011 is the one I care about, the EGT margin has been trending "
+        "N10013 is the one I care about, the EGT margin has been trending "
         "for two weeks.",
     ),
     SeedMessage(
@@ -1088,7 +1117,7 @@ SEED_MESSAGES: tuple[SeedMessage, ...] = (
     SeedMessage(
         "tech:abiodun",
         "shift-abiodun-01",
-        "Pull everything you have on N10011 please, the EGT trend again.",
+        "Pull everything you have on N10013 please, the EGT trend again.",
     ),
     SeedMessage(
         "tech:abiodun",
@@ -1172,8 +1201,9 @@ RETURN ac.tail_number                                       AS aircraft,
 ORDER BY technicians DESC, critical DESC
 """
 
-# Control one. What a dashboard built on maintenance data alone shows. This
-# is the ranking that puts N10011 last.
+# Control one. What a dashboard built on maintenance data alone shows. This is
+# the ranking N10013 never appears in: it has no critical events, so no limit a
+# supervisor would read reaches it.
 FLEET_ONLY_QUERY = """
 MATCH (ac:Aircraft)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)
 RETURN ac.tail_number                                       AS aircraft,
@@ -1184,7 +1214,7 @@ LIMIT $limit
 """
 
 # Control two. What a memory product with no domain graph shows. This is the
-# ranking that puts N10011 joint first.
+# ranking that puts N10013 joint first.
 MEMORY_ONLY_QUERY = """
 MATCH (u:User)-[:HAS_CONVERSATION]->(:Conversation)-[:HAS_MESSAGE]->(m:Message)
       -[:MENTIONS]->(ac:Aircraft)
@@ -1280,8 +1310,12 @@ def build_recall_node(
     aircraft: the follow-up is short and generic, so the nearest neighbours
     are whatever the busiest aircraft in memory happens to be, and the turn
     from five seconds ago loses. So this node reads the conversation's own
-    recent turns first and puts the search behind them. Semantic search finds
-    what is related; the conversation says what "that" means.
+    most recent turns first and puts the search behind them. Semantic search
+    finds what is related; the conversation says what "that" means.
+
+    The recent turns are read with ``RECENT_TURNS_QUERY`` rather than with
+    ``short_term.get_conversation``, which limits after ordering ascending and
+    so returns the oldest turns of the session instead of the newest.
 
     One filter is applied to both. Every question the agent is asked is
     written to memory, so the closest match to "any vibration readings on that
@@ -1308,9 +1342,13 @@ def build_recall_node(
         # that case and recall is the search on its own.
         session_id = state.get("session_id")
         history = (
-            session.run(
-                session.client.short_term.get_conversation(session_id, limit=recent)
-            ).messages
+            [
+                row["content"]
+                for row in session.cypher(
+                    RECENT_TURNS_QUERY,
+                    {"session_id": session_id, "limit": recent},
+                )
+            ]
             if session_id
             else []
         )
@@ -1344,9 +1382,11 @@ def build_remember_node(
 
     Both halves are written, the question and the answer, because the next
     session's recall searches message content and an answer is where the
-    findings are. Mentions are taken from the question and the answer
-    together, so an aircraft the agent named in its answer is linked even
-    when the participant never typed a tail number.
+    findings are. Each half is linked to the aircraft *it* names, so an
+    aircraft the agent named only in its answer is still linked, and the
+    participant's question is not credited with aircraft they never typed.
+    That distinction is what ``HEADLINE_QUERY`` counts: a ``MENTIONS`` edge
+    from a user message is a person asking about an aircraft.
 
     Args:
         session: An open session.
@@ -1366,7 +1406,7 @@ def build_remember_node(
         for role, content in (("user", state["question"]), ("assistant", answer)):
             if not content:
                 continue
-            mentions = aircraft_mentions(f"{state['question']}\n{answer}")
+            mentions = aircraft_mentions(content)
             session.run(
                 session.client.short_term.add_message(
                     session_id,
@@ -1417,13 +1457,16 @@ it needs, or memory holds nothing that resolves it, repeat the question
 exactly as it was asked.
 
 Question: Are there any vibration readings I should worry about on that aircraft?
-Memory holds: N10011 is the one I care about, the EGT margin has been trending.
+Memory holds: N10013 is the one I care about, the EGT margin has been trending.
 The reply:
 
 {{"next": "genie_node",
-  "task": "Are there any vibration readings I should worry about on N10011?",
+  "task": "Are there any vibration readings I should worry about on N10013?",
   "reason": "genie_node holds the vibration readings this asks for.",
-  "resolved": "Are there any vibration readings I should worry about on N10011?"}}
+  "resolved": "Are there any vibration readings I should worry about on N10013?"}}
+
+If you cannot reply as JSON at all, write the resolved question on a line of
+its own beginning RESOLVED: and name the tool on a line below it.
 """
 )
 
@@ -1447,8 +1490,11 @@ RESOLVED_PREFIX = "RESOLVED:"
 def _parse_resolved(decision: str) -> str | None:
     """Pull the rewritten question out of a free-text supervisor reply.
 
-    The fallback path. A reply that came back through ``MEMORY_ROUTE_SCHEMA``
-    carries ``resolved`` as a JSON field and never reaches this.
+    The fallback path, and the last paragraph of ``MEMORY_SUPERVISOR_PROMPT``
+    is what makes it reachable: it asks for a ``RESOLVED:`` line from a model
+    that cannot answer as JSON. A reply that came back through
+    ``MEMORY_ROUTE_SCHEMA`` carries ``resolved`` as a JSON field and never
+    reaches this.
 
     Args:
         decision: The supervisor's raw reply.
@@ -1495,9 +1541,11 @@ def build_memory_supervisor_node(
 ) -> Callable[[MemoryAgentState], dict[str, Any]]:
     """Build the Lab 5 supervisor with recalled memory in its prompt.
 
-    Same decision rule as Lab 5 and the same reading of the tool name from the
-    end of the reply. Keeping that identical is what makes the memory-off
-    versus memory-on comparison mean anything.
+    Same decision rule as Lab 5, including the per-call narrowing to the tools
+    that have not run yet, and the same reading of the tool name from the end
+    of the reply. Keeping that identical is what makes the memory-off versus
+    memory-on comparison in Section 9 mean anything: change the routing here
+    and the comparison measures two differences instead of one.
 
     Two things are new. The prompt carries a fourth variable, ``recalled``.
     And on the first pass the node rewrites ``question`` from the reply's
@@ -1522,25 +1570,38 @@ def build_memory_supervisor_node(
     ceiling = MAX_TOOL_CALLS if max_tool_calls is None else max_tool_calls
     allowed = (*tools, "synthesize")
 
-    # Narrowed to the tools this agent was actually given, exactly as Lab 5
-    # narrows ROUTE_SCHEMA. A participant without a vector index has no
-    # graphrag_node, and a schema the model cannot leave is the guard.
-    route_format = json_schema_format(
-        "memory_routing_decision",
-        {
-            **MEMORY_ROUTE_SCHEMA,
-            "properties": {
-                **MEMORY_ROUTE_SCHEMA["properties"],
-                "next": {"type": "string", "enum": list(allowed)},
+    def _route_format(remaining: Sequence[str]) -> dict[str, Any]:
+        """Build the response format for one decision.
+
+        Narrowed to the tools this agent was actually given, exactly as Lab 5
+        narrows ROUTE_SCHEMA: a participant without a vector index has no
+        graphrag_node. Narrowed again per call to drop the tools that have
+        already run, for the reason Lab 5 gives, which is that the prompt asks
+        for each tool at most once and a rule the model can read is a rule it
+        can ignore. A schema the model cannot leave is the guard.
+        """
+        return json_schema_format(
+            "memory_routing_decision",
+            {
+                **MEMORY_ROUTE_SCHEMA,
+                "properties": {
+                    **MEMORY_ROUTE_SCHEMA["properties"],
+                    "next": {"type": "string", "enum": list(remaining)},
+                },
             },
-        },
-    )
+        )
 
     def supervisor_node(state: MemoryAgentState) -> dict[str, Any]:
         trace = state.get("trace", [])
         if len(trace) >= ceiling:
             return {"route": "synthesize"}
 
+        # Every tool has run, so there is nothing left to call.
+        remaining = tuple(t for t in allowed if t not in trace)
+        if remaining == ("synthesize",):
+            return {"route": "synthesize"}
+
+        route_format = _route_format(remaining)
         rendered = prompt.format(
             question=state["question"],
             called=", ".join(trace) or "(none yet)",
@@ -1575,11 +1636,14 @@ def build_memory_supervisor_node(
                 newline = tail.find("\n", marker)
                 tail = tail[newline + 1:] if newline >= 0 else ""
 
-            chosen, best = _pick_tool(tail, tools)
+            # Only the tools that have not run yet, the same set the schema
+            # was narrowed to above.
+            open_tools = tuple(t for t in tools if t not in trace)
+            chosen, best = _pick_tool(tail, open_tools)
             if best < 0:
                 # A reply that put the route above RESOLVED leaves nothing
                 # below it.
-                chosen, best = _pick_tool(decision, tools)
+                chosen, best = _pick_tool(decision, open_tools)
             if best < 0:
                 chosen = "synthesize"
 
@@ -1593,8 +1657,10 @@ def build_memory_supervisor_node(
             update["question"] = resolved
 
         # A name outside the tools this agent was given becomes synthesize
-        # rather than a call, the same guard Lab 5 keeps after the schema.
-        update["route"] = chosen if chosen in allowed else "synthesize"
+        # rather than a call, and so does a tool already in the trace: it has
+        # given everything it has. The same guard Lab 5 keeps after the schema,
+        # for replies that never went through the schema at all.
+        update["route"] = chosen if chosen in remaining else "synthesize"
         return update
 
     return supervisor_node

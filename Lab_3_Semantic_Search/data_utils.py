@@ -888,7 +888,7 @@ def run_pipeline(
         embedder=embedder,
         schema=schema,
         text_splitter=splitter,
-        from_pdf=False,
+        from_file=False,
         on_error="IGNORE",
         perform_entity_resolution=True,
         prompt_template=EXTRACTION_PROMPT,
@@ -912,8 +912,8 @@ def format_operating_limit_record(record: Record) -> RetrieverResultItem:
     """Format an operating-limit record into clean, displayable HTML.
 
     The default VectorCypherRetriever formatter sets ``content`` to ``str(record)``,
-    which prints the raw neo4j Record wrapper with the manual's HTML tags showing
-    literally. This formatter builds well-formed HTML instead, so the operating-limit
+    which prints the raw neo4j Record wrapper around the chunk text and the limit
+    maps. This formatter builds well-formed HTML instead, so the operating-limit
     query results render nicely with ``IPython.display.HTML`` and read cleanly when
     passed to the LLM as context.
 

@@ -31,7 +31,7 @@ ORDER BY volatility DESC
 MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)
       -[:HAS_COMPONENT]->(c:Component)
       -[:HAS_EVENT]->(m:MaintenanceEvent)
-WHERE a.tail_number = 'N95040A'
+WHERE a.tail_number = 'N10000'
   AND m.severity = 'CRITICAL'
 RETURN s.name, c.name, m.description, m.event_date
 ORDER BY m.event_date DESC
