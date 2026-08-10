@@ -81,6 +81,48 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 
 ---
 
+## The Mosaic AI Services Labs 5 and 6 Use: The Models
+
+**Every model call in both labs is a Databricks Foundation Model endpoint.**
+
+- **Foundation Model APIs, pay per token:** `databricks-claude-sonnet-5` for the supervisor's routing, Cypher generation, and synthesis
+- **`databricks-bge-large-en`** embeds the question `graphrag_node` searches with, the same endpoint Lab 3 wrote the index with
+- **One client for both:** `mlflow.deployments.get_deploy_client("databricks")`
+- **Structured outputs:** the endpoint itself enforces a JSON schema, so a route is read as a field, not out of prose
+- **Genie:** `workspace_client.genie.start_conversation_and_wait` over the Lakehouse telemetry, wrapped as `genie_node`
+
+<!-- No API keys anywhere in these labs: the workspace is the credential. Same embedding endpoint as Lab 3 is a hard requirement, because the vectors have to be comparable. Note there is no Vector Search index here; the vector indexes are Neo4j's, sized to this endpoint's 1024 dimensions. -->
+
+---
+
+## The Mosaic AI Services Labs 5 and 6 Use: Track and Register
+
+**What turns a notebook object into something with a version number.**
+
+- **MLflow tracing:** `mlflow.langchain.autolog` records a trace per request, in an experiment set before deploy
+- **`ResponsesAgent`:** the MLflow interface Model Serving speaks, wrapped around the compiled graph
+- **Unity Catalog Model Registry:** `mlflow.set_registry_uri("databricks-uc")`, registered into `databricks-neo4j-workshop.agents`
+- **Agent Framework resources declared at log time:** `DatabricksServingEndpoint`, `DatabricksGenieSpace`, `DatabricksSQLWarehouse`, `DatabricksTable`
+- **Databricks secrets and a Unity Catalog volume:** Neo4j credentials travel as a secret-scope reference, and the agent's dependencies load from the volume rather than PyPI
+
+<!-- The resource list is the auth story: whatever is not declared here is not reachable from the endpoint. The volume matters in a locked-down workspace with no egress to PyPI. -->
+
+---
+
+## The Mosaic AI Services Labs 5 and 6 Use: Deploy and Score
+
+**One call to serve it, one call to grade it.**
+
+- **Mosaic AI Agent Framework:** `agents.deploy(...)` creates the Model Serving endpoint, attaches the version, applies the environment block, and grants the declared resources
+- **What comes with it:** a service principal identity, inference tables written beside the model, and a Review App for feedback
+- **Mosaic AI Agent Evaluation:** `mlflow.genai.evaluate` with `Correctness()`, `RelevanceToQuery()`, and a custom routing scorer, run against the deployed endpoint
+- **Lab 6 adds no new service.** The same two Foundation Model endpoints do memory: BGE embeds every stored message, Claude extracts what is worth keeping
+- **Lab 6 redeploys this endpoint**, rather than standing up a second one
+
+<!-- Score the endpoint, not a notebook copy, so the deployed identity's permissions are what gets graded. Say plainly that Lab 6 introduces no new Databricks surface: the new machinery is all Neo4j. -->
+
+---
+
 ## What a Genie Agent Is
 
 - **A Databricks-native agent over Unity Catalog tables**, built from a form in Lab 4 Part A

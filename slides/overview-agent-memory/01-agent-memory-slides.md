@@ -58,7 +58,7 @@ Cut order if the day runs late: this slide first, then the Summary slide down to
 ![bg right:40% contain](../../site/modules/ROOT/images/lab5-agent-topology.svg)
 
 - **Lab 5 shipped this:** one supervisor, three tools, one endpoint. It routes well and answers well
-- **Ask it about `N10011`.** Then ask "any maintenance events on that aircraft?" and it has no idea what *that* means
+- **Ask it about `N10013`.** Then ask "any maintenance events on that aircraft?" and it has no idea what *that* means
 - **At the start of question two it holds** the question, the schema, and the prompt. Nothing about question one
 - **Close the notebook** and everything it worked out is gone
 
@@ -137,7 +137,7 @@ RETURN ac.tail_number AS aircraft, tc.tool_name AS tool,
 <!--
 2.0 minutes. This is the thesis slide. Walk the path with a finger on the screen. Do not read the Cypher as Cypher; read it as a sentence: trace, step, tool call, aircraft.
 Verbatim from Demo 4 of Lab_6_Agent_Memory/02_optional_demos.ipynb. It runs; that is the notebook to open if the room wants proof.
-The caveat that returns on The Payoff: that last MATCH only resolves because the lab adopted the graph's Aircraft nodes. Without adoption the memory library creates its own N10011 Entity beside yours, the pattern matches nothing, and you are back to two stores joined by string comparison in Python.
+The caveat that returns on The Payoff: that last MATCH only resolves because the lab adopted the graph's Aircraft nodes. Without adoption the memory library creates its own N10013 Entity beside yours, the pattern matches nothing, and you are back to two stores joined by string comparison in Python.
 -->
 
 ---
@@ -201,7 +201,7 @@ Lab 6 stays on the hot path to teach, not to engineer: a participant who cannot 
 - **Two nodes added. Three tools untouched.** The supervisor is the same node with a `{recalled}` block in front of its prompt
 - **`recall` runs once per question, not once per tool call.** That single decision keeps the cost from being three times worse
 - **Memory is routing context for the supervisor, not a fourth tool.** Nobody asks memory a question
-- **It also rewrites the question.** The supervisor returns a `resolved` field, so "that aircraft" reaches Genie as `N10011`
+- **It also rewrites the question.** The supervisor returns a `resolved` field, so "that aircraft" reaches Genie as `N10013`
 
 <!--
 2.0 minutes. Worth stating twice: recall runs once per question. Wire it as a tool and the supervisor can call it three times in one turn, at three to five seconds each, for no extra information.
@@ -215,9 +215,9 @@ If Hot Path was cut, its line goes here: memory costs about 15 seconds a questio
 
 - **Adoption, in one line.** Stamping `:Entity` onto the Lab 2 `Aircraft` nodes means a remembered aircraft **is** the Lab 2 `Aircraft` node, so one traversal crosses both
 - **Adopt `Aircraft` and nothing else.** `adopt_existing_graph` sets `type` unconditionally, and `System`, `Sensor`, `Component`, and `Document` all already use it. Adopting them corrupts the graph silently
-- **The graph alone**, ranked by critical maintenance events: `N10011` comes **last of six**
-- **Conversation memory alone**, ranked by distinct technicians asking: `N10011` is **joint first**
-- **The joined query explains why:** three technicians, on three separate shifts, each pulled the EGT, Exhaust Gas Temperature, trend on `N10011` without knowing the others had
+- **The graph alone**, ranked by critical maintenance events: `N10013` is **not on the list**
+- **Conversation memory alone**, ranked by distinct technicians asking: `N10013` is **joint first**
+- **The joined query explains why:** three technicians, on three separate shifts, each pulled the EGT, Exhaust Gas Temperature, trend on `N10013` without knowing the others had
 
 ```cypher
 MATCH (u:User)-[:HAS_CONVERSATION]->(c)-[:HAS_MESSAGE]->(m)-[:MENTIONS]->(ac:Aircraft)
@@ -227,9 +227,10 @@ MATCH (ac)<-[:AFFECTS_AIRCRAFT]-(ev:MaintenanceEvent)-[:AFFECTS_SYSTEM]->(sys:Sy
 
 <!--
 3.0 minutes. Never cut this slide. It is the argument for the entire lab.
-Show the three queries in order and let the ranking do the work. Read separately, each list is unremarkable: an aircraft with few critical events is fine, an aircraft several people asked about is a busy week. Side by side, it is a different sentence.
+Show the three queries in order and let the ranking do the work. Read separately, each list is unremarkable: an aircraft with no critical events is fine, an aircraft several people asked about is a busy week. Side by side, it is a different sentence.
+N10013 is not a blank page: three engine write-ups for bearing wear, two MAJOR and one MINOR, and no CRITICAL, which is why a ranking by critical count never reaches it.
 Analogy: the log is what got written down, the conversation is what the crew keeps worrying about, and the gap between them is where the next incident lives. Either those three technicians are seeing something the record has not caught yet, or three people each wasted a shift on the same dead end. Both are worth a supervisor's attention; neither list says it alone.
-The point is the (ac) on the second MATCH: bound in the memory half, reused in the aircraft half. Same node, no join key, no federation, no second query. Without adoption that ac would be a memory Entity sharing a name with an Aircraft, and joining them means exporting both sides and matching strings in Python, where the tail number N10011 and the tail number "n10011 " go to disagree.
+The point is the (ac) on the second MATCH: bound in the memory half, reused in the aircraft half. Same node, no join key, no federation, no second query. Without adoption that ac would be a memory Entity sharing a name with an Aircraft, and joining them means exporting both sides and matching strings in Python, where the tail number N10013 and the tail number "n10013 " go to disagree.
 The adoption guard is a concept, not a step: it is what "the same node" costs. memory.py refuses the four unsafe labels by name rather than trusting the notebook to get it right, and the notebook shows the refusal on purpose before the successful adoption.
 
 Optional 30 seconds, from Demo 2. A preference scoped with APPLIES_TO hangs off the aircraft, not the user:
@@ -238,7 +239,7 @@ Optional 30 seconds, from Demo 2. A preference scoped with APPLIES_TO hangs off 
   WHERE p.valid_until IS NULL
   RETURN p.category, p.preference
 
-"On N10011 the EGT sensor reads about five degrees high" reaches any technician who touches that aircraft, since it is a property of the aircraft's situation rather than one person's profile. A preferences table keyed by user cannot express that without a join nobody writes.
+"On N10013 the EGT sensor reads about five degrees high" reaches any technician who touches that aircraft, since it is a property of the aircraft's situation rather than one person's profile. A preferences table keyed by user cannot express that without a join nobody writes.
 -->
 
 ---

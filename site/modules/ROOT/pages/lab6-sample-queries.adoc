@@ -108,7 +108,7 @@ ORDER BY size(technicians) DESC, critical DESC
 
 **What to read in the output.** An aircraft several technicians asked about, whose maintenance record shows no critical events, is the interesting row. Either the crew is seeing something the record has not caught, or several people each spent a shift on the same dead end. A supervisor wants to know about both, and neither column shows it alone.
 
-**Why it is one query and not two.** `ac` is bound in the memory half on the first line and reused in the aircraft half on the fourth. Same node, no join key, no federation. Without adoption those would be two entities that happen to share a name, and joining them means exporting both sides and matching strings, which is where the tail number `N10011` and the tail number `n10011 ` stop matching each other.
+**Why it is one query and not two.** `ac` is bound in the memory half on the first line and reused in the aircraft half on the fourth. Same node, no join key, no federation. Without adoption those would be two entities that happen to share a name, and joining them means exporting both sides and matching strings, which is where the tail number `N10013` and the tail number `n10013 ` stop matching each other.
 
 '''
 
