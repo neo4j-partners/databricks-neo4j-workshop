@@ -27,7 +27,7 @@ Edit `.env` with your values:
 | `NEO4J_URI` | Neo4j Aura connection URI |
 | `NEO4J_USERNAME` | Neo4j username (default: `neo4j`) |
 | `NEO4J_PASSWORD` | Neo4j password |
-| `DATA_PATH` | Unity Catalog Volume path (default: `/Volumes/databricks-neo4j-workshop/aircraft/raw_data`) |
+| `DATA_PATH` | Unity Catalog Volume path holding the Lab 3 maintenance manual (default: `/Volumes/databricks-neo4j-workshop/aircraft/raw_data`). Only `run_lab3_01.py` reads it — the Lab 2 scripts load from the medallion pipeline's silver tables instead, via `--catalog`/`--pipeline-schema`, which default to `databricks-neo4j-workshop`/`aircraft_pipeline` and rarely need overriding |
 
 ## Full Validation Flow
 
@@ -163,7 +163,7 @@ Confirms the Neo4j MCP server is reachable and returns expected data through the
 ./submit.sh run_lab2_01.py --no-wait   # submit without waiting for completion
 ```
 
-Neo4j credentials and `DATA_PATH` from `.env` are automatically injected as command-line arguments. The cluster is auto-started if terminated (polls up to 10 minutes).
+Neo4j credentials and `DATA_PATH` from `.env` are automatically injected as command-line arguments. `--data-path` is accepted by every script for a uniform CLI, but only `run_lab3_01.py` reads it; the Lab 2 scripts ignore it and use `--catalog`/`--pipeline-schema` instead. The cluster is auto-started if terminated (polls up to 10 minutes).
 
 ### validate.sh
 

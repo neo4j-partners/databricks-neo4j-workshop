@@ -102,8 +102,9 @@ VOLUME_SCHEMA = os.environ.get("WORKSHOP_VOLUME_SCHEMA", "aircraft")
 VOLUME_NAME = os.environ.get("WORKSHOP_VOLUME_NAME", "raw_data")
 LAKEHOUSE_SCHEMA = os.environ.get("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
 
-# Bronze and silver land here, so a participant browsing Catalog, or picking
-# tables for a Genie Agent, sees the eight gold tables and nothing else.
+# Bronze, silver, and gold all land here. Only the eight gold tables and the
+# ten LAB2_SILVER_TABLES below are granted to participants; bronze stays
+# ungranted. See genie_statements() for the grants themselves.
 PIPELINE_SCHEMA = os.environ.get("WORKSHOP_PIPELINE_SCHEMA", "aircraft_pipeline")
 
 VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"

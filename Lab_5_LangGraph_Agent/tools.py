@@ -425,8 +425,15 @@ Facts that change the query you write:
     can be empty. It records what a manual said, not what the fleet is held
     to, so never treat it as authoritative. OperatingLimit is the authority.
   - Severity values are upper case, for example 'CRITICAL'.
-  - Dates are ISO 8601 STRINGs, so compare them as strings or parse with
-    date() and datetime().
+  - scheduled_departure, scheduled_arrival, reported_at, and removal_date are
+    Neo4j DateTime values, not strings. Compare them with datetime() literals
+    or range operators, for example
+    WHERE f.scheduled_departure >= datetime('2024-03-01') AND
+    f.scheduled_departure < datetime('2024-04-01'). To match one calendar
+    day, truncate with date(), for example
+    WHERE date(f.scheduled_departure) = date('2024-03-15'). STARTS WITH and
+    other string functions do not apply to DateTime properties and raise a
+    type error rather than returning zero rows.
   - Nothing in this graph attributes a delay to a fault. No relationship joins
     a MaintenanceEvent to a Flight, and Delay.cause is one of four broad
     categories that never names a component. A question asking which failure
