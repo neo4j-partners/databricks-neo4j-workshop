@@ -7,7 +7,7 @@ the result with PASS/FAIL assertions. The projection is dropped at the end;
 the *_norm properties and SIMILAR_PROFILE relationships persist.
 
 Requires the Lab 2 base data (run_lab2_01.py), the sensor Delta tables, and the
-maintenance CSV in the Unity Catalog Volume.
+medallion pipeline's silver_maintenance_events table.
 
 Usage:
     ./upload.sh run_lab2_03.py && ./submit.sh run_lab2_03.py
@@ -34,14 +34,17 @@ def main():
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
     parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
-        "--data-path",
-        default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
-        help="Unity Catalog Volume path containing CSV data files",
+        "--data-path", default="", help="(unused — superseded by --catalog/--pipeline-schema)"
     )
     parser.add_argument(
         "--catalog", default="databricks-neo4j-workshop", help="Unity Catalog name"
     )
     parser.add_argument("--schema", default="aircraft", help="Schema with sensor tables")
+    parser.add_argument(
+        "--pipeline-schema",
+        default="aircraft_pipeline",
+        help="Schema holding the Fleet Digital Twin ETL pipeline's silver tables",
+    )
     parser.add_argument("--mcp-endpoint", default="", help="(unused)")
     parser.add_argument("--mcp-api-key", default="", help="(unused)")
     parser.add_argument("--mcp-path", default="", help="(unused)")
@@ -57,10 +60,10 @@ def main():
     print("=" * 60)
     print("Lab 2 Notebook 02: GDS kNN Aircraft Similarity")
     print("=" * 60)
-    print(f"Neo4j URI:    {args.neo4j_uri}")
-    print(f"Catalog:      {args.catalog}.{args.schema}")
-    print(f"Data Path:    {args.data_path}")
-    print(f"Spark:        {spark.version}")
+    print(f"Neo4j URI:       {args.neo4j_uri}")
+    print(f"Sensor tables:   {args.catalog}.{args.schema}")
+    print(f"Pipeline schema: {args.catalog}.{args.pipeline_schema}")
+    print(f"Spark:           {spark.version}")
     print()
 
     # ── Configure Neo4j Spark Connector ──────────────────────────────────────
@@ -125,12 +128,11 @@ def main():
             record("Sensor features from Delta", False, f"error: {e}")
             _finish(results)
 
-        # ── Maintenance features from CSV ────────────────────────────────────
+        # ── Maintenance features from the silver layer ──────────────────────
 
-        maintenance_df = (spark.read
-            .option("header", "true")
-            .csv(f"{args.data_path}/nodes_maintenance.csv")
-            .withColumnRenamed(":ID(MaintenanceEvent)", "event_id"))
+        maintenance_df = spark.read.table(
+            f"`{args.catalog}`.`{args.pipeline_schema}`.silver_maintenance_events"
+        )
         maintenance_stats = (maintenance_df
             .groupBy("aircraft_id")
             .agg(
@@ -138,7 +140,7 @@ def main():
                 count(when(col("severity") == "CRITICAL", True)).alias("critical_events"),
             ))
         maint_count = maintenance_stats.count()
-        record("Maintenance features from CSV", maint_count > 0, f"aircraft={maint_count}")
+        record("Maintenance features from silver layer", maint_count > 0, f"aircraft={maint_count}")
 
         # ── Join + normalize ─────────────────────────────────────────────────
 
@@ -285,7 +287,6 @@ def _finish(results):
         print("FAILED")
         sys.exit(1)
     print("SUCCESS")
-    sys.exit(0)
 
 
 if __name__ == "__main__":

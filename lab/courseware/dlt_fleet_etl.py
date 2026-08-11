@@ -7,7 +7,7 @@
 # MAGIC
 # MAGIC | Layer | Tables | Purpose |
 # MAGIC |-------|--------|---------|
-# MAGIC | **Bronze** | Raw CSV ingestion (10 node tables, 12 relationship tables) | Schema-on-read, preserve source fidelity |
+# MAGIC | **Bronze** | Raw CSV ingestion (11 node tables, 12 relationship tables) | Schema-on-read, preserve source fidelity |
 # MAGIC | **Silver** | Cleaned + typed entities (aircraft, systems, sensors, readings, flights, maintenance) | Validated, deduplicated, proper types |
 # MAGIC | **Gold** | Analytics-ready views (fleet_readiness, sensor_health, maintenance_summary) | Genie/BI/Agent consumption layer |
 # MAGIC
@@ -193,6 +193,19 @@ def bronze_removals():
         .load(f"{VOLUME_PATH}/nodes_removals.csv")
     )
 
+@dlt.table(
+    name="bronze_operating_limits",
+    comment="Raw documented takeoff operating limits, transcribed from the maintenance manuals",
+    table_properties=BRONZE_PROPS
+)
+def bronze_operating_limits():
+    return (
+        spark.read.format("csv")
+        .option("header", "true")
+        .option("inferSchema", "true")
+        .load(f"{VOLUME_PATH}/nodes_operating_limits.csv")
+    )
+
 # -- Relationship tables (useful for joins without Neo4j) --
 
 @dlt.table(name="bronze_rel_aircraft_system", comment="Aircraft → System relationships", table_properties=BRONZE_PROPS)
@@ -292,28 +305,10 @@ def silver_systems():
 
 @dlt.table(
     name="silver_sensors",
-    comment="Sensors installed on aircraft systems measuring EGT, vibration, N1 speed, fuel flow. The unit column is ASCII: temperatures read C, not the degree sign the source CSV carries."
+    comment="Sensors installed on aircraft systems measuring EGT, vibration, N1 speed, fuel flow. The unit column keeps the source's degree sign (e.g. °C) — Lab 2 loads this table into Neo4j, and the graph's value should be what the manuals print, matching OperatingLimit.unit. gold_sensors strips it to ASCII for Genie."
 )
 @dlt.expect_or_drop("valid_sensor_id", "sensor_id IS NOT NULL")
 def silver_sensors():
-    """Sensors, with the unit column normalised to ASCII.
-
-    The source CSV writes temperature units as ``°C`` with a degree sign. Genie
-    generating SQL against this table does not reproduce that character: it
-    writes ``unit = 'C'`` or ``LOWER(unit) = 'c'``, matches zero rows, and the
-    agent above it then reports flatly that no engine shows an abnormal EGT.
-    That answer is false. The same question with no unit filter finds over
-    4,980 abnormal readings on one engine of N10000 alone.
-
-    Stripping the degree sign here fixes it once, for every consumer, rather
-    than asking each query to spell a character the model will not emit. The
-    runner-up was a column comment telling Genie the format, which is cheaper
-    but only works for as long as the model reads and honours it.
-
-    The Neo4j side keeps ``°C`` on OperatingLimit. Nothing joins the two
-    databases on unit, so the two spellings do not have to agree, and the
-    graph's value is what the manuals print.
-    """
     return (
         dlt.read("bronze_sensors")
         .selectExpr(
@@ -324,7 +319,6 @@ def silver_sensors():
             "unit"
         )
         .withColumn("sensor_type", trim(col("sensor_type")))
-        .withColumn("unit", trim(regexp_replace(col("unit"), "°", "")))
         .dropDuplicates(["sensor_id"])
     )
 
@@ -479,6 +473,27 @@ def silver_removals():
         )
     )
 
+@dlt.table(
+    name="silver_operating_limits",
+    comment="Documented takeoff operating limits: 20 rows, four parameters across five aircraft models. Reference data for Lab 2's Neo4j graph, not gold — no BI consumer reads it, and it never joins to sensor_readings on unit, so it keeps the manuals' own degree sign, same as silver_sensors.unit."
+)
+@dlt.expect_or_drop("valid_limit_id", "limit_id IS NOT NULL")
+def silver_operating_limits():
+    return (
+        dlt.read("bronze_operating_limits")
+        .selectExpr(
+            "`:ID(OperatingLimit)` as limit_id",
+            "name",
+            "parameterName",
+            "unit",
+            "regime",
+            "CAST(minValue AS DOUBLE) as minValue",
+            "CAST(maxValue AS DOUBLE) as maxValue",
+            "aircraftType"
+        )
+        .dropDuplicates(["limit_id"])
+    )
+
 # ---------------------------------------------------------------------------
 # GOLD LAYER — Analytics-ready tables for Genie / BI / Agents
 #
@@ -513,13 +528,24 @@ def gold_systems():
     comment="Sensors installed on aircraft systems. Types: EGT, Vibration, N1Speed, FuelFlow."
 )
 def gold_sensors():
-    """Production sensor dimension with system + aircraft context."""
+    """Production sensor dimension with system + aircraft context.
+
+    Strips the degree sign from ``unit`` (``°C`` -> ``C``). Genie generating SQL
+    against this table does not reproduce that character: it writes
+    ``unit = 'C'`` or ``LOWER(unit) = 'c'``, matches zero rows, and the agent
+    above it then reports flatly that no engine shows an abnormal EGT. That
+    answer is false. The same question with no unit filter finds over 4,980
+    abnormal readings on one engine of N10000 alone. Stripping it here fixes
+    that once, for Genie, without touching ``silver_sensors.unit``, which Lab 2
+    loads into Neo4j and needs to keep the manuals' own spelling.
+    """
     systems = dlt.read("silver_systems").select("system_id", "aircraft_id", "system_type", "system_name")
     aircraft = dlt.read("silver_aircraft").select("aircraft_id", "tail_number")
     return (
         dlt.read("silver_sensors")
         .withColumnRenamed("sensor_type", "type")
         .withColumnRenamed("sensor_name", "name")
+        .withColumn("unit", trim(regexp_replace(col("unit"), "°", "")))
         .join(systems, "system_id", "left")
         .join(aircraft, "aircraft_id", "left")
     )
@@ -658,7 +684,7 @@ def gold_fleet_readiness():
 
 @dlt.table(
     name=f"{GOLD_SCHEMA}.sensor_health",
-    comment="Per-sensor descriptive statistics over the full 90-day window: reading count, average, min, max, standard deviation, 95th percentile, and the timestamp of the last reading, with system and tail number attached. Carries no health verdict. Whether a value is out of limits depends on the aircraft type and the flight regime, and the operating limits are not in the lakehouse."
+    comment="Per-sensor descriptive statistics over the full 90-day window: reading count, average, min, max, standard deviation, 95th percentile, and the timestamp of the last reading, with system and tail number attached. Carries no health verdict. Whether a value is out of limits depends on the aircraft type and the flight regime, and no gold table joins readings to operating limits on that basis."
 )
 def gold_sensor_health():
     """Per-sensor descriptive statistics.
@@ -677,7 +703,11 @@ def gold_sensor_health():
     no regime. Picking one here would freeze an arbitrary choice into a gold
     table. That comparison belongs in the graph, which is where the limits live.
     """
-    sensors = dlt.read("silver_sensors")
+    # unit stripped to ASCII here for the same reason gold_sensors strips it:
+    # Genie writes `unit = 'C'`, not `unit = '°C'`. silver_sensors.unit keeps
+    # the degree sign for Lab 2's Neo4j load, so every gold consumer strips it
+    # itself rather than the other way around.
+    sensors = dlt.read("silver_sensors").withColumn("unit", trim(regexp_replace(col("unit"), "°", "")))
     systems = dlt.read("silver_systems").select("system_id", "aircraft_id")
     aircraft = dlt.read("silver_aircraft").select("aircraft_id", "tail_number")
 

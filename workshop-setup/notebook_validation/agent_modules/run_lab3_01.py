@@ -493,7 +493,7 @@ def main():
     for r in has_limit:
         print(f"  {r['sensor']} -> {r['limit']}")
     if not has_limit:
-        print("  (No matches — check that Lab 2 loaded nodes_operating_limits.csv)")
+        print("  (No matches — check that Lab 2 loaded silver_operating_limits)")
 
     # -- Stage 3 Verification ----------------------------------------------
 

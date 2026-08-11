@@ -17,7 +17,7 @@
   <rect width="960" height="600" fill="#FFFFFF"/>
 
   <!-- Header: title and layer legend -->
-  <text x="24" y="33" font-size="16" font-weight="bold" fill="#27272A">Lab 6: agent memory in the fleet graph</text>
+  <text x="24" y="33" font-size="16" font-weight="bold" fill="#27272A">Neo4j Agent Memory</text>
 
   <rect x="520" y="20" width="14" height="14" rx="3" fill="#F1EEFB" stroke="#6E56CF" stroke-width="1.8"/>
   <text x="540" y="32" font-size="12" fill="#3F3F46">Short term</text>
@@ -26,7 +26,7 @@
   <rect x="726" y="20" width="14" height="14" rx="3" fill="#FDEEEA" stroke="#E8501F" stroke-width="1.8"/>
   <text x="746" y="32" font-size="12" fill="#3F3F46">Reasoning</text>
   <rect x="828" y="20" width="14" height="14" rx="3" fill="#F2F8FE" stroke="#0B7FD4" stroke-width="1.8"/>
-  <text x="848" y="32" font-size="12" fill="#3F3F46">Fleet graph</text>
+  <text x="848" y="32" font-size="12" fill="#3F3F46">Domain graph</text>
 
   <!-- ================= Memory layer 1: short term ================= -->
   <rect x="20" y="48" width="296" height="292" rx="10" fill="#F1EEFB" stroke="#6E56CF" stroke-width="2"/>
@@ -90,13 +90,13 @@
   <text x="792" y="291" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#8C2A0C">:ToolCall</text>
   <text x="792" y="307" text-anchor="middle" font-size="11" fill="#52525B">tool_name, status, result</text>
 
-  <!-- Naming the memory half, opposite the fleet band title -->
-  <text x="936" y="372" text-anchor="end" font-size="13" font-weight="bold" fill="#52525B">Memory, written in Lab 6</text>
+  <!-- Naming the memory half, opposite the domain band title -->
+  <text x="936" y="372" text-anchor="end" font-size="13" font-weight="bold" fill="#52525B">Memory, written by the agent</text>
   <text x="936" y="390" text-anchor="end" font-size="11.5" fill="#71717A">by neo4j-agent-memory</text>
 
-  <!-- ================= The fleet half ================= -->
+  <!-- ================= The domain half ================= -->
   <rect x="300" y="412" width="640" height="170" rx="10" fill="#F2F8FE" stroke="#0B7FD4" stroke-width="1.8" stroke-dasharray="7 4"/>
-  <text x="924" y="437" text-anchor="end" font-size="13.5" font-weight="bold" fill="#0A4E82">Fleet graph, loaded in Lab 2</text>
+  <text x="924" y="437" text-anchor="end" font-size="13.5" font-weight="bold" fill="#0A4E82">Domain graph, already in Neo4j</text>
 
   <rect x="350" y="490" width="220" height="56" rx="8" fill="#FFFFFF" stroke="#0B7FD4" stroke-width="1.8"/>
   <text x="460" y="514" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0A4E82">:MaintenanceEvent</text>
@@ -112,7 +112,7 @@
   <line x1="570" y1="518" x2="685" y2="518" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
   <text x="628" y="510" text-anchor="middle" font-size="10.5" fill="#52525B">AFFECTS_SYSTEM</text>
 
-  <text x="924" y="570" text-anchor="end" font-size="11.5" fill="#125C93">Lab 2 loaded these. Lab 6 added nothing to them.</text>
+  <text x="924" y="570" text-anchor="end" font-size="11.5" fill="#125C93">Memory adds nothing to these nodes.</text>
 
   <!-- ============ The three edges that cross the boundary ============ -->
   <path d="M 168 316 L 168 396 L 345 396" fill="none" stroke="#6E56CF" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-st)"/>
@@ -131,16 +131,5 @@
   <rect x="486" y="380" width="112" height="26" rx="13" fill="#F1EEFB" stroke="#6E56CF" stroke-width="1.5"/>
   <text x="542" y="398" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3B2E7E">:Entity</text>
   <text x="480" y="425" text-anchor="middle" font-size="12.5" fill="#27272A">tail_number: N10004</text>
-  <text x="480" y="443" text-anchor="middle" font-size="11" fill="#52525B">adoption added :Entity, id, name, type</text>
-
-  <!-- ============ What put it there ============ -->
-  <rect x="24" y="428" width="252" height="154" rx="8" fill="#FAFAFA" stroke="#A1A1AA" stroke-width="1.5" stroke-dasharray="6 4"/>
-  <text x="40" y="454" font-size="13" font-weight="bold" fill="#27272A">Adoption put it there</text>
-  <text x="40" y="478" font-size="11.5" fill="#3F3F46">adopt_existing_graph added the</text>
-  <text x="40" y="496" font-size="11.5" fill="#3F3F46">:Entity label and the memory keys</text>
-  <text x="40" y="514" font-size="11.5" fill="#3F3F46">to the Aircraft nodes Lab 2 loaded.</text>
-  <text x="40" y="532" font-size="11.5" fill="#3F3F46">Nothing was copied, so a mention</text>
-  <text x="40" y="550" font-size="11.5" fill="#3F3F46">and a maintenance event land on</text>
-  <text x="40" y="568" font-size="11.5" fill="#3F3F46">one node, not two.</text>
-  <path d="M 276 448 L 345 440" fill="none" stroke="#71717A" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <text x="480" y="443" text-anchor="middle" font-size="11" fill="#52525B">one node, both labels</text>
 </svg>

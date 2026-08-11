@@ -518,7 +518,7 @@ class Neo4jConnection:
 
         The label list is exactly what this lab writes. ``OperatingLimit`` is
         not on it: that label means the 20 canonical rows Lab 2 loads from
-        ``nodes_operating_limits.csv`` and nothing else. Extraction writes
+        ``silver_operating_limits`` and nothing else. Extraction writes
         ``ExtractedLimit`` instead, so the two populations delete separately.
 
         Uses batched deletes to avoid transaction timeouts on large graphs.

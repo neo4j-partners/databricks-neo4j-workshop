@@ -364,7 +364,7 @@ class Neo4jConnection:
         embeddings in every vector search result, and doubles the node budget.
 
         Preserves the operational graph from Lab 2, including the canonical
-        OperatingLimit nodes it loads from ``nodes_operating_limits.csv``. What
+        OperatingLimit nodes it loads from ``silver_operating_limits``. What
         extraction produces carries the ``ExtractedLimit`` label instead, so
         clearing by label reaches this lab's output and nothing else.
 

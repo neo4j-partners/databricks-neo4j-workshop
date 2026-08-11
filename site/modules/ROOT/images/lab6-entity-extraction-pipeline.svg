@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 680" width="960" height="680" font-family="Liberation Sans, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#52525B"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2F9E44"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#C99A2E"/>
+    </marker>
+    <marker id="arrow-blue3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1D6FB8"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="680" fill="#FFFFFF"/>
+
+  <!-- ================= Raw Text ================= -->
+  <rect x="20" y="95" width="150" height="100" rx="8" fill="#F4F4F5" stroke="#71717A" stroke-width="1.8"/>
+  <text x="95" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#27272A">Raw Text</text>
+  <text x="95" y="148" text-anchor="middle" font-size="10" font-style="italic" fill="#71717A">"Brian Chesky founded</text>
+  <text x="95" y="162" text-anchor="middle" font-size="10" font-style="italic" fill="#71717A">Airbnb…"</text>
+
+  <!-- ================= Stage labels ================= -->
+  <text x="318" y="80" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#52525B">Stage 1</text>
+  <text x="568" y="80" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#52525B">Stage 2</text>
+  <text x="818" y="80" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#52525B">Stage 3</text>
+
+  <!-- ================= Stage 1: spaCy ================= -->
+  <rect x="200" y="95" width="235" height="100" rx="8" fill="#EAF7EC" stroke="#2F9E44" stroke-width="1.8"/>
+  <text x="318" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#1E7A34">spaCy</text>
+  <text x="318" y="147" text-anchor="middle" font-size="11" fill="#52525B">~5ms · Free</text>
+  <text x="318" y="163" text-anchor="middle" font-size="11" fill="#52525B">zero-shot NER</text>
+
+  <!-- ================= Stage 2: GLiNER2 ================= -->
+  <rect x="450" y="95" width="235" height="100" rx="8" fill="#FCF3D9" stroke="#C99A2E" stroke-width="1.8"/>
+  <text x="568" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#7A5900">GLiNER2</text>
+  <text x="568" y="147" text-anchor="middle" font-size="11" fill="#52525B">~50ms · Free</text>
+  <text x="568" y="163" text-anchor="middle" font-size="11" fill="#52525B">zero-shot NER</text>
+
+  <!-- ================= Stage 3: LLM Fallback ================= -->
+  <rect x="700" y="95" width="235" height="100" rx="8" fill="#E8F2FA" stroke="#1D6FB8" stroke-width="1.8"/>
+  <text x="818" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#0D4A75">LLM Fallback</text>
+  <text x="818" y="147" text-anchor="middle" font-size="11" fill="#52525B">~500ms · $$</text>
+  <text x="818" y="163" text-anchor="middle" font-size="11" fill="#52525B">Highest accuracy</text>
+
+  <!-- ================= Cascade flow: Raw Text -> Stage 1 -> Stage 2 -> Stage 3 ================= -->
+  <line x1="170" y1="145" x2="195" y2="145" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="435" y1="145" x2="445" y2="145" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="685" y1="145" x2="695" y2="145" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- ================= Convergence: all three stages feed the merge step ================= -->
+  <path d="M 318 195 L 318 250 L 468 250 L 468 288" fill="none" stroke="#2F9E44" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arrow-green)"/>
+  <path d="M 568 195 L 568 288" fill="none" stroke="#C99A2E" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arrow-amber)"/>
+  <path d="M 818 195 L 818 250 L 668 250 L 668 288" fill="none" stroke="#1D6FB8" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arrow-blue3)"/>
+
+  <!-- ================= Merge Strategy ================= -->
+  <rect x="408" y="290" width="320" height="70" rx="8" fill="#F1EEFB" stroke="#6E56CF" stroke-width="1.8"/>
+  <text x="568" y="318" text-anchor="middle" font-size="14" font-weight="bold" fill="#3B2E7E">Merge Strategy</text>
+  <text x="568" y="340" text-anchor="middle" font-size="11.5" fill="#52525B">Union · confidence · cascade</text>
+
+  <line x1="568" y1="360" x2="568" y2="405" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- ================= Deduplication ================= -->
+  <rect x="438" y="410" width="260" height="70" rx="8" fill="#E6F5F3" stroke="#0E9188" stroke-width="1.8"/>
+  <text x="568" y="438" text-anchor="middle" font-size="14" font-weight="bold" fill="#0A6F68">Deduplication</text>
+  <text x="568" y="460" text-anchor="middle" font-size="11.5" fill="#52525B">Fuzzy + semantic matching</text>
+
+  <line x1="568" y1="480" x2="568" y2="495" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- ================= Enrichment ================= -->
+  <rect x="438" y="500" width="260" height="70" rx="8" fill="#FDEEEA" stroke="#E8501F" stroke-width="1.8"/>
+  <text x="568" y="528" text-anchor="middle" font-size="14" font-weight="bold" fill="#8C2A0C">Enrichment</text>
+  <text x="568" y="550" text-anchor="middle" font-size="11.5" fill="#52525B">Wikipedia + geocoding</text>
+
+  <line x1="568" y1="570" x2="568" y2="585" stroke="#52525B" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- ================= Extracted Entities ================= -->
+  <rect x="388" y="590" width="360" height="70" rx="8" fill="#F2F8FE" stroke="#0B7FD4" stroke-width="1.8"/>
+  <text x="568" y="618" text-anchor="middle" font-size="14" font-weight="bold" fill="#0A4E82">Extracted Entities</text>
+  <text x="568" y="640" text-anchor="middle" font-size="10.5" fill="#52525B">Person · Organization · Location · Event · Object</text>
+</svg>

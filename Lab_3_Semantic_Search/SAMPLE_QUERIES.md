@@ -133,7 +133,7 @@ RETURN s.sensor_id AS source, ol.name AS target
 LIMIT 10
 ```
 
-> **Concepts**: `HAS_LIMIT` reaches the 20 limits Lab 2 loaded from `nodes_operating_limits.csv`, transcribed from the manuals by hand. This is the edge to follow when a question asks what a threshold is.
+> **Concepts**: `HAS_LIMIT` reaches the 20 limits Lab 2 loaded from `silver_operating_limits`, transcribed from the manuals by hand. This is the edge to follow when a question asks what a threshold is.
 
 ### Sensor to ExtractedLimit, what the LLM read
 

@@ -2,8 +2,8 @@
 
 Converts the interactive notebook into a standalone Python script that can be
 uploaded and run on a Databricks cluster via spark_python_task. Loads the
-complete Aircraft Digital Twin dataset into Neo4j, then runs verification
-queries with PASS/FAIL assertions.
+complete Aircraft Digital Twin dataset from the medallion pipeline's silver
+layer into Neo4j, then runs verification queries with PASS/FAIL assertions.
 
 Usage:
     ./upload.sh run_lab2_01.py && ./submit.sh run_lab2_01.py
@@ -22,28 +22,36 @@ def main():
     parser.add_argument("--neo4j-password", required=True, help="Neo4j password")
     parser.add_argument("--neo4j-database", default="neo4j", help="Neo4j database name")
     parser.add_argument(
-        "--data-path",
-        default="/Volumes/databricks-neo4j-workshop/aircraft/raw_data",
-        help="Unity Catalog Volume path containing CSV data files",
+        "--catalog",
+        default="databricks-neo4j-workshop",
+        help="Unity Catalog catalog holding the medallion pipeline",
+    )
+    parser.add_argument(
+        "--pipeline-schema",
+        default="aircraft_pipeline",
+        help="Schema holding the Fleet Digital Twin ETL pipeline's silver tables",
     )
     parser.add_argument("--skip-clear", action="store_true", help="Skip database clearing")
+    parser.add_argument(
+        "--data-path", default="", help="(unused — superseded by --catalog/--pipeline-schema)"
+    )
     parser.add_argument("--mcp-endpoint", default="", help="(unused)")
     parser.add_argument("--mcp-api-key", default="", help="(unused)")
     parser.add_argument("--mcp-path", default="", help="(unused)")
     args = parser.parse_args()
 
     from pyspark.sql import SparkSession
-    from pyspark.sql.functions import col
 
     spark = SparkSession.builder.getOrCreate()
 
     print("=" * 60)
     print("Lab 2 Notebook 01: Full Data Load to Neo4j")
     print("=" * 60)
-    print(f"Neo4j URI:    {args.neo4j_uri}")
-    print(f"Data Path:    {args.data_path}")
-    print(f"Clear DB:     {not args.skip_clear}")
-    print(f"Spark:        {spark.version}")
+    print(f"Neo4j URI:       {args.neo4j_uri}")
+    print(f"Catalog:         {args.catalog}")
+    print(f"Pipeline schema: {args.pipeline_schema}")
+    print(f"Clear DB:        {not args.skip_clear}")
+    print(f"Spark:           {spark.version}")
     print()
 
     # ── Configure Neo4j Spark Connector ──────────────────────────────────────
@@ -54,6 +62,7 @@ def main():
     spark.conf.set("neo4j.database", args.neo4j_database)
 
     BATCH_SIZE = 20000
+    NODE_PARTITIONS = 4
     results = []  # (name, passed, detail)
 
     def record(name, passed, detail=""):
@@ -63,17 +72,17 @@ def main():
 
     # ── Helper Functions (from notebook) ─────────────────────────────────────
 
-    def read_csv(filename):
-        """Read a CSV file from the Unity Catalog Volume."""
-        return spark.read.option("header", "true").csv(f"{args.data_path}/{filename}")
+    def read_silver(table_name):
+        """Read a silver table the medallion pipeline built, from the pipeline schema."""
+        return spark.read.table(f"`{args.catalog}`.`{args.pipeline_schema}`.{table_name}")
 
-    def write_nodes(df, label, id_column):
-        """Write a DataFrame as nodes to Neo4j."""
-        (df.write
+    def write_nodes(df, label):
+        """Write a DataFrame as nodes to Neo4j using plain CREATE."""
+        (df.repartition(NODE_PARTITIONS)
+         .write
          .format("org.neo4j.spark.DataSource")
-         .mode("Overwrite")
+         .mode("Append")
          .option("labels", f":{label}")
-         .option("node.keys", id_column)
          .option("batch.size", BATCH_SIZE)
          .save())
         count = df.count()
@@ -125,18 +134,9 @@ def main():
 
     if not args.skip_clear:
         print("Clearing database...")
-        MAX_CLEAR_PASSES = 20
-        with neo4j_driver() as drv:
-            for pass_num in range(1, MAX_CLEAR_PASSES + 1):
-                records, _, _ = drv.execute_query(
-                    "MATCH (n) WITH n LIMIT 10000 DETACH DELETE n RETURN count(*) AS c",
-                    database_=args.neo4j_database,
-                )
-                print(f"  Clear pass {pass_num}: deleted {records[0]['c']} nodes")
-                if records[0]["c"] == 0:
-                    break
-            records, _, _ = drv.execute_query("MATCH (n) RETURN count(n) AS remaining", database_=args.neo4j_database)
-            remaining = records[0]["remaining"]
+        run_script("MATCH (n) CALL (n) { DETACH DELETE n } IN TRANSACTIONS OF 10000 ROWS")
+        result = run_cypher("MATCH (n) RETURN count(n) AS remaining")
+        remaining = result.collect()[0]["remaining"]
         record("Clear database", remaining == 0, f"remaining={remaining}")
     else:
         print("Skipping database clear (--skip-clear)")
@@ -183,63 +183,62 @@ def main():
     expected_nodes = {}
 
     # Aircraft
-    df = read_csv("nodes_aircraft.csv").withColumnRenamed(":ID(Aircraft)", "aircraft_id")
-    expected_nodes["Aircraft"] = write_nodes(df, "Aircraft", "aircraft_id")
+    df = read_silver("silver_aircraft")
+    expected_nodes["Aircraft"] = write_nodes(df, "Aircraft")
 
     # System
-    df = read_csv("nodes_systems.csv").withColumnRenamed(":ID(System)", "system_id")
-    expected_nodes["System"] = write_nodes(df, "System", "system_id")
+    df = (read_silver("silver_systems")
+        .withColumnRenamed("system_type", "type")
+        .withColumnRenamed("system_name", "name"))
+    expected_nodes["System"] = write_nodes(df, "System")
 
     # Component
-    df = read_csv("nodes_components.csv").withColumnRenamed(":ID(Component)", "component_id")
-    expected_nodes["Component"] = write_nodes(df, "Component", "component_id")
+    df = (read_silver("silver_components")
+        .withColumnRenamed("component_type", "type")
+        .withColumnRenamed("component_name", "name"))
+    expected_nodes["Component"] = write_nodes(df, "Component")
 
     # Sensor
-    df = read_csv("nodes_sensors.csv").withColumnRenamed(":ID(Sensor)", "sensor_id")
-    expected_nodes["Sensor"] = write_nodes(df, "Sensor", "sensor_id")
+    df = (read_silver("silver_sensors")
+        .withColumnRenamed("sensor_type", "type")
+        .withColumnRenamed("sensor_name", "name"))
+    expected_nodes["Sensor"] = write_nodes(df, "Sensor")
 
     # Airport
-    df = (read_csv("nodes_airports.csv")
-        .withColumnRenamed(":ID(Airport)", "airport_id")
-        .withColumn("lat", col("lat").cast("double"))
-        .withColumn("lon", col("lon").cast("double")))
-    expected_nodes["Airport"] = write_nodes(df, "Airport", "airport_id")
+    df = (read_silver("silver_airports")
+        .withColumnRenamed("airport_name", "name")
+        .withColumnRenamed("latitude", "lat")
+        .withColumnRenamed("longitude", "lon"))
+    expected_nodes["Airport"] = write_nodes(df, "Airport")
 
     # Flight
-    df = read_csv("nodes_flights.csv").withColumnRenamed(":ID(Flight)", "flight_id")
-    expected_nodes["Flight"] = write_nodes(df, "Flight", "flight_id")
+    df = read_silver("silver_flights").drop("origin_airport", "destination_airport")
+    expected_nodes["Flight"] = write_nodes(df, "Flight")
 
     # Delay
-    df = (read_csv("nodes_delays.csv")
-        .withColumnRenamed(":ID(Delay)", "delay_id")
-        .withColumn("minutes", col("minutes").cast("integer")))
-    expected_nodes["Delay"] = write_nodes(df, "Delay", "delay_id")
+    df = (read_silver("silver_delays")
+        .withColumnRenamed("delay_cause", "cause")
+        .withColumnRenamed("delay_minutes", "minutes")
+        .drop("flight_id"))
+    expected_nodes["Delay"] = write_nodes(df, "Delay")
 
     # MaintenanceEvent
-    df = read_csv("nodes_maintenance.csv").withColumnRenamed(":ID(MaintenanceEvent)", "event_id")
-    expected_nodes["MaintenanceEvent"] = write_nodes(df, "MaintenanceEvent", "event_id")
+    df = read_silver("silver_maintenance_events")
+    expected_nodes["MaintenanceEvent"] = write_nodes(df, "MaintenanceEvent")
 
     # Removal
-    df = (read_csv("nodes_removals.csv")
-        .withColumnRenamed(":ID(RemovalEvent)", "removal_id")
-        .withColumnRenamed("RMV_REA_TX", "reason")
-        .withColumnRenamed("time_since_install", "tsn")
-        .withColumnRenamed("flight_cycles_at_removal", "csn")
-        .withColumn("tsn", col("tsn").cast("double"))
-        .withColumn("csn", col("csn").cast("integer")))
-    expected_nodes["Removal"] = write_nodes(df, "Removal", "removal_id")
+    df = (read_silver("silver_removals")
+        .withColumnRenamed("tracking_number", "RMV_TRK_NO")
+        .withColumnRenamed("removal_reason", "reason")
+        .withColumnRenamed("hours_since_install", "tsn")
+        .withColumnRenamed("flight_cycles_at_removal", "csn"))
+    expected_nodes["Removal"] = write_nodes(df, "Removal")
 
     # OperatingLimit — the 20 canonical takeoff thresholds. Reference data, not
-    # telemetry, so it crosses into the graph while nodes_readings.csv stays in
-    # Delta. A blank minValue casts to null rather than 0.0, which is what the
-    # ten ceiling-only rows should hold. sourceRef is provenance for whoever
-    # built the CSV, so it is not written.
-    df = (read_csv("nodes_operating_limits.csv")
-        .withColumnRenamed(":ID(OperatingLimit)", "limit_id")
-        .withColumn("minValue", col("minValue").cast("double"))
-        .withColumn("maxValue", col("maxValue").cast("double"))
-        .drop("sourceRef"))
-    expected_nodes["OperatingLimit"] = write_nodes(df, "OperatingLimit", "limit_id")
+    # telemetry, so it crosses into the graph while silver_sensor_readings
+    # stays in Delta. minValue and maxValue are already Double in silver.
+    df = read_silver("silver_operating_limits")
+    expected_nodes["OperatingLimit"] = write_nodes(df, "OperatingLimit")
 
     # ── Section 4: Load Relationships ────────────────────────────────────────
 
@@ -247,86 +246,66 @@ def main():
     expected_rels = {}
 
     # HAS_SYSTEM
-    df = (read_csv("rels_aircraft_system.csv")
-        .withColumnRenamed(":START_ID(Aircraft)", "aircraft_id")
-        .withColumnRenamed(":END_ID(System)", "system_id"))
+    df = read_silver("silver_systems").select("aircraft_id", "system_id")
     expected_rels["HAS_SYSTEM"] = write_relationships(
         df, "HAS_SYSTEM", "Aircraft", "aircraft_id", "System", "system_id")
 
     # HAS_COMPONENT
-    df = (read_csv("rels_system_component.csv")
-        .withColumnRenamed(":START_ID(System)", "system_id")
-        .withColumnRenamed(":END_ID(Component)", "component_id"))
+    df = read_silver("silver_components").select("system_id", "component_id")
     expected_rels["HAS_COMPONENT"] = write_relationships(
         df, "HAS_COMPONENT", "System", "system_id", "Component", "component_id")
 
     # HAS_SENSOR
-    df = (read_csv("rels_system_sensor.csv")
-        .withColumnRenamed(":START_ID(System)", "system_id")
-        .withColumnRenamed(":END_ID(Sensor)", "sensor_id"))
+    df = read_silver("silver_sensors").select("system_id", "sensor_id")
     expected_rels["HAS_SENSOR"] = write_relationships(
         df, "HAS_SENSOR", "System", "system_id", "Sensor", "sensor_id")
 
     # HAS_EVENT
-    df = (read_csv("rels_component_event.csv")
-        .withColumnRenamed(":START_ID(Component)", "component_id")
-        .withColumnRenamed(":END_ID(MaintenanceEvent)", "event_id"))
+    df = read_silver("silver_maintenance_events").select("component_id", "event_id")
     expected_rels["HAS_EVENT"] = write_relationships(
         df, "HAS_EVENT", "Component", "component_id", "MaintenanceEvent", "event_id")
 
     # OPERATES_FLIGHT
-    df = (read_csv("rels_aircraft_flight.csv")
-        .withColumnRenamed(":START_ID(Aircraft)", "aircraft_id")
-        .withColumnRenamed(":END_ID(Flight)", "flight_id"))
+    df = read_silver("silver_flights").select("aircraft_id", "flight_id")
     expected_rels["OPERATES_FLIGHT"] = write_relationships(
         df, "OPERATES_FLIGHT", "Aircraft", "aircraft_id", "Flight", "flight_id")
 
     # DEPARTS_FROM
-    df = (read_csv("rels_flight_departure.csv")
-        .withColumnRenamed(":START_ID(Flight)", "flight_id")
-        .withColumnRenamed(":END_ID(Airport)", "airport_id"))
+    df = (read_silver("silver_flights")
+        .select("flight_id", "origin_airport")
+        .withColumnRenamed("origin_airport", "airport_id"))
     expected_rels["DEPARTS_FROM"] = write_relationships(
         df, "DEPARTS_FROM", "Flight", "flight_id", "Airport", "airport_id")
 
     # ARRIVES_AT
-    df = (read_csv("rels_flight_arrival.csv")
-        .withColumnRenamed(":START_ID(Flight)", "flight_id")
-        .withColumnRenamed(":END_ID(Airport)", "airport_id"))
+    df = (read_silver("silver_flights")
+        .select("flight_id", "destination_airport")
+        .withColumnRenamed("destination_airport", "airport_id"))
     expected_rels["ARRIVES_AT"] = write_relationships(
         df, "ARRIVES_AT", "Flight", "flight_id", "Airport", "airport_id")
 
     # HAS_DELAY
-    df = (read_csv("rels_flight_delay.csv")
-        .withColumnRenamed(":START_ID(Flight)", "flight_id")
-        .withColumnRenamed(":END_ID(Delay)", "delay_id"))
+    df = read_silver("silver_delays").select("flight_id", "delay_id")
     expected_rels["HAS_DELAY"] = write_relationships(
         df, "HAS_DELAY", "Flight", "flight_id", "Delay", "delay_id")
 
     # AFFECTS_SYSTEM
-    df = (read_csv("rels_event_system.csv")
-        .withColumnRenamed(":START_ID(MaintenanceEvent)", "event_id")
-        .withColumnRenamed(":END_ID(System)", "system_id"))
+    df = read_silver("silver_maintenance_events").select("event_id", "system_id")
     expected_rels["AFFECTS_SYSTEM"] = write_relationships(
         df, "AFFECTS_SYSTEM", "MaintenanceEvent", "event_id", "System", "system_id")
 
     # AFFECTS_AIRCRAFT
-    df = (read_csv("rels_event_aircraft.csv")
-        .withColumnRenamed(":START_ID(MaintenanceEvent)", "event_id")
-        .withColumnRenamed(":END_ID(Aircraft)", "aircraft_id"))
+    df = read_silver("silver_maintenance_events").select("event_id", "aircraft_id")
     expected_rels["AFFECTS_AIRCRAFT"] = write_relationships(
         df, "AFFECTS_AIRCRAFT", "MaintenanceEvent", "event_id", "Aircraft", "aircraft_id")
 
     # HAS_REMOVAL
-    df = (read_csv("rels_aircraft_removal.csv")
-        .withColumnRenamed(":START_ID(Aircraft)", "aircraft_id")
-        .withColumnRenamed(":END_ID(RemovalEvent)", "removal_id"))
+    df = read_silver("silver_removals").select("aircraft_id", "removal_id")
     expected_rels["HAS_REMOVAL"] = write_relationships(
         df, "HAS_REMOVAL", "Aircraft", "aircraft_id", "Removal", "removal_id")
 
     # REMOVED_COMPONENT
-    df = (read_csv("rels_component_removal.csv")
-        .withColumnRenamed(":START_ID(Component)", "component_id")
-        .withColumnRenamed(":END_ID(RemovalEvent)", "removal_id"))
+    df = read_silver("silver_removals").select("removal_id", "component_id")
     expected_rels["REMOVED_COMPONENT"] = write_relationships(
         df, "REMOVED_COMPONENT", "Removal", "removal_id", "Component", "component_id")
 

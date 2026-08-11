@@ -237,7 +237,6 @@ def _finish(results):
         print("FAILED")
         sys.exit(1)
     print("SUCCESS")
-    sys.exit(0)
 
 
 if __name__ == "__main__":

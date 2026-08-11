@@ -146,6 +146,27 @@ GOLD_TABLES = (
     "sensor_health",
 )
 
+# Lab 2 loads Neo4j from these ten silver tables instead of the raw CSVs in the
+# volume, so the medallion pipeline is the one path data takes into either
+# database rather than a CSV feeding Neo4j and the pipeline separately. Every
+# relationship Lab 2 writes comes from a foreign-key column already present on
+# one of these (System.aircraft_id, Sensor.system_id, Flight.origin_airport,
+# and so on), so no bronze relationship table needs a grant, and bronze itself
+# stays ungranted. ``silver_operating_limits`` has no gold counterpart — it is
+# reference data Genie never queries, only Lab 2's graph load does.
+LAB2_SILVER_TABLES = (
+    "silver_aircraft",
+    "silver_systems",
+    "silver_components",
+    "silver_sensors",
+    "silver_airports",
+    "silver_flights",
+    "silver_delays",
+    "silver_maintenance_events",
+    "silver_removals",
+    "silver_operating_limits",
+)
+
 # Lab 5 names. Stated here for the same reason every other name is: the notebook
 # that logs the agent, the notebook that queries the endpoint, and any admin
 # script that cleans up after a cohort all have to agree, and a name written
@@ -296,10 +317,11 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
     with ``genie_statements``, not because anything below may be refused.
 
     Every grant here is a read but two. ``USE_CATALOG``, ``USE_SCHEMA``,
-    ``READ_VOLUME``, and the ``SELECT`` grants in ``genie_statements``: Labs 2
-    and 3 read the volume and the gold tables and write their results to the
-    participant's own Aura instance, and Lab 4 Part A builds a Genie Agent,
-    which needs ``SELECT`` and no more.
+    ``READ_VOLUME``, and the ``SELECT`` grants in ``genie_statements``: Lab 2
+    reads the pipeline schema's silver tables, Lab 3 reads the volume for the
+    maintenance manuals, and both write their results to the participant's own
+    Aura instance. Lab 4 Part A builds a Genie Agent over the gold tables. None
+    of the four needs more than ``SELECT``.
 
     The exceptions are both on the ``agents`` schema, and both belong to Lab 5,
     which is the whole reason that schema exists.
@@ -468,17 +490,20 @@ def genie_statements() -> list[tuple[str, str, bool]]:
     comments arrive with the pipeline; only the column comments are written from
     here, for the reason set out above ``COLUMN_COMMENTS``.
 
-    Only the eight gold tables are granted. Bronze and silver stay in
-    ``PIPELINE_SCHEMA`` without SELECT, deliberately, so the schema a
-    participant browses holds the eight tables the labs talk about.
+    The eight gold tables are granted for Genie, and the ten silver tables in
+    ``LAB2_SILVER_TABLES`` are granted for Lab 2's graph load. Bronze stays in
+    ``PIPELINE_SCHEMA`` without SELECT — nothing a participant runs reads it,
+    since every relationship Lab 2 needs is already a foreign-key column on a
+    silver table.
     """
-    target = f"`{CATALOG}`.`{LAKEHOUSE_SCHEMA}`"
+    gold_target = f"`{CATALOG}`.`{LAKEHOUSE_SCHEMA}`"
+    silver_target = f"`{CATALOG}`.`{PIPELINE_SCHEMA}`"
     statements = []
     for table, column, comment in COLUMN_COMMENTS:
         statements.append(
             (
                 f"comment on {table}.{column}",
-                f"COMMENT ON COLUMN {target}.{table}.{column} IS '{comment}'",
+                f"COMMENT ON COLUMN {gold_target}.{table}.{column} IS '{comment}'",
                 True,
             )
         )
@@ -486,7 +511,15 @@ def genie_statements() -> list[tuple[str, str, bool]]:
         statements.append(
             (
                 f"grant select on {table}",
-                f"GRANT SELECT ON TABLE {target}.{table} TO {GRANTEE}",
+                f"GRANT SELECT ON TABLE {gold_target}.{table} TO {GRANTEE}",
+                True,
+            )
+        )
+    for table in LAB2_SILVER_TABLES:
+        statements.append(
+            (
+                f"grant select on {table}",
+                f"GRANT SELECT ON TABLE {silver_target}.{table} TO {GRANTEE}",
                 True,
             )
         )
@@ -992,9 +1025,13 @@ def provision_pipeline(workspace) -> dict:
 
 
 def provision_genie(workspace, warehouse_id: str) -> dict:
-    voclab.log("adding the Genie comments and granting the gold tables")
+    voclab.log("adding the Genie comments and granting the gold and Lab 2 silver tables")
     run_statements(workspace, warehouse_id, genie_statements(), "genie")
-    return {"gold_tables": len(GOLD_TABLES), "genie_comments": "applied"}
+    return {
+        "gold_tables": len(GOLD_TABLES),
+        "lab2_silver_tables": len(LAB2_SILVER_TABLES),
+        "genie_comments": "applied",
+    }
 
 
 def provision(workspace, args: argparse.Namespace) -> dict:
