@@ -27,21 +27,21 @@ ol > li {
 }
 </style>
 
-# The Supervisor Agent and Deployment
+# Supervisor Agents: Routing a Question Across Many Tools
 
-One supervisor, three tools, and the step from a local test to an endpoint anyone can call
+An agent whose tools are other agents and retrievers: it decides where a question goes, each tool answers over its own store, and the whole thing deploys as one endpoint
 
 ---
 
 ## What a Genie Agent Is
 
-- **A Databricks-native agent over Unity Catalog tables**, built from a form in Lab 4 Part A
-- **Domain knowledge, then SQL:** it reads table and column descriptions, not the schema alone
-- **English in, governed SQL out.** Every generated query is read-only
-- **Measurement questions only:** averages, trends, comparisons over `sensor_readings`
-- **Here it is `genie_node`**, one tool among three, called by the supervisor rather than asked directly
+- **A Databricks-native agent over lakehouse tables**, formerly called a Genie Space: you pick the Unity Catalog tables it can see
+- **Domain knowledge, then SQL:** it reads table and column comments, plus instructions and example queries, not the schema alone
+- **English in, governed SQL out.** General-purpose analytics, and every generated query is read-only
+- **Its scope is its tables.** Anything outside them, a graph, a document set, is not a Genie question
+- **Usable two ways:** asked directly in the workspace, or wrapped as a tool that a larger agent calls
 
-<!-- Participants already built this one, so the slide is a reminder, not a lesson. The comments that carry the domain were written by the provisioning script, which is why the same Genie space answers the same way in thirty workspaces. It cannot see the graph or the manuals: that boundary is what makes routing a real decision. -->
+<!-- Participants already built one, so this is a reminder, not a lesson. The comments that carry the domain were written by the provisioning script, which is why the same Genie Agent answers the same way in thirty workspaces. In this lab it is the genie_node tool: the supervisor calls it, nobody chats with it. It cannot see the graph or the manuals, and that boundary is what makes routing a real decision. -->
 
 ---
 
@@ -98,9 +98,9 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 
 ![Supervisor routing to a Genie node, a Cypher node and a GraphRAG node](../../site/modules/ROOT/images/lab5-agent-topology.svg)
 
-**A LangGraph graph, not a Neo4j one:** nodes are functions, edges are control flow.
+**LangGraph builds an agent as a graph.** Each node is a function that does one step. Each edge says which step runs next. Shared state travels along the edges.
 
-Nothing here writes to Neo4j.
+This is a picture of the code's control flow. It is not a Neo4j graph, and nothing here writes to Neo4j.
 
 <!-- Five nodes, one decision: the supervisor picks a tool or picks synthesize. Every tool reports back rather than answering; point at those arrows, the slide's real content. Get the name collision out of the way here, on the picture, because the room has spent all day calling something else a graph. -->
 
