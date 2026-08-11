@@ -29,21 +29,21 @@ ol > li {
 
 # Agent Memory with Neo4j
 
-Giving the Lab 5 supervisor a memory, in the graph it already queries. Lab 6 redeploys that same Model Serving endpoint rather than standing up a second one.
+How AI agents remember: conversations, durable facts, and their own reasoning, carried across sessions instead of lost when the context window closes.
 
 ---
 
-## The Agent You Built Is an Amnesiac
+## The Agent You Built Forgets Everything
 
-- **Lab 5 shipped this:** one supervisor, three tools, one endpoint. It routes well and answers well
+- **Basic agents work well for simple, one-off questions**, but not for an ongoing dialog
 - **Ask it about `N10013`.** Then ask "any maintenance events on that aircraft?" and it has no idea what *that* means
-- **At the start of question two it holds** the question, the schema, and the prompt. Nothing about question one
-- **Close the notebook** and everything it worked out is gone
+- **The core problem:** it has no memory of the question you just asked
+- **Every new question starts from zero**, like meeting the agent for the first time
 
-**"Most agents you build today are amnesiacs."**
+**"Most agents you build today have no memory at all."**
 
 <!--
-1.0 minute. Not a criticism of Lab 5. The supervisor is stateless by construction, and that is the correct default until you decide otherwise on purpose.
+1.0 minute. Not a criticism of any particular agent. Being stateless is often the correct default until you decide otherwise on purpose.
 -->
 
 ---
@@ -91,12 +91,22 @@ await memory.add_message(session.id, role="user",
 
 ## Entity Extraction Pipeline
 
-Neo4j agent memory's multi-stage extractor: cheap and fast first, escalate only when it has to
+Turning raw message text into named entities the graph can store and connect
 
-![w:860](../../site/modules/ROOT/images/lab6-entity-extraction-pipeline.svg)
+- **What it is.** Pulling people, organizations, locations, events, and objects out of raw conversation text
+- **How it works.** Three extractors run in a cascade: a fast free tagger first, a stronger free tagger if that's not enough, then a paid LLM as a last resort
+- **Why cascade.** Most text is easy, so most extraction stays fast and free; only the ambiguous cases pay for the slower, more accurate LLM call
 
 <!--
-1.5 minutes. The cascade is the point: try the cheap zero-shot extractor first, escalate only when confidence needs it, merge what all three stages found.
+1.0 minute. The pipeline diagram is next; this slide is the plain-language version of the same three ideas.
+-->
+
+---
+
+![bg contain](../../site/modules/ROOT/images/lab6-entity-extraction-pipeline.svg)
+
+<!--
+1.0 minute. Walk the picture left to right, then down: cascade across the top, merge and clean-up below it. No title on purpose, same treatment as the closing graph image.
 -->
 
 ---
