@@ -33,6 +33,15 @@ A sensor reading says an engine is running hot. Only the parts, aircraft and man
 
 ---
 
+## The Enterprise AI Paradox
+
+Modern LLMs already out-reason the average operator on broad knowledge, retrieval and synthesis. So why hasn't AI rebuilt the enterprise yet?
+
+- **High intelligence** plus **missing organizational context** equals confident, wrong or useless agent answers
+- The gap is not model capability. It is what the model was never told
+
+---
+
 ## The Stakes
 
 An airline is putting GenAI agents into workflows where a wrong answer grounds an aircraft or, worse, lets one fly that should not:

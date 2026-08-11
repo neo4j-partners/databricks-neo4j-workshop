@@ -15,7 +15,7 @@ import asyncio
 import concurrent.futures
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import mlflow.deployments
 from neo4j import GraphDatabase, Record
@@ -688,8 +688,97 @@ EMBEDDING_DIMENSIONS = 1024
 # Context-Aware Text Splitter
 # =============================================================================
 
+# Matches an ATX markdown heading, capturing its level and its title text.
+# Level 1 is deliberately included so it can be skipped: the document title is
+# already stated in the caller's context header, so repeating it in the section
+# path would be noise.
+_HEADING_RE = re.compile(r"^(#{1,6}) +(.*?)\s*#*$", re.MULTILINE)
+
+
+def build_heading_map(text: str) -> List[Tuple[int, str]]:
+    """Map character offsets in a markdown document to their heading path.
+
+    Returns a list of ``(offset, heading_path)`` pairs in increasing offset
+    order, where ``offset`` is the character position at which a heading starts
+    and ``heading_path`` is the enclosing heading stack from that point on,
+    joined with " > ". Level-1 headings are excluded from the path (see
+    ``_HEADING_RE``), so a document whose H1 is its title yields paths that
+    start at the H2 level.
+
+    Headings inside fenced code blocks are ignored. The maintenance manuals use
+    fenced blocks for ASCII decision trees, whose box-drawing lines do not
+    begin with "#", but a fence containing shell comments would otherwise
+    register as a heading.
+
+    Args:
+        text: Full markdown document text.
+
+    Returns:
+        List of ``(offset, heading_path)`` tuples. May be empty if the document
+        has no headings below level 1.
+    """
+    # Offsets of every line that opens or closes a ``` fence, so headings inside
+    # a fenced block can be skipped.
+    fence_spans: List[Tuple[int, int]] = []
+    open_at = None
+    for m in re.finditer(r"^ *```", text, re.MULTILINE):
+        if open_at is None:
+            open_at = m.start()
+        else:
+            fence_spans.append((open_at, m.end()))
+            open_at = None
+    if open_at is not None:
+        fence_spans.append((open_at, len(text)))
+
+    def in_fence(pos: int) -> bool:
+        return any(start <= pos < end for start, end in fence_spans)
+
+    heading_map: List[Tuple[int, str]] = []
+    stack: List[str] = []  # stack[i] is the level-(i+2) heading, so H1 is unused
+    for m in _HEADING_RE.finditer(text):
+        if in_fence(m.start()):
+            continue
+        level = len(m.group(1))
+        title = m.group(2).strip()
+        if not title:
+            continue
+        if level == 1:
+            # A new document title resets the path entirely.
+            stack = []
+        else:
+            depth = level - 2
+            stack = stack[:depth]
+            # Pad if a level was skipped (e.g. an H4 directly under an H2), so
+            # the path stays contiguous rather than silently dropping a level.
+            while len(stack) < depth:
+                stack.append("")
+            stack.append(title)
+        path = " > ".join(part for part in stack if part)
+        heading_map.append((m.start(), path))
+    return heading_map
+
+
+def heading_path_at(heading_map: List[Tuple[int, str]], offset: int) -> str:
+    """Return the heading path in effect at ``offset``.
+
+    Args:
+        heading_map: Output of :func:`build_heading_map`.
+        offset: Character offset into the same document.
+
+    Returns:
+        The heading path of the last heading at or before ``offset``, or an
+        empty string if ``offset`` precedes every heading (front matter).
+    """
+    path = ""
+    for start, candidate in heading_map:
+        if start > offset:
+            break
+        path = candidate
+    return path
+
+
 class ContextPrependingSplitter(TextSplitter):
-    """Wraps a TextSplitter and prepends a context line to every chunk.
+    """Wraps a TextSplitter and prepends a context header to every chunk.
 
     SimpleKGPipeline passes document_metadata only to the graph builder for
     storage on Document nodes -- it is never injected into the LLM extraction
@@ -702,18 +791,60 @@ class ContextPrependingSplitter(TextSplitter):
     This wrapper solves the problem by prepending a short context header to
     every chunk so the LLM always has access to the document-level aircraft type.
 
+    The header also names the chunk's section, taken from the markdown heading
+    stack at the chunk's position in the source document::
+
+        [DOCUMENT CONTEXT] Aircraft Type: A320-200 | Title: ...
+        [SECTION] 4. Engine Troubleshooting Procedures > 4.2 Vibration Exceedance
+
+    Three of the A320 manual's 45 chunks contain no heading line of their own,
+    and every chunk that opens mid-section starts partway through one. Naming
+    the section restores that identity for both the extraction LLM and, because
+    the header is part of the stored chunk text, the embedding.
+
+    A chunk is attributed to the section its *first* character falls in. Chunks
+    that straddle a heading therefore carry the earlier section's path, which is
+    where they begin.
+
     Set ``context`` before each call to ``pipeline.run_async()``.
     """
 
-    def __init__(self, inner: TextSplitter, context: str = "") -> None:
+    def __init__(
+        self,
+        inner: TextSplitter,
+        context: str = "",
+        *,
+        include_section: bool = True,
+    ) -> None:
         self.inner = inner
         self.context = context
+        self.include_section = include_section
 
     async def run(self, text: str) -> TextChunks:
         result = await self.inner.run(text)
-        if self.context:
-            for chunk in result.chunks:
-                chunk.text = self.context + chunk.text
+        heading_map = build_heading_map(text) if self.include_section else []
+
+        # FixedSizeSplitter slices the source with ``text[start:end]``, so every
+        # chunk is a verbatim substring and starts at or after the previous
+        # chunk's start. That makes a forward-only search exact: no arithmetic
+        # here has to mirror the splitter's own boundary adjustment.
+        cursor = 0
+        for chunk in result.chunks:
+            offset = text.find(chunk.text, cursor) if heading_map else -1
+            if offset == -1:
+                # Either section paths are off, or a splitter transformed the
+                # text rather than slicing it. Fall back to the document-level
+                # header alone rather than guessing at a section.
+                section = ""
+            else:
+                cursor = offset
+                section = heading_path_at(heading_map, offset)
+
+            header = self.context
+            if section:
+                header = f"{header}[SECTION] {section}\n\n"
+            if header:
+                chunk.text = header + chunk.text
         return result
 
 

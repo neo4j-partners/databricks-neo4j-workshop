@@ -29,7 +29,7 @@ ol > li {
 
 # The Supervisor Agent and Deployment
 
-One supervisor, three tools, one endpoint that answers for someone else
+One supervisor, three tools, and the step from a local test to an endpoint anyone can call
 
 ---
 
@@ -215,7 +215,7 @@ aircraft's history, the manual returns the procedure.
 
 - **A notebook demo runs with your permissions.** It works because you happen to have them
 - **An endpoint runs as its own identity**, a service principal Model Serving creates, starting with access to nothing
-- **Every resource it touches has to be granted to that identity explicitly.** That is the whole line between a notebook that works and a product that works for someone else
+- **Every resource it touches has to be granted to that identity explicitly.** That is the whole line between a notebook that works for you and a service other people can call
 
 | Question a reviewer asks | Where the answer lives |
 |---|---|
