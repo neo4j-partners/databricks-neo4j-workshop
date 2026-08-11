@@ -47,16 +47,16 @@ An agent whose tools are other agents and retrievers: it decides where a questio
 
 ## What Is an Agent: Components and Tools
 
-An agent wraps retrievers in a reasoning loop, with four parts:
+An agent wraps tools in a reasoning loop, with four parts:
 
 | Component | What It Does |
 |---|---|
 | **Perception** | Reads the question, the history, the tool descriptions |
 | **Reasoning** | Decides which tool fits the question |
-| **Action** | Calls a tool: a function the agent can invoke |
+| **Action** | Calls a tool: any function the agent can invoke |
 | **Response** | Returns a grounded answer in natural language |
 
-Retrievers become tools. The agent matches a question to a tool description, not to a retriever's name.
+A tool can be a query, a retriever, or another agent. The agent picks it by its written description, not by what it is built on.
 
 ---
 
@@ -76,9 +76,10 @@ Complex questions cycle more than once. The supervisor ahead is this same loop, 
 
 ## Why a Single-Tool Agent Is Not Enough
 
-- **Vector, vector-Cypher, Text2Cypher:** three retrieval patterns, each a tool an agent could hold, each answering one shape of question
-- **Users do not name a pattern.** They ask "What causes turbine bearing wear?" or "Which aircraft have engines with components that had recent faults?"
-- **One tool answers one shape of question.** An agent built around a single tool hits the same wall a single retriever does
+- **One tool answers one shape of question.** It reaches one store, one way, however good it is at that
+- **Users do not sort their questions first.** "What causes turbine bearing wear?" and "Which aircraft have engines with components that had recent faults?" arrive in the same box
+- **Lab 3's three retrievers show it:** vector search, vector plus Cypher, and text to Cypher each answer one of those shapes. Building around any one of them narrows the agent to that shape
+- **So the hard part is not the tool, it is the choosing.** Something has to read the question and decide
 
 ---
 
@@ -166,7 +167,7 @@ This is a picture of the code's control flow. It is not a Neo4j graph, and nothi
 - **Every tool edge points back to the supervisor.** It sees the result and can pick again, so one question can reach two stores
 - **The decision returns as JSON**, constrained by a schema, not read out of prose
 
-<!-- No Reading nodes in Neo4j is a Lab 2 design choice, so every measurement question routes to the Genie Agent. MAX_TOOL_CALLS is the backstop; the prompt's stopping rule is what actually works. ROUTE_SCHEMA forces a reason field nobody reads, because writing one down sharpens the choice. -->
+<!-- Neo4j holds no Reading nodes, a Lab 2 design choice, so the sensor readings live only in Delta and any question about them routes to the Genie Agent. MAX_TOOL_CALLS is the backstop; the prompt's stopping rule is what actually works. ROUTE_SCHEMA forces a reason field nobody reads, because writing one down sharpens the choice. -->
 
 ---
 
@@ -255,7 +256,7 @@ aircraft's history, the manual returns the procedure.
 ## Deploy, Then Score
 
 - **One deploy call does four things:** creates the endpoint, attaches the version, applies the environment block, grants the declared resources
-- **It returns in under a minute.** The endpoint is live in roughly sixteen
+- **The call returns in under a minute.** The endpoint itself takes another ten to twenty to come up
 - **Set the MLflow experiment first**, or the endpoint runs with no traces to read
 - **Score the endpoint, not a notebook copy:** a routing scorer, plus correctness and relevance
 - **Low correctness with routing at 1.0** is a prompt or data problem. **Low routing** is a supervisor problem
@@ -279,7 +280,7 @@ aircraft's history, the manual returns the procedure.
 ## Summary
 
 - **One supervisor, three tool nodes**, over Delta telemetry, your own graph, and the Lab 3 manual chunks, looping back to itself until every part of a question has an answer against it
-- **Route on where a question starts**, not on what a tool does at the end: two of the three tools finish in a graph traversal
+- **Route on which store holds the answer**, not on how the tool works: two of the three end in a graph traversal, so the mechanism cannot tell them apart
 - **Deployed, the graph becomes an endpoint** with its own identity: resources declared and granted, credentials referenced, the model logged as readable source
 - **That endpoint is a building block, too:** registered as a serving endpoint, it is what an Agent Bricks Supervisor can route to alongside a Genie Agent with no orchestration code, the same shape Lab 4's instructor demo showed over MCP
 
