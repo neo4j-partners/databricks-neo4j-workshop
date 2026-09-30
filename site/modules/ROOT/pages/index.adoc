@@ -4,6 +4,8 @@ Databricks and Neo4j solve different halves of the same problem. Databricks is t
 
 This workshop builds a production AI system on that pairing: a multi-agent supervisor that routes each question to the platform built to answer it, then combines the results.
 
+The source for this workshop, including the lab notebooks and this site, is on GitHub at https://github.com/neo4j-partners/databricks-neo4j-workshop[neo4j-partners/databricks-neo4j-workshop].
+
 .**At a Glance**
 * **Six labs, about five hours**, plus a take-home appendix on graph algorithms.
 * **Two databases, one question box.** Neo4j Aura holds the fleet topology and the maintenance manuals; the Databricks Lakehouse holds the sensor telemetry.
