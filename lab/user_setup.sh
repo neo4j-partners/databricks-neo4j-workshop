@@ -162,20 +162,22 @@ notebook_path="${voclab_notebook_path:-}"
 notebook_action="${voclab_notebook_action}"
 voc_log "notebooks: $notebook_action, ${voclab_notebook_count} of them"
 
-# The landing page, the first notebook imported rather than the folder holding
-# it. A course that ships no notebooks writes no notebook_path, and the beacon
-# this hook wrote on entry is left standing instead: overwriting it with a URL
-# pointing at nothing would send the student to a blank page and destroy the one
-# field that says the hook ran.
+# The landing page, the student's home folder rather than the first notebook.
+# Student feedback from the 2026-11-16 session: landing on Lab 1 left students
+# hunting for the next notebook and the other labs, while the home folder lists
+# every Lab_ folder at once. A course that ships no notebooks writes no
+# notebook_path, and the beacon this hook wrote on entry is left standing
+# instead: overwriting it with a URL to a folder with nothing in it would send
+# the student to an empty page and destroy the one field that says the hook ran.
 #
 # Built from the bare origin rather than from VOC_DB_WORKSPACE_URL directly,
 # because that variable already carries the ?o= parameter and appending to it
 # would produce a URL with two query strings.
 if [ -n "$notebook_path" ]; then
     origin="$(voc_origin "$workspace_url")"
-    landing_url="${origin}/#workspace${notebook_path}"
+    landing_url="${origin}/#workspace/Users/${user_email}"
     if [ -n "$workspace_id" ]; then
-        landing_url="${origin}/?o=${workspace_id}#workspace${notebook_path}"
+        landing_url="${origin}/?o=${workspace_id}#workspace/Users/${user_email}"
     fi
     voc_ipc_notebook "$landing_url"
 else
