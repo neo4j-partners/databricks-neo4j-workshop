@@ -9,13 +9,20 @@ Every name it deletes is read from ``lab/workshop.py``. That is the whole design
 of this file. The version it replaces held its own ``VolumeConfig`` with its own
 copy of the catalog, schema and volume names, which meant a teardown could
 silently miss what a differently-named provisioner had created. It also predated
-the DLT pipeline, so it left ``aircraft_pipeline`` and the ``Fleet Digital Twin
+the DLT pipeline, so it left the pipeline schema and the ``Fleet Digital Twin
 ETL`` pipeline behind: dropping the gold schema under a pipeline that still
 exists leaves the next provision run adopting a pipeline whose tables are gone.
 
 Order is deliberate. The pipeline goes before the schemas it writes into, and
 the catalog goes last with ``force`` so that anything the earlier steps could not
 see is still reclaimed rather than left billing.
+
+By default only this workspace's own objects go: its pipeline, its notebook, and
+its two schemas named for the workspace ID. The catalog, the data volume and the
+``aircraft`` and ``agents`` schemas sit in a metastore that every workspace of a
+class shares, so dropping them from one workspace breaks all the others. They go
+only when ``--shared`` is passed, which is for the lone workspace an instructor
+provisioned by hand and wants back whole.
 
 Output contract, credentials and exit codes are ``lab/workshop.py``'s. See
 ``sync_notebooks.py`` for the same note in full.
@@ -25,7 +32,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import traceback
 import urllib.parse
 
 from sync_notebooks import SHARED_FOLDER, delete_folder
@@ -43,15 +49,21 @@ SCHEMAS_PATH = "/api/2.1/unity-catalog/schemas"
 VOLUMES_PATH = "/api/2.1/unity-catalog/volumes"
 WORKSPACE_DELETE_PATH = "/api/2.0/workspace/delete"
 
-# ``aircraft`` is both the volume schema and the gold schema in this course, so
-# the set collapses to three. Reading them from ``workshop`` rather than
-# restating them is what keeps that true if the course ever splits them apart.
-SCHEMAS = (
-    workshop.PIPELINE_SCHEMA,
-    workshop.LAKEHOUSE_SCHEMA,
-    workshop.VOLUME_SCHEMA,
-    workshop.AGENT_SCHEMA,
-)
+
+def schema_names(
+    schemas: workshop.Schemas, include_shared: bool = False
+) -> tuple[str, ...]:
+    """The schemas to drop: two named for the workspace, two shared.
+
+    Reading them from ``workshop`` rather than restating them is what keeps this
+    in step with the provisioner. The volume and agent schemas are the same in
+    every workspace of a class, because they sit in one shared metastore, so
+    they are returned only when the caller has asked for the shared objects too.
+    """
+    own = (schemas.pipeline, schemas.lakehouse)
+    if not include_shared:
+        return own
+    return own + (workshop.VOLUME_SCHEMA, workshop.AGENT_SCHEMA)
 
 
 def _absent(error: voclab.ApiError) -> bool:
@@ -106,16 +118,17 @@ def delete_volume(workspace) -> bool:
     return True
 
 
-def delete_schemas(workspace) -> list[str]:
+def delete_schemas(
+    workspace, schemas: workshop.Schemas, include_shared: bool
+) -> list[str]:
     """Force-drop each schema, returning the ones that were there.
 
     ``force`` because a schema holding tables or a registered model refuses a
     plain delete, and everything in these was created by the provisioner this
-    undoes or by the lab it sets up. Deduplicated because the course currently
-    points two of its four names at ``aircraft``.
+    undoes or by the lab it sets up.
     """
     dropped = []
-    for schema in dict.fromkeys(SCHEMAS):
+    for schema in schema_names(schemas, include_shared):
         full_name = f"{workshop.CATALOG}.{schema}"
         voclab.log(f"dropping schema {full_name}")
         try:
@@ -171,40 +184,61 @@ def delete_dlt_notebook(workspace) -> bool:
     return True
 
 
-def teardown(workspace) -> dict:
-    """Run every step, in the order that leaves nothing depending on a deletion."""
+def teardown(
+    workspace, schemas: workshop.Schemas, include_shared: bool = False
+) -> dict:
+    """Run every step, in the order that leaves nothing depending on a deletion.
+
+    The volume and the catalog are skipped unless ``include_shared``, and the
+    result says ``kept`` for each so that a run which left them is not read as a
+    run which found them already gone.
+    """
     shared_gone = delete_folder(workspace, SHARED_FOLDER)
     if shared_gone:
         voclab.log(f"deleted {SHARED_FOLDER}")
     pipeline = delete_pipeline(workspace)
     notebook_gone = delete_dlt_notebook(workspace)
-    volume_gone = delete_volume(workspace)
-    schemas = delete_schemas(workspace)
-    catalog_gone = delete_catalog(workspace)
+    volume_gone = delete_volume(workspace) if include_shared else None
+    dropped = delete_schemas(workspace, schemas, include_shared)
+    catalog_gone = delete_catalog(workspace) if include_shared else None
 
     return {
         "shared_folder_deleted": "yes" if shared_gone else "absent",
         "pipeline_deleted": pipeline,
         "dlt_notebook_deleted": "yes" if notebook_gone else "absent",
-        "volume_deleted": "yes" if volume_gone else "absent",
-        "schemas_deleted": ", ".join(schemas) if schemas else "none",
-        "catalog_deleted": "yes" if catalog_gone else "absent",
+        "volume_deleted": _outcome(volume_gone),
+        "schemas_deleted": ", ".join(dropped) if dropped else "none",
+        "catalog_deleted": _outcome(catalog_gone),
     }
 
 
-def targets() -> list[str]:
+def _outcome(deleted: bool | None) -> str:
+    """``kept`` when the step was skipped, otherwise ``yes`` or ``absent``."""
+    if deleted is None:
+        return "kept"
+    return "yes" if deleted else "absent"
+
+
+def targets(schemas: workshop.Schemas, include_shared: bool) -> list[str]:
     """What is about to be deleted, for the confirmation prompt."""
-    return [
+    names = [
         f"workspace folder {SHARED_FOLDER}",
         f"workspace notebook {workshop.DLT_NOTEBOOK_WORKSPACE_PATH}",
         f"pipeline {workshop.PIPELINE_NAME}",
-        f"volume {workshop.CATALOG}.{workshop.VOLUME_SCHEMA}.{workshop.VOLUME_NAME}",
-        f"schemas {', '.join(dict.fromkeys(SCHEMAS))} in {workshop.CATALOG}",
-        f"catalog {workshop.CATALOG} and everything left in it",
+        (
+            f"schemas {', '.join(schema_names(schemas, include_shared))} "
+            f"in {workshop.CATALOG}"
+        ),
     ]
+    if include_shared:
+        names += [
+            f"volume {workshop.CATALOG}.{workshop.VOLUME_SCHEMA}.{workshop.VOLUME_NAME}",
+            f"catalog {workshop.CATALOG} and everything left in it",
+        ]
+    return names
 
 
-def confirm() -> bool:
+def confirm(schemas: workshop.Schemas, include_shared: bool) -> bool:
     """Ask before deleting a catalog, unless there is nobody to ask.
 
     A non-interactive run without ``--yes`` refuses rather than proceeding.
@@ -212,7 +246,7 @@ def confirm() -> bool:
     delete a live class's catalog.
     """
     print("teardown.py will delete:", file=sys.stderr)
-    for target in targets():
+    for target in targets(schemas, include_shared):
         print(f"  {target}", file=sys.stderr)
     if not sys.stdin.isatty():
         print(
@@ -227,14 +261,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="teardown.py",
         description=(
-            "Delete this workshop's catalog, schemas, volume, DLT pipeline and "
-            "shared notebooks from a workspace provisioned outside Vocareum."
+            "Delete this workspace's pipeline, schemas and shared notebooks. "
+            "Add --shared to delete the catalog and volume too."
         ),
     )
     parser.add_argument(
         "--host", help="Workspace URL. Defaults to DATABRICKS_HOST."
     )
     parser.add_argument("--token", help="Bearer token. Defaults to DATABRICKS_TOKEN.")
+    parser.add_argument(
+        "--workspace-id",
+        help=(
+            "The workspace ID the pipeline schemas are named for. Defaults to "
+            "the o= in the workspace URL, then to DATABRICKS_WORKSPACE_ID."
+        ),
+    )
+    parser.add_argument(
+        "--shared",
+        action="store_true",
+        help=(
+            "Also delete the data volume, the aircraft and agents schemas and the "
+            "catalog. Every workspace on this metastore uses them, so pass it only "
+            "when this is the one workspace left."
+        ),
+    )
     parser.add_argument(
         "--yes", action="store_true", help="Skip the confirmation prompt."
     )
@@ -243,11 +293,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    if not args.yes and not confirm():
-        voclab.emit({"error_code": "REFUSED", "message": "Nothing was deleted."})
-        return EXIT_REFUSED
     try:
-        voclab.emit(teardown(voclab.build_workspace(args)))
+        schemas = workshop.schemas_for(workshop.resolve_workspace_id(args))
+        if not args.yes and not confirm(schemas, args.shared):
+            voclab.emit({"error_code": "REFUSED", "message": "Nothing was deleted."})
+            return EXIT_REFUSED
+        voclab.emit(teardown(voclab.build_workspace(args), schemas, args.shared))
         return EXIT_OK
     except voclab.VoclabError as error:
         voclab.emit(dict(error.fields, error_code=error.code, message=error.message))
@@ -258,14 +309,18 @@ def main(argv: list[str] | None = None) -> int:
         )
         return EXIT_FAILED
     except Exception as error:
-        traceback.print_exc()
+        # Anything else is a bug, not an expected failure, so it is re-raised
+        # rather than handled. The ``error_code`` line goes out first, because a
+        # run that exits non-zero having emitted nothing failed for no stated
+        # reason. The re-raise then prints the traceback to stderr and exits 1,
+        # the same code as every handled failure.
         voclab.emit(
             {
                 "error_code": "UNEXPECTED_ERROR",
                 "message": f"{type(error).__name__}: {error}",
             }
         )
-        return EXIT_FAILED
+        raise
 
 
 if __name__ == "__main__":

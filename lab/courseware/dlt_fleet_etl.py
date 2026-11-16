@@ -11,8 +11,9 @@
 # MAGIC | **Silver** | Cleaned + typed entities (aircraft, systems, sensors, readings, flights, maintenance) | Validated, deduplicated, proper types |
 # MAGIC | **Gold** | Analytics-ready views (fleet_readiness, sensor_health, maintenance_summary) | Genie/BI/Agent consumption layer |
 # MAGIC
-# MAGIC Bronze and silver publish to the pipeline default schema (`aircraft_pipeline`).
-# MAGIC Only the 8 gold tables are published into the participant-facing schema (`aircraft`).
+# MAGIC Bronze and silver publish to the pipeline default schema (`aircraft_pipeline_<workspace id>`).
+# MAGIC Only the 8 gold tables are published into the participant-facing schema (`aircraft_gold_<workspace id>`).
+# MAGIC Both names carry the workspace ID because every workspace in a class shares one metastore, and a table can belong to only one pipeline.
 
 # COMMAND ----------
 
@@ -52,7 +53,15 @@ VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"
 # the participant-facing schema, so Catalog and the Genie Agent show 8 tables
 # instead of 40. The schema-qualified name resolves against the pipeline's
 # default catalog.
-GOLD_SCHEMA = _setting("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
+# There is no default. A default would be one shared name, and a second workspace's
+# pipeline would then fail on tables the first one owns. workshop.py sets this
+# from the workspace ID when it creates the pipeline.
+GOLD_SCHEMA = _setting("WORKSHOP_LAKEHOUSE_SCHEMA", "")
+if not GOLD_SCHEMA:
+    raise ValueError(
+        "WORKSHOP_LAKEHOUSE_SCHEMA is not set in the pipeline configuration. "
+        "workshop.py sets it to aircraft_gold_<workspace id>."
+    )
 
 # Enable column mapping for Neo4j CSV headers with special chars like :ID(Aircraft)
 BRONZE_PROPS = {"delta.columnMapping.mode": "name"}

@@ -1,12 +1,12 @@
 = Lab 1: Graph Databases and Neo4j Aura
 
-A graph database stores connections as first-class data rather than deriving them from joins. This page covers what that means, how Cypher queries those connections, and what the Aircraft Digital Twin graph holds. It closes with Neo4j Aura, the managed service that runs your copy of that graph. The two notebooks provision the instance and put the concepts to work.
+A graph database stores connections as first-class data rather than deriving them from joins. This page covers what that means, how Cypher queries those connections, and what the Aircraft Digital Twin graph holds. It closes with Neo4j Aura, the managed service that runs your copy of that graph. The notebook connects to the instance you created in xref:setup/aura-free-setup/index.adoc[Setup] and puts the concepts to work.
 
-Everything after this reads what you set up here. Lab 2 loads data into your instance, Lab 3 runs semantic search against its maintenance manuals, Lab 5 builds an agent that queries it, and Lab 6 writes that agent's memory back into it.
+Everything after this reads what you connect here. Lab 2 loads data into your instance, Lab 3 runs semantic search against its maintenance manuals, Lab 5 builds an agent that queries it, and Lab 6 writes that agent's memory back into it.
 
-IMPORTANT: There is one instance and no fallback. Every later lab reads and writes the instance you create here, so save the password where you can find it again. Losing it means redoing Labs 2 and 3.
+IMPORTANT: There is one instance and no fallback. Every later lab reads and writes the instance you created in xref:setup/aura-free-setup/index.adoc[Setup], so save the password where you can find it again. Losing it means redoing Labs 2 and 3.
 
-TIP: Ready to start? Open `Lab_1_Aura_Setup/01_create_aura_instance.ipynb` in your Databricks workspace, then `02_credentials_and_cypher.ipynb`. Every step lives in those two notebooks; this page is the background behind them.
+TIP: Ready to start? Create your instance first by following xref:setup/aura-free-setup/index.adoc[Neo4j AuraDB Free Setup]. Then open `Lab_1_Neo4j_Basics/01_credentials_and_cypher.ipynb` in your Databricks workspace. Every lab step lives in that notebook. This page is the background behind it.
 
 .**At a Glance**
 
@@ -136,4 +136,4 @@ Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[What is
 
 == Next Steps
 
-Open `Lab_1_Aura_Setup/01_create_aura_instance.ipynb` to provision your Neo4j Aura database, then `02_credentials_and_cypher.ipynb` to store its credentials and practice Cypher basics. That second notebook is the only place in the workshop where you type a Neo4j password: it writes the credentials into a Databricks secret scope that every later lab reads. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].
+With your instance created in xref:setup/aura-free-setup/index.adoc[Setup], open `Lab_1_Neo4j_Basics/01_credentials_and_cypher.ipynb` to store its credentials and practice Cypher basics. That notebook is the only place in the workshop where you type a Neo4j password: it writes the credentials into a Databricks secret scope that every later lab reads. When ready, proceed to xref:lab2.adoc[Lab 2: Databricks ETL to Neo4j].

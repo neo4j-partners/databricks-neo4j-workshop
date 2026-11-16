@@ -21,21 +21,22 @@ manifest.
 | Object | Name |
 |--------|------|
 | Catalog | `databricks-neo4j-workshop` |
-| Volume and gold schema | `aircraft` |
-| Bronze and silver schema | `aircraft_pipeline` |
+| Volume schema | `aircraft` |
+| Gold schema | `aircraft_gold_<workspace id>` |
+| Bronze and silver schema | `aircraft_pipeline_<workspace id>` |
 | Lab 5 model schema | `agents` |
 | Volume | `raw_data`, at `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
 | DLT notebook | `/Shared/workshop/dlt_fleet_etl` |
 | DLT pipeline | `Fleet Digital Twin ETL` |
 | SQL warehouse | `shared_warehouse` |
 
-Bronze and silver stay in `aircraft_pipeline` without `SELECT`, so a participant
+Bronze and silver stay in `aircraft_pipeline_<workspace id>` without `SELECT`, so a participant
 browsing Catalog, or picking tables for a Genie Agent, sees the eight gold
 tables and nothing else.
 
 ### The eight gold tables
 
-Published into `aircraft` by the `Fleet Digital Twin ETL` pipeline, in the order
+Published into `aircraft_gold_<workspace id>` by the `Fleet Digital Twin ETL` pipeline, in the order
 a reader meets them: the fleet, what is on it, what it did, then the two
 summaries Lab 4 asks the Genie Agent about.
 
@@ -84,6 +85,11 @@ A twenty-ninth file reaches the same volume from a different directory:
 It is not in the inventory below because it is a build artifact rather than
 data, and it lives outside `aircraft_digital_twin_data/` so the data generator
 cannot write over it.
+
+A thirtieth file comes from `lab/courseware/requirements/`: `requirements.txt`,
+the Python library lock every participant cluster installs. Only the lock goes
+up, not the `requirements.in` and `runtime-constraints.txt` it is compiled
+from. See "The Python library lock" in `workshop-setup/README.md`.
 
 ### Core data, Lab 2 notebook 01
 

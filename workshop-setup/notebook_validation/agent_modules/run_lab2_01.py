@@ -15,6 +15,26 @@ import sys
 from neo4j import GraphDatabase
 
 
+def resolve_workspace_id(spark, explicit):
+    """The workspace ID that lab/workshop.py named the schemas after.
+
+    --workspace-id wins. Otherwise the cluster tag is read, because a runner
+    submitted to a cluster has no notebook context to fall back on.
+    """
+    if explicit:
+        value = explicit.strip()
+    else:
+        value = str(
+            spark.conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId", "")
+        ).strip()
+    if not value.isdigit():
+        sys.exit(
+            "Could not find this workspace's ID. Pass --workspace-id <digits>, "
+            "because the schemas are named aircraft_gold_<id> and aircraft_pipeline_<id>."
+        )
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(description="Lab 2 Notebook 01: Full Data Load to Neo4j")
     parser.add_argument("--neo4j-uri", required=True, help="Neo4j Aura URI")
@@ -28,8 +48,13 @@ def main():
     )
     parser.add_argument(
         "--pipeline-schema",
-        default="aircraft_pipeline",
-        help="Schema holding the Fleet Digital Twin ETL pipeline's silver tables",
+        default=None,
+        help="Schema holding the pipeline's silver tables. Defaults to aircraft_pipeline_<workspace id>",
+    )
+    parser.add_argument(
+        "--workspace-id",
+        default=None,
+        help="Workspace ID the schemas are named for. Read from the cluster when omitted",
     )
     parser.add_argument("--skip-clear", action="store_true", help="Skip database clearing")
     parser.add_argument(
@@ -43,6 +68,9 @@ def main():
     from pyspark.sql import SparkSession
 
     spark = SparkSession.builder.getOrCreate()
+    workspace_id = resolve_workspace_id(spark, args.workspace_id)
+    if args.pipeline_schema is None:
+        args.pipeline_schema = f"aircraft_pipeline_{workspace_id}"
 
     print("=" * 60)
     print("Lab 2 Notebook 01: Full Data Load to Neo4j")

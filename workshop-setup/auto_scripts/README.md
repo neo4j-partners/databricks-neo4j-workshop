@@ -10,8 +10,8 @@ its Databricks objects.
 
 | Script | What it does |
 | --- | --- |
-| `sync_notebooks.py` | Publishes the lab notebooks into `/Shared/databricks-neo4j-workshop` so participants can browse and clone them. |
-| `teardown.py` | Deletes the catalog, its schemas, the volume, the `Fleet Digital Twin ETL` pipeline and the shared notebook tree. |
+| `sync_notebooks.py` | Publishes the lab notebooks into `/Shared/databricks-neo4j-workshop` so participants can browse and clone them. It also deletes any subfolder an earlier version published under a name the course no longer uses, such as `Lab_1_Aura_Setup`. |
+| `teardown.py` | Deletes this workspace's `Fleet Digital Twin ETL` pipeline, its `aircraft_pipeline_<workspace id>` and `aircraft_gold_<workspace id>` schemas and the shared notebook tree. With `--shared` it also deletes the volume, the `aircraft` and `agents` schemas and the catalog. |
 | `workshop_module.py` | Not a command. The seam that puts `lab/workshop.py` on the import path for the two above. |
 
 ## Running them
@@ -26,6 +26,7 @@ export DATABRICKS_TOKEN=dapi...
 uv run python workshop-setup/auto_scripts/sync_notebooks.py
 uv run python workshop-setup/auto_scripts/teardown.py           # prompts
 uv run python workshop-setup/auto_scripts/teardown.py --yes     # does not
+uv run python workshop-setup/auto_scripts/teardown.py --yes --shared   # last workspace only
 ```
 
 Both accept `--host` and `--token` instead of the environment variables. There
@@ -40,6 +41,10 @@ and deleted nothing.
 `teardown.py` refuses rather than proceeds when `--yes` is absent and stdin is
 not a terminal, so a scripted call that forgot the flag cannot delete a live
 class's catalog.
+
+`--shared` is the only way `teardown.py` touches the catalog, the volume or the
+`aircraft` and `agents` schemas. Every workspace on one metastore uses them, so
+a teardown that dropped them from one workspace would break the rest.
 
 ## What used to be here
 
@@ -57,7 +62,7 @@ was a second copy of something that now has exactly one owner.
 | `config.py` volume, cluster, library and warehouse settings | `lab/course.env` and `lab/workshop.py`. |
 | `main.py setup` | `workshop.py provision`, run by `workspace_init.sh`. |
 | `models.py`, `log.py`, `utils.py` | Nothing. They existed to serve the modules above. |
-| `cleanup.py` | `teardown.py` here, rewritten to read its names from `workshop.py` and to reclaim the `aircraft_pipeline` schema and the DLT pipeline, neither of which it knew about. |
+| `cleanup.py` | `teardown.py` here, rewritten to read its names from `workshop.py` and to reclaim the `aircraft_pipeline_<workspace id>` and `aircraft_gold_<workspace id>` schemas and the DLT pipeline, neither of which it knew about. |
 | `notebooks.py` | `sync_notebooks.py` here. |
 
 The two that survived are the two nothing else covers. `voclab.py`'s

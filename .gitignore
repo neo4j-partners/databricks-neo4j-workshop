@@ -60,3 +60,8 @@ node_modules/
 *~
 # MCP credentials (contains secrets - never commit)
 .mcp.json
+# Local event-registration exports and generated Vocareum enrollment batches.
+vocareum/signup/*.csv
+vocareum/signup/vocareum-enrollment-*/
+!vocareum/signup/enroll-students.csv
+!vocareum/signup/sample-event-export.csv

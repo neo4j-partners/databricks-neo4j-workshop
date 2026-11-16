@@ -20,7 +20,7 @@ dependencies = []
 # imports it. It is the deployer's toolchain: init, upload, diagnose, session.
 [dependency-groups]
 dev = [
-    "dbx-vocareum-tools @ git+https://github.com/neo4j-partners/dbx-vocareum.git",
+    "dbx-vocareum-tools @ git+https://github.com/neo4j-partners/dbx-vocareum-utils.git",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -4,21 +4,22 @@
   ],
   "schemas": [
     "databricks-neo4j-workshop.aircraft",
-    "databricks-neo4j-workshop.aircraft_pipeline",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}",
+    "databricks-neo4j-workshop.aircraft_pipeline_${WORKSPACE_ID}",
     "databricks-neo4j-workshop.agents"
   ],
   "volumes": [
     "databricks-neo4j-workshop.aircraft.raw_data"
   ],
   "tables": [
-    "databricks-neo4j-workshop.aircraft.aircraft",
-    "databricks-neo4j-workshop.aircraft.systems",
-    "databricks-neo4j-workshop.aircraft.sensors",
-    "databricks-neo4j-workshop.aircraft.sensor_readings",
-    "databricks-neo4j-workshop.aircraft.flights",
-    "databricks-neo4j-workshop.aircraft.maintenance_events",
-    "databricks-neo4j-workshop.aircraft.fleet_readiness",
-    "databricks-neo4j-workshop.aircraft.sensor_health"
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.aircraft",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.systems",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.sensors",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.sensor_readings",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.flights",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.maintenance_events",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.fleet_readiness",
+    "databricks-neo4j-workshop.aircraft_gold_${WORKSPACE_ID}.sensor_health"
   ],
   "warehouses": [
     "shared_warehouse"

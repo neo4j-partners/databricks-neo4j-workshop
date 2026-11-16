@@ -144,10 +144,12 @@ if ! voc_python workshop.py provision; then
         "${workshop_message:-workshop.py provision failed without naming a reason.}"
 fi
 voc_log "catalog ${workshop_catalog}, ${workshop_data_files_uploaded} files uploaded"
+voc_log "library lock ${workshop_requirements_uploaded}, sha256 ${workshop_requirements_sha256}"
+voc_log "schemas ${workshop_pipeline_schema} and ${workshop_lakehouse_schema}"
 voc_log "pipeline ${workshop_pipeline_id}: ${workshop_pipeline_action}, ${workshop_pipeline_state}"
 
 voc_custom_write "$(
-    printf '%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s' \
+    printf '%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s' \
         "$(voc_custom_field ran_at "$(date -u '+%Y-%m-%dT%H:%M:%SZ')")" \
         "$(voc_custom_field script "$VOC_SCRIPT_NAME")" \
         "$(voc_custom_field workspace_id "${workspace_id:-unknown}")" \
@@ -157,7 +159,10 @@ voc_custom_write "$(
         "$(voc_custom_field warehouse_action "$warehouse_action")" \
         "$(voc_custom_field starter_warehouse_action "${voclab_starter_warehouse_action}")" \
         "$(voc_custom_field catalog "$workshop_catalog")" \
+        "$(voc_custom_field pipeline_schema "$workshop_pipeline_schema")" \
+        "$(voc_custom_field lakehouse_schema "$workshop_lakehouse_schema")" \
         "$(voc_custom_field data_files_uploaded "$workshop_data_files_uploaded")" \
+        "$(voc_custom_field requirements_sha256 "$workshop_requirements_sha256")" \
         "$(voc_custom_field pipeline_state "$workshop_pipeline_state")"
 )"
 

@@ -24,12 +24,12 @@ disagree with the notebooks the participants are running.
 | Object | Created by | Called from |
 |--------|-----------|-------------|
 | SQL warehouse `shared_warehouse` | `voclab.py warehouse-ensure` | `lab/workspace_init.sh` |
-| Catalog `databricks-neo4j-workshop`, the `aircraft`, `aircraft_pipeline` and `agents` schemas, the `raw_data` volume, and the eight grants that reach them, six reads plus `CREATE MODEL` and `CREATE TABLE` on `agents` for Lab 5 | `workshop.provision_infrastructure` | `lab/workspace_init.sh`, through `voc_python workshop.py provision` |
-| The 29 courseware files in the volume, 23 CSVs, 5 maintenance manuals and the `neo4j-agent-memory` wheel Lab 6 installs | `workshop.provision_data` | same |
+| Catalog `databricks-neo4j-workshop`, the `aircraft` and `agents` schemas, the per-workspace `aircraft_pipeline_<workspace id>` and `aircraft_gold_<workspace id>` schemas, the `raw_data` volume, and the eight grants that reach them, six reads plus `CREATE MODEL` and `CREATE TABLE` on `agents` for Lab 5 | `workshop.provision_infrastructure` | `lab/workspace_init.sh`, through `voc_python workshop.py provision` |
+| The 30 courseware files in the volume, 23 CSVs, 5 maintenance manuals, the `neo4j-agent-memory` wheel Lab 6 installs and the Python library lock every cluster installs | `workshop.provision_data` | same |
 | `/Shared/workshop/dlt_fleet_etl` and the `Fleet Digital Twin ETL` pipeline, run to completion | `workshop.provision_pipeline` | same |
-| The eight gold tables in `aircraft` | published by that pipeline | same |
+| The eight gold tables in `aircraft_gold_<workspace id>` | published by that pipeline | same |
 | 8 table comments, 10 column comments and 8 `SELECT` grants | `workshop.provision_genie` | same |
-| The per-student cluster and its thirteen libraries | `voclab.py cluster-ensure` | `lab/lab_setup.sh` to pre-warm, `lab/user_setup.sh` to guarantee |
+| The per-student cluster and its three library entries: the Spark Connector, the Python library lock and the `neo4j-agent-memory` wheel | `voclab.py cluster-ensure` | `lab/user_setup.sh`, at the start of each session |
 | The lab notebooks in the student's own workspace folder | `voclab.py notebook-import` | `lab/user_setup.sh`, from `VOC_COURSE_NOTEBOOKS` in `lab/course.env` |
 | Reclaiming anything billable when a session ends | `lab/lab_end.sh` | Vocareum, on stop or terminate |
 
@@ -51,7 +51,7 @@ eight gold tables are the pipeline's output, so a gate run against a live update
 reports a failure that resolves itself.
 
 **The gate checks that objects exist, not what is inside them.** `expected.json`
-names the volume; nothing asserts the volume's 29 files. So a workspace whose
+names the volume; nothing asserts the volume's 30 files. So a workspace whose
 volume holds no CSVs and no wheel still exits `0`. The gate is a check on
 provisioning having run, not on it having finished correctly. Until that
 changes, confirm the volume contents by hand, or trust
@@ -180,7 +180,7 @@ the only piece of the courseware that is not either data or a notebook.
 | Committed at | `lab/courseware/wheels/neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl` |
 | Reaches the volume by | `workshop.provision_data`, called from `lab/workspace_init.sh` |
 | Lands at | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/` |
-| Installed on the cluster by | `VOC_COURSE_LIBRARIES` in `lab/course.env`, as `whl:` plus a separate `pypi:httpx>=0.27.0` |
+| Installed on the cluster by | `VOC_COURSE_LIBRARIES` in `lab/course.env`, as a `whl:` entry. Its `httpx` comes from the Python library lock below |
 | Built from | the `mentions` branch of [`neo4j-partners/agent-memory`](https://github.com/neo4j-partners/agent-memory), `uv build --wheel` |
 
 **Why a fork.** Released `0.5.0` silently drops `MENTIONS` edges on the
@@ -194,11 +194,13 @@ participant, installs with no clone and no build at cluster start, and is the
 same artifact Lab 6 hands to Model Serving. The `git+` form would make every
 cluster in the class clone and build the package while a student waits.
 
-**Why `httpx` is a separate entry.** A wheel carries no extras. The library's
+**Why `httpx` is in the lock.** A wheel carries no extras. The library's
 `[nams]` extra contains exactly one thing, `httpx>=0.27.0`, and the bolt path
 imports it transitively, so without it `MemoryClient.connect()` fails with
 `ModuleNotFoundError: No module named 'httpx'` at connect time rather than at
-import time, in front of the participant.
+import time, in front of the participant. It used to be a separate
+`pypi:httpx>=0.27.0` entry. It is now in `requirements.in`, so the lock pins it
+at a version checked against the runtime.
 
 **Why `wheels/` is its own directory.** `courseware/aircraft_digital_twin_data/`
 is a symlink to the data generator's committed output. A build artifact parked
@@ -243,6 +245,185 @@ The measurements behind all of the above are in
 
 ---
 
+### The Python library lock
+
+Every participant cluster installs the labs' Python libraries from one lock
+file, rather than from a list of loose `pypi:` entries. The cluster resolves
+nothing, so every cluster in the class gets the same versions.
+
+| | |
+|---|---|
+| Committed at | `lab/courseware/requirements/requirements.txt` |
+| Compiled from | `requirements.in` beside it, the libraries the labs import |
+| Compiled against | `runtime-constraints.txt` beside it, every package Databricks Runtime 17.3 LTS ML already installs, at the version it installs |
+| Reaches the volume by | `workshop.provision_data`, called from `lab/workspace_init.sh` |
+| Lands at | `/Volumes/databricks-neo4j-workshop/aircraft/raw_data/requirements.txt` |
+| Installed on the cluster by | `VOC_COURSE_LIBRARIES` in `lab/course.env`, as a `requirements:` entry naming that path |
+
+**Changing it.** Edit `requirements.in`, never `requirements.txt`. Then, from
+the repository root:
+
+```bash
+python3 lab/courseware/requirements/regenerate.py           # recompile, then check
+python3 lab/courseware/requirements/regenerate.py --check   # check only
+```
+
+The script needs `uv` on the PATH. It keeps every existing pin that still fits,
+so one edited line moves only what that line forces. `--upgrade` takes the
+latest of everything.
+
+**Why a script and not one command.** The lock installs on top of about four
+hundred runtime packages, and it must not break any of them. A lock compiled
+with no regard for them replaces pandas, numpy and the rest, with pandas 3 among
+the results, and nothing fails until a student imports pyspark. A lock compiled
+with them only as `-c` constraints is not enough either. A constraint bounds
+only a package something already pulls in, so the runtime's `datasets`, which
+the labs never import, had no say when the lock moved `fsspec` past its cap,
+and `pip check` failed on the cluster.
+
+So the script resolves in two steps:
+
+1. `requirements.in` together with every runtime package as a requirement,
+   pinned at its runtime version. That puts each runtime package's own bounds
+   into the resolve, which is what `pip check` tests.
+2. `requirements.in` alone, constrained to step 1's versions. The result is the
+   lock: only what the labs need, at versions known to sit beside the whole
+   runtime. Its `# via -c runtime-resolve.txt` lines name step 1's output, a
+   temporary file that is never committed.
+
+Every run then checks the lock, and any failure exits non-zero:
+
+* No kept runtime package moved, and every freed one did.
+* No not-required or not-on-pypi package is in the lock.
+* The lock still resolves beside the whole runtime. This is step 1 rerun with
+  the lock as constraints.
+* That rerun added no package that the runtime does not list and the lock does
+  not install. uv adds one, rather than failing, when a kept package asks for
+  something the cluster lacks. The check names the package that asked.
+* Each not-required package, at its public version, still installs beside the
+  lock. One compile per package checks this.
+
+Versions are compared the way PEP 440 defines equality. `2.0` and `2.0.0` are
+the same version. `2.7.0` and `2.7.0+cpu` are not.
+
+**The markers in `runtime-constraints.txt`.** Each runtime package is one
+`name==version` line. Three markers take a line out, and each needs a reason:
+
+* `# freed: name==version  reason` is a package the labs need at another
+  version, such as `mlflow-skinny` for `databricks-agents`. It stays in step 1
+  by name, so its dependents' bounds still apply. The reason names what in the
+  lock requires the new version. There are 18.
+* `# not-required: name==version  reason` is left out of step 1, because
+  requiring it leaves nothing to solve. The check still compiles it alone
+  against the lock, at its public version. There are 7, in three groups:
+  * `pmdarima`, `spacy` and `thinc`. `pip check` already fails these on a
+    clean cluster.
+  * The `+cpu` builds of `torch` and `torchvision`. PyPI's torch at the same
+    version cannot stand in. It needs `nvidia-nccl-cu12` 2.26.2, and the
+    runtime ships 2.28.3, so step 1 has no solution. The marker says so, so
+    nobody tries it again.
+  * `deepspeed` and `PyGObject`. Resolving them from PyPI asks for
+    `nvidia-ml-py` and `pycairo`. The runtime ships neither, and `pip check`
+    on a clean cluster does not ask for them. The runtime's copies likely come
+    from another build: for `PyGObject`, probably Ubuntu's `python3-gi`. That
+    is inferred from uv and `pip check`. The runtime's own metadata was not
+    read.
+
+    `deepspeed` 0.16.5 has no Linux wheel on PyPI, so uv builds its sdist, and
+    the build decides whether it asks for `nvidia-ml-py`. Another machine can
+    get a different answer, and with it a different check result.
+* `# not-on-pypi: name==version  reason` is a package PyPI has no version of,
+  so nothing is checked against it. These are the Ubuntu system packages
+  `distro-info`, `python-apt` and `unattended-upgrades`. There are 3.
+
+Any other commented-out pin fails the check, so a package cannot drop out of
+the resolve without a reason.
+
+**The `pip check` baseline.** A clean cluster on this runtime, with no
+libraries, prints these six lines from
+`sys.executable -m pip check`:
+
+```
+pmdarima 2.1.1 has requirement statsmodels>=0.14.5, but you have statsmodels 0.14.4.
+spacy 3.8.14 has requirement confection<2.0.0,>=1.3.2, but you have confection 0.1.5.
+spacy 3.8.14 has requirement srsly<3.0.0,>=2.5.3, but you have srsly 2.5.1.
+spacy 3.8.14 has requirement weasel<2.0.0,>=1.0.0, but you have weasel 0.4.1.
+thinc 8.3.13 has requirement blis<1.4.0,>=1.3.0, but you have blis 0.7.11.
+thinc 8.3.13 has requirement confection<2.0.0,>=1.1.0, but you have confection 0.1.5.
+```
+
+A cluster that installed this lock, sha256 `b91ff036`, printed the same six
+lines and nothing else. Both measured 2026-11-16. A seventh line after a lock
+change is what the lock broke.
+
+This is the only check of a not-required package's runtime build. The script
+checks each one by PyPI's metadata, so if the runtime's own build depends on
+something the lock moves, only `pip check` on a cluster shows it.
+
+**`databricks-connect` is in the lock, and the runtime's copy shadows it.**
+`unitycatalog-ai[databricks]` requires `databricks-connect`, so the lock
+installs 17.0.10. That wheel brings a second `pyspark` and a second
+`databricks.connect` into
+`/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages`.
+A notebook still resolves the runtime's copies, because `sys.path` lists
+`/databricks/spark/python`, which comes from `PYTHONPATH`, ahead of that
+directory. The runtime wins by path order alone.
+
+Measured 2026-11-16 on a cluster that installed this lock through the policy.
+`sys.path` was read in that order, `pyspark.__file__` and
+`databricks.connect.__file__` both pointed into `/databricks/spark/python`,
+and `spark.version` was 4.0.0. It is open whether a
+process without that `PYTHONPATH` loads the wrong `pyspark`. A `%sh python`
+subprocess is one such process.
+
+**Moving to another runtime.** Start a cluster on that runtime with no
+libraries, and capture its packages through the notebook's own interpreter:
+
+```
+%sh $(python -c 'import sys; print(sys.executable)') -m pip list --format=freeze
+```
+
+Not `/databricks/python3/bin/pip`. Cluster libraries land in
+`/local_disk0/.ephemeral_nfs/cluster_libraries/python`. The notebook
+interpreter sees that directory, and `/databricks/python3` does not. Replace
+the pins in `runtime-constraints.txt` with that list, re-mark the freed and
+not-required and not-on-pypi lines, then run the script with `--upgrade`.
+
+**A changed lock reaches no workspace on its own.** Clusters read the volume
+copy, and `workspace_init.sh` writes it once per workspace. After changing the
+lock:
+
+1. Upload the archive, as in "Deploying a change" above.
+2. Put the new lock on the volume of every workspace that already exists. Use
+   the `Rerun Init` button on the Vocareum admin Workspaces page, or from a
+   laptop run `uv run python lab/workshop.py upload-data` with the environment
+   in "Running the workshop outside Vocareum" below. Every upload overwrites.
+3. Restart any cluster that is already running. A cluster installs its
+   libraries at start, so a running one keeps the old lock. This is reasoning
+   rather than a measurement.
+
+Each upload logs the lock's SHA-256, and `workspace_init.sh` records it in the
+workspace's custom data as `requirements_sha256`. It is the hash of the file
+that was sent, not one read back from the volume. Compare it with
+`shasum -a 256 lab/courseware/requirements/requirements.txt` to tell which lock
+a workspace was last given.
+
+Skipping step 2 fails loudly. Before it creates or starts a student's cluster,
+`user_setup.sh` runs `workshop.py check-lock`. That reads the volume copy back
+and compares its SHA-256 with the lock in the uploaded archive. On a mismatch,
+or with no lock on the volume, the student's session fails with
+`STALE_LIBRARY_LOCK`. The message names both hashes. The check only reads. It
+never uploads, so the fix is still step 2, run once. A volume it cannot read at
+all fails with `VOLUME_READ_FAILED` instead.
+
+So change the lock between classes, and do steps 1 and 2 back to back. From
+the moment step 1 lands until step 2 finishes on a workspace, every student who
+starts the lab there fails with `STALE_LIBRARY_LOCK`. With several workspaces
+in a part, that lasts until the last one is done. Doing step 2 first does not
+help, because the hashes then mismatch the other way.
+
+---
+
 ## Running the workshop outside Vocareum
 
 An instructor provisioning a Databricks workspace by hand runs the same
@@ -255,6 +436,8 @@ export DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
 export DATABRICKS_TOKEN=dapi...
 export WORKSHOP_DATA_DIR=workshop-setup/aircraft_digital_twin_data
 export WORKSHOP_DLT_NOTEBOOK=lab/courseware/dlt_fleet_etl.py
+export WORKSHOP_WHEELS_DIR=lab/courseware/wheels
+export WORKSHOP_REQUIREMENTS_FILE=lab/courseware/requirements/requirements.txt
 
 uv run python lab/workshop.py provision --warehouse-name "<an existing warehouse>"
 ```
@@ -271,8 +454,10 @@ Two jobs the hooks do not cover outside Vocareum, both in `auto_scripts/`:
   `/Shared/databricks-neo4j-workshop`, overwriting. `notebook-import` is not a
   substitute: it targets `/Users/<email>` and skips a file that is already there,
   which is what preserves a student's work across a stop.
-- **`teardown.py`** deletes the catalog, its schemas, the volume, the pipeline
-  and the shared notebook tree. Nothing else deletes anything.
+- **`teardown.py`** deletes this workspace's pipeline, its two per-workspace
+  schemas and the shared notebook tree. With `--shared` it also deletes the
+  catalog, the volume and the `aircraft` and `agents` schemas, which every
+  workspace on the metastore uses. Nothing else deletes anything.
 
 Both read every object name from `lab/workshop.py`. See
 [auto_scripts/README.md](auto_scripts/README.md).
@@ -291,8 +476,9 @@ file here.
 
 Under Vocareum, `user_setup.sh` writes the landing page into
 `$VOC_IPC_DATA_FILE` and Vocareum redirects the browser there, so a participant
-lands on `Lab_1_Aura_Setup/01_create_aura_instance` in their own folder with their cluster
-already building. Nothing has to be handed out.
+lands on `Lab_1_Neo4j_Basics/01_credentials_and_cypher` in their own folder with their cluster
+already building. That notebook links to the site's Neo4j AuraDB Free Setup page,
+which they follow before running it. Nothing else has to be handed out.
 
 On a hand-provisioned workspace, a handout or slide carries:
 
@@ -311,17 +497,31 @@ shared folder, enter their Neo4j credentials from Lab 1, and run the notebooks.
 
 **"Spark Connector not found"**
 The cluster has to be in Dedicated (single user) access mode; shared modes are
-not supported by the connector. Check the library status on the cluster, and
-restart it after adding the library. The libraries take about six minutes to
-reach `INSTALLED` after the cluster reaches `RUNNING`, which is what
-`lab_setup.sh` pre-warming buys back. That figure was measured when the list
-held eleven entries and now holds thirteen; the two added are a local wheel and
-a small pure-Python package, so treat six minutes as a floor rather than a
-number to quote at a student.
+not supported by the connector. Check the library status on the cluster. On a
+cluster set up by hand, restart it after adding the library. The libraries take
+about two and a half minutes to reach `INSTALLED` after the cluster reaches
+`RUNNING`, and a notebook run before then fails its imports. Nothing shortens
+that wait now. Pre-warming from `lab_setup.sh` was removed, because Vocareum
+gives the student a new name each session and the warm cluster went unused. A
+cluster pool can shorten the wait for `RUNNING`, but not this one, because a
+pool preloads the runtime and not the libraries. See
+`dbx-vocareum/docs/pre-warm.md`.
+
+Measured 2026-11-16 on two clusters created with the three entries in
+`lab/course.env`, with no pool:
+
+* A test cluster reached `RUNNING` at 508 seconds. All three libraries were
+  `INSTALLED` 142 seconds after that.
+* A student's cluster, created by `user_setup.sh`, reached `RUNNING` at about
+  488 seconds. Counted from `RUNNING`, the connector finished at about 63
+  seconds, the lock at about 104 and the wheel at about 125. It was polled
+  every 20 seconds, so each figure is within 20 seconds.
+
+That is two clusters, not a class starting at once.
 
 **"Connection refused" to Neo4j**
-Aura is TLS only, so the URI is `neo4j+s://`, and `bolt://` fails in the
-handshake rather than as a bad password. Check that the participant's instance
+Aura is TLS only, so the URI is `neo4j+s://`. How a `bolt://` or `neo4j://`
+URI fails from a cluster is not measured. Check that the participant's instance
 is running and that the credentials are the ones Aura issued at creation.
 
 **"Path does not exist" for the volume**

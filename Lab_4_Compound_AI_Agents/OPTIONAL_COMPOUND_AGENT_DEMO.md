@@ -19,7 +19,7 @@ The supervisor routes questions to either the **Genie Agent** for sensor analyti
 The instructor running the demo needs:
 - A Genie Agent in the demo workspace, built as in [`04_genie_agent.ipynb`](./04_genie_agent.ipynb). The
   current one is `aircraft-genie`, agent id `01f1661b55731a0293c3f84ac9c5ba52`
-- Access to the Unity Catalog schema `databricks-neo4j-workshop.aircraft`, meaning tables and volume
+- Access to the Unity Catalog schemas `databricks-neo4j-workshop.aircraft_gold_<workspace id>` for the tables and `databricks-neo4j-workshop.aircraft` for the volume
 - The `neo4j_agentcore_mcp` Unity Catalog connection, created ahead of time per [`MCP-MANUAL-SETUP.md`](../workshop-setup/MCP-MANUAL-SETUP.md)
 
 > **The graph behind the demo.** The MCP server points at the instructor's demo Aura instance, loaded before class with `workshop-setup/populate_aircraft_db`. It holds the complete dataset: the full fleet with all systems, components, sensors, maintenance events, flights, and delays. Nobody in the room connects to it or needs credentials for it.
@@ -443,7 +443,7 @@ The demo shows a multi-agent system that combines two purpose-built data platfor
 - Test queries directly in Neo4j Aura console first
 
 ### "SQL query failed"
-- Verify table names in Unity Catalog: `databricks-neo4j-workshop.aircraft`
+- Verify table names in Unity Catalog: `databricks-neo4j-workshop.aircraft_gold_<workspace id>`
 - Check column names match documentation
 - Ensure Genie Agent has access to all required tables
 - Test queries directly in SQL Editor first

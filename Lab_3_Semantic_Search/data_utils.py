@@ -375,12 +375,12 @@ def secret_scope_name(spark: Any) -> str:
 
 
 def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
-    """Read the Neo4j connection values Lab 1's notebook 02 stored.
+    """Read the Neo4j connection values Lab 1's notebook 01 stored.
 
     All four keys are required. The database name is a credential like the
     other three: Aura names the database, often after the instance ID, so an
     instance at f024ea61.databases.neo4j.io serves a database called f024ea61
-    and rejects "neo4j" outright. Lab 1's 02_credentials_and_cypher.ipynb
+    and rejects "neo4j" outright. Lab 1's 01_credentials_and_cypher.ipynb
     detects the real name and stores it, so there is nothing to guess here.
 
     Databricks redacts secret values in notebook output, so printing any of
@@ -408,7 +408,7 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
         # exception, a type this module cannot import to catch by name.
         raise RuntimeError(
             f"Could not read Neo4j credentials from secret scope '{scope}'. "
-            "Run Lab 1's 02_credentials_and_cypher.ipynb first: it creates the "
+            "Run Lab 1's 01_credentials_and_cypher.ipynb first: it creates the "
             "scope and stores all four keys there."
         ) from error
     return credentials

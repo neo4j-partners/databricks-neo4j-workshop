@@ -10,8 +10,8 @@ The source for this workshop, including the lab notebooks and this site, is on G
 * **Six labs, about five hours**, plus a take-home appendix on graph algorithms.
 * **Two databases, one question box.** Neo4j Aura holds the fleet topology and the maintenance manuals; the Databricks Lakehouse holds the sensor telemetry.
 * **You end with a LangGraph supervisor agent** you wrote, deployed to Model Serving as your own endpoint, with memory stored back in your graph.
-* **Everything runs in a browser.** A Databricks workspace is provided; you create your own AuraDB Free instance in Lab 1.
-* **The procedure lives in the notebooks.** These pages are the background behind them.
+* **Everything runs in a browser.** A Databricks workspace is provided; you create your own AuraDB Free instance in xref:setup/index.adoc[Setup], before Lab 1.
+* **The procedure lives in the notebooks.** These pages are the background behind them. xref:setup/index.adoc[Setup] is the one exception: you follow it here, before the first notebook.
 
 == What You Will Build
 
@@ -56,7 +56,7 @@ Aircraft, Systems, and Sensors exist in both platforms as join points, kept in s
 
 The labs build on each other, moving from a single graph database to a full multi-agent system:
 
-* **Lab 1** provisions Neo4j Aura and introduces Cypher, the graph query language.
+* **Lab 1** connects Databricks to your Neo4j Aura instance and introduces Cypher, the graph query language.
 * **Lab 2** loads the Aircraft Digital Twin into Neo4j from Databricks using the Spark Connector.
 * **Lab 3** adds semantic search: chunk the maintenance manual, generate embeddings, and build GraphRAG retrievers.
 * **Lab 4** builds a Genie Agent for sensor analytics, with an optional demo that turns it into a no-code Agent Bricks compound agent.

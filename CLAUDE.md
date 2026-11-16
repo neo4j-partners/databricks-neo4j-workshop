@@ -54,7 +54,8 @@ The two jobs `workshop.py` and `voclab.py` do not cover. Both read every object
 name from `lab/workshop.py`; neither defines anything.
 ```bash
 uv run python workshop-setup/auto_scripts/sync_notebooks.py   # lab notebooks -> /Shared
-uv run python workshop-setup/auto_scripts/teardown.py --yes   # delete the catalog and all of it
+uv run python workshop-setup/auto_scripts/teardown.py --yes   # delete this workspace's pipeline and schemas
+uv run python workshop-setup/auto_scripts/teardown.py --yes --shared   # also the catalog and volume
 ```
 
 ### verify (Neo4j verification CLIs)
@@ -96,7 +97,7 @@ User Question → Supervisor Agent (Agent Bricks)
 The Neo4j MCP connection uses OAuth2 M2M auth via a Unity Catalog HTTP connection to an external MCP server. It lives only in the instructor's demo workspace, and participants never create or use one. Instructor preparation: `workshop-setup/neo4j_mcp_connection/` and `MCP-MANUAL-SETUP.md`.
 
 ### Lab Progression
-Lab 1 (Neo4j Aura setup + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 Part A (Genie Agent over lakehouse telemetry, the participant path) with Part B (Neo4j MCP + Agent Bricks Supervisor Agent) shown alongside it as an instructor demo → Lab 5 (LangGraph agent over Genie, the participant's own Aura instance, and the Lab 3 retrievers, deployed to Model Serving) → Lab 6 (Neo4j agent memory)
+Setup (create a Neo4j AuraDB Free instance, on the workshop site's Setup page, not in a notebook) → Lab 1 (`Lab_1_Neo4j_Basics`: store the Aura credentials in a secret scope + Cypher intro) → Lab 2 (ETL via Spark Connector notebooks) → Lab 3 (GraphRAG semantic search over maintenance manuals) → Lab 4 Part A (Genie Agent over lakehouse telemetry, the participant path) with Part B (Neo4j MCP + Agent Bricks Supervisor Agent) shown alongside it as an instructor demo → Lab 5 (LangGraph agent over Genie, the participant's own Aura instance, and the Lab 3 retrievers, deployed to Model Serving) → Lab 6 (Neo4j agent memory)
 
 Labs 5 and 6 are both on disk:
 

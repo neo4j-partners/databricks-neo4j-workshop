@@ -65,7 +65,8 @@ __all__ = [
     "AGENT_SCHEMA",
     "AGENT",
     "DEFAULT_CONFIG",
-    "GOLD_SCHEMA",
+    "GOLD_CATALOG",
+    "GOLD_SCHEMA_BASE",
     "GOLD_TABLES",
     "ENV_NEO4J_DATABASE",
     "ENV_NEO4J_PASSWORD",
@@ -141,10 +142,13 @@ DEFAULT_CONFIG: dict[str, Any] = {
 
 # The lakehouse side of the agent, named here because Lab 5 notebook 02 and
 # Lab 6 both have to declare the same list and a second copy is a second thing
-# to forget. GOLD_SCHEMA and GOLD_TABLES mirror CATALOG, LAKEHOUSE_SCHEMA and
-# GOLD_TABLES in lab/workshop.py, which is where the workshop's object names
-# are defined.
-GOLD_SCHEMA = "databricks-neo4j-workshop.aircraft"
+# to forget. GOLD_CATALOG, GOLD_SCHEMA_BASE and GOLD_TABLES mirror CATALOG,
+# LAKEHOUSE_SCHEMA_BASE and GOLD_TABLES in lab/workshop.py, which is where the
+# workshop's object names are defined. The gold schema is that base plus the
+# workspace ID, because every workspace in a class shares one metastore and a
+# table can belong to only one pipeline.
+GOLD_CATALOG = "databricks-neo4j-workshop"
+GOLD_SCHEMA_BASE = "aircraft_gold"
 GOLD_TABLES = (
     "aircraft",
     "systems",
@@ -155,6 +159,45 @@ GOLD_TABLES = (
     "fleet_readiness",
     "sensor_health",
 )
+
+
+def workspace_id() -> str:
+    """The numeric ID of the workspace this runs in, read at log time.
+
+    ``lab/workshop.py`` named the gold schema after it. Only a notebook calls
+    this, since :func:`build_resources` is a log-time API, so the active Spark
+    session is the way in. The cluster tag is tried first and the notebook
+    context second.
+    """
+    from pyspark.sql import SparkSession
+
+    spark = SparkSession.getActiveSession()
+    if spark is None:
+        raise RuntimeError(
+            "No active Spark session, so the workspace ID cannot be read. "
+            "build_resources runs in a notebook at log time."
+        )
+
+    def from_tag() -> object:
+        return spark.conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
+
+    def from_context() -> object:
+        from pyspark.dbutils import DBUtils
+
+        context = DBUtils(spark).notebook.entry_point.getDbutils().notebook()
+        return context.getContext().workspaceId().get()
+
+    for lookup in (from_tag, from_context):
+        try:
+            value = str(lookup()).strip()
+        except Exception:
+            continue
+        if value.isdigit():
+            return value
+    raise RuntimeError(
+        "Could not read this workspace's ID, so the gold schema's name is "
+        "unknown and the endpoint cannot be granted its tables."
+    )
 
 
 def build_resources(genie_agent_id: str, warehouse_id: str) -> list[Any]:
@@ -182,6 +225,7 @@ def build_resources(genie_agent_id: str, warehouse_id: str) -> list[Any]:
         DatabricksTable,
     )
 
+    gold_schema = f"{GOLD_CATALOG}.{GOLD_SCHEMA_BASE}_{workspace_id()}"
     return [
         # The MLflow class and its keyword still carry Genie's former name.
         # Databricks renamed the product to Genie Agent; the resource API did
@@ -189,7 +233,7 @@ def build_resources(genie_agent_id: str, warehouse_id: str) -> list[Any]:
         DatabricksGenieSpace(genie_space_id=genie_agent_id),
         DatabricksSQLWarehouse(warehouse_id=warehouse_id),
         *[
-            DatabricksTable(table_name=f"{GOLD_SCHEMA}.{table}")
+            DatabricksTable(table_name=f"{gold_schema}.{table}")
             for table in GOLD_TABLES
         ],
         DatabricksServingEndpoint(endpoint_name=LLM_ENDPOINT),
@@ -203,7 +247,7 @@ MISSING_CREDENTIAL_MESSAGE = (
     "The endpoint reads its Aura credentials from the environment variables "
     f"{ENV_NEO4J_URI}, {ENV_NEO4J_USERNAME}, {ENV_NEO4J_PASSWORD} and "
     f"{ENV_NEO4J_DATABASE}, each deployed as a '{{secrets/<scope>/<key>}}' "
-    "reference into the 'fleet-ops-<your-user>' scope from Lab 1 notebook 02. "
+    "reference into the 'fleet-ops-<your-user>' scope from Lab 1 notebook 01. "
     "Check that the endpoint carries all four, and that whoever created the "
     "endpoint can still read that scope."
 )

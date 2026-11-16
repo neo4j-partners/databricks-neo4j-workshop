@@ -4,13 +4,13 @@
 
 Build an AI agent that answers natural language questions about a commercial aviation fleet, over two databases at once. Neo4j Aura holds the fleet's relationships and its maintenance manuals, the Databricks Lakehouse holds the sensor telemetry, and a supervisor you write in LangGraph routes each question to whichever can answer it. Lab 6 then puts the agent's memory in the graph beside the fleet data.
 
-Start at the [workshop overview](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/index.html), then work through the labs in order.
+Start at the [workshop overview](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/index.html). Then follow [Setup](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/setup/index.html) to create your Neo4j AuraDB Free instance, and work through the labs in order.
 
 ## The labs
 
 | Lab | Notebooks | Time |
 |-----|-----------|------|
-| 1. Graph Databases and Neo4j Aura | [`Lab_1_Aura_Setup`](./Lab_1_Aura_Setup) | 20 min |
+| 1. Graph Databases and Neo4j Aura | [`Lab_1_Neo4j_Basics`](./Lab_1_Neo4j_Basics) | 20 min |
 | 2. Databricks ETL to Neo4j | [`Lab_2_Databricks_ETL_Neo4j`](./Lab_2_Databricks_ETL_Neo4j) | 45 min |
 | 3. Semantic Search with GraphRAG | [`Lab_3_Semantic_Search`](./Lab_3_Semantic_Search) | 45 min |
 | 4. Genie Agent | [`04_genie_agent.ipynb`](./Lab_4_Compound_AI_Agents/04_genie_agent.ipynb) | 30 min |

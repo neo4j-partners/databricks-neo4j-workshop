@@ -1,0 +1,30 @@
+# The Python libraries the labs import, top level only. regenerate.py compiles
+# this into requirements.txt, the lock every student's cluster installs.
+#
+# Edit this file, never requirements.txt, then run from the repository root:
+#     python3 lab/courseware/requirements/regenerate.py
+#
+# Pinned: what the runtime does not ship, at its latest release.
+neo4j==6.4.1
+databricks-agents==1.13.0
+langgraph==1.2.22
+langchain-openai==1.8.0
+databricks-langchain==0.22.0
+neo4j-graphrag==1.24.0
+
+# Unpinned: what the runtime already ships. The resolve keeps the runtime's
+# version unless something above needs another one, and then the package has to
+# be marked freed in runtime-constraints.txt. beautifulsoup4 stays at the
+# runtime's copy. pydantic, langchain-core and httpx are freed.
+pydantic
+langchain-core
+beautifulsoup4
+httpx
+
+# Dependencies of the neo4j-agent-memory wheel in ../wheels/ that nothing above
+# pulls in. Naming them here pins them in the lock, intended so the wheel's
+# install finds them in place rather than resolving them itself. That holds only
+# if the cluster installs the lock before the wheel, which is not yet measured.
+# neo4j and pydantic, its other two, are already above.
+pydantic-settings
+typing-extensions

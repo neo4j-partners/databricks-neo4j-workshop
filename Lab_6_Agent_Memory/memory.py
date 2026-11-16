@@ -772,7 +772,7 @@ class MemorySession:
         database: str | None = None,
         expected_uri_prefix: str | None = None,
     ) -> MemorySession:
-        """Connect using the credentials Lab 1 notebook 02 stored.
+        """Connect using the credentials Lab 1 notebook 01 stored.
 
         The values are read, used and dropped inside this call, so nothing in
         the notebook binds a password to a name. Same scope, same keys and same

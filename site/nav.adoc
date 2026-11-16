@@ -1,4 +1,6 @@
 * xref:index.adoc[Home]
+* xref:setup/index.adoc[Setup]
+** xref:setup/aura-free-setup/index.adoc[Neo4j AuraDB Free Setup]
 * xref:databricks-platform.adoc[How Neo4j + Databricks Work Together]
 * xref:glossary.adoc[Glossary: Aircraft Terms and Data Vocabulary]
 * xref:part1-graph-foundations.adoc[Part 1: Graph Foundations]

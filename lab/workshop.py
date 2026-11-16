@@ -42,13 +42,15 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import os
+import re
 import sys
 import time
-import traceback
 import urllib.error
 import urllib.parse
 import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 
 EXIT_OK = 0
@@ -93,19 +95,116 @@ voclab = _import_voclab()
 
 # --- What this workshop is made of -------------------------------------------
 #
-# Read from the environment with the defaults the DLT notebook carries, and
-# forwarded into the pipeline configuration below, so an override here cannot
-# desync from the notebook that reads the same four names.
+# Read from the environment with the defaults the DLT notebook carries. The two
+# schemas the pipeline owns are the exception: what is read here is only the
+# base of their names, and :func:`schemas_for` appends the workspace ID. The full
+# names are forwarded into the pipeline configuration below, so the notebook the
+# pipeline runs and this file cannot disagree about where tables land.
 
 CATALOG = os.environ.get("WORKSHOP_CATALOG", "databricks-neo4j-workshop")
 VOLUME_SCHEMA = os.environ.get("WORKSHOP_VOLUME_SCHEMA", "aircraft")
 VOLUME_NAME = os.environ.get("WORKSHOP_VOLUME_NAME", "raw_data")
-LAKEHOUSE_SCHEMA = os.environ.get("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft")
 
-# Bronze, silver, and gold all land here. Only the eight gold tables and the
-# ten LAB2_SILVER_TABLES below are granted to participants; bronze stays
-# ungranted. See genie_statements() for the grants themselves.
-PIPELINE_SCHEMA = os.environ.get("WORKSHOP_PIPELINE_SCHEMA", "aircraft_pipeline")
+# Bronze, silver, and gold are owned by one pipeline, and a table can have only
+# one owning pipeline. Only the eight gold tables and the ten LAB2_SILVER_TABLES
+# below are granted to participants; bronze stays ungranted. See
+# genie_statements() for the grants themselves.
+#
+# Gold used to share the ``aircraft`` schema with the volume. It has its own base
+# now, because the volume is not owned by a pipeline and must keep one name in
+# every workspace (Labs 3 and 6 read wheels and manuals from it), while the gold
+# tables must carry a name per workspace. One schema cannot do both.
+LAKEHOUSE_SCHEMA_BASE = os.environ.get("WORKSHOP_LAKEHOUSE_SCHEMA", "aircraft_gold")
+PIPELINE_SCHEMA_BASE = os.environ.get("WORKSHOP_PIPELINE_SCHEMA", "aircraft_pipeline")
+
+
+@dataclass(frozen=True)
+class Schemas:
+    """The two schemas the DLT pipeline owns, named for one workspace.
+
+    Measured 2026-11-01. Vocareum builds one workspace per part, but every
+    workspace in a region is assigned the same Unity Catalog metastore, so the
+    catalog and its schemas are one set of objects seen from every workspace.
+    The pipeline in the second workspace then failed at ``SETTING_UP_TABLES``
+    with "Table ... is already managed by pipeline ...", retried itself on a
+    loop, and held the workspace's lab start at "starting lab" until it timed
+    out. A table can have exactly one owning pipeline, so two workspaces cannot
+    share a pipeline-owned schema.
+
+    The fix is a schema per workspace, named from the workspace ID. The ID rather
+    than the part or the course, because a course cloned by copy carries the same
+    ``course.env`` and a part ID would collide the same way. The notebooks that
+    read these schemas derive the same names from the same ID, so the pattern
+    below is a contract with them: ``<base>_<workspace id>``.
+
+    The volume schema and the agent schema are not here. Neither is owned by a
+    pipeline, and the volume path is named in notebooks that run before any
+    schema lookup is possible.
+    """
+
+    workspace_id: str
+    pipeline: str
+    lakehouse: str
+
+
+def schemas_for(workspace_id: str) -> Schemas:
+    """Name the pipeline-owned schemas for one workspace.
+
+    Refuses anything but digits. The ID lands inside a SQL identifier in backticks
+    and inside a pipeline configuration value, and a workspace ID is a number.
+    """
+    if not re.fullmatch(r"[0-9]+", workspace_id or ""):
+        raise voclab.VoclabError(
+            "INVALID_WORKSPACE_ID",
+            f"The workspace ID must be a number, and got {workspace_id!r}.",
+        )
+    return Schemas(
+        workspace_id=workspace_id,
+        pipeline=f"{PIPELINE_SCHEMA_BASE}_{workspace_id}",
+        lakehouse=f"{LAKEHOUSE_SCHEMA_BASE}_{workspace_id}",
+    )
+
+
+def workspace_id_from_url(url: str) -> str:
+    """Return the ``o=`` workspace ID a workspace URL carries, or an empty string.
+
+    ``VOC_DB_WORKSPACE_URL`` arrives carrying ``?o=<workspace id>``, which
+    ``voclab.normalize_host`` strips before any call is made. So the ID has to be
+    read here, from the URL as it arrived.
+    """
+    query = urllib.parse.urlsplit((url or "").strip()).query
+    return (urllib.parse.parse_qs(query).get("o") or [""])[0]
+
+
+def resolve_workspace_id(args: argparse.Namespace) -> str:
+    """Decide which workspace the schemas are named for.
+
+    ``--workspace-id`` wins. Otherwise the ID comes from the one URL
+    ``voclab.build_workspace`` will call, chosen by the same precedence, so the
+    schemas can never be named for one workspace while the statements run in
+    another. ``DATABRICKS_WORKSPACE_ID`` is the last resort, for an operator
+    running from a laptop against a host that carries no ``o=``.
+    """
+    if args.workspace_id:
+        return args.workspace_id.strip()
+    url = (
+        args.host
+        or os.environ.get("VOC_DB_WORKSPACE_URL")
+        or os.environ.get("DATABRICKS_HOST")
+        or ""
+    )
+    found = workspace_id_from_url(url) or os.environ.get(
+        "DATABRICKS_WORKSPACE_ID", ""
+    ).strip()
+    if not found:
+        raise voclab.VoclabError(
+            "MISSING_WORKSPACE_ID",
+            "Could not tell which workspace this is. The workspace URL carries "
+            "no ?o=<workspace id>, so pass --workspace-id or set "
+            "DATABRICKS_WORKSPACE_ID. The pipeline schemas are named from it.",
+        )
+    return found
+
 
 VOLUME_PATH = f"/Volumes/{CATALOG}/{VOLUME_SCHEMA}/{VOLUME_NAME}"
 
@@ -208,7 +307,7 @@ AGENT_SECRET_KEY_NEO4J_USERNAME = "neo4j-username"
 AGENT_SECRET_KEY_NEO4J_PASSWORD = "neo4j-password"
 
 # The database inside that instance. Aura names it, often after the instance ID
-# rather than "neo4j", so Lab 1's 02_credentials_and_cypher.ipynb detects the
+# rather than "neo4j", so Lab 1's 01_credentials_and_cypher.ipynb detects the
 # real name and writes it here. Required like the other three: nothing
 # downstream guesses a name.
 AGENT_SECRET_KEY_NEO4J_DATABASE = "neo4j-database"
@@ -269,6 +368,19 @@ WHEELS_DIR = f"{COURSEWARE_DIR}/wheels"
 WHEELS_DIR_VAR = "WORKSHOP_WHEELS_DIR"
 WHEEL_GLOB = "*.whl"
 
+# The Python library lock every participant cluster installs, as a
+# requirements: entry in VOC_COURSE_LIBRARIES naming its volume path. It lives
+# in courseware/requirements/ beside the requirements.in it is compiled from and
+# the runtime constraints it is compiled against, and only the lock goes up.
+# regenerate.py in that directory is the one way to change it.
+#
+# The volume copy is what clusters read, and this file is what put it there. A
+# lock edited in the repository changes nothing until provision runs again,
+# which is why the upload records the lock's SHA-256: the record then says
+# which lock a workspace's clusters are installing.
+REQUIREMENTS_FILE = f"{COURSEWARE_DIR}/requirements/requirements.txt"
+REQUIREMENTS_FILE_VAR = "WORKSHOP_REQUIREMENTS_FILE"
+
 STATEMENT_WAIT = "50s"
 STATEMENT_POLL_SECONDS = 5
 STATEMENT_TIMEOUT_SECONDS = 300
@@ -306,8 +418,11 @@ GRANTEE = "`account users`"
 # --- The declarative half ----------------------------------------------------
 
 
-def infrastructure_statements() -> list[tuple[str, str, bool]]:
+def infrastructure_statements(schemas: Schemas) -> list[tuple[str, str, bool]]:
     """The catalog, four schemas, the volume, and the grants that reach them.
+
+    Two of the four schemas are named for the workspace, by ``schemas``. See
+    :class:`Schemas` for why.
 
     Each entry is ``(description, sql, required)``. ``required`` is not
     decoration. The version this replaces logged every failure and carried on,
@@ -394,22 +509,22 @@ def infrastructure_statements() -> list[tuple[str, str, bool]]:
         ),
         (
             "lakehouse schema",
-            f"CREATE SCHEMA IF NOT EXISTS {catalog}.`{LAKEHOUSE_SCHEMA}`",
+            f"CREATE SCHEMA IF NOT EXISTS {catalog}.`{schemas.lakehouse}`",
             True,
         ),
         (
             "grant use lakehouse schema",
-            f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{LAKEHOUSE_SCHEMA}` TO {GRANTEE}",
+            f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{schemas.lakehouse}` TO {GRANTEE}",
             True,
         ),
         (
             "pipeline schema",
-            f"CREATE SCHEMA IF NOT EXISTS {catalog}.`{PIPELINE_SCHEMA}`",
+            f"CREATE SCHEMA IF NOT EXISTS {catalog}.`{schemas.pipeline}`",
             True,
         ),
         (
             "grant use pipeline schema",
-            f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{PIPELINE_SCHEMA}` TO {GRANTEE}",
+            f"GRANT USE_SCHEMA ON SCHEMA {catalog}.`{schemas.pipeline}` TO {GRANTEE}",
             True,
         ),
         (
@@ -480,7 +595,7 @@ COLUMN_COMMENTS = (
 )
 
 
-def genie_statements() -> list[tuple[str, str, bool]]:
+def genie_statements(schemas: Schemas) -> list[tuple[str, str, bool]]:
     """The column comments the Genie Agent reads, and the grants that let a
     participant see them.
 
@@ -493,12 +608,12 @@ def genie_statements() -> list[tuple[str, str, bool]]:
 
     The eight gold tables are granted for Genie, and the ten silver tables in
     ``LAB2_SILVER_TABLES`` are granted for Lab 2's graph load. Bronze stays in
-    ``PIPELINE_SCHEMA`` without SELECT — nothing a participant runs reads it,
+    the pipeline schema without SELECT — nothing a participant runs reads it,
     since every relationship Lab 2 needs is already a foreign-key column on a
     silver table.
     """
-    gold_target = f"`{CATALOG}`.`{LAKEHOUSE_SCHEMA}`"
-    silver_target = f"`{CATALOG}`.`{PIPELINE_SCHEMA}`"
+    gold_target = f"`{CATALOG}`.`{schemas.lakehouse}`"
+    silver_target = f"`{CATALOG}`.`{schemas.pipeline}`"
     statements = []
     for table, column, comment in COLUMN_COMMENTS:
         statements.append(
@@ -527,13 +642,13 @@ def genie_statements() -> list[tuple[str, str, bool]]:
     return statements
 
 
-def pipeline_settings(notebook_path: str) -> dict:
+def pipeline_settings(notebook_path: str, schemas: Schemas) -> dict:
     """The DLT pipeline body.
 
     ``schema`` rather than the deprecated ``target``. That is what puts the
     pipeline in the default publishing mode, which is what lets the notebook
-    publish gold into ``LAKEHOUSE_SCHEMA`` while bronze and silver stay in
-    ``PIPELINE_SCHEMA``. A pipeline created with ``target`` cannot publish to a
+    publish gold into ``schemas.lakehouse`` while bronze and silver stay in
+    ``schemas.pipeline``. A pipeline created with ``target`` cannot publish to a
     second schema at all, which is why an existing one is reported by name below
     rather than silently reused as though it were equivalent.
 
@@ -544,7 +659,7 @@ def pipeline_settings(notebook_path: str) -> dict:
     return {
         "name": PIPELINE_NAME,
         "catalog": CATALOG,
-        "schema": PIPELINE_SCHEMA,
+        "schema": schemas.pipeline,
         "serverless": True,
         "continuous": False,
         "channel": "CURRENT",
@@ -554,7 +669,7 @@ def pipeline_settings(notebook_path: str) -> dict:
             "WORKSHOP_CATALOG": CATALOG,
             "WORKSHOP_VOLUME_SCHEMA": VOLUME_SCHEMA,
             "WORKSHOP_VOLUME_NAME": VOLUME_NAME,
-            "WORKSHOP_LAKEHOUSE_SCHEMA": LAKEHOUSE_SCHEMA,
+            "WORKSHOP_LAKEHOUSE_SCHEMA": schemas.lakehouse,
         },
     }
 
@@ -675,6 +790,41 @@ def put_file(workspace, remote_path: str, payload: bytes) -> None:
         ) from error
 
 
+def get_file(workspace, remote_path: str) -> bytes | None:
+    """Read one file out of a Unity Catalog volume, or ``None`` if it is not there.
+
+    The read half of :func:`put_file`, on the same host and token for the same
+    reason. A 404 is an answer rather than a failure, because the caller is the
+    one that knows whether a missing file is a problem.
+    """
+    quoted = urllib.parse.quote(remote_path)
+    request = urllib.request.Request(
+        f"{workspace.host}{FILES_PATH}{quoted}",
+        headers={
+            "Authorization": f"Bearer {workspace.token}",
+            "User-Agent": voclab.USER_AGENT,
+        },
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(
+            request, timeout=voclab.HTTP_TIMEOUT_SECONDS
+        ) as response:
+            return response.read()
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return None
+        detail = voclab.api_detail(str(error.code), voclab.read_error_body(error))
+        raise voclab.VoclabError(
+            "VOLUME_READ_FAILED", f"GET {remote_path} failed: {detail}"
+        ) from error
+    except (urllib.error.URLError, OSError) as error:
+        raise voclab.VoclabError(
+            "VOLUME_READ_FAILED",
+            f"GET {remote_path} could not reach {workspace.host}: {error}",
+        ) from error
+
+
 def import_notebook(workspace, local_path: Path, remote_path: str) -> None:
     """Put the DLT notebook where the pipeline can name it.
 
@@ -722,6 +872,31 @@ def find_pipeline(workspace, name: str) -> dict:
         token = payload.get("next_page_token")
         if not token:
             return {}
+
+
+def check_pipeline_schema(workspace, pipeline_id: str, schemas: Schemas) -> None:
+    """Refuse an existing pipeline that publishes somewhere other than ``schemas``.
+
+    A table belongs to one pipeline across the whole metastore, and every
+    Vocareum workspace in a class shares one metastore. A pipeline left over from
+    before schemas were named for the workspace publishes into the shared names,
+    so reusing it would claim tables another workspace's pipeline owns, and the
+    update fails at SETTING_UP_TABLES. Whether a Unity Catalog pipeline's schema
+    can be changed in place is unmeasured, so this fails and names the repair
+    rather than editing the pipeline.
+    """
+    spec = workspace.call(
+        "GET", f"{PIPELINES_PATH}/{pipeline_id}", idempotent=True
+    ).get("spec") or {}
+    current = spec.get("schema") or spec.get("target") or ""
+    if current != schemas.pipeline:
+        raise voclab.VoclabError(
+            "PIPELINE_SCHEMA_MISMATCH",
+            f"The {PIPELINE_NAME} pipeline ({pipeline_id}) publishes to "
+            f"'{current}' and this workspace's schema is '{schemas.pipeline}'. "
+            f"Delete the pipeline and run this again.",
+            {"pipeline_id": pipeline_id},
+        )
 
 
 def start_and_wait(workspace, pipeline_id: str) -> str:
@@ -820,11 +995,12 @@ def wheel_files(wheels_dir: Path) -> list[Path]:
     """Every wheel the volume has to hold.
 
     Fatal rather than a warning, for a harder reason than the manuals above.
-    VOC_COURSE_LIBRARIES names a wheel by its exact volume path and
-    ``voclab.py cluster-ensure`` posts that path to /api/2.0/libraries/install
-    for every participant cluster. So a volume missing its wheel does not break
-    one lab, it breaks the library install on every cluster in the class, and it
-    does so at cluster start where the student is the one waiting.
+    VOC_COURSE_LIBRARIES names a wheel by its exact volume path, and
+    ``voclab.py`` writes that path into the cluster policy every participant
+    cluster is created under, which installs it at cluster start. So a volume
+    missing its wheel does not break one lab, it breaks the library install on
+    every cluster in the class, and it does so at cluster start where the
+    student is the one waiting.
     """
     found = sorted(wheels_dir.glob(WHEEL_GLOB))
     if not found:
@@ -834,6 +1010,25 @@ def wheel_files(wheels_dir: Path) -> list[Path]:
             f"without the wheel every participant cluster installs by path.",
         )
     return found
+
+
+def resolve_requirements_file() -> Path:
+    """Return the Python library lock, on the same reasoning as the wheels.
+
+    Fatal for the same reason too. VOC_COURSE_LIBRARIES names the lock by its
+    volume path, so a volume without it fails the library install on every
+    cluster in the class rather than one lab.
+    """
+    override = (os.environ.get(REQUIREMENTS_FILE_VAR) or "").strip()
+    path = Path(override or REQUIREMENTS_FILE)
+    if path.is_file():
+        return path
+    raise voclab.VoclabError(
+        "MISSING_COURSEWARE",
+        f"{path} is not there. The lock travels in the lab archive as "
+        f"courseware/requirements/requirements.txt, so re-run "
+        f"dbx-vocareum-upload, or set {REQUIREMENTS_FILE_VAR} to point elsewhere.",
+    )
 
 
 def data_files(data_dir: Path) -> list[Path]:
@@ -899,9 +1094,9 @@ def resolve_warehouse_id(workspace, args: argparse.Namespace) -> str:
 
     if candidates:
         detail = (
-            "this workspace holds %d warehouses and picking among them is not "
-            "this script's call. Set %s or pass --warehouse-name."
-            % (len(candidates), voclab.WAREHOUSE_NAME_VAR)
+            f"this workspace holds {len(candidates)} warehouses and picking "
+            f"among them is not this script's call. Set "
+            f"{voclab.WAREHOUSE_NAME_VAR} or pass --warehouse-name."
         )
     else:
         detail = (
@@ -911,33 +1106,38 @@ def resolve_warehouse_id(workspace, args: argparse.Namespace) -> str:
         )
     raise voclab.VoclabError(
         "MISSING_WAREHOUSE",
-        "No SQL warehouse named %s exists, and %s" % (name, detail),
+        f"No SQL warehouse named {name} exists, and {detail}",
     )
 
 
-def provision_infrastructure(workspace, warehouse_id: str) -> dict:
+def provision_infrastructure(
+    workspace, warehouse_id: str, schemas: Schemas
+) -> dict:
     voclab.log("creating the catalog, the four schemas and the volume")
+    voclab.log(f"  pipeline schema {schemas.pipeline}, gold schema {schemas.lakehouse}")
     # The return value is discarded because every statement in this stage is
     # required, so a refusal raises rather than lands in the list. The stage used
     # to report an ``infrastructure_refused`` field for the one optional grant;
     # that grant is gone and no reader ever consumed the field.
     run_statements(
-        workspace, warehouse_id, infrastructure_statements(), "infrastructure"
+        workspace, warehouse_id, infrastructure_statements(schemas), "infrastructure"
     )
     return {
         "catalog": CATALOG,
         "volume_path": VOLUME_PATH,
+        "pipeline_schema": schemas.pipeline,
+        "lakehouse_schema": schemas.lakehouse,
     }
 
 
 def provision_data(workspace) -> dict:
-    """Upload the courseware data and the wheels into one flat volume.
+    """Upload the courseware data, wheels and library lock into one flat volume.
 
-    Both sources land side by side at :data:`VOLUME_PATH` with no subdirectory,
+    All of it lands side by side at :data:`VOLUME_PATH` with no subdirectory,
     because that is the path VOC_COURSE_LIBRARIES already names for the wheel
-    and a volume layout is not worth a second statement of it.
+    and the lock, and a volume layout is not worth a second statement of it.
 
-    Both directories are resolved before the first PUT rather than one at a
+    Every source is resolved before the first PUT rather than one at a
     time. A missing wheels/ found halfway through leaves a volume holding 27
     files and no wheel, which is a state the record has to describe and nothing
     cleans up; found first, it costs nothing and the volume is untouched.
@@ -945,15 +1145,22 @@ def provision_data(workspace) -> dict:
     ``data_files_uploaded`` stays the count of everything written, which is what
     workspace_init.sh prints and records. ``wheels_uploaded`` is the breakdown,
     so the record can still say whether the wheel went up.
+
+    ``requirements_sha256`` is the hash of the lock that went up. Every PUT
+    overwrites, so a re-run replaces the volume copy, and the hash is how the
+    record says which lock this workspace's clusters install.
     """
     data_dir = resolve_data_dir()
     files = data_files(data_dir)
     wheels_dir = resolve_wheels_dir()
     wheels = wheel_files(wheels_dir)
-    uploads = files + wheels
+    requirements = resolve_requirements_file()
+    requirements_sha256 = hashlib.sha256(requirements.read_bytes()).hexdigest()
+    uploads = [*files, *wheels, requirements]
     total = len(uploads)
     voclab.log(f"uploading {total} files to {VOLUME_PATH}")
     voclab.log(f"  {len(files)} from {data_dir}, {len(wheels)} from {wheels_dir}")
+    voclab.log(f"  the library lock {requirements}, sha256 {requirements_sha256}")
     for index, path in enumerate(uploads, start=1):
         voclab.log(f"  {index}/{total}: {path.name}")
         put_file(workspace, f"{VOLUME_PATH}/{path.name}", path.read_bytes())
@@ -962,6 +1169,85 @@ def provision_data(workspace) -> dict:
         "data_files_uploaded": total,
         "wheels_dir": str(wheels_dir),
         "wheels_uploaded": len(wheels),
+        "requirements_uploaded": f"{VOLUME_PATH}/{requirements.name}",
+        "requirements_sha256": requirements_sha256,
+    }
+
+
+def check_library_lock(workspace) -> dict:
+    """Fail if the volume's library lock is not the one this archive carries.
+
+    Run by ``user_setup.sh`` before the student's cluster is created or started,
+    because that is when the cluster installs the volume copy. The volume copy
+    is written by ``provision_data``, which ``workspace_init.sh`` runs once per
+    workspace. So an archive uploaded with a new lock leaves every existing
+    workspace on the old one, and without this check its clusters install the
+    old lock and nothing says so.
+
+    Read-only on purpose. Re-uploading the lock here would make a student's
+    session a second writer of the volume, racing every other student's session
+    starting at the same moment. The fix is ``upload-data``, run once, by
+    whoever changed the lock, and the error says so.
+
+    A lock that is missing from the volume fails the same way. That is the case
+    for a workspace provisioned before the lock existed, which is stale for the
+    same reason and has the same fix.
+    """
+    local = resolve_requirements_file()
+    local_sha256 = hashlib.sha256(local.read_bytes()).hexdigest()
+    remote_path = f"{VOLUME_PATH}/{local.name}"
+    voclab.log(f"comparing {remote_path} with {local}")
+    try:
+        payload = get_file(workspace, remote_path)
+    except voclab.VoclabError as error:
+        # Said in the message because it is the open question a refusal here
+        # answers. VOC_DB_API_TOKEN was measured as the service principal inside
+        # workspace_init.sh, which wrote this volume, but never inside
+        # user_setup.sh, and this is that hook's first read of the volume. Only
+        # on an HTTP refusal: a network failure says nothing about the token.
+        if not isinstance(error.__cause__, urllib.error.HTTPError):
+            raise
+        raise voclab.VoclabError(
+            error.code,
+            f"{error.message}. This is user_setup.sh's first read of the volume, "
+            "and VOC_DB_API_TOKEN has been measured as the service principal "
+            "only in workspace_init.sh, so a 401 or 403 here means this hook's "
+            "token is not that identity or lacks READ VOLUME.",
+            {"requirements_sha256": local_sha256},
+        ) from error
+    fix = (
+        "Run `workshop.py upload-data` against this workspace, or Rerun Init on "
+        "the Vocareum admin Workspaces page, then start the lab again."
+    )
+    if payload is None:
+        # Databricks answers 404 for an object the caller may not see, as well
+        # as for one that is not there, so a 404 is not proof of absence. One
+        # message covers both rather than a second call to tell them apart.
+        raise voclab.VoclabError(
+            "STALE_LIBRARY_LOCK",
+            f"{remote_path} is not on the volume, or this token cannot see it. "
+            f"If it was never uploaded, the cluster has no library lock to "
+            f"install: {fix} If upload-data has already run against this "
+            f"workspace, check that the service principal has READ VOLUME on "
+            f"{VOLUME_PATH}.",
+            {"requirements_sha256": local_sha256},
+        )
+    volume_sha256 = hashlib.sha256(payload).hexdigest()
+    if volume_sha256 != local_sha256:
+        raise voclab.VoclabError(
+            "STALE_LIBRARY_LOCK",
+            f"{remote_path} has sha256 {volume_sha256}, but this archive's lock "
+            f"has {local_sha256}, so the cluster would install an older lock. "
+            f"{fix}",
+            {
+                "requirements_sha256": local_sha256,
+                "volume_requirements_sha256": volume_sha256,
+            },
+        )
+    voclab.log(f"the volume holds this archive's lock, sha256 {local_sha256}")
+    return {
+        "requirements_sha256": local_sha256,
+        "volume_requirements_sha256": volume_sha256,
     }
 
 
@@ -992,7 +1278,7 @@ def grant_pipeline_view(workspace, pipeline_id: str) -> str:
     return ", ".join(granted) if granted else "nobody"
 
 
-def provision_pipeline(workspace) -> dict:
+def provision_pipeline(workspace, schemas: Schemas) -> dict:
     notebook = resolve_dlt_notebook()
     voclab.log(f"importing {notebook} to {DLT_NOTEBOOK_WORKSPACE_PATH}")
     import_notebook(workspace, notebook, DLT_NOTEBOOK_WORKSPACE_PATH)
@@ -1001,14 +1287,13 @@ def provision_pipeline(workspace) -> dict:
     if existing:
         pipeline_id = existing["pipeline_id"]
         action = "found"
-        voclab.log(
-            f"the {PIPELINE_NAME} pipeline already exists ({pipeline_id}). If it "
-            f"was created with the legacy target field it cannot publish gold to "
-            f"a second schema; delete it and run this again."
-        )
+        check_pipeline_schema(workspace, pipeline_id, schemas)
+        voclab.log(f"the {PIPELINE_NAME} pipeline already exists ({pipeline_id})")
     else:
         created = workspace.call(
-            "POST", PIPELINES_PATH, pipeline_settings(DLT_NOTEBOOK_WORKSPACE_PATH)
+            "POST",
+            PIPELINES_PATH,
+            pipeline_settings(DLT_NOTEBOOK_WORKSPACE_PATH, schemas),
         )
         pipeline_id = created["pipeline_id"]
         action = "created"
@@ -1025,9 +1310,9 @@ def provision_pipeline(workspace) -> dict:
     }
 
 
-def provision_genie(workspace, warehouse_id: str) -> dict:
+def provision_genie(workspace, warehouse_id: str, schemas: Schemas) -> dict:
     voclab.log("adding the Genie comments and granting the gold and Lab 2 silver tables")
-    run_statements(workspace, warehouse_id, genie_statements(), "genie")
+    run_statements(workspace, warehouse_id, genie_statements(schemas), "genie")
     return {
         "gold_tables": len(GOLD_TABLES),
         "lab2_silver_tables": len(LAB2_SILVER_TABLES),
@@ -1042,12 +1327,13 @@ def provision(workspace, args: argparse.Namespace) -> dict:
     in it, the data has to be there before the pipeline can read it, and a gold
     table has to exist before a comment can be attached to it.
     """
+    schemas = schemas_for(resolve_workspace_id(args))
     warehouse_id = resolve_warehouse_id(workspace, args)
     fields = {"warehouse_id": warehouse_id}
-    fields.update(provision_infrastructure(workspace, warehouse_id))
+    fields.update(provision_infrastructure(workspace, warehouse_id, schemas))
     fields.update(provision_data(workspace))
-    fields.update(provision_pipeline(workspace))
-    fields.update(provision_genie(workspace, warehouse_id))
+    fields.update(provision_pipeline(workspace, schemas))
+    fields.update(provision_genie(workspace, warehouse_id, schemas))
     return fields
 
 
@@ -1058,16 +1344,19 @@ def run(args: argparse.Namespace) -> dict:
         return provision(workspace, args)
     if args.command == "upload-data":
         return provision_data(workspace)
+    if args.command == "check-lock":
+        return check_library_lock(workspace)
+    schemas = schemas_for(resolve_workspace_id(args))
     if args.command == "pipeline":
-        return provision_pipeline(workspace)
+        return provision_pipeline(workspace, schemas)
 
     # The two that need a warehouse and nothing else.
     warehouse_id = resolve_warehouse_id(workspace, args)
     fields = {"warehouse_id": warehouse_id}
     if args.command == "infrastructure":
-        fields.update(provision_infrastructure(workspace, warehouse_id))
+        fields.update(provision_infrastructure(workspace, warehouse_id, schemas))
     else:
-        fields.update(provision_genie(workspace, warehouse_id))
+        fields.update(provision_genie(workspace, warehouse_id, schemas))
     return fields
 
 
@@ -1085,6 +1374,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--token", help="Bearer token. Defaults to VOC_DB_API_TOKEN.")
     parser.add_argument(
+        "--workspace-id",
+        help=(
+            "The workspace ID the pipeline schemas are named for. Defaults to "
+            "the o= in the workspace URL, then to DATABRICKS_WORKSPACE_ID."
+        ),
+    )
+    parser.add_argument(
         "--warehouse-name",
         help=(
             "The SQL warehouse to run statements on. Defaults to "
@@ -1096,7 +1392,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     # have to re-run the ETL to reach them.
     parser.add_argument(
         "command",
-        choices=("provision", "infrastructure", "upload-data", "pipeline", "genie"),
+        choices=(
+            "provision",
+            "infrastructure",
+            "upload-data",
+            "pipeline",
+            "genie",
+            "check-lock",
+        ),
         nargs="?",
         default="provision",
         help="Which stage to run. Default is provision, which runs them all.",
@@ -1119,18 +1422,20 @@ def main(argv: list[str] | None = None) -> int:
         )
         return EXIT_FAILED
     except Exception as error:
-        # Broad on purpose, for the same reason voclab.py's is. A traceback that
-        # exits non-zero having emitted nothing produces a lab that failed for
-        # no stated reason, which is the exact thing voc_fail exists to prevent.
-        # The traceback still goes to stderr, where the console log keeps it.
-        traceback.print_exc()
+        # Anything else is a bug, not an expected failure, so it is re-raised
+        # rather than handled. The ``error_code`` line goes out first, because a
+        # traceback that exits non-zero having emitted nothing produces a lab
+        # that failed for no stated reason, which is the exact thing voc_fail
+        # exists to prevent. The re-raise then prints the traceback to stderr,
+        # where the console log keeps it, and exits 1, the same code as every
+        # handled failure.
         voclab.emit(
             {
                 "error_code": "UNEXPECTED_ERROR",
                 "message": f"{type(error).__name__}: {error}",
             }
         )
-        return EXIT_FAILED
+        raise
 
 
 if __name__ == "__main__":

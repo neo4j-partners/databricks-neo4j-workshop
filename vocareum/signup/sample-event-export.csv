@@ -1,0 +1,6 @@
+"First Name","Last Name",Email,"Full Name",Status,"Custom: Company Name"
+ada,LOVELACE,ada.lovelace@example.com,"Ada Lovelace",Attending,"Example Corp"
+Grace,Hopper,grace.hopper@example.com,"Grace Hopper",Attending,"Example Corp"
+Alan,Turing,alan.turing@example.edu,"Alan Turing",Attending,"Example University"
+Edsger,Dijkstra,edsger.dijkstra@example.org,"Edsger Dijkstra",Attending,"Example Org"
+Barbara,Liskov,barbara.liskov@example.edu,"Barbara Liskov",Attending,"Example University"

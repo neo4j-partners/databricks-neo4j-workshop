@@ -42,7 +42,6 @@ import argparse
 import base64
 import os
 import sys
-import traceback
 import urllib.parse
 from pathlib import Path
 
@@ -72,9 +71,9 @@ SHARED_FOLDER = os.environ.get(
 # appendix README that describes it.
 NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     (
-        "Lab_1_Aura_Setup",
-        ("01_create_aura_instance.ipynb", "02_credentials_and_cypher.ipynb"),
-        "Lab_1_Aura_Setup",
+        "Lab_1_Neo4j_Basics",
+        ("01_credentials_and_cypher.ipynb",),
+        "Lab_1_Neo4j_Basics",
     ),
     (
         "Lab_2_Databricks_ETL_Neo4j",
@@ -137,6 +136,13 @@ NOTEBOOKS: tuple[tuple[str, tuple[str, ...], str], ...] = (
 # metadata behind in this one folder, which is the one participants are told to
 # read a flag out of. Deleting first is cheaper than explaining a stale flag.
 DELETE_BEFORE_UPLOAD = frozenset({"neo4j_mcp_connection"})
+
+# Subfolders an earlier version of this list published and the current one does
+# not. Every import overwrites, but nothing removes a folder the list stopped
+# naming, so a renamed lab would otherwise leave its old copy in ``/Shared``
+# beside the new one. Lab 1 was ``Lab_1_Aura_Setup`` until its Aura setup moved
+# to the workshop site's Setup page.
+RETIRED_SUBFOLDERS = frozenset({"Lab_1_Aura_Setup"})
 
 
 def upload_files() -> list[tuple[Path, str]]:
@@ -249,6 +255,13 @@ def sync(workspace) -> dict:
     files = upload_files()
     subfolders = sorted({subfolder for _, subfolder in files})
 
+    retired_removed = 0
+    for subfolder in sorted(RETIRED_SUBFOLDERS):
+        target = f"{SHARED_FOLDER}/{subfolder}"
+        if delete_folder(workspace, target):
+            retired_removed += 1
+            voclab.log(f"removed retired {target}")
+
     for subfolder in subfolders:
         if subfolder in DELETE_BEFORE_UPLOAD:
             target = f"{SHARED_FOLDER}/{subfolder}"
@@ -278,6 +291,7 @@ def sync(workspace) -> dict:
         "shared_folder": SHARED_FOLDER,
         "notebooks_uploaded": total,
         "notebooks_present": present,
+        "retired_folders_removed": retired_removed,
     }
 
 
@@ -310,17 +324,18 @@ def main(argv: list[str] | None = None) -> int:
         )
         return EXIT_FAILED
     except Exception as error:
-        # Broad for the same reason ``workshop.py``'s is: a traceback that exits
-        # non-zero having emitted nothing leaves a run that failed for no stated
-        # reason. The traceback still reaches stderr.
-        traceback.print_exc()
+        # Anything else is a bug, not an expected failure, so it is re-raised
+        # rather than handled. The ``error_code`` line goes out first, because a
+        # run that exits non-zero having emitted nothing failed for no stated
+        # reason. The re-raise then prints the traceback to stderr and exits 1,
+        # the same code as every handled failure.
         voclab.emit(
             {
                 "error_code": "UNEXPECTED_ERROR",
                 "message": f"{type(error).__name__}: {error}",
             }
         )
-        return EXIT_FAILED
+        raise
 
 
 if __name__ == "__main__":

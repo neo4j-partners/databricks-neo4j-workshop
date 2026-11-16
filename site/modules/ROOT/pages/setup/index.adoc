@@ -1,0 +1,19 @@
+= Setup
+
+== Get Your Environment Ready
+
+Every lab in this workshop talks to two services. A Databricks workspace runs the notebooks, and a https://neo4j.com/[Neo4j] database holds the Aircraft Digital Twin graph. The workspace is provided for you. The database is yours to create.
+
+.Create your AuraDB Free instance before Lab 1
+[NOTE]
+====
+Lab 1 opens by asking for the credentials of an instance that already exists. Follow xref:setup/aura-free-setup/index.adoc[Neo4j AuraDB Free Setup] now, then start xref:lab1.adoc[Lab 1].
+====
+
+== The One Setup Step
+
+xref:setup/aura-free-setup/index.adoc[Neo4j AuraDB Free Setup] walks through creating a *Neo4j AuraDB Free* instance and saving its credentials. The instance starts empty. Lab 2 loads the graph into it.
+
+== Where the Credentials Go Next
+
+You type the credentials once, in `Lab_1_Neo4j_Basics/01_credentials_and_cypher.ipynb`. That notebook stores them in a Databricks secret scope named `fleet-ops-<your user>`. Labs 2 through 6 read that scope, so you never type the password again.

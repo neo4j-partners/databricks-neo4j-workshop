@@ -49,9 +49,8 @@ Every lab has a notebook in your workspace, including Labs 1 and 4. Those two ar
 Your Databricks home folder contains:
 
 ```
-Lab_1_Aura_Setup/
-  01_create_aura_instance.ipynb      <- start here
-  02_credentials_and_cypher.ipynb
+Lab_1_Neo4j_Basics/
+  01_credentials_and_cypher.ipynb    <- start here
 Lab_2_Databricks_ETL_Neo4j/
   01_aircraft_etl_to_neo4j.ipynb
 Lab_3_Semantic_Search/
@@ -79,15 +78,15 @@ Run them in order. Lab 2 needs the Aura instance you create in Lab 1, Lab 3 need
 ## Getting Started
 
 1. Open the Databricks workspace (left pane)
-2. Open **Lab_1_Aura_Setup** → `01_create_aura_instance` and work through it in a browser tab to create your Neo4j Aura instance and download its credentials
-3. Open `02_credentials_and_cypher` and attach it to your assigned cluster. It is the only notebook where you type your Neo4j password. Its connection test confirms the credentials reach Aura, and it stores them for every later lab
+2. In a separate browser tab, follow [Neo4j AuraDB Free Setup](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/setup/aura-free-setup/index.html) on the workshop site to create your Neo4j Aura instance and download its credentials
+3. Open **Lab_1_Neo4j_Basics** → `01_credentials_and_cypher` and attach it to your assigned cluster. It is the only notebook where you type your Neo4j password. Its connection test confirms the credentials reach Aura, and it stores them for every later lab
 4. Continue lab by lab, attaching each notebook to the same cluster
 
 ## Neo4j Credentials
 
-You create your own AuraDB Free instance in Lab 1 and download the credentials file there. AuraDB Free, not the 14-day trial the console offers first: the trial provisions AuraDB Professional and expires partway through this course.
+You create your own AuraDB Free instance before Lab 1, by following [Neo4j AuraDB Free Setup](https://neo4j-partners.github.io/databricks-neo4j-workshop/databricks-neo4j-workshop/1.0/setup/aura-free-setup/index.html), and download the credentials file there. AuraDB Free, not the 14-day trial the console offers first: the trial provisions AuraDB Professional and expires partway through this course.
 
-You type those values once, in `Lab_1_Aura_Setup/02_credentials_and_cypher.ipynb`:
+You type those values once, in `Lab_1_Neo4j_Basics/01_credentials_and_cypher.ipynb`:
 
 ```python
 NEO4J_URI = "neo4j+s://xxxxxxxx.databases.neo4j.io"
@@ -95,9 +94,9 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "your_password_here"
 ```
 
-That notebook writes them into a Databricks secret scope named `fleet-ops-<your user>`, and every notebook from Lab 2 on opens with a cell that reads the scope. There is nothing to paste again. If a later notebook stops with an error about a missing scope, go back and run Lab 1 notebook 02.
+That notebook writes them into a Databricks secret scope named `fleet-ops-<your user>`, and every notebook from Lab 2 on opens with a cell that reads the scope. There is nothing to paste again. If a later notebook stops with an error about a missing scope, go back and run Lab 1 notebook 01.
 
-You never type a database name. Aura picks it, and on a Free instance it is often the instance ID rather than `neo4j`, so notebook 02 detects the real name off the connection and stores that too.
+You never type a database name. Aura picks it, and on a Free instance it is often the instance ID rather than `neo4j`, so Lab 1's notebook detects the real name off the connection and stores that too.
 
 Lab 4 Part A does not use Neo4j at all. You build a Genie Agent over the lakehouse sensor tables. Part B is an instructor demo you watch rather than run, against the instructor's own workspace and Neo4j MCP connection, so there is nothing for you to configure there. Lab 5 goes back to your own Aura instance, the one you loaded in Lab 2. Lab 6 uses that same instance and is the first lab that writes to it, storing the agent's memory beside the fleet graph.
 

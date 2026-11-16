@@ -32,6 +32,26 @@ def _unwrap_projection(row):
     return row
 
 
+def resolve_workspace_id(spark, explicit):
+    """The workspace ID that lab/workshop.py named the schemas after.
+
+    --workspace-id wins. Otherwise the cluster tag is read, because a runner
+    submitted to a cluster has no notebook context to fall back on.
+    """
+    if explicit:
+        value = explicit.strip()
+    else:
+        value = str(
+            spark.conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId", "")
+        ).strip()
+    if not value.isdigit():
+        sys.exit(
+            "Could not find this workspace's ID. Pass --workspace-id <digits>, "
+            "because the schemas are named aircraft_gold_<id> and aircraft_pipeline_<id>."
+        )
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Lab 2 Notebook 02: GDS Louvain Community Detection"
@@ -48,7 +68,16 @@ def main():
     parser.add_argument(
         "--catalog", default="databricks-neo4j-workshop", help="Unity Catalog name"
     )
-    parser.add_argument("--schema", default="aircraft", help="Schema with sensor tables")
+    parser.add_argument(
+        "--schema",
+        default=None,
+        help="Schema with sensor tables. Defaults to aircraft_gold_<workspace id>",
+    )
+    parser.add_argument(
+        "--workspace-id",
+        default=None,
+        help="Workspace ID the schemas are named for. Read from the cluster when omitted",
+    )
     parser.add_argument("--mcp-endpoint", default="", help="(unused)")
     parser.add_argument("--mcp-api-key", default="", help="(unused)")
     parser.add_argument("--mcp-path", default="", help="(unused)")
@@ -57,6 +86,9 @@ def main():
     from pyspark.sql import SparkSession
 
     spark = SparkSession.builder.getOrCreate()
+    workspace_id = resolve_workspace_id(spark, args.workspace_id)
+    if args.schema is None:
+        args.schema = f"aircraft_gold_{workspace_id}"
 
     print("=" * 60)
     print("Lab 2 Notebook 02: GDS Louvain Community Detection")

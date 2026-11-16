@@ -1,0 +1,115 @@
+= Neo4j AuraDB Free Setup
+
+== Create the Database Every Lab Talks To
+
+Every lab in this workshop reads and writes one https://neo4j.com/[Neo4j] graph. You create that database yourself on *Neo4j AuraDB Free*. It costs nothing and needs no credit card. Unlike the trial, it has no 14-day clock. It is deleted only if it stays paused for 30 days.
+
+IMPORTANT: There is one instance and no fallback. Every later lab reads and writes the instance you create here, so save the credentials where you can find them again.
+
+'''''
+
+== Step 1: Sign Up
+
+[arabic]
+. Open https://console.neo4j.io/[the Neo4j Aura console] in a separate browser tab
+. Click *Don't have an account? Sign up* below the login form
+. Follow the sign-up process. You provide an email address, create a password, and agree to the terms of service
+
+.Do not start the 14-day free trial
+[WARNING]
+====
+When the console asks *Where do you want your instance deployed?*, do *not* click *Start 14-day free trial*. That button creates an AuraDB Professional trial, which expires after 14 days, partway through this course. Below the button, under *Not looking to start a free trial?*, click *Select another instance type*.
+====
+
+'''''
+
+== Step 2: Create the Instance and Save the Credentials
+
+[arabic]
+. Choose the *AuraDB Free* tier, then confirm to create the instance. The confirm button is labelled *Next* or *Create instance*, depending on which version of the console you land on
+. A dialog appears showing a username and a password. Click *Download to continue* to save the credentials file
+
+.Save the credentials the moment they appear
+[CAUTION]
+====
+Aura generates the password and shows it once, at creation. It is never shown again after you close this dialog. Download the credentials file and store it somewhere safe. If you lose it, reset the password from the instance's actions menu and use the new one.
+====
+
+image::lab1-free-create-instance.png["The instance creation dialog, showing the generated credentials and the download option"]
+
+Wait for the instance to appear in the Instances list with a *RUNNING* status and a type of *AuraDB Free*.
+
+'''''
+
+== Step 3: Find the Four Values
+
+Open the downloaded file in a text editor. It holds these four lines, among others:
+
+----
+NEO4J_URI=neo4j+s://xxxxxxxx.databases.neo4j.io
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=<your generated password>
+NEO4J_DATABASE=xxxxxxxx
+----
+
+`NEO4J_DATABASE` is the one people skip. AuraDB Free often names the database after the instance ID. An instance reached at `neo4j+s://f024ea61.databases.neo4j.io` serves a database named `f024ea61`, not `neo4j`. Copy the value from the file rather than assuming it.
+
+You type all four into `Lab_1_Neo4j_Basics/01_credentials_and_cypher.ipynb`. Keep the file until that notebook has run successfully.
+
+'''''
+
+== Step 4: Confirm the Instance Answers
+
+Open *Query* on the instance in the Aura console and run:
+
+[source,cypher]
+----
+CALL db.info() YIELD name
+RETURN name
+----
+
+One row comes back. Its value matches the `NEO4J_DATABASE` line in your credentials file.
+
+The graph is empty at this point. That is the expected starting state. Lab 2 loads the Aircraft Digital Twin into it.
+
+'''''
+
+== What AuraDB Free Gives You
+
+*The size limit is generous here.* AuraDB Free caps a graph at 200,000 nodes and 400,000 relationships. After Labs 1 through 3 your graph holds about 21,613 nodes, which is 10.8 percent of the node cap. The sensor readings live in Databricks rather than in Neo4j, which is why the graph stays small.
+
+*One Free instance per account.* You can create only one AuraDB Free instance per account.
+
+*An idle instance pauses.* AuraDB Free pauses an instance after 72 hours without activity. A paused instance refuses connections, which reads like a wrong URI. If you return to the workshop after a break, resume the instance from the console before running anything. An instance left paused for 30 days is deleted, along with all its data.
+
+*No Graph Data Science.* Graph Data Science, the library of algorithms like PageRank and community detection, is not available on AuraDB Free. No required lab uses it. `Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb` and the xref:appendix-a.adoc[GDS appendix] are take-home material for an instance that has the plugin.
+
+'''''
+
+== Troubleshooting
+
+These are the errors the connection test in `01_credentials_and_cypher.ipynb` reports when a value from this page is wrong.
+
+.AuthError
+[%collapsible]
+====
+The password is wrong. Aura shows the generated password once, so a mistyped or truncated paste is the usual cause. Re-copy it from the credentials file you downloaded, or reset the password from the Aura console and use the new one.
+====
+
+.ServiceUnavailable, or a connection timeout
+[%collapsible]
+====
+The Aura instance is not accepting connections, or the URI is wrong. Open https://console.neo4j.io/[the Aura console] and check its status. A newly created instance may still be provisioning, and an idle Free instance pauses and has to be resumed. Wait for *RUNNING*, then run the test again.
+====
+
+.Neo.ClientError.Database.DatabaseNotFound
+[%collapsible]
+====
+The database name is wrong. On AuraDB Free it is often the instance ID, not `neo4j`. Copy the `NEO4J_DATABASE` line from the credentials file.
+====
+
+'''''
+
+== Next
+
+Take the four values to xref:lab1.adoc[Lab 1: Graph Databases and Neo4j Aura] and open `Lab_1_Neo4j_Basics/01_credentials_and_cypher.ipynb` in your Databricks workspace.
