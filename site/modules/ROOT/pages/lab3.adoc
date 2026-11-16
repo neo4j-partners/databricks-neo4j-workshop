@@ -38,18 +38,18 @@ Larger chunks give the LLM more context during entity extraction, improving its 
 
 === Chunks to Graph Structure
 
-An LLM reads each chunk and extracts entities: regulations, thresholds, procedures, components. These become graph nodes linked to their source chunks via `FROM_CHUNK`. Entity resolution deduplicates: the same regulation mentioned across five different chunks becomes one node with five links, not five separate nodes. Cross-linking connects extracted entities to the existing operational graph built in Lab 2, so a procedure that applies to a specific system links directly to that system's node.
+An LLM reads each chunk and extracts one entity type, `ExtractedLimit`. Each one is an operating threshold, such as an EGT limit, as the LLM read it out of the manual. These become graph nodes linked to their source chunks via `FROM_CHUNK`. Entity resolution deduplicates: the same limit mentioned across five different chunks becomes one node with five links, not five separate nodes. Cross-linking then connects each `ExtractedLimit` to the `Sensor` from Lab 2 that it describes.
 
 .Schema design and entity resolution
 [%collapsible]
 ====
-* **Schema design.** SimpleKGPipeline supports three schema modes. **User-Provided** means you define the entity and relationship types. **Extracted** lets the LLM discover the schema. **Free** applies no constraints at all. This workshop uses User-Provided because the aircraft domain has known entity types (Aircraft, System, Component, Sensor, MaintenanceEvent) and known relationship patterns. Constraining extraction to these types produces a consistent, queryable graph.
+* **Schema design.** SimpleKGPipeline supports three schema modes. **User-Provided** means you define the entity and relationship types. **Extracted** lets the LLM discover the schema. **Free** applies no constraints at all. This workshop uses a closed User-Provided schema with one entity type, `ExtractedLimit`, and no relationship types. The LLM cannot invent labels, so the extracted graph stays consistent and queryable. Lab 2's canonical `OperatingLimit` rows hold the same limits transcribed by hand, so you can compare the two.
 * **Entity resolution.** The same real-world component can surface under different names ("HP Turbine," "High-pressure Turbine," "HPT"). Entity resolution merges these duplicates so that queries return complete results. Without it, maintenance event counts and relationship traversals silently miss data.
 ====
 
 == Knowledge Graph Structure
 
-After completing this lab, the graph combines structured data from Lab 2 with unstructured maintenance documentation. Documents are chunked and embedded for vector search, with entities extracted and linked back to source chunks. The `APPLIES_TO` relationships bridge the two layers, connecting regulatory and procedural entities to the aircraft, systems, and components they govern.
+After completing this lab, the graph combines structured data from Lab 2 with unstructured maintenance documentation. Documents are chunked and embedded for vector search, with entities extracted and linked back to source chunks. Three relationships bridge the two layers. `APPLIES_TO` links each manual's `Document` to the aircraft it covers. `HAS_LIMIT` links each `Sensor` to its canonical `OperatingLimit` from Lab 2. `HAS_EXTRACTED_LIMIT` links each `Sensor` to the matching `ExtractedLimit`.
 
 image::lab3-knowledge-graph-structure.svg[Knowledge graph combining structured operational data with unstructured maintenance documentation]
 
@@ -119,7 +119,7 @@ Questions carrying a code, a part number or a threshold favor the hybrid pair, b
 
 == Databricks Foundation Model APIs
 
-This lab uses Databricks-hosted embedding and LLM models, pre-deployed and accessible via the MLflow deployments client.
+This lab uses Databricks-hosted embedding and LLM models, pre-deployed and accessible via the MLflow deployments client. The labs call `databricks-bge-large-en` and `databricks-claude-sonnet-5`. The other two rows are alternatives the same API serves, listed for reference.
 
 [cols="2,2,3"]
 |===

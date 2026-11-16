@@ -381,7 +381,8 @@ def read_neo4j_secrets(dbutils: Any, scope: str) -> Dict[str, str]:
     other three: Aura names the database, often after the instance ID, so an
     instance at f024ea61.databases.neo4j.io serves a database called f024ea61
     and rejects "neo4j" outright. Lab 1's 01_credentials_and_cypher.ipynb
-    detects the real name and stores it, so there is nothing to guess here.
+    stores the name copied from the Aura credentials file, so there is
+    nothing to guess here.
 
     Databricks redacts secret values in notebook output, so printing any of
     these prints [REDACTED]. The value itself is intact in Python.
@@ -1060,7 +1061,7 @@ def format_operating_limit_record(record: Record) -> RetrieverResultItem:
     if limits:
         rows = "".join(
             f"<li><b>{limit['parameter']}</b> ({limit['sensor']}): "
-            f"max {limit['max']} {limit['unit']} — {limit['regime']}</li>"
+            f"max {limit['max']} {limit['unit']}, {limit['regime']}</li>"
             for limit in limits
         )
         limits_html = f"<ul>{rows}</ul>"

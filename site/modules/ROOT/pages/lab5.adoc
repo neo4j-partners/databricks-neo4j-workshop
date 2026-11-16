@@ -41,7 +41,7 @@ The wiring is about thirty lines of Python. The prompt is what decides which too
 
 **"What does the manual say about X" means the manual.** Naming an aircraft does not make it a graph question. If the question asks what a document says about something, `graphrag_node` takes it.
 
-That length is measured rather than guessed. A four-way ablation put this version level with one nearly twice as long, and both above the 865-word prompt it replaced. `test-prompt/` in the repository holds the harness and the run.
+That length is measured rather than guessed. A four-way ablation put this version level with one nearly twice as long, and both above the 865-word prompt it replaced. `worklog/test-prompt/` in the repository holds the harness and the run.
 
 .Why not simply say "graph questions go to the graph tool"
 [%collapsible]
@@ -118,7 +118,7 @@ The comparison that does separate them is a four-way ablation over seventeen que
 .One limitation on these numbers
 [%collapsible]
 ====
-The test graph ran Lab 3 with entity extraction switched off, so it held the twenty canonical `OperatingLimit` rows and no `ExtractedLimit`, `AircraftModel`, `SystemReference`, `ComponentReference`, `Fault` or `MaintenanceProcedure` nodes. A participant who runs Lab 3 with extraction on gets all of those. The routing numbers do not depend on those labels, but the run did not exercise them.
+The test graph ran Lab 3 with entity extraction switched off, so it held the twenty canonical `OperatingLimit` rows and no `ExtractedLimit` nodes. A participant who runs Lab 3 with extraction on also gets the `ExtractedLimit` nodes. The routing numbers do not depend on that label, but the run did not exercise it.
 ====
 
 == The Anchor Question
@@ -135,7 +135,7 @@ No single store holds all three answers. The telemetry is in Delta, the maintena
 
 == Credentials, and What Happens Without Them
 
-The notebook reads your Aura password from the secret scope Lab 1 wrote. **On the normal path no plaintext password is ever typed**, not into a cell, not into a config file, and it is not in the logged model. The deployed endpoint gets the same secret through its environment block, resolved when the endpoint starts. If the scope is missing, notebook 01 has a commented-out fallback cell you fill in by hand, which is the one place a password appears in the clear. Use it to get moving, then create the scope and clear the cell.
+The notebook reads your Aura password from the secret scope Lab 1 wrote. **No plaintext password is typed in this lab**, not into a cell, not into a config file, and it is not in the logged model. The deployed endpoint gets the same secret through its environment block, resolved when the endpoint starts. If the scope is missing, the connection cell in notebook 01 fails. Run Lab 1's notebook to create the scope, then come back.
 
 The agent also degrades rather than failing. If the `maintenanceChunkEmbeddings` vector index is missing, because Lab 3 notebook 01 was skipped, the builder detects it and drops `graphrag_node` from the available tools instead of raising at import. The graph still compiles and the agent still answers from telemetry and the fleet graph. Running Lab 3 notebook 01 brings the third tool back with no other change.
 
@@ -155,7 +155,7 @@ The second notebook logs the same graph to Unity Catalog as an MLflow `Responses
 **Pin the requirements.** If you let MLflow infer them, it reads the packages installed on the cluster. A cluster carrying the Lab 6 memory wheel produces a requirement that pip cannot find, so the container fails to build about fifteen minutes later.
 ====
 
-A first deploy takes roughly sixteen minutes, and the notebook polls and prints where it got to. It then asks the endpoint the same questions and scores the answers with MLflow's judges.
+A first deploy takes about fifteen minutes, and the notebook polls and prints where it got to. It then asks the endpoint the same questions and scores the answers with MLflow's judges.
 
 The registered model name and the endpoint name come from `agent.py` rather than from a string you type, because Lab 6 redeploys **this** endpoint rather than standing up a second one.
 

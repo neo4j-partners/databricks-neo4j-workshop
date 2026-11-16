@@ -3,7 +3,7 @@
 Three retrieval tools and the two reasoning nodes that sit around them:
 
 - ``genie_node``     Databricks Genie Agent over the Lakehouse telemetry from
-                     Lab 4 Part A. Every reading and every aggregation over
+                     Lab 4. Every reading and every aggregation over
                      readings.
 - ``cypher_node``    Text to Cypher over the Aura instance from Lab 2, run in a
                      read transaction.
@@ -492,8 +492,7 @@ Error:
 # each, put this one and a 380-word version at a perfect routing score and the
 # 865-word original below both. What survives here is the two things the tool
 # names do not say: a documented limit is a graph property, and a question
-# about what a document says goes to the manuals. The harness that produced
-# that result, and the run it came from, are in test-prompt/.
+# about what a document says goes to the manuals.
 #
 # Point 1 reads oddly for a prompt this short, and it is the way it is because
 # three other wordings were measured and each cost something. The word
@@ -589,11 +588,11 @@ Findings:
 # =============================================================================
 
 # Appended to a finding's heading when the tool retrieved nothing. SYNTHESIS_PROMPT
-# is told what it means; SUPERVISOR_PROMPT is deliberately not. The ablation in
-# test-prompt/ found that the supervisor recovers from an empty finding more
-# reliably with no rule about the mark than with the rule the prompt used to
-# carry, which told it to keep the part unanswered and got it to re-pick the
-# exhausted tool instead of the one that could still answer.
+# is told what it means; SUPERVISOR_PROMPT is deliberately not. The ablation
+# found that the supervisor recovers from an empty finding more reliably with
+# no rule about the mark than with the rule the prompt used to carry, which
+# told it to keep the part unanswered and got it to re-pick the exhausted tool
+# instead of the one that could still answer.
 UNGROUNDED_MARK = "  [NO DATA RETRIEVED]"
 
 
@@ -745,7 +744,7 @@ def build_genie_node(
 
     Args:
         space_id: The Genie Agent to ask. Each participant creates their own in
-            Lab 4 Part A, so this comes from the notebook's configuration cell.
+            Lab 4, so this comes from the notebook's configuration cell.
         workspace_client: A ``databricks.sdk.WorkspaceClient``.
         max_rows: Rows of the result set to keep.
 

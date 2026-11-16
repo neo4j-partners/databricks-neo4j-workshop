@@ -191,7 +191,7 @@ WHEEL_PATH = (
     "neo4j_agent_memory-0.5.1.dev1+mentions-py3-none-any.whl"
 )
 HTTPX_REQUIREMENT = "httpx>=0.27.0"
-INSTALL_COMMAND = f"%pip install {WHEEL_PATH} {HTTPX_REQUIREMENT}"
+INSTALL_COMMAND = f'%pip install {WHEEL_PATH} "{HTTPX_REQUIREMENT}"'
 
 
 # =============================================================================
@@ -228,9 +228,9 @@ EMBEDDING_DIMENSIONS = 1024
 UNUSED_MEMORY_SUBSYSTEMS = ("facts", "consolidation", "read_audit", "geospatial")
 
 # The three variables Lab 5's agent.py binds to secret references when it
-# deploys. Repeated here rather than imported, because importing agent.py runs
-# its mlflow.models.set_model() call, and a notebook that imports memory.py
-# should not be declaring itself a model.
+# deploys. Repeated here rather than imported, so that importing memory.py
+# never runs agent.py's mlflow.models.set_model() call. A notebook that needs
+# agent.py imports it itself, when it logs the model.
 ENV_CREDENTIAL_NAMES = ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
 
 # The fourth variable, required like the other three. Aura names the database

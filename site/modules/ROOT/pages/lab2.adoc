@@ -4,13 +4,14 @@ In this lab you move data from Databricks Lakehouse into Neo4j using the Spark C
 
 TIP: Ready to start? Open `Lab_2_Databricks_ETL_Neo4j/01_aircraft_etl_to_neo4j.ipynb` in your Databricks workspace. Every step lives in that notebook; this page is the background behind it.
 
+NOTE: The notebook reads the silver tables that the `Fleet Digital Twin ETL` pipeline builds, so that pipeline must have run at least once. Workshop provisioning runs it before class. If it has not run, the notebook's configuration cell stops and names the missing schema.
+
 .**At a Glance**
 
 * **Table rows become graph nodes**, foreign keys become relationships. The Spark Connector handles the mapping
 * **Nodes load first**, then relationships. Both endpoints must exist before edges can be created
 * **The lab notebook** builds aircraft topology (Aircraft, Systems, Components), then layers in Sensors, Flights, Delays, MaintenanceEvents, and Removals
-* **Graph insights flow back** to the Lakehouse as enrichment columns in Gold Delta tables
-* **Validation** compares node/relationship counts against source row counts to catch silent failures
+* **Validation** displays node and relationship counts so you can spot a load that came up short
 
 == From the Lakehouse to the Graph
 
@@ -26,13 +27,13 @@ image::step3-connected-graph.svg[The resulting connected graph with a SQL vs Cyp
 
 * **Rows become nodes.** A row in the aircraft table becomes an Aircraft node, with columns like `aircraft_id`, `model`, and `status` as node properties.
 * **Foreign keys become relationships.** A column like `system.aircraft_id` pointing to `aircraft.aircraft_id` becomes `(:Aircraft)-[:HAS_SYSTEM]->(:System)`. These are straightforward one-hop lookups that SQL also handles well.
-* **Mapping tables become relationships.** A junction table like `component_removals` produces no nodes at all. Each row becomes a `REMOVED_FROM` relationship with `removal_date` and `reason` as relationship properties. The mapping table disappears entirely.
+* **Mapping tables become linking nodes.** Each row of a junction table like `component_removals` becomes a `Removal` node, connected as `(:Aircraft)-[:HAS_REMOVAL]->(:Removal)-[:REMOVED_COMPONENT]->(:Component)`. The row's details become properties on that node.
 
 .Shared attributes and self-referential patterns
 [%collapsible]
 ====
 * **Shared attributes become shared nodes.** Two aircraft operating at the same airport have no foreign key between them. Discovering that link in the Lakehouse requires a self-join. In the graph, Airport becomes a shared node and both aircraft connect to it, making the hidden connection explicit and traversable.
-* **Self-referential columns become chains.** `origin_airport` and `destination_airport` in a flights table point to two entities in the same table. In the graph this becomes `(:Airport)<-[:DEPARTED_FROM]-(:Flight)-[:ARRIVED_AT]->(:Airport)`. Chains of these are natural traversals in the graph but require complex nested joins in SQL.
+* **Self-referential columns become chains.** `origin_airport` and `destination_airport` in a flights table point to two entities in the same table. In the graph this becomes `(:Airport)<-[:DEPARTS_FROM]-(:Flight)-[:ARRIVES_AT]->(:Airport)`. Chains of these are natural traversals in the graph but require complex nested joins in SQL.
 
 The graph advantage grows with each pattern:
 
@@ -56,7 +57,7 @@ Delta Lake enforces schema and rejects bad data at ingestion: column renaming, t
 
 The Spark Connector is the officially supported bridge between Databricks and Neo4j. It turns Lakehouse rows into graph nodes and relationships, and pulls graph data back into DataFrames for analytics or ML. It supports batch and incremental loading patterns.
 
-* **Node loading** maps DataFrame columns to node properties. Each row becomes a node through a batched upsert, which creates the node if it is new and updates it if it already exists. That makes the load idempotent. The connector uses `labels` and `node.keys` options to control which label the node gets and which property serves as its unique identifier. Nodes load first because both endpoints must exist before relationships can be created.
+* **Node loading** maps DataFrame columns to node properties. Each row becomes a node. This lab writes in Append mode, a plain `CREATE`, so it clears the database before loading. The connector uses `labels` and `node.keys` options to control which label the node gets and which property serves as its unique identifier. Nodes load first because both endpoints must exist before relationships can be created.
 * **Relationship loading** matches existing nodes by property values and creates the specified relationship type between them. Transaction details or operational metadata ride as properties on the relationship itself; no separate edge table, no foreign key resolution at query time.
 
 .Does the data have to move?
@@ -120,14 +121,14 @@ A **notebook** is an interactive document of cells containing Python, SQL, or ma
 
 Topology loads in order: Aircraft nodes, then System nodes (Engines, Avionics, Hydraulics per aircraft), then Component nodes (fans, compressors, turbines, pumps) attached to each system.
 
-The notebook then layers operational and maintenance data on top of that topology: Sensors attached to systems, Flights operated by aircraft, Delays on flights, MaintenanceEvents affecting components (with `AFFECTS_SYSTEM` and `AFFECTS_AIRCRAFT` back-links for cross-cutting impact queries), and Removals that link aircraft to removed components. It also loads the canonical `OperatingLimit` rows and attaches each one to the sensor it governs.
+The notebook then layers operational and maintenance data on top of that topology: Sensors attached to systems, Flights operated by aircraft, Delays on flights, MaintenanceEvents affecting components (with `AFFECTS_SYSTEM` and `AFFECTS_AIRCRAFT` back-links for cross-cutting impact queries), and Removals that link aircraft to removed components. It also loads the canonical `OperatingLimit` rows. They arrive unattached. Lab 3 links each one to the sensor it governs.
 
 The whole shape, once the notebook finishes:
 
 ----
 (Aircraft) -[:HAS_SYSTEM]-> (System) -[:HAS_COMPONENT]-> (Component)
 (Aircraft) -[:HAS_SYSTEM]-> (System) -[:HAS_SENSOR]-> (Sensor)
-(Sensor)   -[:HAS_LIMIT]-> (OperatingLimit)
+(OperatingLimit)   // unattached until Lab 3 adds (Sensor)-[:HAS_LIMIT]->
 (Aircraft) -[:OPERATES_FLIGHT]-> (Flight) -[:DEPARTS_FROM / :ARRIVES_AT]-> (Airport)
 (Flight)   -[:HAS_DELAY]-> (Delay)
 (Component) -[:HAS_EVENT]-> (MaintenanceEvent)
@@ -136,7 +137,7 @@ The whole shape, once the notebook finishes:
 (Aircraft) -[:HAS_REMOVAL]-> (Removal) -[:REMOVED_COMPONENT]-> (Component)
 ----
 
-Lab 5 uses `HAS_LIMIT` directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares the two. The comparison works on a plain string because the units match on both sides by design: `EGT` (Exhaust Gas Temperature) is `°C` in the sensor metadata and `°C` in the limit table, and `N1Speed` (fan speed, as a percentage of the engine's rated speed) is `% RPM` in both. xref:glossary.adoc[The glossary] expands the four sensor types and the maintenance vocabulary that goes with them.
+Lab 3 creates `HAS_LIMIT`, and Lab 5 uses it directly. Every question of the form "is this reading out of limits?" walks from a `Sensor` to its `OperatingLimit` and compares the two. The comparison works on a plain string because the units match on both sides by design: `EGT` (Exhaust Gas Temperature) is `°C` in the sensor metadata and `°C` in the limit table, and `N1Speed` (fan speed, as a percentage of the engine's rated speed) is `% RPM` in both. xref:glossary.adoc[The glossary] expands the four sensor types and the maintenance vocabulary that goes with them.
 
 == Sensor Readings Stay in Databricks
 
@@ -146,22 +147,22 @@ This split is why Lab 4 uses a Genie Agent and why Lab 5's agent routes between 
 
 == The Load Clears the Database First
 
-The notebook runs with `CLEAR_DATABASE = True`. Nodes are written in Append mode, a plain `CREATE`, which never replaces an existing node, so running the load twice would give you two of everything. Clearing first is what makes the load repeatable: a participant who gets halfway and stops can start the notebook again from the top and land in a known state.
+The notebook runs with `CLEAR_DATABASE = True`. Nodes are written in Append mode, a plain `CREATE`, which never replaces an existing node. Run a load cell a second time without the clear and the uniqueness constraints reject the second copy, so the cell fails. Clearing first is what makes the load repeatable: a participant who gets halfway and stops can start the notebook again from the top and land in a known state.
 
 The cost is that your Aura instance cannot hold anything else you want to keep. Re-running Lab 2 deletes whatever Lab 3 or Lab 6 wrote alongside it.
 
 == Key Concepts
 
-1. **Unity Catalog Volumes** store files accessible from notebooks
+1. **Silver Delta tables** from the `Fleet Digital Twin ETL` pipeline are what the notebook reads
 2. **Nodes first, relationships second** ensures endpoints exist before connections are created
-3. **Cypher queries from Databricks** verify data loaded correctly by checking node and relationship counts against source row counts
+3. **Cypher queries from Databricks** verify data loaded correctly by displaying node and relationship counts
 
-Slides for this lab: xref:slides/slides-knowledge-graph-foundations.adoc[What is a Knowledge Graph].
+Slides for this lab: xref:slides/slides-neo4j-databricks.adoc[Neo4j + Databricks].
 
 == Next Steps
 
 Run `01_aircraft_etl_to_neo4j.ipynb` to load the graph. Once the data is in, see xref:lab2-sample-queries.adoc[Sample Queries] for hands-on Cypher to explore it.
 
-Then continue to xref:lab3.adoc[Lab 3: Semantic Search], which adds the maintenance manual to the graph you just built. Lab 3 is the prerequisite for xref:lab4.adoc[Lab 4] and for Lab 5, where the agent that queries all of this gets built.
+Then continue to xref:lab3.adoc[Lab 3: Semantic Search], which adds the maintenance manual to the graph you just built. Lab 3 is the prerequisite for Lab 5, where the agent that queries all of this gets built. xref:lab4.adoc[Lab 4] needs only the pipeline's gold tables.
 
-The optional `02_gds_knn_aircraft.ipynb` needs Graph Data Science, which AuraDB Free does not carry, so it does not run on your workshop instance. Read it, skip running it. The same applies to Appendix A.
+The optional https://github.com/neo4j-partners/databricks-neo4j-workshop/blob/main/Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb[`02_gds_knn_aircraft.ipynb`] needs Graph Data Science, which AuraDB Free does not carry, so it does not run on your workshop instance. It is in the GitHub repository and is not copied to your workspace. Read it there, and run it later on an instance that has the plugin. The same applies to Appendix A.

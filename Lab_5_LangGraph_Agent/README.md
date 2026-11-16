@@ -91,13 +91,13 @@ Section 9 of notebook 01 is what reproduces them. **If you edit
 **`SUPERVISOR_PROMPT` was replaced, and the numbers survived it.** The prompt is
 now 213 words instead of 865, chosen by an ablation rather than written: four
 lengths, 17 questions, 5 trials each, scoring the short prompt 1.000 and the
-long one 0.982 on the fraction of expected tools called. `test-prompt/` is the
-harness and `trimprompt.md` is the write-up, including the eleven words in the
-old prompt that stopped it recovering when a tool came back empty.
+long one 0.982 on the fraction of expected tools called. The same ablation found
+eleven words in the old prompt that stopped it recovering when a tool came back
+empty.
 
 Section 9 was re-run against the replacement on 2026-08-09, five passes instead
 of one. 12/12 overall and 8/8 on the pair, identical every pass, 60 out of 60
 with no spread. **Which also says what the twelve questions can no longer do.**
 They score both prompts perfectly, so they cannot tell you the shorter one is as
-good, only that neither fails here. The 17 questions in `test-prompt/` are the
+good, only that neither fails here. The 17 ablation questions are the
 instrument that separates them.

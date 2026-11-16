@@ -7,7 +7,7 @@ TIP: Ready to start? Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb` in you
 == What You Build in This Lab
 
 * **You build the Genie Agent.** It runs over the Lakehouse telemetry, with four gold tables attached. Open `Lab_4_Compound_AI_Agents/04_genie_agent.ipynb`; every step lives there. It produces a Genie Agent ID that Lab 5 and Lab 6 both use.
-* **The compound AI agent is an optional instructor demo.** A no-code Supervisor Agent in Agent Bricks puts the Genie Agent and a Neo4j MCP agent behind one question box. It stays optional because it needs a hosted MCP server and the Unity Catalog connection that fronts it, both outside the scope of the workshop. The procedure is in `Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md`.
+* **The compound AI agent is an optional instructor demo.** A no-code Supervisor Agent in Agent Bricks puts the Genie Agent and a Neo4j MCP agent behind one question box. It stays optional because it needs a hosted MCP server and the Unity Catalog connection that fronts it, both outside the scope of the workshop. The procedure is in https://github.com/neo4j-partners/databricks-neo4j-workshop/blob/main/Lab_4_Compound_AI_Agents/OPTIONAL_COMPOUND_AGENT_DEMO.md[`OPTIONAL_COMPOUND_AGENT_DEMO.md`] in the GitHub repository. It is not copied to your workspace.
 
 **Lab 5 is the architecture you build.** It builds the same routing behaviour in code, against your own graph, with no MCP server, and Lab 6 then gives that agent memory in Neo4j. Watching the demo first shows you the no-code version of that routing and what it takes to run, so you can compare the two when you write the code.
 

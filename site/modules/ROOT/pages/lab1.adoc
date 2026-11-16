@@ -110,7 +110,7 @@ The workshop runs on **AuraDB Free**, not the 14-day trial and not Professional.
 
 It holds up to **200,000 nodes and 400,000 relationships**. Everything the labs load fits well inside that, because the sensor readings live in Databricks rather than in Neo4j.
 
-Free does not include **Graph Data Science**, the library of algorithms like PageRank and community detection. No required lab uses it. xref:lab2.adoc[Lab 2]'s `02_gds_knn_aircraft.ipynb` and the GDS appendix are take-home material: read them during the workshop, run them later on an instance that has the plugin.
+Free does not include **Graph Data Science**, the library of algorithms like PageRank and community detection. No required lab uses it. Lab 2's https://github.com/neo4j-partners/databricks-neo4j-workshop/blob/main/Lab_2_Databricks_ETL_Neo4j/02_gds_knn_aircraft.ipynb[`02_gds_knn_aircraft.ipynb`] and the GDS appendix are take-home material. The notebook is in the GitHub repository and is not copied to your workspace. Run them later on an instance that has the plugin.
 ====
 
 .Vector search and AI capabilities
