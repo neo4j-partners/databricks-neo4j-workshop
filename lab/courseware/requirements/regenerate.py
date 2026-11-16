@@ -29,16 +29,20 @@ them all, and the compile takes two steps:
    a file that exists only while this script runs.
 
 ``runtime-constraints.txt`` is the runtime's whole package list, one
-``name==version`` per line. Two markers take a line out, each with a required
-reason, and both keep the runtime version on record::
+``name==version`` per line. Three markers take a line out, each with a required
+reason, and all three keep the runtime version on record::
 
     # freed: mlflow-skinny==3.0.1  the lock moves it to 3.18.0, which ...
     # not-required: torch==2.7.0+cpu  a +cpu build from the PyTorch index, ...
+    # not-on-pypi: python-apt==2.7.7+ubuntu5.3  an Ubuntu system package, ...
 
 A freed package is one the labs need at another version. It stays in step 1 by
 name, so its dependents' bounds still apply. A not-required package is left out
-of step 1 altogether: one not on PyPI, or one ``pip check`` already fails on a
-clean cluster, either of which leaves nothing to solve. A line that is neither
+of step 1, because requiring it leaves nothing to solve: ``pip check`` already
+fails it on a clean cluster, or its runtime build is not the one on PyPI. It is
+still checked alone against the lock, at its public version, so the lock cannot
+break it without a word. A not-on-pypi package is left out of everything,
+because PyPI has no version of it to check. A line that is neither
 a pin nor a marker fails the check rather than being skipped, and so does a pin
 commented out any other way, so no runtime package goes unchecked because of
 how its line was written. The markers ignore case. The constraints are checked
@@ -49,10 +53,19 @@ The check, run after every compile and alone with ``--check``, fails on any of:
 
 * a runtime pin the lock moves;
 * a freed package the lock does not move, which should be pinned again;
-* a not-required package the lock installs, which would replace the runtime's
-  own build;
+* a not-required or not-on-pypi package the lock installs, which would replace
+  the runtime's own build;
 * a lock that cannot be installed beside the whole runtime, which is step 1
-  rerun with the lock as constraints.
+  rerun with the lock as constraints;
+* a package that rerun adds which neither the runtime ships nor the lock
+  installs. uv adds one rather than failing when a runtime package depends on
+  something the cluster lacks, which is a ``pip check`` failure on a clean
+  cluster. The fix is to mark the runtime package that needs it not-required;
+* a not-required package whose PyPI build, at its public version, cannot be
+  installed beside the lock.
+
+Versions are compared as PEP 440 defines equality, so ``2.0`` and ``2.0.0`` are
+the same version and ``2.7.0`` and ``2.7.0+cpu`` are not.
 
 A changed lock reaches no workspace on its own. It is uploaded to the volume by
 ``lab/workshop.py provision``, which ``workspace_init.sh`` runs once per
@@ -64,6 +77,7 @@ Standard library only, against Python 3.9, like ``lab/workshop.py``.
 from __future__ import annotations
 
 import argparse
+import itertools
 import re
 import shutil
 import subprocess
@@ -98,7 +112,8 @@ PIN = re.compile(rf"^({NAME})==([^\s;#]+)")
 # A runtime package taken out of the pins. The runtime version stays on record,
 # and the reason is required.
 MARKED = re.compile(
-    rf"^#\s*(freed|not-required):\s*({NAME})==(\S+)\s*(.*)$", re.IGNORECASE
+    rf"^#\s*(freed|not-required|not-on-pypi):\s*({NAME})==(\S+)\s*(.*)$",
+    re.IGNORECASE,
 )
 
 # A comment that looks like a marker, or that holds a pin anywhere in it, such as
@@ -106,8 +121,25 @@ MARKED = re.compile(
 # no reason and no error. A pin here is ``name==`` and a digit, so the header's
 # ``name==version`` placeholders are not read as one.
 COMMENTED_PIN = re.compile(
-    rf"^#\s*(freed\b|not-required\b|.*\b{NAME}\s*==\s*\d)", re.IGNORECASE
+    rf"^#\s*(freed\b|not-required\b|not-on-pypi\b|.*\b{NAME}\s*==\s*\d)",
+    re.IGNORECASE,
 )
+
+# PEP 440's version grammar, as the ``packaging`` library spells it. This script
+# is standard library only, so it carries the pattern rather than importing it.
+VERSION = re.compile(
+    r"""
+    v?
+    (?:(?P<epoch>[0-9]+)!)?
+    (?P<release>[0-9]+(?:\.[0-9]+)*)
+    (?:[-_.]?(?P<pre_l>alpha|a|beta|b|preview|pre|c|rc)[-_.]?(?P<pre_n>[0-9]+)?)?
+    (?:-(?P<post_n1>[0-9]+)|[-_.]?(?P<post_l>post|rev|r)[-_.]?(?P<post_n2>[0-9]+)?)?
+    (?:[-_.]?(?P<dev_l>dev)[-_.]?(?P<dev_n>[0-9]+)?)?
+    (?:\+(?P<local>[a-z0-9]+(?:[-_.][a-z0-9]+)*))?
+    """,
+    re.VERBOSE | re.IGNORECASE,
+)
+PRE_LETTERS = {"alpha": "a", "beta": "b", "c": "rc", "pre": "rc", "preview": "rc"}
 
 
 class Marked(NamedTuple):
@@ -119,12 +151,47 @@ class Constraints(NamedTuple):
     pins: dict[str, str]
     freed: dict[str, Marked]
     not_required: dict[str, Marked]
+    not_on_pypi: dict[str, Marked]
     problems: list[str]
 
 
 def normalize(name: str) -> str:
     """A package name as pip compares it, per PEP 503."""
     return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def version_key(version: str) -> tuple:
+    """A version reduced to what PEP 440 equality compares.
+
+    Trailing zeros in the release do not count, spellings of the same pre, post
+    or dev release are one, and the local label counts. A version outside the
+    grammar is compared as its lowercased text.
+    """
+    match = VERSION.fullmatch(version.strip())
+    if not match:
+        return ("unparsed", version.strip().lower())
+    release = [int(part) for part in match.group("release").split(".")]
+    while len(release) > 1 and release[-1] == 0:
+        release.pop()
+    pre = None
+    if match.group("pre_l"):
+        letter = match.group("pre_l").lower()
+        pre = (PRE_LETTERS.get(letter, letter), int(match.group("pre_n") or 0))
+    post = None
+    if match.group("post_n1") or match.group("post_l"):
+        post = int(match.group("post_n1") or match.group("post_n2") or 0)
+    dev = int(match.group("dev_n") or 0) if match.group("dev_l") else None
+    local = tuple(
+        int(part) if part.isdigit() else part.lower()
+        for part in re.split(r"[-_.]", match.group("local") or "")
+        if part
+    )
+    return (int(match.group("epoch") or 0), tuple(release), pre, post, dev, local)
+
+
+def same_version(first: str, second: str) -> bool:
+    """Whether two version strings name the same version under PEP 440."""
+    return version_key(first) == version_key(second)
 
 
 def read_pins(path: Path) -> dict[str, str]:
@@ -145,7 +212,11 @@ def read_constraints() -> Constraints:
     ways.
     """
     pins: dict[str, str] = {}
-    marked: dict[str, dict[str, Marked]] = {"freed": {}, "not-required": {}}
+    marked: dict[str, dict[str, Marked]] = {
+        "freed": {},
+        "not-required": {},
+        "not-on-pypi": {},
+    }
     problems = []
     for number, raw in enumerate(CONSTRAINTS.read_text().splitlines(), start=1):
         line = raw.strip()
@@ -160,7 +231,8 @@ def read_constraints() -> Constraints:
             problems.append(
                 f"{where}: a commented-out pin must be written "
                 f"'# freed: name==version reason' or "
-                f"'# not-required: name==version reason': {line}"
+                f"'# not-required: name==version reason' or "
+                f"'# not-on-pypi: name==version reason': {line}"
             )
         elif not line or line.startswith("#"):
             continue
@@ -168,17 +240,21 @@ def read_constraints() -> Constraints:
             pins[normalize(match.group(1))] = match.group(2)
         else:
             problems.append(f"{where}: not a name==version pin: {line}")
-    freed, not_required = marked["freed"], marked["not-required"]
-    for first, second, label in (
-        (pins, freed, "pinned and freed"),
-        (pins, not_required, "pinned and not-required"),
-        (freed, not_required, "freed and not-required"),
+    kinds = {"pinned": pins, **marked}
+    for (first_kind, first), (second_kind, second) in itertools.combinations(
+        kinds.items(), 2
     ):
         problems.extend(
-            f"{CONSTRAINTS.name}: {name} is both {label}"
+            f"{CONSTRAINTS.name}: {name} is both {first_kind} and {second_kind}"
             for name in sorted(first.keys() & second.keys())
         )
-    return Constraints(pins, freed, not_required, problems)
+    return Constraints(
+        pins,
+        marked["freed"],
+        marked["not-required"],
+        marked["not-on-pypi"],
+        problems,
+    )
 
 
 def write_full_requirements(constraints: Constraints, workdir: Path) -> None:
@@ -257,13 +333,94 @@ def compile_lock(constraints: Constraints, upgrade: bool) -> bool:
     return True
 
 
-def fits_runtime(constraints: Constraints) -> bool:
-    """Whether the lock, as it stands, can be installed beside the whole runtime."""
+def read_via(path: Path) -> dict[str, list[str]]:
+    """The packages each pin's ``# via`` comment names, keyed by pin name.
+
+    uv writes either ``# via name`` on one line, or ``# via`` followed by one
+    ``#   name`` line per package. A ``-r`` or ``-c`` source is kept as written.
+    """
+    via: dict[str, list[str]] = {}
+    current = None
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if match := PIN.match(line):
+            current = normalize(match.group(1))
+            via[current] = []
+        elif current and line.startswith("#"):
+            words = line.lstrip("#").strip()
+            if words.startswith("via"):
+                words = words[len("via") :].strip()
+            if words:
+                via[current].append(words)
+        else:
+            current = None
+    return via
+
+
+def fits_runtime(constraints: Constraints, locked: dict[str, str]) -> list[str]:
+    """Every way the lock, as it stands, fails to sit beside the whole runtime.
+
+    Step 1 is rerun with the lock as constraints. If it solves, uv may still
+    have added a package that the runtime does not list and the lock does not
+    install, to satisfy a requirement. One added for a kept, freed or locked
+    package is a problem: that package asks for something the cluster lacks,
+    so either it is broken on a clean cluster or the runtime's build of it
+    differs from PyPI's. One added only for a not-required or not-on-pypi
+    package, such as PyPI's torch for an accelerate the runtime pairs with its
+    own ``+cpu`` torch, is the cost of leaving that package out and passes.
+    """
     with tempfile.TemporaryDirectory() as name:
         work = Path(name)
         write_full_requirements(constraints, work)
         shutil.copyfile(LOCK, work / LOCK.name)
-        return uv_compile(work, FULL_NAME, RESOLVE_NAME, constraint=LOCK.name)
+        if not uv_compile(work, FULL_NAME, RESOLVE_NAME, constraint=LOCK.name):
+            return [
+                "the lock cannot be installed beside the runtime packages. uv "
+                "names the conflict above."
+            ]
+        resolved = read_pins(work / RESOLVE_NAME)
+        via = read_via(work / RESOLVE_NAME)
+    left_out = constraints.not_required.keys() | constraints.not_on_pypi.keys()
+    real = constraints.pins.keys() | constraints.freed.keys() | locked.keys()
+    problems = []
+    for name in sorted(resolved.keys() - real - left_out):
+        requirers = via.get(name) or []
+        blamed = [
+            requirer
+            for requirer in requirers
+            if normalize(requirer) in real or requirer.startswith("-")
+        ]
+        if blamed or not requirers:
+            problems.append(
+                f"{name}: uv added {resolved[name]}, which the runtime does not "
+                f"list and the lock does not install, because "
+                f"{', '.join(blamed or ['an unnamed package'])} requires it. "
+                f"Mark that runtime package not-required, with a reason."
+            )
+    return problems
+
+
+def fits_not_required(constraints: Constraints) -> list[str]:
+    """Each not-required package's PyPI build that cannot sit beside the lock.
+
+    One compile per package, ``name==public version`` alone with the lock as
+    constraints. The local label is dropped, as for a kept pin, so a ``+cpu``
+    build is stood in for by PyPI's build of the same version. The two can
+    differ in dependencies the lock does not install, which this does not see.
+    """
+    problems = []
+    with tempfile.TemporaryDirectory() as name:
+        work = Path(name)
+        shutil.copyfile(LOCK, work / LOCK.name)
+        for package, (version, _reason) in sorted(constraints.not_required.items()):
+            (work / "alone.in").write_text(f"{package}=={version.split('+')[0]}\n")
+            if not uv_compile(work, "alone.in", "alone.txt", constraint=LOCK.name):
+                problems.append(
+                    f"{package}: not-required, but PyPI's {version.split('+')[0]} "
+                    f"cannot be installed beside the lock. uv names the conflict "
+                    f"above."
+                )
+    return problems
 
 
 def check_lock(constraints: Constraints) -> list[str]:
@@ -276,10 +433,10 @@ def check_lock(constraints: Constraints) -> list[str]:
     problems = [
         f"{name}: the lock pins {locked[name]}, the runtime ships {version}"
         for name, version in sorted(constraints.pins.items())
-        if name in locked and locked[name] != version
+        if name in locked and not same_version(locked[name], version)
     ]
     for name, (version, _reason) in sorted(constraints.freed.items()):
-        if locked.get(name) == version:
+        if name in locked and same_version(locked[name], version):
             problems.append(
                 f"{name}: freed, but the lock keeps the runtime's {version}. "
                 f"Pin it again."
@@ -290,17 +447,18 @@ def check_lock(constraints: Constraints) -> list[str]:
                 f"cluster keeps the runtime's {version} and step 1 did not "
                 f"check that. Pin it again."
             )
-    problems.extend(
-        f"{name}: not-required, but the lock installs {locked[name]}, which "
-        f"replaces the runtime's {version}"
-        for name, (version, _reason) in sorted(constraints.not_required.items())
-        if name in locked
-    )
-    if not fits_runtime(constraints):
-        problems.append(
-            "the lock cannot be installed beside the runtime packages. uv names "
-            "the conflict above."
+    for kind, marked in (
+        ("not-required", constraints.not_required),
+        ("not-on-pypi", constraints.not_on_pypi),
+    ):
+        problems.extend(
+            f"{name}: {kind}, but the lock installs {locked[name]}, which "
+            f"replaces the runtime's {version}"
+            for name, (version, _reason) in sorted(marked.items())
+            if name in locked
         )
+    problems += fits_runtime(constraints, locked)
+    problems += fits_not_required(constraints)
     return problems
 
 
@@ -345,7 +503,8 @@ def main() -> int:
     print(
         f"{LOCK.name}: {len(locked)} pins. Runtime packages: "
         f"{len(constraints.pins)} kept, {len(constraints.freed)} freed, "
-        f"{len(constraints.not_required)} not required."
+        f"{len(constraints.not_required)} not required, "
+        f"{len(constraints.not_on_pypi)} not on PyPI."
     )
     for name, (version, reason) in sorted(constraints.freed.items()):
         print(f"  freed {name} {version} -> {locked[name]}: {reason}")
