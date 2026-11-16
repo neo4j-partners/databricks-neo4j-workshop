@@ -1,8 +1,8 @@
 = Sample Cypher Queries
 
-Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore the GraphRAG data structures built in this lab -- document chunking, text embeddings, entity extraction, fulltext indexes, and vector indexes.
+Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore the GraphRAG data structures built in this lab: document chunking, text embeddings, entity extraction, fulltext indexes, and vector indexes.
 
-NOTE: These queries run against the structures created during Lab 3. They will not return results until this lab's notebooks have been run.
+NOTE: These queries run against the structures created during Lab 3. They will not return results until this lab's notebooks have been run. The `ExtractedLimit` queries also return no rows if the pipeline's extraction step produced no entities.
 
 == Cypher Concepts Used
 
@@ -11,25 +11,25 @@ NOTE: These queries run against the structures created during Lab 3. They will n
 | Concept | What It Does
 
 | `MATCH (n:Label)`
-| Find nodes by label -- the starting point for most queries
+| Find nodes by label: the starting point for most queries
 
 | `(a)-[:REL]\->(b)`
 | Traverse a relationship between two nodes (direction matters)
 
 | `OPTIONAL MATCH`
-| Like a SQL LEFT JOIN -- keeps the row even if the pattern has no match
+| Works like a SQL LEFT JOIN. It keeps the row even if the pattern has no match
 
 | `RETURN ... AS alias`
 | Project properties and rename columns
 
 | `WITH`
-| Pipes results between query parts -- like a subquery boundary
+| Pipes results between query parts, like a subquery boundary
 
 | `count()`, `collect()`
-| Aggregate functions -- count rows or gather values into a list
+| Aggregate functions: count rows or gather values into a list
 
 | `substring(str, start, len)`
-| Extract part of a string -- handy for previewing long text
+| Extract part of a string, handy for previewing long text
 
 | `ORDER BY ... DESC`
 | Sort results (ascending by default)
@@ -38,7 +38,7 @@ NOTE: These queries run against the structures created during Lab 3. They will n
 | Cap the number of returned rows
 
 | `CASE WHEN ... THEN ... END`
-| Conditional expressions -- like SQL CASE
+| Conditional expressions, like SQL CASE
 
 | `EXISTS { pattern }`
 | Tests whether a graph pattern exists
@@ -53,7 +53,7 @@ NOTE: These queries run against the structures created during Lab 3. They will n
 | Run a vector similarity search against a named vector index
 
 | `CALL { ... }`
-| Subquery block -- used to scope intermediate results or call procedures
+| Subquery block, used to scope intermediate results or call procedures
 |===
 
 '''
@@ -87,7 +87,7 @@ ORDER BY c.index
 LIMIT 10
 ----
 
-NOTE: `substring()` truncates long text for readable output. `WHERE c.index IS NOT NULL` filters nulls before sorting -- always required when using `ORDER BY`.
+NOTE: `substring()` truncates long text for readable output. `WHERE c.index IS NOT NULL` filters nulls before sorting. This is always required when using `ORDER BY`.
 
 Walk the chunk chain:
 
@@ -122,7 +122,7 @@ RETURN c.index AS ChunkIndex,
 ORDER BY c.index
 ----
 
-NOTE: `EXISTS { pattern }` checks whether a pattern exists in the graph. Negating it finds chain endpoints -- the first chunk has no incoming `NEXT_CHUNK`, the last has no outgoing.
+NOTE: `EXISTS { pattern }` checks whether a pattern exists in the graph. Negating it finds chain endpoints: the first chunk has no incoming `NEXT_CHUNK`, the last has no outgoing.
 
 == Extracted Entities
 
@@ -139,7 +139,7 @@ CALL (label) {
 RETURN label AS entity_type, collect(name) AS samples
 ----
 
-NOTE: These entities were extracted via SimpleKGPipeline during the enrich step. `UNWIND` expands a list of labels into rows, and the `CALL` subquery scopes a `MATCH` per label. `ExtractedLimit` is extraction output only. Lab 2's 20 hand-transcribed limits carry the `OperatingLimit` label, which nothing in Lab 3 writes.
+NOTE: These entities were extracted via SimpleKGPipeline in Lab 3's `01_data_and_embeddings.ipynb` notebook. `UNWIND` expands a list of labels into rows, and the `CALL` subquery scopes a `MATCH` per label. `ExtractedLimit` is extraction output only. Lab 2's 20 hand-transcribed limits carry the `OperatingLimit` label, which nothing in Lab 3 writes.
 
 == Cross-Links: Knowledge Graph to Operational Graph
 
@@ -161,7 +161,7 @@ RETURN s.sensor_id AS source, ol.name AS target
 LIMIT 10
 ----
 
-NOTE: `HAS_LIMIT` reaches the 20 limits Lab 2 loaded from `nodes_operating_limits.csv`, transcribed from the manuals by hand. This is the edge to follow when a question asks what a threshold is.
+NOTE: `HAS_LIMIT` reaches the 20 limits Lab 2 loaded from the `silver_operating_limits` table, transcribed from the manuals by hand. This is the edge to follow when a question asks what a threshold is.
 
 Sensor to ExtractedLimit, what the LLM read:
 
@@ -190,7 +190,7 @@ ORDER BY Limit
 
 NOTE: The `WHERE` belongs to the `OPTIONAL MATCH`, so a limit with no extracted counterpart still returns a row with a null `ExtractedMax`. A null or a mismatch is a measurement of the extraction, not a failure of the query.
 
-Full provenance chain -- ExtractedLimit to Chunk to Document to Aircraft:
+Full provenance chain: ExtractedLimit to Chunk to Document to Aircraft:
 
 [source,cypher]
 ----
@@ -233,7 +233,7 @@ ORDER BY score DESC
 LIMIT 5
 ----
 
-NOTE: Multiple keywords are OR'd together by default -- chunks matching more keywords score higher. This is useful for domain-specific terminology where exact terms matter.
+NOTE: Multiple keywords are OR'd together by default. Chunks matching more keywords score higher. This is useful for domain-specific terminology where exact terms matter.
 
 == Vector Similarity Search
 
@@ -256,7 +256,7 @@ RETURN substring(seed.text, 0, 100) AS seed_text,
        substring(node.text, 0, 100) AS match_text
 ----
 
-NOTE: Picks a random chunk and uses its embedding to find the most similar chunks via the vector index. No API key needed -- reuses stored embeddings. `WHERE node <> seed` excludes the seed from its own results.
+NOTE: Picks a random chunk and uses its embedding to find the most similar chunks via the vector index. No API key is needed. The query reuses stored embeddings. `WHERE node <> seed` excludes the seed from its own results.
 
 Vector search with document context:
 
@@ -338,7 +338,7 @@ RETURN substring(seed.text, 0, 80) AS seed_text,
        substring(node.text, 0, 60) AS match_text
 ----
 
-NOTE: The most advanced pattern -- semantic search results are connected to the operational graph via a `CALL` subquery that matches chunk text to system names. This bridges the knowledge graph and the aircraft topology.
+NOTE: The most advanced pattern: semantic search results are connected to the operational graph via a `CALL` subquery that matches chunk text to system names. This bridges the knowledge graph and the aircraft topology.
 
 == Verify Indexes (Post-Lab 3)
 

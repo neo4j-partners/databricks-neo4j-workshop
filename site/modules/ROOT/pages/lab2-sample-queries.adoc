@@ -1,8 +1,6 @@
 = Sample Cypher Queries
 
-Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore the Aircraft Digital Twin graph loaded by the Lab 2 notebooks.
-
-TIP: All of these queries can also be run programmatically via `uv run populate-aircraft-db samples` from `workshop-setup/populate_aircraft_db/`.
+Copy and paste these queries into the https://console.neo4j.io[Neo4j Aura Query interface] to explore the Aircraft Digital Twin graph loaded by Lab 2's `01_aircraft_etl_to_neo4j.ipynb` notebook.
 
 == Cypher Concepts Used
 
@@ -11,22 +9,22 @@ TIP: All of these queries can also be run programmatically via `uv run populate-
 | Concept | What It Does
 
 | `MATCH (n:Label)`
-| Find nodes by label -- the starting point for most queries
+| Find nodes by label: the starting point for most queries
 
 | `(a)-[:REL]\->(b)`
 | Traverse a relationship between two nodes (direction matters)
 
 | `OPTIONAL MATCH`
-| Like a SQL LEFT JOIN -- keeps the row even if the pattern has no match
+| Works like a SQL LEFT JOIN. It keeps the row even if the pattern has no match
 
 | `RETURN ... AS alias`
 | Project properties and rename columns
 
 | `WITH`
-| Pipes results between query parts -- like a subquery boundary
+| Pipes results between query parts, like a subquery boundary
 
 | `count()`, `collect()`
-| Aggregate functions -- count rows or gather values into a list
+| Aggregate functions: count rows or gather values into a list
 
 | `ORDER BY ... DESC`
 | Sort results (ascending by default)
@@ -117,7 +115,7 @@ ORDER BY a.tail_number, sys.name
 LIMIT 10
 ----
 
-NOTE: Three-hop traversal `Aircraft -> System -> Sensor` follows the physical topology. This is the same sensor data that appears in the Databricks Delta tables -- the join point between the two databases.
+NOTE: Three-hop traversal `Aircraft -> System -> Sensor` follows the physical topology. This is the same sensor data that appears in the Databricks Delta tables. It is the join point between the two databases.
 
 == Schema Introspection
 
@@ -137,4 +135,4 @@ List all indexes:
 SHOW INDEXES
 ----
 
-NOTE: Shows all indexes in the database -- useful for verifying what's been created so far.
+NOTE: Shows all indexes in the database. This is useful for verifying what's been created so far.

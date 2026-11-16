@@ -157,7 +157,7 @@ The second notebook logs the same graph to Unity Catalog as an MLflow `Responses
 
 A first deploy takes about fifteen minutes, and the notebook polls and prints where it got to. It then asks the endpoint the same questions and scores the answers with MLflow's judges.
 
-The registered model name and the endpoint name come from `agent.py` rather than from a string you type, because Lab 6 redeploys **this** endpoint rather than standing up a second one.
+The registered model name and the endpoint name come from `agent.py` rather than from a string you type, because Lab 6's optional Section 10 redeploys **this** endpoint rather than standing up a second one.
 
 == Why a Bolt Driver Rather Than MCP
 

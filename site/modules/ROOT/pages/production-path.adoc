@@ -1,6 +1,6 @@
 = From Workshop to Production
 
-The agent you deployed in Labs 5 and 6 is real: a Model Serving endpoint, authenticating as a service principal, routing across two governed stores. What separates it from a production system is not the architecture. It is the tier it runs on, where the writes happen, and what happens when a tool fails.
+The agent you deployed in Lab 5 is real: a Model Serving endpoint, authenticating as a service principal, routing across two governed stores. Lab 6's optional Section 10 redeploys that same endpoint with memory. What separates it from a production system is not the architecture. It is the tier it runs on, where the writes happen, and what happens when a tool fails.
 
 .**At a Glance**
 * **The architecture carries over.** Supervisor plus tools, credentials as secret references, resources declared at log time. None of that changes.
@@ -27,7 +27,7 @@ The agent you deployed in Labs 5 and 6 is real: a Model Serving endpoint, authen
 | Your own build pipeline for that wheel, or the upstream release once the `MENTIONS` fix lands
 
 | Endpoint
-| One per participant, redeployed in place by Lab 6
+| One per participant, redeployed in place by Lab 6's optional Section 10
 | Sized for concurrency, with scale-to-zero decided by traffic shape
 
 | Evaluation

@@ -6,7 +6,7 @@ notebooks**, and the concepts are on the site:
 
 | File | What it is |
 |---|---|
-| `01_agent_memory.ipynb` | Adopt, seed, run the headline query, wire recall and remember, measure, redeploy. Section 10 needs the SQL warehouse ID Lab 5 notebook 01 stores in the secret scope, so that notebook has to have run first |
+| `01_agent_memory.ipynb` | Adopt, seed, run the headline query, wire recall and remember, measure, optional redeploy. Section 10 needs the SQL warehouse ID Lab 5 notebook 01 stores in the secret scope, so that notebook has to have run first |
 | `02_optional_demos.ipynb` | Four run-and-read demos. **Ships to every workspace**, and it is optional: a participant can run it, or the instructor can drive it. Not an exercise |
 | `memory.py` | The Databricks adapters, the recall and remember nodes, the seed helper, and the headline Cypher |
 

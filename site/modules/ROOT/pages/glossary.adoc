@@ -35,7 +35,7 @@ Four sensor types are fitted to every engine in the fleet, and to nothing else. 
 
 **Reading.** One sensor value at one timestamp. The 155,520 readings span 90 days at 4-hour intervals, 540 per sensor, and live in the Databricks `sensor_readings` table. They are never loaded into Neo4j, which is why sensor trend questions route to the Genie Agent and not to Cypher.
 
-**Operating limit.** The manufacturer's allowed range for one parameter on one aircraft model, transcribed from that model's maintenance manual. Twenty `OperatingLimit` nodes cover five models times four parameters. Every one carries `regime: 'takeoff'`, because takeoff is the limiting case. `sourceRef` names the manual, section, and line the number came from, so any limit can be traced back to its page.
+**Operating limit.** The manufacturer's allowed range for one parameter on one aircraft model, transcribed from that model's maintenance manual. Twenty `OperatingLimit` nodes cover five models times four parameters. Every one carries `regime: 'takeoff'`, because takeoff is the limiting case.
 
 **Regime.** The phase of flight a limit applies to. Takeoff, climb, cruise, and idle each have different allowances, and this dataset holds the takeoff numbers only.
 
@@ -94,7 +94,7 @@ These terms appear in the maintenance manuals that Lab 3 chunks and Lab 5 retrie
 | What was done about the fault. Free text on the `MaintenanceEvent` node.
 
 | Removal event
-| A component taken off an aircraft, with its work order, technician, part and serial numbers, and hours and cycles at removal. Column names in this file are airline mainframe abbreviations: `RMV_TRK_NO` is the removal tracking number and `RMV_REA_TX` is the removal reason text.
+| A component taken off an aircraft, with its work order, technician, part and serial numbers, and hours and cycles at removal. Column names in this file are airline mainframe abbreviations: `RMV_TRK_NO` is the removal tracking number and `RMV_REA_TX` is the removal reason text. In the graph, Lab 2 stores `RMV_REA_TX` as the `reason` property on `Removal` nodes.
 
 | Flight hours / flight cycles
 | The two ways component life is counted. Hours measure running time; one cycle is one takeoff and landing. Parts that wear from heat are tracked on hours, and parts that wear from stress are tracked on cycles.
@@ -106,7 +106,7 @@ These terms appear in the maintenance manuals that Lab 3 chunks and Lab 5 retrie
 | The industry-standard numbering for aircraft systems, run by Airlines for America and used by every manufacturer. Chapter 29 is Hydraulic Power, 34 is Navigation, 71 to 79 cover the powerplant. Manual sections cite it, so it is how a fault maps to a section of documentation.
 
 | AMM
-| Aircraft Maintenance Manual. The manufacturer's procedures document. The five manuals in this workshop are AMM-format documents.
+| Aircraft Maintenance Manual. The manufacturer's procedures document. The workshop's maintenance manuals are AMM-format documents. Lab 3 loads the A320 manual.
 
 | IPC / CMM
 | Illustrated Parts Catalog and Component Maintenance Manual. The parts breakdown and the shop-level repair procedures that sit behind an AMM reference.

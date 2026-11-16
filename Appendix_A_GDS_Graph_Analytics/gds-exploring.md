@@ -1,6 +1,6 @@
 # GDS Exploring: Aircraft Digital Twin Graph
 
-Sample GDS projection and algorithm queries from notebooks 03, 04, and 05. Copy and paste into the [Neo4j Aura Query interface](https://console.neo4j.io).
+Sample GDS projection and algorithm queries from Lab 2's `02_gds_knn_aircraft.ipynb` and Appendix A notebooks 04 and 05. Copy and paste into the [Neo4j Aura Query interface](https://console.neo4j.io).
 
 Notebooks run the full pipeline (feature compute → project → write) from Databricks. These queries let you explore the results in the Neo4j Browser and re-run individual GDS steps directly.
 
@@ -8,9 +8,10 @@ Notebooks run the full pipeline (feature compute → project → write) from Dat
 
 | Notebook | Writes to Neo4j |
 |---|---|
-| 04 — kNN | `*_norm` properties on `Aircraft` nodes; `SIMILAR_PROFILE` relationships with `similarity_score` |
-| 05 — PageRank / Betweenness | `pagerank_score` and `betweenness_score` properties on `Airport` nodes |
-| 06 — Node Similarity | `SIMILAR_FAULT_PROFILE` relationships with `jaccard_score` |
+| Lab 2, 02: kNN | `*_norm` properties on `Aircraft` nodes; `SIMILAR_PROFILE` relationships with `similarity_score` |
+| 02: Louvain | `fault_community` property on `Aircraft` nodes. This page has no Louvain queries |
+| 04: PageRank / Betweenness | `pagerank_score` and `betweenness_score` properties on `Airport` nodes |
+| 05: Node Similarity | `SIMILAR_FAULT_PROFILE` relationships with `jaccard_score` |
 
 ---
 
@@ -48,7 +49,7 @@ RETURN dropped
 
 ---
 
-## Notebook 03 — kNN Aircraft Similarity
+## Lab 2 Notebook 02: kNN Aircraft Similarity
 
 Each aircraft gets a feature vector of 7 normalized metrics (sensor averages/std devs and maintenance counts). kNN finds the 3 most operationally similar peer aircraft using cosine similarity.
 
@@ -67,7 +68,7 @@ ORDER BY a.tail_number
 LIMIT 10
 ```
 
-> **Concepts**: The notebook writes 7 `*_norm` properties to each Aircraft node via the Spark Connector. `IS NOT NULL` filters to aircraft that have been enriched — useful if the feature write only covered a subset.
+> **Concepts**: The notebook writes 7 `*_norm` properties to each Aircraft node via the Spark Connector. `IS NOT NULL` filters to aircraft that have been enriched. This is useful if the feature write only covered a subset.
 
 ### Project Aircraft nodes for kNN
 
@@ -91,7 +92,7 @@ CALL gds.graph.project(
 YIELD graphName, nodeCount, relationshipCount
 ```
 
-> **Concepts**: kNN operates purely on node properties — no relationships need to be traversed. `'*'` projects all relationship types as a wildcard (GDS 2026+ requires at least one relationship type even for property-only algorithms). The `gds.graph.drop('...', false)` before projection prevents an error if the named projection already exists. `false` means "fail silently if missing."
+> **Concepts**: kNN operates purely on node properties. No relationships need to be traversed. `'*'` projects all relationship types as a wildcard (GDS 2026+ requires at least one relationship type even for property-only algorithms). The `gds.graph.drop('...', false)` before projection prevents an error if the named projection already exists. `false` means "fail silently if missing."
 
 ### Stream kNN similarity pairs
 
@@ -117,7 +118,7 @@ RETURN gds.util.asNode(node1).tail_number AS Aircraft,
 ORDER BY Aircraft, SimilarityScore DESC
 ```
 
-> **Concepts**: `stream` returns results as rows without writing to the database — use it to inspect before committing. `gds.util.asNode(nodeId)` resolves a GDS internal node ID back to the Neo4j node. `similarityCutoff: 0.4` drops pairs with cosine similarity below 0.4.
+> **Concepts**: `stream` returns results as rows without writing to the database. Use it to inspect before committing. `gds.util.asNode(nodeId)` resolves a GDS internal node ID back to the Neo4j node. `similarityCutoff: 0.4` drops pairs with cosine similarity below 0.4.
 
 ### Write SIMILAR_PROFILE relationships
 
@@ -163,9 +164,9 @@ ORDER BY Similarity DESC
 LIMIT 10
 ```
 
-> **Concepts**: Sorted by `similarity_score` descending — the highest-similarity pairs are the most operationally aligned and make the strongest candidates for proactive inspection.
+> **Concepts**: Sorted by `similarity_score` descending. The highest-similarity pairs are the most operationally aligned and make the strongest candidates for proactive inspection.
 
-### Cross-model similarity — peers across model boundaries
+### Cross-model similarity: peers across model boundaries
 
 ```sql
 MATCH (a:Aircraft)-[r:SIMILAR_PROFILE]->(peer:Aircraft)
@@ -179,7 +180,7 @@ RETURN a.tail_number   AS Aircraft,
 ORDER BY Similarity DESC
 ```
 
-> **Concepts**: `a.model <> peer.model` filters to pairs where the two aircraft are different models. Cross-model similarity is operationally significant — it implies shared degradation patterns that transcend model type.
+> **Concepts**: `a.model <> peer.model` filters to pairs where the two aircraft are different models. Cross-model similarity is operationally significant. It implies shared degradation patterns that transcend model type.
 
 ### Peer alert: who to inspect when a given aircraft flags an anomaly?
 
@@ -193,7 +194,7 @@ RETURN peer.tail_number AS PeerTail,
 ORDER BY Similarity DESC
 ```
 
-> **Concepts**: The core operational use case — when one aircraft shows an anomaly, inspect its kNN peers, which share the same feature signature and may be on the same degradation trajectory. Swap `N10000` for any tail number in the fleet.
+> **Concepts**: The core operational use case: when one aircraft shows an anomaly, inspect its kNN peers, which share the same feature signature and may be on the same degradation trajectory. Swap `N10000` for any tail number in the fleet.
 
 ### Drop the projection when done
 
@@ -205,9 +206,9 @@ CALL gds.graph.drop('aircraft-profiles', false) YIELD graphName
 
 ---
 
-## Notebook 04 — PageRank and Betweenness Centrality on the Airport Route Network
+## Notebook 04: PageRank and Betweenness Centrality on the Airport Route Network
 
-Flights connect airports through intermediate Flight nodes — there are no direct Airport-to-Airport relationships in the base graph. The Cypher aggregation projection builds a virtual weighted Airport graph, where edge weight equals the number of flights on each route.
+Flights connect airports through intermediate Flight nodes. There are no direct Airport-to-Airport relationships in the base graph. The Cypher aggregation projection builds a virtual weighted Airport graph, where edge weight equals the number of flights on each route.
 
 ### Explore airport traffic before projecting
 
@@ -222,7 +223,7 @@ RETURN ap.iata     AS IATA,
 ORDER BY Departures DESC
 ```
 
-> **Concepts**: `OPTIONAL MATCH` keeps airports with zero arrivals. This gives a traffic baseline before running centrality — useful to know whether algorithm rankings align with raw volume.
+> **Concepts**: `OPTIONAL MATCH` keeps airports with zero arrivals. This gives a traffic baseline before running centrality. It shows whether algorithm rankings align with raw volume.
 
 ### Top routes by flight frequency
 
@@ -236,7 +237,7 @@ ORDER BY Flights DESC
 LIMIT 15
 ```
 
-> **Concepts**: Identifies the highest-frequency routes — these will dominate the PageRank calculation because weight equals flight count.
+> **Concepts**: Identifies the highest-frequency routes. These will dominate the PageRank calculation because weight equals flight count.
 
 ### Build the weighted airport route projection (Cypher aggregation)
 
@@ -259,9 +260,9 @@ RETURN gds.graph.project(
 )
 ```
 
-> **Concepts**: Cypher aggregation projection uses `RETURN gds.graph.project(...)` (a function, not a procedure). The `MATCH` pattern traverses through Flight nodes to build a virtual Airport-to-Airport graph. `undirectedRelationshipTypes: ['FLIES_TO']` treats every route bidirectionally — A→B and B→A are equivalent for centrality purposes.
+> **Concepts**: Cypher aggregation projection uses `RETURN gds.graph.project(...)` (a function, not a procedure). The `MATCH` pattern traverses through Flight nodes to build a virtual Airport-to-Airport graph. `undirectedRelationshipTypes: ['FLIES_TO']` treats every route bidirectionally. A→B and B→A are equivalent for centrality purposes.
 
-### Stream PageRank — which airports are most influential?
+### Stream PageRank: which airports are most influential?
 
 ```sql
 CALL gds.pageRank.stream('airport-routes', {
@@ -279,7 +280,7 @@ ORDER BY PageRank DESC
 
 > **Concepts**: PageRank scores an airport by both the volume of connections and the importance of the airports it connects to. `relationshipWeightProperty: 'weight'` means high-frequency routes contribute more influence. `dampingFactor: 0.85` is the standard value (probability of following a link vs. jumping randomly).
 
-### Stream Betweenness — which airports are critical connectors?
+### Stream Betweenness: which airports are critical connectors?
 
 ```sql
 CALL gds.betweenness.stream('airport-routes')
@@ -322,9 +323,9 @@ RETURN ap.iata                          AS IATA,
 ORDER BY PageRank DESC
 ```
 
-> **Concepts**: Once written, scores are plain node properties — queryable without any active projection. `IS NOT NULL` ensures only enriched Airport nodes appear.
+> **Concepts**: Once written, scores are plain node properties. They are queryable without any active projection. `IS NOT NULL` ensures only enriched Airport nodes appear.
 
-### Hubs vs. connectors — where the two rankings disagree
+### Hubs vs. connectors: where the two rankings disagree
 
 ```sql
 MATCH (ap:Airport)
@@ -358,9 +359,9 @@ LIMIT 20
 
 ---
 
-## Notebook 05 — Node Similarity on Aircraft Fault Profiles
+## Notebook 05: Node Similarity on Aircraft Fault Profiles
 
-Node Similarity computes Jaccard similarity — overlap of shared neighbors — on a bipartite Aircraft-FaultType graph. Aircraft nodes share no direct neighbors in the base graph (each component belongs to exactly one aircraft), so the notebook creates temporary `FaultType` nodes representing distinct `fault + severity` combinations.
+Node Similarity computes Jaccard similarity on a bipartite Aircraft-FaultType graph. Jaccard similarity measures the overlap of shared neighbors. Aircraft nodes share no direct neighbors in the base graph (each component belongs to exactly one aircraft), so the notebook creates temporary `FaultType` nodes representing distinct `fault + severity` combinations.
 
 ### Explore fault type vocabulary
 
@@ -373,7 +374,7 @@ RETURN FaultKey, Fault, Severity, count(*) AS Occurrences
 ORDER BY Occurrences DESC
 ```
 
-> **Concepts**: Shows the distinct `fault × severity` combinations that form the similarity vocabulary. More distinct fault types means richer similarity signal — if all aircraft have identical fault types, every pair scores 1.0.
+> **Concepts**: Shows the distinct `fault × severity` combinations that form the similarity vocabulary. More distinct fault types means richer similarity signal. If all aircraft have identical fault types, every pair scores 1.0.
 
 ### Fault type diversity per aircraft
 
@@ -387,7 +388,7 @@ RETURN a.tail_number                                          AS Aircraft,
 ORDER BY DistinctFaultTypes DESC
 ```
 
-> **Concepts**: Four-hop traversal from Aircraft down to MaintenanceEvent. Aircraft with many distinct fault types carry more similarity information — those with only 1–2 fault types will have sparse similarity relationships after filtering.
+> **Concepts**: Four-hop traversal from Aircraft down to MaintenanceEvent. Aircraft with many distinct fault types carry more similarity information. Those with only 1–2 fault types will have sparse similarity relationships after filtering.
 
 ### Create FaultType nodes (graph enrichment step)
 
@@ -405,7 +406,7 @@ RETURN count(DISTINCT ft) AS FaultTypeNodes,
        count(DISTINCT a)  AS AircraftConnected
 ```
 
-> **Concepts**: `MERGE` on `FaultType` is idempotent — running this twice creates no duplicates. The pattern makes cross-aircraft similarity computable: two aircraft that both experienced `bearing wear_MAJOR` both connect to the same `FaultType` node, giving them a shared neighbor that Jaccard similarity can measure.
+> **Concepts**: `MERGE` on `FaultType` is idempotent. Running this twice creates no duplicates. The pattern makes cross-aircraft similarity computable: two aircraft that both experienced `bearing wear_MAJOR` both connect to the same `FaultType` node, giving them a shared neighbor that Jaccard similarity can measure.
 
 ### Verify the bipartite structure
 
@@ -433,9 +434,9 @@ CALL gds.graph.project(
 YIELD graphName, nodeCount, relationshipCount
 ```
 
-> **Concepts**: Node Similarity needs both node labels in the projection — `['Aircraft', 'FaultType']` — so GDS can traverse the bipartite graph. `orientation: 'NATURAL'` preserves direction (Aircraft → FaultType), which is what Jaccard similarity expects for bipartite graphs.
+> **Concepts**: Node Similarity needs both node labels in the projection, `['Aircraft', 'FaultType']`, so GDS can traverse the bipartite graph. `orientation: 'NATURAL'` preserves direction (Aircraft → FaultType), which is what Jaccard similarity expects for bipartite graphs.
 
-### Stream Node Similarity — top Jaccard pairs
+### Stream Node Similarity: top Jaccard pairs
 
 ```sql
 CALL gds.nodeSimilarity.stream('aircraft-faulttype', {
@@ -454,7 +455,7 @@ ORDER BY JaccardSimilarity DESC
 LIMIT 20
 ```
 
-> **Concepts**: The `WHERE gds.util.asNode(node1):Aircraft` filter discards Aircraft-FaultType pairs — we only want Aircraft-Aircraft results. `similarityCutoff: 0.2` drops pairs sharing fewer than 20% of their combined fault type portfolio. Jaccard = `|intersection| / |union|`.
+> **Concepts**: The `WHERE gds.util.asNode(node1):Aircraft` filter discards Aircraft-FaultType pairs. We only want Aircraft-Aircraft results. `similarityCutoff: 0.2` drops pairs sharing fewer than 20% of their combined fault type portfolio. Jaccard = `|intersection| / |union|`.
 
 ### Write SIMILAR_FAULT_PROFILE relationships
 
@@ -498,7 +499,7 @@ RETURN a.tail_number        AS Aircraft,
 ORDER BY JaccardScore DESC
 ```
 
-> **Concepts**: Cross-model pairs are the most operationally significant result — aircraft sharing failure modes despite being different models implies a fault pattern that is not model-specific (e.g., a common supplier component or maintenance practice).
+> **Concepts**: Cross-model pairs are the most operationally significant result. Aircraft sharing failure modes despite being different models implies a fault pattern that is not model-specific (e.g., a common supplier component or maintenance practice).
 
 ### Visualize the fault profile similarity network
 
@@ -553,7 +554,7 @@ RETURN a.tail_number   AS Aircraft,
 ORDER BY Aircraft
 ```
 
-> **Concepts**: Matching against both `SIMILAR_FAULT_PROFILE` and `SIMILAR_PROFILE` in separate `MATCH` clauses requires the pattern to satisfy both — equivalent to a SQL INNER JOIN on the pair. These are the highest-confidence peer relationships in the dataset.
+> **Concepts**: Matching against both `SIMILAR_FAULT_PROFILE` and `SIMILAR_PROFILE` in separate `MATCH` clauses requires the pattern to satisfy both. This is equivalent to a SQL INNER JOIN on the pair. These are the highest-confidence peer relationships in the dataset.
 
 ### Busiest airports by PageRank that also have high maintenance delay rates
 
@@ -573,4 +574,4 @@ RETURN ap.iata                                       AS IATA,
 ORDER BY PageRank DESC
 ```
 
-> **Concepts**: Limits to the top 10 airports by PageRank using `WITH ap ORDER BY ... LIMIT 10`, then aggregates delay data for those airports only. Dividing delay count by flight count normalizes for airport size — a 10% maintenance delay rate means something different at a 100-flight hub than at a 10-flight spoke.
+> **Concepts**: Limits to the top 10 airports by PageRank using `WITH ap ORDER BY ... LIMIT 10`, then aggregates delay data for those airports only. Dividing delay count by flight count normalizes for airport size. A 10% maintenance delay rate means something different at a 100-flight hub than at a 10-flight spoke.

@@ -1,10 +1,10 @@
 = Appendix A: GDS Graph Analytics
 
-WARNING: **You cannot run these notebooks on your workshop instance.** Graph Data Science is not available on AuraDB Free, and AuraDB Free is the tier xref:lab1.adoc[Lab 1] puts you on. Every notebook in this appendix fails at its first `gds.` call. **Appendix A is take-home**: read it during the workshop, run it later on an instance that carries the plugin. The workshop's slides teach the concepts, and you can follow them without running any of the algorithms.
+WARNING: **You cannot run these notebooks on your workshop instance.** Graph Data Science is not available on AuraDB Free, and the instance you created in xref:setup/aura-free-setup/index.adoc[Setup] is AuraDB Free. Every notebook in this appendix fails at its first `gds.` call. **Appendix A is take-home**: read it during the workshop, run it later on an instance that carries the plugin. The workshop's slides teach the concepts, and you can follow them without running any of the algorithms.
 
 The graph you built in Lab 2 answers questions about what is connected to what. Graph algorithms answer a different kind of question: "which aircraft behave like each other", "which airport would hurt most if it closed", and "which faults cluster together across the fleet". Those answers are computed from the shape of the graph rather than read out of it.
 
-TIP: Taking this home? The notebooks are in `Appendix_A_GDS_Graph_Analytics/`, one folder per algorithm family. Every step lives in them; this page is the background behind them.
+TIP: Taking this home? The notebooks are on GitHub in https://github.com/neo4j-partners/databricks-neo4j-workshop/tree/main/Appendix_A_GDS_Graph_Analytics[`Appendix_A_GDS_Graph_Analytics/`], one folder per algorithm family. They are not copied into your workspace. Every step lives in them; this page is the background behind them.
 
 .**At a Glance**
 * **Three algorithm families**, one folder each: community detection, centrality, and similarity.
@@ -85,6 +85,6 @@ Slides for this appendix: xref:slides/slides-graph-enrichment.adoc[Graph Feature
 
 == Next Steps
 
-The notebooks are in `Appendix_A_GDS_Graph_Analytics/`, one folder per family: `community_detection/`, `centrality/`, `similarity/`.
+The notebooks are on GitHub in https://github.com/neo4j-partners/databricks-neo4j-workshop/tree/main/Appendix_A_GDS_Graph_Analytics[`Appendix_A_GDS_Graph_Analytics/`], one folder per family: `community_detection/`, `centrality/`, `similarity/`.
 
-`Appendix_A_GDS_Graph_Analytics/gds-exploring.md` is the companion reference. It holds Cypher for inspecting projections, re-running individual algorithm steps, and exploring what each notebook wrote back to the graph. Unlike the notebooks, many of those inspection queries are ordinary Cypher, so they run anywhere.
+https://github.com/neo4j-partners/databricks-neo4j-workshop/blob/main/Appendix_A_GDS_Graph_Analytics/gds-exploring.md[`gds-exploring.md`] is the companion reference. It holds Cypher for inspecting projections, re-running individual algorithm steps, and exploring what each notebook wrote back to the graph. Unlike the notebooks, many of those inspection queries are ordinary Cypher, so they run anywhere.

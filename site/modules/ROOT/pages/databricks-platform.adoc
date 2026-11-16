@@ -2,7 +2,7 @@
 
 Databricks and Neo4j are complementary platforms connected through governed data pipelines. Databricks governs and refines data at scale and answers aggregation questions through SQL. Neo4j makes the connections between entities explicit and answers traversal questions through Cypher. Delta Lake serves as the interchange format between them, the Spark Connector moves data in both directions, and Mosaic AI powers the agents that route questions to the right engine.
 
-This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the six integration patterns that carry data and queries between the systems. The xref:index.adoc[workshop overview] has the dataset this architecture operates on and the lab roadmap. For hands-on implementation, see xref:lab2.adoc[Lab 2] for Spark Connector ETL, xref:lab3.adoc[Lab 3] for semantic search, and xref:lab4.adoc[Lab 4] for agents.
+This page covers the architecture that joins the two platforms: the Lakehouse foundation, the Spark Connector bridge, and the six integration patterns that carry data and queries between the systems. The xref:index.adoc[workshop overview] has the dataset this architecture operates on and the lab roadmap. For hands-on implementation, see xref:lab2.adoc[Lab 2] for Spark Connector ETL, xref:lab3.adoc[Lab 3] for semantic search, xref:lab4.adoc[Lab 4] for the Genie Agent, and xref:lab5.adoc[Lab 5] for the supervisor agent.
 
 == Two Platforms, Two Query Shapes
 
@@ -33,11 +33,11 @@ MATCH (a:Aircraft)-[:HAS_SYSTEM]->(s:System)
       -[:HAS_EVENT]->(m:MaintenanceEvent)
 WHERE a.tail_number = 'N10000'
   AND m.severity = 'CRITICAL'
-RETURN s.name, c.name, m.description, m.event_date
-ORDER BY m.event_date DESC
+RETURN s.name, c.name, m.fault, m.reported_at, m.corrective_action
+ORDER BY m.reported_at DESC
 ----
 
-The split follows the shape of the question. Counting stays in SQL. Following connections moves to the graph. Questions that span both route to specialized agents. See xref:lab4.adoc[Lab 4] for how the supervisor implements this routing.
+The split follows the shape of the question. Counting stays in SQL. Following connections moves to the graph. Questions that span both route to specialized agents. The supervisor you build in xref:lab5.adoc[Lab 5] implements this routing.
 
 == Lakehouse Architecture
 
@@ -47,11 +47,11 @@ Data moves through three progressive refinement layers:
 
 * **Bronze** is the raw landing zone. Aircraft CSV files arrive from cloud storage such as S3, ADLS Gen2 or GCS, with no transformation. This is the system of record for what was ingested and when.
 * **Silver** is the curation layer. Schema enforcement catches malformed records, column renaming normalizes conventions, and type casting ensures consistency. Silver tables are governed and ready for downstream consumers, including the Neo4j Spark Connector. Graph-bound data gets its last quality check here before projection.
-* **Gold** is where graph intelligence feeds back into the lakehouse. Graph algorithm results write back from Neo4j as columns in gold tables: PageRank scores for component importance, community detection clusters for related maintenance events, and degree centrality counts across the fleet topology. These join with sensor telemetry and fleet metadata that never left the lakehouse to produce maintenance alerts, risk scores, and ML feature tables.
+* **Gold** holds the analytics-ready tables. In this workshop the pipeline builds them from silver, and the Genie Agent reads them. Gold is also where graph intelligence can feed back into the lakehouse. Graph algorithm results written back from Neo4j become columns that join with sensor telemetry to produce maintenance alerts, risk scores, and ML feature tables. That write-back is an architecture pattern. No workshop step does it.
 
 === Delta Lake
 
-Delta Lake provides ACID transactions, schema enforcement, and time travel on top of cloud object storage. For this architecture, it serves as the interchange format between Databricks and Neo4j. The Spark Connector reads from governed silver tables and writes graph algorithm results back to gold tables. Schema enforcement upstream means the graph receives clean, typed data without additional transformation at load time. Time travel enables rollback when a pipeline run corrupts data, avoiding full re-ingestion.
+Delta Lake provides ACID transactions, schema enforcement, and time travel on top of cloud object storage. For this architecture, it serves as the interchange format between Databricks and Neo4j. The Spark Connector reads from governed silver tables. It can also carry graph algorithm results back to gold tables, a pattern no workshop step uses. Schema enforcement upstream means the graph receives clean, typed data without additional transformation at load time. Time travel enables rollback when a pipeline run corrupts data, avoiding full re-ingestion.
 
 == The Spark Connector
 
@@ -65,7 +65,7 @@ Six patterns connect Databricks to Neo4j, each suited to a different workload.
 
 === ELT Data Pipeline
 
-Governed Delta tables project into graph nodes and relationships via the Spark Connector. Silver tables feed the connector; the connector writes nodes and relationships into Neo4j using batched upserts. This is the primary path for bulk loading structured data.
+Governed Delta tables project into graph nodes and relationships via the Spark Connector. Silver tables feed the connector; the connector writes nodes and relationships into Neo4j in batches. Lab 2 uses the connector's Append mode, a plain `CREATE`. This is the primary path for bulk loading structured data.
 
 === Virtual Graph
 
@@ -144,13 +144,13 @@ Maintenance manuals, technical bulletins, and regulatory filings pass through a 
 
 === Data Analytics: Graph as Co-Processor
 
-Graph algorithms run on in-memory projections in Neo4j and write results back to gold Delta tables through the Spark Connector:
+Graph algorithms run on in-memory projections in Neo4j. Their results can flow back to gold Delta tables through the Spark Connector, where they become columns for dashboards, ML features, and downstream analytics. That is an architecture pattern. No workshop step writes algorithm results to Delta.
 
-* **PageRank** produces importance scores for components.
-* **Community detection (Louvain)** identifies clusters of related maintenance events.
-* **Degree centrality** counts connection density across the fleet topology.
+xref:appendix-a.adoc[Appendix A] runs three algorithm families and writes their results back to the graph:
 
-These graph-derived metrics become columns in Delta tables, available for dashboards, ML features, and downstream analytics.
+* **Louvain** groups aircraft that share fault patterns.
+* **PageRank and Betweenness Centrality** score airports in the route network.
+* **Node Similarity** links aircraft whose fault profiles overlap.
 
 Where the Spark Connector carries algorithm results back as tables, <<sql-federation-over-the-graph,SQL federation>> reads the graph in place, so BI tools and notebooks join graph results with lakehouse data without leaving SQL.
 
@@ -180,7 +180,7 @@ image::graphrag-multiplatform-retrieval.svg[Multi-platform retrieval flow: Datab
 
 | Data Analytics
 | Neo4j Spark Connector
-| GDS algorithm results written back to gold Delta tables
+| GDS algorithm results written back to gold Delta tables. No workshop step does this
 
 | SQL Federation
 | Neo4j Custom JDBC Unity Catalog Connector
@@ -208,19 +208,26 @@ Databricks provides the agent development and serving stack through Mosaic AI, f
 * **Genie Agents** translate natural language into governed SQL against any data registered in Unity Catalog. Domain experts configure Genie Agents with curated table sets, domain terminology, and example queries. In this architecture, a Genie Agent handles the sensor telemetry half of the multi-agent system: questions about averages, trends, and fleet-wide comparisons route to the Genie Agent, which generates SQL against the lakehouse. All generated queries are read-only.
 * **Agent Bricks** is the control plane for deploying and orchestrating agents. The supervisor agent pattern is configurable through the workspace UI: register sub-agents, which can be Genie Agents, MCP servers or Unity Catalog functions, provide a capability description for each, and the supervisor routes questions based on their nature. Agents package with MLflow, register in Unity Catalog, and deploy to Model Serving endpoints that scale automatically. Built-in tracing and feedback collection through the Review App support production monitoring.
 
-See xref:lab4.adoc[Lab 4] for the hands-on implementation of the Genie Agent, the Neo4j MCP agent, and the supervisor.
+You build the Genie Agent in xref:lab4.adoc[Lab 4] and the LangGraph supervisor in xref:lab5.adoc[Lab 5]. The Neo4j MCP agent and the Agent Bricks Supervisor Agent are the Lab 4 instructor demo.
 
 == Agent Memory
 
-Where Mosaic AI provides the agent development and serving stack, Neo4j contributes memory to the agents that run on it. Agent memory is a capability the supervisor and its sub-agents use, not a new connection between the platforms. It exposes three functions through the same agent-tool mechanism the Neo4j MCP agent already uses:
+Where Mosaic AI provides the agent development and serving stack, Neo4j contributes memory to the agents that run on it. Agent memory is a capability the supervisor uses, not a new connection between the platforms. xref:lab6.adoc[Lab 6] adds it to the Lab 5 supervisor as two graph nodes, not as a tool:
 
-* **Short-term memory** holds working context within a session: recent turns, intermediate results, and the state the supervisor carries while it decomposes a multi-platform question and waits on its sub-agents.
-* **Long-term memory** persists across sessions as a graph of facts, entities, and the relationships between them. An agent recalls prior findings and connects them to new ones by traversing that graph at retrieval time. Storing memory as a graph fits the shape of the data: memory is relational, and the connections between remembered facts are themselves what the agent reasons over.
-* **Decision traces** capture the agent's routing choices, tool calls, and reasoning as a connected graph. Each decision links to the context that produced it, which supports auditability and lets later decisions reason over earlier ones.
+* **`recall`** runs once before the supervisor. It searches what the team has asked before and hands the closest turns to the supervisor's prompt as routing context.
+* **`remember`** runs once after the answer. It writes the question and the answer back to Neo4j, linked to the aircraft they mention.
 
-Decision traces are distinct from the MLflow tracing in Agent Bricks. MLflow tracing is observability for monitoring runs and collecting feedback. Neo4j decision traces are a queryable graph the agent traverses at runtime and builds long-term memory from. The two are complementary: one watches the agent from the outside, the other gives the agent a memory it can reason over.
+The three Lab 5 tools are untouched. Memory lives in the same Aura instance as the Aircraft Digital Twin, so one Cypher query can cross from a conversation to an aircraft's maintenance history.
 
-Agent memory plugs into Agent Bricks the same way the other sub-agents do. The supervisor reads and writes memory through agent tools, so no new connection type is introduced.
+The `neo4j-agent-memory` library behind those nodes has three kinds of memory:
+
+* **Short-term memory** holds messages, who said them, and which entities they mention. This is what `recall` and `remember` read and write.
+* **Long-term memory** holds durable facts and preferences that outlive a session.
+* **Decision traces** capture the agent's tool calls and reasoning as a connected graph. Each step links to the entities it touched.
+
+The Lab 6 notebook writes short-term memory only. Long-term memory and decision traces appear in the optional `02_optional_demos.ipynb` notebook.
+
+Decision traces are distinct from the MLflow tracing in Agent Bricks. MLflow tracing is observability for monitoring runs and collecting feedback. Neo4j decision traces are a queryable graph that sits beside the operational data. The two are complementary: one watches the agent from the outside, the other records what the agent did in a form you can traverse.
 
 == Learn More
 

@@ -188,7 +188,9 @@ AuraDB Free caps at 200,000 nodes and 400,000 relationships. Memory adds a coupl
 
 == One Endpoint, Redeployed
 
-Lab 5 deployed this agent to a Model Serving endpoint. Lab 6 redeploys **that** endpoint with the two new nodes in it, rather than standing up a second one. An endpoint per participant is the tightest quota in the workshop, and the registered model name and the endpoint name are constants in Lab 5's `agent.py` for exactly this reason.
+**Section 10 of the notebook is optional.** Memory works in the notebook without it. Run it if the class has time for a deploy of about fifteen minutes.
+
+Lab 5 deployed this agent to a Model Serving endpoint. Section 10 redeploys **that** endpoint with the two new nodes in it, rather than standing up a second one. An endpoint per participant is the tightest quota in the workshop, and the registered model name and the endpoint name are constants in Lab 5's `agent.py` for exactly this reason.
 
 Memory adds no Databricks resource to the endpoint, because it writes to Aura, and Aura reaches the endpoint through environment variables rather than through MLflow's resource list. Lab 5 already set that up: the endpoint carries the Neo4j URI, username and password as secret references resolved at startup. Memory reads those same three variables, so the redeploy needs no new secrets and no second credential path.
 
@@ -212,6 +214,6 @@ Slides for this lab: xref:slides/slides-agent-memory.adoc[Agent Memory with Neo4
 
 == Next Steps
 
-Work through `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your Databricks workspace, from the pinned install to the redeploy, and use its final section to remove everything the lab wrote.
+Work through `Lab_6_Agent_Memory/01_agent_memory.ipynb` in your Databricks workspace, from the pinned install to the optional redeploy, and use its final section to remove everything the lab wrote.
 
 `memory.py` sits next to the notebooks and is worth opening in an editor rather than a cell. `Lab_6_Agent_Memory/README.md` documents what it exports and the constraints that come with it.
